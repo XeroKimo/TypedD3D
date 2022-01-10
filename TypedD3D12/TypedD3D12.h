@@ -1,0 +1,14 @@
+//*********************************************************
+//
+// Copyright (c) 2022 Renzy Alarcon
+// Licensed under the MIT License (MIT).
+//
+//*********************************************************
+#pragma once
+
+#include "source/D3D12/CommandList.h"
+
+#include "source/Helpers/COMHelpers.h"
+#include "source/Helpers/CommonHelpers.h"
+#include "source/Helpers/D3D12Helpers.h"
+#include "source/Helpers/DXGIHelpers.h"
