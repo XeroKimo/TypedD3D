@@ -5,6 +5,7 @@
 //
 //*********************************************************
 #pragma once
+#include "CommandAllocator.h"
 #include <d3d12.h>
 #include <array>
 #include <span>
@@ -71,14 +72,14 @@ namespace TypedD3D::D3D12::CommandList
 
             HRESULT Close()
             {
-                InternalCommandList().Close();
+                return InternalCommandList().Close();
             }
 
             HRESULT Reset(
                 ID3D12CommandAllocator* pAllocator,
                 ID3D12PipelineState* pInitialState)
             {
-                InternalCommandList().Reset(pAllocator, pInitialState);
+                return InternalCommandList().Reset(pAllocator, pInitialState);
             }
 
             void ClearState(
@@ -480,10 +481,13 @@ namespace TypedD3D::D3D12::CommandList
         class BundleInterface : private BaseInterface<WrapperTy, ListTy>
         {
             using Base = BaseInterface<WrapperTy, ListTy>;
+            
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from BaseInterface
+            friend Base;
 
         public:
             using Base::Close;
-            using Base::Reset;
+            //using Base::Reset;
             using Base::DrawInstanced;
             using Base::DrawIndexedInstanced;
             using Base::Dispatch;
@@ -510,24 +514,60 @@ namespace TypedD3D::D3D12::CommandList
             using Base::IASetVertexBuffers;
             using Base::ResolveQueryData;
             using Base::ExecuteIndirect;
+
+        public:
+            HRESULT Reset(CommandAllocator::Bundle allocator, ID3D12PipelineState* optInitialPipeline)
+            {
+                return Base::Reset(allocator.Get().Get(), optInitialPipeline);
+            }
         };
 
         template<class WrapperTy, class ListTy>
         class CopyInterface : private BaseInterface<WrapperTy, ListTy>
         {
+            using Base = BaseInterface<WrapperTy, ListTy>;
 
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from BaseInterface
+            friend Base;
+
+        public:
+            HRESULT Reset(CommandAllocator::Copy allocator, ID3D12PipelineState* optInitialPipeline)
+            {
+                return Base::Reset(allocator.Get().Get(), optInitialPipeline);
+            }
         };
 
         template<class WrapperTy, class ListTy>
         class ComputeInterface : public CopyInterface<WrapperTy, ListTy>, private BaseInterface<WrapperTy, ListTy>
         {
+            using Base = BaseInterface<WrapperTy, ListTy>;
 
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from BaseInterface
+            friend Base;
+
+        private:
+            using CopyInterface<WrapperTy, ListTy>::Reset;
+
+        public:
+            HRESULT Reset(CommandAllocator::Compute allocator, ID3D12PipelineState* optInitialPipeline)
+            {
+                return Base::Reset(allocator.Get().Get(), optInitialPipeline);
+            }
         };
 
         template<class WrapperTy, class ListTy>
         class DirectInterface : public BaseInterface<WrapperTy, ListTy>
         {
+            using Base = BaseInterface<WrapperTy, ListTy>;
 
+        private:
+            using Base::Reset;
+
+        public:
+            HRESULT Reset(CommandAllocator::Direct allocator, ID3D12PipelineState* optInitialPipeline)
+            {
+                return Base::Reset(allocator.Get().Get(), optInitialPipeline);
+            }
         };
 
         template<class ListTy, template<class WrapperTy, class ListTy> class InterfaceTy>
