@@ -94,6 +94,9 @@ void TestD3DHelpers()
     TypedD3D::Helpers::D3D12::StallCPUThread(*fence.GetValue().Get(), 2);
 
     TypedD3D::D3D12::CommandList::Bundle b{};
+    TypedD3D::D3D12::CommandList::Direct d{};
+
+    //d.ExecuteBundle(b);
 
 
     auto swapChain = TypedD3D::Helpers::DXGI::SwapChain::CreateFlipDiscard(
