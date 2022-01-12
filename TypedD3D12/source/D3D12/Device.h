@@ -1,11 +1,15 @@
 #pragma once
-#include <d3d12.h>
-#include <wrl/client.h>
+#include "../Helpers/D3D12Helpers.h"
 #include "../Utils.h"
+#include "ComWrapper.h"
 #include "CommandList.h"
 #include "CommandAllocator.h"
+#include "Meta.h"
 
-namespace TypedD3D::D3D12::Device
+#include <d3d12.h>
+#include <wrl/client.h>
+
+namespace TypedD3D::D3D12
 {
     using Microsoft::WRL::ComPtr;
     namespace Internal
@@ -23,88 +27,149 @@ namespace TypedD3D::D3D12::Device
             using type = ID3D12Device;
 
         public:
-            UINT GetNodeCount();
+            UINT GetNodeCount()
+            {
+                return InternalGetDevice().GetNodeCount();
+            }
 
             Utils::Expected<ComPtr<ID3D12CommandQueue>, HRESULT> CreateCommandQueue(
-                const D3D12_COMMAND_QUEUE_DESC* pDesc);
+                const D3D12_COMMAND_QUEUE_DESC& pDesc)
+            {
+                return Helpers::D3D12::CreateCommandQueue(InternalGetDevice(), pDesc);
+            }
 
             Utils::Expected<ComPtr<ID3D12CommandAllocator>, HRESULT> CreateCommandAllocator(
-                D3D12_COMMAND_LIST_TYPE type);
+                D3D12_COMMAND_LIST_TYPE type)
+            {
+                return Helpers::D3D12::CreateCommandAllocator(InternalGetDevice(), type);
+            }
 
             Utils::Expected<ComPtr<ID3D12PipelineState>, HRESULT> CreateGraphicsPipelineState(
-                const D3D12_GRAPHICS_PIPELINE_STATE_DESC& pDesc);
+                const D3D12_GRAPHICS_PIPELINE_STATE_DESC& pDesc)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
             Utils::Expected<ComPtr<ID3D12PipelineState>, HRESULT> CreateComputePipelineState(
-                const D3D12_COMPUTE_PIPELINE_STATE_DESC& pDesc);
+                const D3D12_COMPUTE_PIPELINE_STATE_DESC& pDesc)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
             Utils::Expected<CommandList::Direct, HRESULT> CreateDirectCommandList(
-                UINT nodeMask,
                 CommandAllocator::Direct pCommandAllocator,
-                ID3D12PipelineState* optInitialState);
+                UINT nodeMask = 0,
+                ID3D12PipelineState* optInitialState = nullptr)
+            {
+                auto commandList = Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(InternalGetDevice(), CommandList::Direct::type, pCommandAllocator.Get().Get(), nodeMask, optInitialState);
+
+                if(!commandList)
+                    Utils::Unexpected(commandList.GetError());
+
+                return CommandList::Direct(commandList.GetValue());
+            }
 
             Utils::Expected<CommandList::Bundle, HRESULT> CreateBundleCommandList(
                 UINT nodeMask,
                 CommandAllocator::Bundle pCommandAllocator,
-                ID3D12PipelineState* optInitialState);
+                ID3D12PipelineState* optInitialState)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
             Utils::Expected<CommandList::Compute, HRESULT> CreateComputeCommandList(
                 UINT nodeMask,
                 CommandAllocator::Compute pCommandAllocator,
-                ID3D12PipelineState* optInitialState);
+                ID3D12PipelineState* optInitialState)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
             Utils::Expected<CommandList::Copy, HRESULT> CreateCopyCommandList(
                 UINT nodeMask,
                 CommandAllocator::Copy pCommandAllocator,
-                ID3D12PipelineState* optInitialState);
+                ID3D12PipelineState* optInitialState)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
             //TODO: return a Utils::Expected<auto, HRESULT> where auto depends on the D3D12_FEATURE passed in
             template<D3D12_FEATURE Feature>
-            auto CheckFeatureSupport(
-                D3D12_FEATURE Feature,
-                void* pFeatureSupportData,
-                UINT FeatureSupportDataSize);
+            auto CheckFeatureSupport()
+            {
+                using feature_t = typename Meta::DeviceFeatureToType<Feature>::type;
+                feature_t feature{};
+
+                HRESULT hr = InternalGetDevice().CheckFeatureSupport(Feature, &feature, sizeof(feature_t));
+
+                if(FAILED(hr))
+                    return Utils::Expected<feature_t, HRESULT>(Utils::Unexpected(hr));
+
+                return Utils::Expected<feature_t, HRESULT>(feature);
+            }
 
             Utils::Expected<ComPtr<ID3D12DescriptorHeap>, HRESULT> CreateDescriptorHeap(
                 const D3D12_DESCRIPTOR_HEAP_DESC* pDescriptorHeapDesc,
                 const IID& riid,
-                void** ppvHeap);
+                void** ppvHeap)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
             UINT GetDescriptorHandleIncrementSize(
-                D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapType);
+                D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapType)
+            {
+                return {};
+            }
 
             Utils::Expected<ComPtr<ID3D12RootSignature>, HRESULT> CreateRootSignature(
                 UINT nodeMask,
                 const void* pBlobWithRootSignature,
-                SIZE_T blobLengthInBytes);
+                SIZE_T blobLengthInBytes)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
             void CreateConstantBufferView(
                 const D3D12_CONSTANT_BUFFER_VIEW_DESC* pDesc,
-                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor);
+                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor)
+            {
+            }
 
             void CreateShaderResourceView(
                 ID3D12Resource* pResource,
                 const D3D12_SHADER_RESOURCE_VIEW_DESC* pDesc,
-                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor);
+                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor)
+            {
+            }
 
             void CreateUnorderedAccessView(
                 ID3D12Resource* pResource,
                 ID3D12Resource* pCounterResource,
                 const D3D12_UNORDERED_ACCESS_VIEW_DESC* pDesc,
-                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor);
+                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor)
+            {
+            }
 
             void CreateRenderTargetView(
                 ID3D12Resource* pResource,
                 const D3D12_RENDER_TARGET_VIEW_DESC* pDesc,
-                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor);
+                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor)
+            {
+            }
 
             void CreateDepthStencilView(
                 ID3D12Resource* pResource,
                 const D3D12_DEPTH_STENCIL_VIEW_DESC* pDesc,
-                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor);
+                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor)
+            {
+            }
 
             void CreateSampler(
                 const D3D12_SAMPLER_DESC* pDesc,
-                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor);
+                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor)
+            {
+            }
 
             void CopyDescriptors(
                 UINT NumDestDescriptorRanges,
@@ -113,85 +178,129 @@ namespace TypedD3D::D3D12::Device
                 UINT NumSrcDescriptorRanges,
                 const D3D12_CPU_DESCRIPTOR_HANDLE* pSrcDescriptorRangeStarts,
                 const UINT* pSrcDescriptorRangeSizes,
-                D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapsType);
+                D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapsType)
+            {
+            }
 
             void CopyDescriptorsSimple(
                 UINT NumDescriptors,
                 D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptorRangeStart,
                 D3D12_CPU_DESCRIPTOR_HANDLE SrcDescriptorRangeStart,
-                D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapsType);
+                D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapsType)
+            {
+            }
 
             D3D12_RESOURCE_ALLOCATION_INFO GetResourceAllocationInfo(
                 UINT visibleMask,
                 UINT numResourceDescs,
-                const D3D12_RESOURCE_DESC* pResourceDescs);
+                const D3D12_RESOURCE_DESC* pResourceDescs)
+            {
+                return {};
+            }
 
             D3D12_HEAP_PROPERTIES GetCustomHeapProperties(
                 UINT nodeMask,
-                D3D12_HEAP_TYPE heapType);
+                D3D12_HEAP_TYPE heapType)
+            {
+                return {};
+            }
 
-            Utils::Expected<, HRESULT> CreateCommittedResource(
+            Utils::Expected<ComPtr<ID3D12Resource>, HRESULT> CreateCommittedResource(
                 const D3D12_HEAP_PROPERTIES* pHeapProperties,
                 D3D12_HEAP_FLAGS HeapFlags,
                 const D3D12_RESOURCE_DESC* pDesc,
                 D3D12_RESOURCE_STATES InitialResourceState,
                 const D3D12_CLEAR_VALUE* pOptimizedClearValue,
                 const IID& riidResource,
-                void** ppvResource);
+                void** ppvResource)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
-            Utils::Expected<, HRESULT> CreateHeap(
+            Utils::Expected<ComPtr<ID3D12Heap>, HRESULT> CreateHeap(
                 const D3D12_HEAP_DESC* pDesc,
                 const IID& riid,
-                void** ppvHeap);
+                void** ppvHeap)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
-            Utils::Expected<, HRESULT> CreatePlacedResource(
+            Utils::Expected<ComPtr<ID3D12Resource>, HRESULT> CreatePlacedResource(
                 ID3D12Heap* pHeap,
                 UINT64 HeapOffset,
                 const D3D12_RESOURCE_DESC* pDesc,
                 D3D12_RESOURCE_STATES InitialState,
                 const D3D12_CLEAR_VALUE* pOptimizedClearValue,
                 const IID& riid,
-                void** ppvResource);
+                void** ppvResource)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
-            Utils::Expected<, HRESULT> CreateReservedResource(
+            Utils::Expected<ComPtr<ID3D12Resource>, HRESULT> CreateReservedResource(
                 const D3D12_RESOURCE_DESC* pDesc,
                 D3D12_RESOURCE_STATES InitialState,
                 const D3D12_CLEAR_VALUE* pOptimizedClearValue,
                 const IID& riid,
-                void** ppvResource);
+                void** ppvResource)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
-            Utils::Expected<, HRESULT> CreateSharedHandle(
+            Utils::Expected<int, HRESULT> CreateSharedHandle(
                 ID3D12DeviceChild* pObject,
                 const SECURITY_ATTRIBUTES* pAttributes,
                 DWORD Access,
                 LPCWSTR Name,
-                HANDLE* pHandle);
+                HANDLE* pHandle)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
-            Utils::Expected<, HRESULT> OpenSharedHandle(
+            Utils::Expected<int, HRESULT> OpenSharedHandle(
                 HANDLE NTHandle,
                 const IID& riid,
-                void** ppvObj);
+                void** ppvObj)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
-            Utils::Expected<, HRESULT> OpenSharedHandleByName(
+            Utils::Expected<int, HRESULT> OpenSharedHandleByName(
                 LPCWSTR Name,
                 DWORD Access,
-                HANDLE* pNTHandle);
+                HANDLE* pNTHandle)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
-            Utils::Expected<, HRESULT> MakeResident(
+            Utils::Expected<int, HRESULT> MakeResident(
                 UINT NumObjects,
-                ID3D12Pageable* const* ppObjects);
+                ID3D12Pageable* const* ppObjects)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
-            Utils::Expected<, HRESULT> Evict(
+            Utils::Expected<int, HRESULT> Evict(
                 UINT NumObjects,
-                ID3D12Pageable* const* ppObjects);
+                ID3D12Pageable* const* ppObjects)
 
-            Utils::Expected<, HRESULT> CreateFence(
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
+
+            Utils::Expected<ComPtr<ID3D12Fence>, HRESULT> CreateFence(
                 UINT64 InitialValue,
                 D3D12_FENCE_FLAGS Flags,
                 const IID& riid,
-                void** ppFence);
+                void** ppFence)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
-            Utils::Expected<, HRESULT> GetDeviceRemovedReason(void);
+            Utils::Expected<int, HRESULT> GetDeviceRemovedReason()
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
             void GetCopyableFootprints(
                 const D3D12_RESOURCE_DESC* pResourceDesc,
@@ -201,21 +310,32 @@ namespace TypedD3D::D3D12::Device
                 D3D12_PLACED_SUBRESOURCE_FOOTPRINT* pLayouts,
                 UINT* pNumRows,
                 UINT64* pRowSizeInBytes,
-                UINT64* pTotalBytes);
+                UINT64* pTotalBytes)
+            {
+            }
 
-            Utils::Expected<, HRESULT> CreateQueryHeap(
+            Utils::Expected<int, HRESULT> CreateQueryHeap(
                 const D3D12_QUERY_HEAP_DESC* pDesc,
                 const IID& riid,
-                void** ppvHeap);
+                void** ppvHeap)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
-            Utils::Expected<, HRESULT> SetStablePowerState(
-                BOOL Enable);
+            Utils::Expected<int, HRESULT> SetStablePowerState(
+                BOOL Enable)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
-            Utils::Expected<, HRESULT> CreateCommandSignature(
+            Utils::Expected<int, HRESULT> CreateCommandSignature(
                 const D3D12_COMMAND_SIGNATURE_DESC* pDesc,
                 ID3D12RootSignature* pRootSignature,
                 const IID& riid,
-                void** ppvCommandSignature);
+                void** ppvCommandSignature)
+            {
+                return Utils::Unexpected(HRESULT(0));
+            }
 
             void GetResourceTiling(
                 ID3D12Resource* pTiledResource,
@@ -224,30 +344,23 @@ namespace TypedD3D::D3D12::Device
                 D3D12_TILE_SHAPE* pStandardTileShapeForNonPackedMips,
                 UINT* pNumSubresourceTilings,
                 UINT FirstSubresourceTilingToGet,
-                D3D12_SUBRESOURCE_TILING* pSubresourceTilingsForNonPackedMips);
+                D3D12_SUBRESOURCE_TILING* pSubresourceTilingsForNonPackedMips)
+            {
+            }
 
-            LUID GetAdapterLuid(void);
+            LUID GetAdapterLuid()
+            {
+                return {};
+            }
 
         private:
-            type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).GetDevice().Get(); }
+            type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get().Get(); }
         };
 
         template<class Ty>
-        class Device : public DeviceInterface<Device<Ty>, Ty>
+        class Device : public ComWrapper<Ty>, public DeviceInterface<Device<Ty>, Ty>
         {
-        private:
-            ComPtr<Ty> m_device;
 
-        public:
-            Device() = default;
-            Device(ComPtr<Ty> device) :
-                m_device(device)
-            {
-
-            }
-
-        public:
-            ComPtr<Ty> GetDevice() const { return m_device; }
         };
     }
 

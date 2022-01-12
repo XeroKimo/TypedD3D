@@ -74,7 +74,7 @@ namespace TypedD3D::D3D12::CommandList
         {
             using allocator_type = CommandAllocator::Direct;
             using list_type = ListTy;
-            
+
             template<class WrapperType>
             using interface_type = DirectInterface<WrapperType, ListTy>;
         };
@@ -513,7 +513,7 @@ namespace TypedD3D::D3D12::CommandList
         class BundleInterface : private BaseInterface<WrapperTy, bundle_command_list_tag<ListTy>>
         {
             using Base = BaseInterface<WrapperTy, bundle_command_list_tag<ListTy>>;
-            
+
             //Enables casting to WrapperTy as WrapperTy would not know it inherits from BaseInterface
             friend Base;
 
@@ -536,7 +536,7 @@ namespace TypedD3D::D3D12::CommandList
             using Base::SetGraphicsRoot32BitConstant;
             using Base::SetComputeRoot32BitConstants;
             using Base::SetGraphicsRoot32BitConstants;
-            using Base::SetComputeRootConstantBufferView; 
+            using Base::SetComputeRootConstantBufferView;
             using Base::SetGraphicsRootConstantBufferView;
             using Base::SetComputeRootShaderResourceView;
             using Base::SetGraphicsRootShaderResourceView;
@@ -584,7 +584,7 @@ namespace TypedD3D::D3D12::CommandList
         {
             InternalCommandList().ExecuteBundle(pCommandList.Get().Get());
         }
-};
+    }
 
     using Direct = Internal::Direct<ID3D12GraphicsCommandList>;
     //using Direct1 = Internal::Direct<ID3D12GraphicsCommandList1>;

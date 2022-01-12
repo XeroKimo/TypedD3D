@@ -94,6 +94,8 @@ void TestD3DHelpers()
     TypedD3D::Helpers::D3D12::StallCPUThread(*fence.GetValue().Get(), 2);
 
     TypedD3D::D3D12::CommandList::Bundle b{};
+
+
     TypedD3D::D3D12::CommandList::Direct d{};
     TypedD3D::D3D12::CommandAllocator::Bundle da{};
     TypedD3D::D3D12::CommandAllocator::Direct dir{};
