@@ -101,7 +101,7 @@ void TestD3DHelpers()
     d.Reset(dir, nullptr);
     b.Reset(da, nullptr);
 
-    //d.ExecuteBundle(b);
+    d.ExecuteBundle(b);
 
 
     auto swapChain = TypedD3D::Helpers::DXGI::SwapChain::CreateFlipDiscard(
