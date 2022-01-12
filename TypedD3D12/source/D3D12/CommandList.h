@@ -6,7 +6,7 @@
 //*********************************************************
 #pragma once
 #include "CommandAllocator.h"
-#include "MetaTags.h"
+#include "Meta.h"
 #include <d3d12.h>
 #include <array>
 #include <span>
@@ -506,7 +506,7 @@ namespace TypedD3D::D3D12::CommandList
             }
 
         private:
-            list_type& InternalCommandList() { return *static_cast<WrapperTy&>(*this).GetCommandList().Get(); }
+            list_type& InternalCommandList() { return *static_cast<WrapperTy&>(*this).Get().Get(); }
         };
 
         template<class WrapperTy, class ListTy>
@@ -546,12 +546,6 @@ namespace TypedD3D::D3D12::CommandList
             using Base::IASetVertexBuffers;
             using Base::ResolveQueryData;
             using Base::ExecuteIndirect;
-
-        //public:
-        //    HRESULT Reset(CommandAllocator::Bundle allocator, ID3D12PipelineState* optInitialPipeline)
-        //    {
-        //        return Base::Reset(allocator.Get().Get(), optInitialPipeline);
-        //    }
         };
 
         template<class WrapperTy, class ListTy>
@@ -579,32 +573,16 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class Tag>
-        class CommandList : public interface_type<Tag, CommandList<Tag>>
+        class CommandList : public ComWrapper<typename Tag::list_type>, public interface_type<Tag, CommandList<Tag>>
         {
             using list_type = typename Tag::list_type;
             static constexpr D3D12_COMMAND_LIST_TYPE list_enum_type = Tag::type;
-
-        private:
-            ComPtr<list_type> m_commandList;
-
-        public:
-            CommandList() = default;
-
-        protected:
-            CommandList(ComPtr<list_type> commandList) :
-                m_commandList(commandList)
-            {
-                assert(m_commandList->GetType() == list_enum_type);
-            }
-
-        public:
-            ComPtr<list_type> GetCommandList() const { return m_commandList; }
         };
 
         template<class WrapperTy, class Tag>
         void BaseInterface<WrapperTy, Tag>::ExecuteBundle(Bundle<ID3D12GraphicsCommandList> pCommandList)
         {
-            InternalCommandList().ExecuteBundle(pCommandList.GetCommandList().Get());
+            InternalCommandList().ExecuteBundle(pCommandList.Get().Get());
         }
 };
 

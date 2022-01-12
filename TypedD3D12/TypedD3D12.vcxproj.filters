@@ -42,7 +42,10 @@
     <ClInclude Include="source\D3D12\CommandAllocator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\D3D12\MetaTags.h">
+    <ClInclude Include="source\D3D12\Meta.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\D3D12\ComWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

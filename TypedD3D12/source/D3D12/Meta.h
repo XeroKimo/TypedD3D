@@ -17,4 +17,6 @@ namespace TypedD3D::D3D12::Meta
     using video_encode_command_list_type_tag = command_list_type_tag<D3D12_COMMAND_LIST_TYPE_VIDEO_ENCODE>;
     using video_process_command_list_type_tag = command_list_type_tag<D3D12_COMMAND_LIST_TYPE_VIDEO_PROCESS>;
 
+
+
 }
