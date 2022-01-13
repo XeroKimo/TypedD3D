@@ -35,7 +35,8 @@ namespace TypedD3D::D3D12
         operator bool() const noexcept { return m_ptr; }
 
     public:
-        Microsoft::WRL::ComPtr<T> Get() const { return m_ptr; }
+        T* Get() const { return m_ptr.Get(); }
+        T* GetComPtr() const { return m_ptr; }
 
     };
 }

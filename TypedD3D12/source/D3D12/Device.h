@@ -61,7 +61,7 @@ namespace TypedD3D::D3D12
                 UINT nodeMask = 0,
                 ID3D12PipelineState* optInitialState = nullptr)
             {
-                auto commandList = Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(InternalGetDevice(), CommandList::Direct::type, pCommandAllocator.Get().Get(), nodeMask, optInitialState);
+                auto commandList = Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(InternalGetDevice(), CommandList::Direct::list_enum_type, *pCommandAllocator.Get(), nodeMask, optInitialState);
 
                 if(!commandList)
                     Utils::Unexpected(commandList.GetError());
@@ -74,7 +74,12 @@ namespace TypedD3D::D3D12
                 CommandAllocator::Bundle pCommandAllocator,
                 ID3D12PipelineState* optInitialState)
             {
-                return Utils::Unexpected(HRESULT(0));
+                auto commandList = Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(InternalGetDevice(), CommandList::Bundle::list_enum_type, *pCommandAllocator.Get(), nodeMask, optInitialState);
+
+                if(!commandList)
+                    Utils::Unexpected(commandList.GetError());
+
+                return CommandList::Bundle(commandList.GetValue());
             }
 
             Utils::Expected<CommandList::Compute, HRESULT> CreateComputeCommandList(
@@ -82,7 +87,12 @@ namespace TypedD3D::D3D12
                 CommandAllocator::Compute pCommandAllocator,
                 ID3D12PipelineState* optInitialState)
             {
-                return Utils::Unexpected(HRESULT(0));
+                auto commandList = Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(InternalGetDevice(), CommandList::Compute::list_enum_type, *pCommandAllocator.Get(), nodeMask, optInitialState);
+
+                if(!commandList)
+                    Utils::Unexpected(commandList.GetError());
+
+                return CommandList::Compute(commandList.GetValue());
             }
 
             Utils::Expected<CommandList::Copy, HRESULT> CreateCopyCommandList(
@@ -90,12 +100,16 @@ namespace TypedD3D::D3D12
                 CommandAllocator::Copy pCommandAllocator,
                 ID3D12PipelineState* optInitialState)
             {
-                return Utils::Unexpected(HRESULT(0));
+                auto commandList = Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(InternalGetDevice(), CommandList::Copy::list_enum_type, *pCommandAllocator.Get(), nodeMask, optInitialState);
+
+                if(!commandList)
+                    Utils::Unexpected(commandList.GetError());
+
+                return CommandList::Copy(commandList.GetValue());
             }
 
-            //TODO: return a Utils::Expected<auto, HRESULT> where auto depends on the D3D12_FEATURE passed in
             template<D3D12_FEATURE Feature>
-            auto CheckFeatureSupport()
+            Utils::Expected<typename Meta::DeviceFeatureToType<Feature>::type, HRESULT> CheckFeatureSupport()
             {
                 using feature_t = typename Meta::DeviceFeatureToType<Feature>::type;
                 feature_t feature{};
@@ -103,9 +117,9 @@ namespace TypedD3D::D3D12
                 HRESULT hr = InternalGetDevice().CheckFeatureSupport(Feature, &feature, sizeof(feature_t));
 
                 if(FAILED(hr))
-                    return Utils::Expected<feature_t, HRESULT>(Utils::Unexpected(hr));
+                    return Utils::Unexpected(hr);
 
-                return Utils::Expected<feature_t, HRESULT>(feature);
+                return feature;
             }
 
             Utils::Expected<ComPtr<ID3D12DescriptorHeap>, HRESULT> CreateDescriptorHeap(
@@ -354,7 +368,7 @@ namespace TypedD3D::D3D12
             }
 
         private:
-            type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get().Get(); }
+            type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get(); }
         };
 
         template<class Ty>

@@ -21,8 +21,8 @@ namespace TypedD3D::D3D12::CommandList
     using Microsoft::WRL::ComPtr;
     namespace Internal
     {
-        template<class WrapperTy, class Tag>
-        class BaseInterface;
+        template<class WrapperTy, template<class ListTy> class Tag, class ListTy>
+        class ListInterface;
 
         template<class WrapperTy, class ListTy>
         class BundleInterface;
@@ -94,12 +94,13 @@ namespace TypedD3D::D3D12::CommandList
         template<class ListTy>
         using Compute = CommandList<compute_command_list_tag<ListTy>>;
 
-        template<class WrapperTy, class Tag>
-        class BaseInterface
+        template<class WrapperTy, template<class ListTy> class Tag>
+        class ListInterface<WrapperTy, Tag, ID3D12GraphicsCommandList>
         {
         private:
-            using list_type = typename Tag::list_type;
-            using allocator_type = typename Tag::allocator_type;
+            using list_type = ID3D12GraphicsCommandList;
+            using tag_type = Tag<list_type>;
+            using allocator_type = typename tag_type::allocator_type;
 
         public:
             HRESULT Close()
@@ -111,7 +112,7 @@ namespace TypedD3D::D3D12::CommandList
                 allocator_type pAllocator,
                 ID3D12PipelineState* pInitialState)
             {
-                return InternalCommandList().Reset(pAllocator.Get().Get(), pInitialState);
+                return InternalCommandList().Reset(pAllocator.Get(), pInitialState);
             }
 
             void ClearState(
@@ -506,15 +507,15 @@ namespace TypedD3D::D3D12::CommandList
             }
 
         private:
-            list_type& InternalCommandList() { return *static_cast<WrapperTy&>(*this).Get().Get(); }
+            list_type& InternalCommandList() { return *static_cast<WrapperTy&>(*this).Get(); }
         };
 
-        template<class WrapperTy, class ListTy>
-        class BundleInterface : private BaseInterface<WrapperTy, bundle_command_list_tag<ListTy>>
+        template<class WrapperTy>
+        class BundleInterface<WrapperTy, ID3D12GraphicsCommandList> : private ListInterface<WrapperTy, bundle_command_list_tag, ID3D12GraphicsCommandList>
         {
-            using Base = BaseInterface<WrapperTy, bundle_command_list_tag<ListTy>>;
+            using Base = ListInterface<WrapperTy, bundle_command_list_tag, ID3D12GraphicsCommandList>;
 
-            //Enables casting to WrapperTy as WrapperTy would not know it inherits from BaseInterface
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
             friend Base;
 
         public:
@@ -548,41 +549,43 @@ namespace TypedD3D::D3D12::CommandList
             using Base::ExecuteIndirect;
         };
 
-        template<class WrapperTy, class ListTy>
-        class CopyInterface : private BaseInterface<WrapperTy, copy_command_list_tag<ListTy>>
+        template<class WrapperTy>
+        class CopyInterface<WrapperTy, ID3D12GraphicsCommandList> : private ListInterface<WrapperTy, copy_command_list_tag, ID3D12GraphicsCommandList>
         {
-            using Base = BaseInterface<WrapperTy, copy_command_list_tag<ListTy>>;
+            using Base = ListInterface<WrapperTy, copy_command_list_tag, ID3D12GraphicsCommandList>;
 
-            //Enables casting to WrapperTy as WrapperTy would not know it inherits from BaseInterface
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
             friend Base;
         };
 
-        template<class WrapperTy, class ListTy>
-        class ComputeInterface : private BaseInterface<WrapperTy, compute_command_list_tag<ListTy>>
+        template<class WrapperTy>
+        class ComputeInterface<WrapperTy, ID3D12GraphicsCommandList> : private ListInterface<WrapperTy, compute_command_list_tag, ID3D12GraphicsCommandList>
         {
-            using Base = BaseInterface<WrapperTy, compute_command_list_tag<ListTy>>;
+            using Base = ListInterface<WrapperTy, compute_command_list_tag, ID3D12GraphicsCommandList>;
 
-            //Enables casting to WrapperTy as WrapperTy would not know it inherits from BaseInterface
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
             friend Base;
         };
 
-        template<class WrapperTy, class ListTy>
-        class DirectInterface : public BaseInterface<WrapperTy, direct_command_list_tag<ListTy>>
+        template<class WrapperTy>
+        class DirectInterface<WrapperTy, ID3D12GraphicsCommandList> : public ListInterface<WrapperTy, direct_command_list_tag, ID3D12GraphicsCommandList>
         {
-            using Base = BaseInterface<WrapperTy, direct_command_list_tag<ListTy>>;
+            using Base = ListInterface<WrapperTy, direct_command_list_tag, ID3D12GraphicsCommandList>;
         };
 
         template<class Tag>
         class CommandList : public ComWrapper<typename Tag::list_type>, public interface_type<Tag, CommandList<Tag>>
         {
+        public:
             using list_type = typename Tag::list_type;
+            using allocator_type = typename Tag::allocator_type;
             static constexpr D3D12_COMMAND_LIST_TYPE list_enum_type = Tag::type;
         };
 
-        template<class WrapperTy, class Tag>
-        void BaseInterface<WrapperTy, Tag>::ExecuteBundle(Bundle<ID3D12GraphicsCommandList> pCommandList)
+        template<class WrapperTy, template<class ListTy> class Tag>
+        void ListInterface<WrapperTy, Tag, ID3D12GraphicsCommandList>::ExecuteBundle(Bundle<ID3D12GraphicsCommandList> pCommandList)
         {
-            InternalCommandList().ExecuteBundle(pCommandList.Get().Get());
+            InternalCommandList().ExecuteBundle(pCommandList.Get());
         }
     }
 

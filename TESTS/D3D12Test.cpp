@@ -94,11 +94,15 @@ void TestD3DHelpers()
     TypedD3D::Helpers::D3D12::StallCPUThread(*fence.GetValue().Get(), 2);
 
     TypedD3D::D3D12::CommandList::Bundle b{};
+    TypedD3D::D3D12::Device dev;
 
+    dev.CheckFeatureSupport<D3D12_FEATURE_D3D12_OPTIONS>();
 
     TypedD3D::D3D12::CommandList::Direct d{};
     TypedD3D::D3D12::CommandAllocator::Bundle da{};
     TypedD3D::D3D12::CommandAllocator::Direct dir{};
+
+    dev.CreateBundleCommandList(0, da, nullptr);
 
     d.Reset(dir, nullptr);
     b.Reset(da, nullptr);
