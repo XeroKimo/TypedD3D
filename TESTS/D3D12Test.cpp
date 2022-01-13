@@ -99,7 +99,7 @@ void TestD3DHelpers()
     dev.CheckFeatureSupport<D3D12_FEATURE_D3D12_OPTIONS>();
 
     TypedD3D::D3D12::CommandList::Direct d{};
-    TypedD3D::D3D12::CommandQueue::Direct dq{};
+    TypedD3D::D3D12::CommandQueue::Direct dq = dev.CreateCommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>(D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE, 0).GetValue();
     TypedD3D::D3D12::CommandAllocator::Bundle da{};
     TypedD3D::D3D12::CommandAllocator::Direct dir{};
 

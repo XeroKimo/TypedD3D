@@ -4,6 +4,7 @@
 #include "ComWrapper.h"
 #include "CommandList.h"
 #include "CommandAllocator.h"
+#include "CommandQueue.h"
 #include "Meta.h"
 
 #include <d3d12.h>
@@ -32,10 +33,28 @@ namespace TypedD3D::D3D12
                 return InternalGetDevice().GetNodeCount();
             }
 
-            Utils::Expected<ComPtr<ID3D12CommandQueue>, HRESULT> CreateCommandQueue(
-                const D3D12_COMMAND_QUEUE_DESC& pDesc)
+            template<D3D12_COMMAND_LIST_TYPE Type>
+            Utils::Expected<CommandQueue::Internal::CommandQueue<Type>, HRESULT> CreateCommandQueue(
+                D3D12_COMMAND_QUEUE_PRIORITY priority,
+                D3D12_COMMAND_QUEUE_FLAGS flags,
+                UINT nodeMask)
             {
-                return Helpers::D3D12::CreateCommandQueue(InternalGetDevice(), pDesc);
+                using queue_type = CommandQueue::Internal::CommandQueue<Type>;
+
+                D3D12_COMMAND_QUEUE_DESC desc
+                {
+                    .Type = Type,
+                    .Priority = priority,
+                    .Flags = flags,
+                    .NodeMask = nodeMask
+                };
+
+                auto commandQueue = Helpers::D3D12::CreateCommandQueue(InternalGetDevice(), desc);
+
+                if(!commandQueue)
+                    Utils::Unexpected(commandQueue.GetError());
+
+                return queue_type(commandQueue.GetValue());
             }
 
             template<D3D12_COMMAND_LIST_TYPE Type>
