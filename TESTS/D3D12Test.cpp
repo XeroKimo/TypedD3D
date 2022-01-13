@@ -99,11 +99,16 @@ void TestD3DHelpers()
     dev.CheckFeatureSupport<D3D12_FEATURE_D3D12_OPTIONS>();
 
     TypedD3D::D3D12::CommandList::Direct d{};
+    TypedD3D::D3D12::CommandQueue::Direct dq{};
     TypedD3D::D3D12::CommandAllocator::Bundle da{};
     TypedD3D::D3D12::CommandAllocator::Direct dir{};
 
     TypedD3D::D3D12::CommandList::Bundle b2 = dev.CreateCommandList<D3D12_COMMAND_LIST_TYPE_BUNDLE>(da, 0, nullptr).GetValue();
 
+    std::array< TypedD3D::D3D12::CommandList::Bundle*, 1> submit;
+    submit[0] = &b;
+    std::vector<>
+    dq.ExecuteCommandLists(std::span(submit));
     d.Reset(dir, nullptr);
     b.Reset(da, nullptr);
 

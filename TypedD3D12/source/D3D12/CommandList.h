@@ -37,7 +37,7 @@ namespace TypedD3D::D3D12::CommandList
             using type_tag = Meta::command_list_type_tag<Type>;
 
             using list_type = ListTy;
-            using allocator_type = CommandAllocator::Internal::CommandAllocator<type_tag>;
+            using allocator_type = CommandAllocator::Internal::CommandAllocator<Type>;
             
             template<class WrapperTy>
             using interface_type = PublicListInterface<WrapperTy, ListTy, type_tag>;
@@ -57,6 +57,9 @@ namespace TypedD3D::D3D12::CommandList
 
         template<class Tag, class WrapperTy>
         using interface_type = typename Tag::template interface_type<WrapperTy>;
+
+        template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
+        using CommandList_T = CommandList<command_list_tag<Type, ListTy>>;
 
         template<class ListTy>
         using Bundle = CommandList<bundle_command_list_tag<ListTy>>;
