@@ -102,7 +102,7 @@ void TestD3DHelpers()
     TypedD3D::D3D12::CommandAllocator::Bundle da{};
     TypedD3D::D3D12::CommandAllocator::Direct dir{};
 
-    dev.CreateBundleCommandList(0, da, nullptr);
+    TypedD3D::D3D12::CommandList::Bundle b2 = dev.CreateCommandList<D3D12_COMMAND_LIST_TYPE_BUNDLE>(da, 0, nullptr).GetValue();
 
     d.Reset(dir, nullptr);
     b.Reset(da, nullptr);
