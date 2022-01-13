@@ -27,7 +27,7 @@ namespace TypedD3D::D3D12::CommandList
         template<class WrapperTy, class ListTy, class Type_Tag>
         class PublicListInterface;
 
-        template<class Tag>
+        template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
         class CommandList;
 
         template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
@@ -58,20 +58,17 @@ namespace TypedD3D::D3D12::CommandList
         template<class Tag, class WrapperTy>
         using interface_type = typename Tag::template interface_type<WrapperTy>;
 
-        template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
-        using CommandList_T = CommandList<command_list_tag<Type, ListTy>>;
+        template<class ListTy>
+        using Bundle = CommandList<D3D12_COMMAND_LIST_TYPE_BUNDLE, ListTy>;
 
         template<class ListTy>
-        using Bundle = CommandList<bundle_command_list_tag<ListTy>>;
+        using Direct = CommandList<D3D12_COMMAND_LIST_TYPE_DIRECT, ListTy>;
 
         template<class ListTy>
-        using Direct = CommandList<direct_command_list_tag<ListTy>>;
+        using Copy = CommandList<D3D12_COMMAND_LIST_TYPE_COPY, ListTy>;
 
         template<class ListTy>
-        using Copy = CommandList<copy_command_list_tag<ListTy>>;
-
-        template<class ListTy>
-        using Compute = CommandList<compute_command_list_tag<ListTy>>;
+        using Compute = CommandList<D3D12_COMMAND_LIST_TYPE_COMPUTE, ListTy>;
 
         template<class WrapperTy, template<class ListTy> class Tag>
         class ListInterface<WrapperTy, ID3D12GraphicsCommandList, Tag>
@@ -556,13 +553,14 @@ namespace TypedD3D::D3D12::CommandList
 
         };
 
-        template<class Tag>
-        class CommandList : public ComWrapper<typename Tag::list_type>, public interface_type<Tag, CommandList<Tag>>
+        template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
+        class CommandList : public ComWrapper<ListTy>, public command_list_tag<Type, ListTy>::template interface_type<CommandList<Type, ListTy>>
         {
         public:
-            using list_type = typename Tag::list_type;
-            using allocator_type = typename Tag::allocator_type;
-            static constexpr D3D12_COMMAND_LIST_TYPE list_enum_type = Tag::type;
+            using tag = command_list_tag<Type, ListTy>;
+            using list_type = typename tag::list_type;
+            using allocator_type = typename tag::allocator_type;
+            static constexpr D3D12_COMMAND_LIST_TYPE list_enum_type = tag::type;
         };
 
         template<class WrapperTy, template<class ListTy> class Tag>

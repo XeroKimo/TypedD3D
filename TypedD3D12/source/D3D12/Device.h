@@ -63,12 +63,12 @@ namespace TypedD3D::D3D12
             }
 
             template<D3D12_COMMAND_LIST_TYPE Type>
-            Utils::Expected<CommandList::Internal::CommandList<CommandList::Internal::command_list_tag<Type, ID3D12GraphicsCommandList>>, HRESULT> CreateCommandList(
+            Utils::Expected<CommandList::Internal::CommandList<Type, ID3D12GraphicsCommandList>, HRESULT> CreateCommandList(
                 CommandAllocator::Internal::CommandAllocator<Type> pCommandAllocator,
                 UINT nodeMask = 0,
                 ID3D12PipelineState* optInitialState = nullptr)
             {
-                using command_list_type = CommandList::Internal::CommandList<CommandList::Internal::command_list_tag<Type, ID3D12GraphicsCommandList>>;
+                using command_list_type = CommandList::Internal::CommandList<Type, ID3D12GraphicsCommandList>;
                 auto commandList = Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(InternalGetDevice(), CommandList::Direct::list_enum_type, *pCommandAllocator.Get(), nodeMask, optInitialState);
 
                 if(!commandList)

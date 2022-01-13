@@ -105,9 +105,9 @@ void TestD3DHelpers()
 
     TypedD3D::D3D12::CommandList::Bundle b2 = dev.CreateCommandList<D3D12_COMMAND_LIST_TYPE_BUNDLE>(da, 0, nullptr).GetValue();
 
-    std::array< TypedD3D::D3D12::CommandList::Bundle*, 1> submit;
-    submit[0] = &b;
-    std::vector<>
+    std::array< TypedD3D::D3D12::CommandList::Direct*, 1> submit;
+    submit[0] = &d;
+
     dq.ExecuteCommandLists(std::span(submit));
     d.Reset(dir, nullptr);
     b.Reset(da, nullptr);

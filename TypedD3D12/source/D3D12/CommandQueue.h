@@ -9,7 +9,7 @@ namespace TypedD3D::D3D12::CommandQueue
         template<D3D12_COMMAND_LIST_TYPE Type>
         struct command_queue_tag : Meta::command_list_type_tag<Type>
         {
-            using list_type = CommandList::Internal::CommandList_T<Type, ID3D12GraphicsCommandList>;
+            using list_type = CommandList::Internal::CommandList<Type, ID3D12GraphicsCommandList>;
         };
 
         template<D3D12_COMMAND_LIST_TYPE Type>
