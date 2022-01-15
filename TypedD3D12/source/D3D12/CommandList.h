@@ -21,42 +21,41 @@ namespace TypedD3D::D3D12::CommandList
     using Microsoft::WRL::ComPtr;
     namespace Internal
     {
-        template<class WrapperTy, class ListTy, template<class ListTy> class Tag>
+        template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type, class ListTy>
         class ListInterface;
 
-        template<class WrapperTy, class ListTy, class Type_Tag>
+        template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type, class ListTy>
         class PublicListInterface;
 
         template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
         class CommandList;
 
         template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
-        struct command_list_tag : Meta::command_list_type_tag<Type>
+        struct command_list_trait : Meta::command_list_type_tag<Type>
         {
-            using tag = command_list_tag<Type, ListTy>;
-            using type_tag = Meta::command_list_type_tag<Type>;
+            using trait_value_type = command_list_trait;
 
-            using list_type = ListTy;
-            using allocator_type = CommandAllocator::Internal::CommandAllocator<Type>;
+            using list_value_type = ListTy;
+            using allocator_value_type = CommandAllocator::CommandAllocator_t<Type>;
             
             template<class WrapperTy>
-            using interface_type = PublicListInterface<WrapperTy, ListTy, type_tag>;
+            using interface_type = PublicListInterface<WrapperTy, Type, ListTy>;
         };
 
         template<class ListTy>
-        using bundle_command_list_tag = command_list_tag<D3D12_COMMAND_LIST_TYPE_BUNDLE, ListTy>;
+        using bundle_command_list_trait = command_list_trait<D3D12_COMMAND_LIST_TYPE_BUNDLE, ListTy>;
 
         template<class ListTy>
-        using direct_command_list_tag = command_list_tag<D3D12_COMMAND_LIST_TYPE_DIRECT, ListTy>;
+        using direct_command_list_trait = command_list_trait<D3D12_COMMAND_LIST_TYPE_DIRECT, ListTy>;
 
         template<class ListTy>
-        using copy_command_list_tag = command_list_tag<D3D12_COMMAND_LIST_TYPE_COPY, ListTy>;
+        using copy_command_list_trait = command_list_trait<D3D12_COMMAND_LIST_TYPE_COPY, ListTy>;
 
         template<class ListTy>
-        using compute_command_list_tag = command_list_tag<D3D12_COMMAND_LIST_TYPE_COMPUTE, ListTy>;
+        using compute_command_list_trait = command_list_trait<D3D12_COMMAND_LIST_TYPE_COMPUTE, ListTy>;
 
-        template<class Tag, class WrapperTy>
-        using interface_type = typename Tag::template interface_type<WrapperTy>;
+        template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
+        using interface_type = typename command_list_trait<Type, ListTy>::template interface_type<CommandList<Type, ListTy>>;
 
         template<class ListTy>
         using Bundle = CommandList<D3D12_COMMAND_LIST_TYPE_BUNDLE, ListTy>;
@@ -70,13 +69,14 @@ namespace TypedD3D::D3D12::CommandList
         template<class ListTy>
         using Compute = CommandList<D3D12_COMMAND_LIST_TYPE_COMPUTE, ListTy>;
 
-        template<class WrapperTy, template<class ListTy> class Tag>
-        class ListInterface<WrapperTy, ID3D12GraphicsCommandList, Tag>
+        template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
+        class ListInterface<WrapperTy, Type, ID3D12GraphicsCommandList>
         {
         private:
-            using list_type = ID3D12GraphicsCommandList;
-            using tag_type = Tag<list_type>;
-            using allocator_type = typename tag_type::allocator_type;
+            using trait_value_type = command_list_trait<Type, ID3D12GraphicsCommandList>;
+            using list_value_type = typename trait_value_type::list_value_type;
+            using allocator_value_type = typename trait_value_type::allocator_value_type;
+            using wrapper_type = WrapperTy;
 
         public:
             HRESULT Close()
@@ -85,7 +85,7 @@ namespace TypedD3D::D3D12::CommandList
             }
 
             HRESULT Reset(
-                allocator_type pAllocator,
+                allocator_value_type pAllocator,
                 ID3D12PipelineState* pInitialState)
             {
                 return InternalCommandList().Reset(pAllocator.Get(), pInitialState);
@@ -483,16 +483,14 @@ namespace TypedD3D::D3D12::CommandList
             }
 
         private:
-            list_type& InternalCommandList() { return *static_cast<WrapperTy&>(*this).Get(); }
+            list_value_type& InternalCommandList() { return *static_cast<wrapper_type&>(*this).Get(); }
         };
 
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, ID3D12GraphicsCommandList, Meta::bundle_command_list_type_tag> : private ListInterface<WrapperTy, ID3D12GraphicsCommandList, bundle_command_list_tag>
-        //template<class WrapperTy>
-        //class BundleInterface<WrapperTy, ID3D12GraphicsCommandList> : private ListInterface<WrapperTy, bundle_command_list_tag, ID3D12GraphicsCommandList>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE ,ID3D12GraphicsCommandList> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList>
         {
-            using Base = ListInterface<WrapperTy, ID3D12GraphicsCommandList, bundle_command_list_tag>;
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList>;
 
             //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
             friend Base;
@@ -529,46 +527,49 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, ID3D12GraphicsCommandList, Meta::copy_command_list_type_tag> : private ListInterface<WrapperTy, ID3D12GraphicsCommandList, copy_command_list_tag>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList>
         {
-            using Base = ListInterface<WrapperTy, ID3D12GraphicsCommandList, copy_command_list_tag>;
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList>;
 
             //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
             friend Base;
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, ID3D12GraphicsCommandList, Meta::compute_command_list_type_tag> : private ListInterface<WrapperTy, ID3D12GraphicsCommandList, compute_command_list_tag>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList>
         {
-            using Base = ListInterface<WrapperTy, ID3D12GraphicsCommandList, compute_command_list_tag>;
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList>;
 
             //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
             friend Base;
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, ID3D12GraphicsCommandList, Meta::direct_command_list_type_tag> : public ListInterface<WrapperTy, ID3D12GraphicsCommandList, direct_command_list_tag>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList> : public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>
         {
-            using Base = ListInterface<WrapperTy, ID3D12GraphicsCommandList, direct_command_list_tag>;
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>;
 
         };
 
         template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
-        class CommandList : public ComWrapper<ListTy>, public command_list_tag<Type, ListTy>::template interface_type<CommandList<Type, ListTy>>
+        class CommandList : public ComWrapper<ListTy>, public interface_type<Type, ListTy>
         {
         public:
-            using tag = command_list_tag<Type, ListTy>;
-            using list_type = typename tag::list_type;
-            using allocator_type = typename tag::allocator_type;
-            static constexpr D3D12_COMMAND_LIST_TYPE list_enum_type = tag::type;
+            using trait_value_type = command_list_trait<Type, ListTy>;
+            using list_value_type = typename trait_value_type::list_value_type;
+            using allocator_value_type = typename trait_value_type::allocator_value_type;
+            static constexpr D3D12_COMMAND_LIST_TYPE value = trait_value_type::value;
         };
 
-        template<class WrapperTy, template<class ListTy> class Tag>
-        void ListInterface<WrapperTy, ID3D12GraphicsCommandList, Tag>::ExecuteBundle(Bundle<ID3D12GraphicsCommandList> pCommandList)
+        template<class WrapperTy, D3D12_COMMAND_LIST_TYPE type>
+        void ListInterface<WrapperTy, type, ID3D12GraphicsCommandList>::ExecuteBundle(Bundle<ID3D12GraphicsCommandList> pCommandList)
         {
             InternalCommandList().ExecuteBundle(pCommandList.Get());
         }
     }
+
+    template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
+    using CommandList_t = Internal::CommandList<Type, ListTy>;
 
     using Direct = Internal::Direct<ID3D12GraphicsCommandList>;
     //using Direct1 = Internal::Direct<ID3D12GraphicsCommandList1>;

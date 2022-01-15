@@ -1,12 +1,12 @@
 #pragma once
 #include <d3d12.h>
+#include <type_traits>
 
 namespace TypedD3D::D3D12::Meta
 {
     template<D3D12_COMMAND_LIST_TYPE Type>
-    struct command_list_type_tag
+    struct command_list_type_tag : std::integral_constant<D3D12_COMMAND_LIST_TYPE, Type>
     {
-        static constexpr D3D12_COMMAND_LIST_TYPE type = Type;
     };
 
     using direct_command_list_type_tag = command_list_type_tag<D3D12_COMMAND_LIST_TYPE_DIRECT>;

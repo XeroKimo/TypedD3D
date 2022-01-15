@@ -1,6 +1,7 @@
 #pragma once
 #include "CommandList.h"
 #include <memory>
+#include <array>
 
 namespace TypedD3D::D3D12::CommandQueue
 {
@@ -42,7 +43,7 @@ namespace TypedD3D::D3D12::CommandQueue
 
             template<size_t Extents>
             void ExecuteCommandLists(
-                std::span<list_type*, Extents> commandLists)
+                std::array<list_type*, Extents>& commandLists)
             {
                 std::array<ID3D12CommandList*, Extents> submitList;
 
@@ -54,11 +55,10 @@ namespace TypedD3D::D3D12::CommandQueue
                 Get()->ExecuteCommandLists(static_cast<UINT>(commandLists.size()), submitList.data());
             }
 
-            template<>
-            void ExecuteCommandLists<std::dynamic_extent>(
+            void ExecuteCommandLists(
                 std::span<list_type*> commandLists)
             {
-                std::unique_ptr<ID3D12CommandList[]> submitList = std::make_unique<ID3D12CommandList[]>(commandLists.size());
+                std::unique_ptr<ID3D12CommandList*[]> submitList = std::make_unique<ID3D12CommandList*[]>(commandLists.size());
 
                 for(size_t i = 0; i < commandLists.size(); i++)
                 {
@@ -98,6 +98,9 @@ namespace TypedD3D::D3D12::CommandQueue
             D3D12_COMMAND_QUEUE_DESC GetDesc(void) { }
         };
     };
+
+    template<D3D12_COMMAND_LIST_TYPE Type>
+    using CommandQueue_t = Internal::CommandQueue<Type>;
 
     using Direct = Internal::CommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>;
     using Bundle = Internal::CommandQueue<D3D12_COMMAND_LIST_TYPE_BUNDLE>;

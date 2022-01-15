@@ -15,10 +15,12 @@ namespace TypedD3D::D3D12::CommandAllocator
         template<D3D12_COMMAND_LIST_TYPE Type>
         class CommandAllocator : public ComWrapper<ID3D12CommandAllocator>
         {
-            using tag_type = Meta::command_list_type_tag<Type>;
-            static constexpr D3D12_COMMAND_LIST_TYPE list_enum_type = tag_type::type;
+            static constexpr D3D12_COMMAND_LIST_TYPE value = Type;
         };
     }
+
+    template<D3D12_COMMAND_LIST_TYPE Type>
+    using CommandAllocator_t = Internal::CommandAllocator<Type>;
 
     using Direct = Internal::CommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>;
     using Bundle = Internal::CommandAllocator<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
