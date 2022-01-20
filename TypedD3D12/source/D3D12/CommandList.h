@@ -24,6 +24,7 @@ namespace TypedD3D::D3D12::CommandList
         template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type, class ListTy>
         class ListInterface;
 
+        //Can find all API restrictions here https://docs.microsoft.com/en-us/windows/win32/direct3d12/recording-command-lists-and-bundles#command-list-api-restrictions
         template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type, class ListTy>
         class PublicListInterface;
 
@@ -37,7 +38,7 @@ namespace TypedD3D::D3D12::CommandList
 
             using list_value_type = ListTy;
             using allocator_value_type = CommandAllocator::CommandAllocator_t<Type>;
-            
+
             template<class WrapperTy>
             using interface_type = PublicListInterface<WrapperTy, Type, ListTy>;
         };
@@ -482,13 +483,66 @@ namespace TypedD3D::D3D12::CommandList
                 InternalCommandList().ExecuteIndirect(&commandSignature, maxCommandCount, &argumentBuffer, argumentBufferOffset, optCountBuffer, optCountBufferOffset);
             }
 
+            //In code order                                                          //Alphabetical order
+            //using Base::Close;                                                     using Base::BeginEvent;
+            //using Base::Reset;                                                     using Base::BeginQuery;
+            //using Base::ClearState;                                                using Base::ClearDepthStencilView;
+            //using Base::DrawInstanced;                                             using Base::ClearRenderTargetView;
+            //using Base::DrawIndexedInstanced;                                      using Base::ClearState;
+            //using Base::Dispatch;                                                  using Base::ClearUnorderedAccessViewFloat;
+            //using Base::CopyBufferRegion;                                          using Base::ClearUnorderedAccessViewUint;
+            //using Base::CopyTextureRegion;                                         using Base::Close;
+            //using Base::CopyResource;                                              using Base::CopyBufferRegion;
+            //using Base::CopyTiles;                                                 using Base::CopyResource;
+            //using Base::ResolveSubresource;                                        using Base::CopyTextureRegion;
+            //using Base::IASetPrimitiveTopology;                                    using Base::CopyTiles;
+            //using Base::RSSetViewports;                                            using Base::DiscardResource;
+            //using Base::RSSetScissorRects;                                         using Base::Dispatch;
+            //using Base::OMSetBlendFactor;                                          using Base::DrawIndexedInstanced;
+            //using Base::OMSetStencilRef;                                           using Base::DrawInstanced;
+            //using Base::SetPipelineState;                                          using Base::EndEvent;
+            //using Base::ResourceBarrier;                                           using Base::EndQuery;
+            //using Base::ExecuteBundle;                                             using Base::ExecuteBundle;
+            //using Base::SetDescriptorHeaps;                                        using Base::ExecuteIndirect;
+            //using Base::SetComputeRootSignature;                                   using Base::IASetIndexBuffer;
+            //using Base::SetGraphicsRootSignature;                                  using Base::IASetPrimitiveTopology;
+            //using Base::SetComputeRootDescriptorTable;                             using Base::IASetVertexBuffers;
+            //using Base::SetGraphicsRootDescriptorTable;                            using Base::OMSetBlendFactor;
+            //using Base::SetComputeRoot32BitConstant;                               using Base::OMSetRenderTargets;
+            //using Base::SetGraphicsRoot32BitConstant;                              using Base::OMSetStencilRef;
+            //using Base::SetComputeRoot32BitConstants;                              using Base::Reset;
+            //using Base::SetGraphicsRoot32BitConstants;                             using Base::ResolveQueryData;
+            //using Base::SetComputeRootConstantBufferView;                          using Base::ResolveSubresource;
+            //using Base::SetGraphicsRootConstantBufferView;                         using Base::ResourceBarrier;
+            //using Base::SetComputeRootShaderResourceView;                          using Base::RSSetScissorRects;
+            //using Base::SetGraphicsRootShaderResourceView;                         using Base::RSSetViewports;
+            //using Base::SetComputeRootUnorderedAccessView;                         using Base::SetComputeRoot32BitConstant;
+            //using Base::SetGraphicsRootUnorderedAccessView;                        using Base::SetComputeRoot32BitConstants;
+            //using Base::IASetIndexBuffer;                                          using Base::SetComputeRootConstantBufferView;
+            //using Base::IASetVertexBuffers;                                        using Base::SetComputeRootDescriptorTable;
+            //using Base::SOSetTargets;                                              using Base::SetComputeRootShaderResourceView;
+            //using Base::OMSetRenderTargets;                                        using Base::SetComputeRootSignature;
+            //using Base::ClearDepthStencilView;                                     using Base::SetComputeRootUnorderedAccessView;
+            //using Base::ClearRenderTargetView;                                     using Base::SetDescriptorHeaps;
+            //using Base::ClearUnorderedAccessViewUint;                              using Base::SetGraphicsRoot32BitConstant;
+            //using Base::ClearUnorderedAccessViewFloat;                             using Base::SetGraphicsRoot32BitConstants;
+            //using Base::DiscardResource;                                           using Base::SetGraphicsRootConstantBufferView;
+            //using Base::BeginQuery;                                                using Base::SetGraphicsRootDescriptorTable;
+            //using Base::EndQuery;                                                  using Base::SetGraphicsRootShaderResourceView;
+            //using Base::ResolveQueryData;                                          using Base::SetGraphicsRootSignature;
+            //using Base::SetPredication;                                            using Base::SetGraphicsRootUnorderedAccessView;
+            //using Base::SetMarker;                                                 using Base::SetMarker;
+            //using Base::BeginEvent;                                                using Base::SetPipelineState;
+            //using Base::EndEvent;                                                  using Base::SetPredication;
+            //using Base::ExecuteIndirect;                                           using Base::SOSetTargets;
+
         private:
             list_value_type& InternalCommandList() { return *static_cast<wrapper_type&>(*this).Get(); }
         };
 
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE ,ID3D12GraphicsCommandList> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList>;
 
@@ -497,33 +551,33 @@ namespace TypedD3D::D3D12::CommandList
 
         public:
             using Base::Close;
-            using Base::Reset;
-            using Base::DrawInstanced;
-            using Base::DrawIndexedInstanced;
             using Base::Dispatch;
+            using Base::DrawIndexedInstanced;
+            using Base::DrawInstanced;
+            using Base::ExecuteIndirect;
+            using Base::IASetIndexBuffer;
             using Base::IASetPrimitiveTopology;
+            using Base::IASetVertexBuffers;
             using Base::OMSetBlendFactor;
             using Base::OMSetStencilRef;
-            using Base::SetPipelineState;
-            using Base::SetDescriptorHeaps;
-            using Base::SetComputeRootSignature;
-            using Base::SetGraphicsRootSignature;
-            using Base::SetComputeRootDescriptorTable;
-            using Base::SetGraphicsRootDescriptorTable;
+            using Base::Reset;
             using Base::SetComputeRoot32BitConstant;
-            using Base::SetGraphicsRoot32BitConstant;
             using Base::SetComputeRoot32BitConstants;
-            using Base::SetGraphicsRoot32BitConstants;
             using Base::SetComputeRootConstantBufferView;
-            using Base::SetGraphicsRootConstantBufferView;
+            using Base::SetComputeRootDescriptorTable;
             using Base::SetComputeRootShaderResourceView;
-            using Base::SetGraphicsRootShaderResourceView;
+            using Base::SetComputeRootSignature;
             using Base::SetComputeRootUnorderedAccessView;
+            using Base::SetDescriptorHeaps;
+            using Base::SetGraphicsRoot32BitConstant;
+            using Base::SetGraphicsRoot32BitConstants;
+            using Base::SetGraphicsRootConstantBufferView;
+            using Base::SetGraphicsRootDescriptorTable;
+            using Base::SetGraphicsRootShaderResourceView;
+            using Base::SetGraphicsRootSignature;
             using Base::SetGraphicsRootUnorderedAccessView;
-            using Base::IASetIndexBuffer;
-            using Base::IASetVertexBuffers;
-            using Base::ResolveQueryData;
-            using Base::ExecuteIndirect;
+            using Base::SetMarker;
+            using Base::SetPipelineState;
         };
 
         template<class WrapperTy>
@@ -533,6 +587,21 @@ namespace TypedD3D::D3D12::CommandList
 
             //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
             friend Base;
+
+        public:
+            using Base::Close;
+            using Base::CopyBufferRegion;
+            using Base::CopyResource;
+            using Base::CopyTextureRegion;
+            using Base::CopyTiles;
+            using Base::DiscardResource;
+            using Base::Dispatch;
+            using Base::DrawIndexedInstanced;
+            using Base::DrawInstanced;
+            using Base::EndQuery;
+            using Base::Reset;
+            using Base::ResolveQueryData;
+            using Base::ResourceBarrier;
         };
 
         template<class WrapperTy>
@@ -542,6 +611,34 @@ namespace TypedD3D::D3D12::CommandList
 
             //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
             friend Base;
+        public:
+            using Base::ClearState;
+            using Base::ClearUnorderedAccessViewFloat;
+            using Base::ClearUnorderedAccessViewUint;
+            using Base::Close;
+            using Base::CopyBufferRegion;
+            using Base::CopyResource;
+            using Base::CopyTextureRegion;
+            using Base::CopyTiles;
+            using Base::DiscardResource;
+            using Base::Dispatch;
+            using Base::EndQuery;
+            using Base::ExecuteIndirect;
+            using Base::Reset;
+            using Base::ResolveQueryData;
+            using Base::ResourceBarrier;
+            using Base::RSSetScissorRects;
+            using Base::RSSetViewports;
+            using Base::SetComputeRoot32BitConstant;
+            using Base::SetComputeRoot32BitConstants;
+            using Base::SetComputeRootConstantBufferView;
+            using Base::SetComputeRootDescriptorTable;
+            using Base::SetComputeRootShaderResourceView;
+            using Base::SetComputeRootSignature;
+            using Base::SetComputeRootUnorderedAccessView;
+            using Base::SetDescriptorHeaps;
+            using Base::SetPipelineState;
+            using Base::SetPredication;
         };
 
         template<class WrapperTy>
