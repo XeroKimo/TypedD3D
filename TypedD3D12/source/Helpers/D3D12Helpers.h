@@ -84,6 +84,16 @@ namespace TypedD3D::Helpers::D3D12
         return Helpers::COM::IIDToObjectForwardFunction<ID3D12CommandAllocator>(&ID3D12Device::CreateCommandAllocator, device, type);
     }
 
+    inline Utils::Expected<Microsoft::WRL::ComPtr<ID3D12PipelineState>, HRESULT> CreateGraphicsPipelineState(ID3D12Device& device, const D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc)
+    {
+        return Helpers::COM::IIDToObjectForwardFunction<ID3D12PipelineState>(&ID3D12Device::CreateGraphicsPipelineState, device, &desc);
+    }
+
+    inline Utils::Expected<Microsoft::WRL::ComPtr<ID3D12PipelineState>, HRESULT> CreateComputePiplineState(ID3D12Device& device, const D3D12_COMPUTE_PIPELINE_STATE_DESC& desc)
+    {
+        return Helpers::COM::IIDToObjectForwardFunction<ID3D12PipelineState>(&ID3D12Device::CreateComputePipelineState, device, &desc);
+    }
+
     inline Utils::Expected<Microsoft::WRL::ComPtr<ID3D12CommandQueue>, HRESULT> CreateCommandQueue(ID3D12Device& device, const D3D12_COMMAND_QUEUE_DESC& desc)
     {
         return Helpers::COM::IIDToObjectForwardFunction<ID3D12CommandQueue>(&ID3D12Device::CreateCommandQueue, device, &desc);

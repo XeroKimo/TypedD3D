@@ -656,6 +656,9 @@ namespace TypedD3D::D3D12::CommandList
             using list_value_type = typename trait_value_type::list_value_type;
             using allocator_value_type = typename trait_value_type::allocator_value_type;
             static constexpr D3D12_COMMAND_LIST_TYPE value = trait_value_type::value;
+
+        public:
+            using ComWrapper<ListTy>::ComWrapper;
         };
 
         template<class WrapperTy, D3D12_COMMAND_LIST_TYPE type>

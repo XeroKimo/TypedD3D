@@ -24,6 +24,9 @@ namespace TypedD3D::D3D12::CommandQueue
             using list_type = typename tag::list_type;
 
         public:
+            using ComWrapper<ID3D12CommandQueue>::ComWrapper;
+
+        public:
             void UpdateTileMappings(
                 ID3D12Resource& pResource,
                 UINT NumResourceRegions,
@@ -68,7 +71,7 @@ namespace TypedD3D::D3D12::CommandQueue
 
             template<size_t Extents>
             void ExecuteCommandLists(
-                std::span<list_type*, Extents>& commandLists)
+                std::span<list_type*, Extents> commandLists)
             {
                 if constexpr(Extents == std::dynamic_extent)
                 {
@@ -120,7 +123,7 @@ namespace TypedD3D::D3D12::CommandQueue
             }
 
             HRESULT Wait(
-                ID3D12Fence& pFence,
+                ID3D12Fence& Fence,
                 UINT64 Value) 
             {
                 return Get()->Wait(&Fence, Value);

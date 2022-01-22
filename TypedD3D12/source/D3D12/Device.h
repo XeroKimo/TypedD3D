@@ -5,6 +5,7 @@
 #include "CommandList.h"
 #include "CommandAllocator.h"
 #include "CommandQueue.h"
+#include "PipelineState.h"
 #include "Meta.h"
 
 #include <d3d12.h>
@@ -69,16 +70,26 @@ namespace TypedD3D::D3D12
                 return allocator_type(commandAllocator.GetValue());
             }
 
-            Utils::Expected<ComPtr<ID3D12PipelineState>, HRESULT> CreateGraphicsPipelineState(
+            Utils::Expected<PipelineState::Graphics, HRESULT> CreateGraphicsPipelineState(
                 const D3D12_GRAPHICS_PIPELINE_STATE_DESC& pDesc)
             {
-                return Utils::Unexpected(HRESULT(0));
+                auto pipelineState = Helpers::D3D12::CreateGraphicsPipelineState(InternalGetDevice(), pDesc);
+
+                if(!pipelineState)
+                    Utils::Unexpected(pipelineState.GetError());
+
+                return PipelineState::Graphics(pipelineState.GetValue());
             }
 
-            Utils::Expected<ComPtr<ID3D12PipelineState>, HRESULT> CreateComputePipelineState(
+            Utils::Expected<PipelineState::Compute, HRESULT> CreateComputePipelineState(
                 const D3D12_COMPUTE_PIPELINE_STATE_DESC& pDesc)
             {
-                return Utils::Unexpected(HRESULT(0));
+                auto pipelineState = Helpers::D3D12::CreateGraphicsPipelineState(InternalGetDevice(), pDesc);
+
+                if(!pipelineState)
+                    Utils::Unexpected(pipelineState.GetError());
+
+                return PipelineState::Compute(pipelineState.GetValue());
             }
 
             template<D3D12_COMMAND_LIST_TYPE Type>
@@ -356,6 +367,8 @@ namespace TypedD3D::D3D12
         template<class Ty>
         class Device : public ComWrapper<Ty>, public DeviceInterface<Device<Ty>, Ty>
         {
+        public:
+            using ComWrapper<Ty>::ComWrapper;
 
         };
     }

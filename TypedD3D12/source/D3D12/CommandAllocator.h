@@ -18,6 +18,9 @@ namespace TypedD3D::D3D12::CommandAllocator
             static constexpr D3D12_COMMAND_LIST_TYPE value = Type;
 
         public:
+            using ComWrapper<ID3D12CommandAllocator>::ComWrapper;
+
+        public:
             HRESULT Reset() { return Get()->Reset(); }
         };
     }

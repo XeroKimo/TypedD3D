@@ -105,11 +105,13 @@ void TestD3DHelpers()
 
     TypedD3D::D3D12::CommandList::Bundle b2 = dev.CreateCommandList<D3D12_COMMAND_LIST_TYPE_BUNDLE>(da, 0, nullptr).GetValue();
 
-    std::array<TypedD3D::D3D12::CommandList::Internal::CommandList<D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>*, 1> submit;
+    dev.CreateGraphicsPipelineState({});
+    std::array<TypedD3D::D3D12::CommandList::Direct*, 1> submit;
     submit[0] = &d;
     std::span sub = submit;
+    std::span<TypedD3D::D3D12::CommandList::Internal::CommandList<D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>*, 1> sub2 = submit;
     static_assert(std::same_as<TypedD3D::D3D12::CommandQueue::Direct::list_type, TypedD3D::D3D12::CommandList::Direct>);
-    dq.ExecuteCommandLists(submit);
+    dq.ExecuteCommandLists(std::span(submit));
     d.Reset(dir, nullptr);
     b.Reset(da, nullptr);
 
