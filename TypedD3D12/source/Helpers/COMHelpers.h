@@ -84,7 +84,7 @@ namespace TypedD3D::Helpers::COM
     /// <typeparam name="Func"></typeparam>
     /// <typeparam name="Obj"></typeparam>
     /// <typeparam name="...Args"></typeparam>
-    /// <param name="function">Member Function who's last parameter inherits IUnknown</param>
+    /// <param name="function">Function who's last parameter inherits IUnknown</param>
     /// <param name="...args">All arguments not including the IUnknown param</param>
     /// <returns></returns>
     template<class Unknown, class Func, class... Args>

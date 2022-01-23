@@ -6,6 +6,7 @@
 #include "CommandAllocator.h"
 #include "CommandQueue.h"
 #include "PipelineState.h"
+#include "DescriptorHeap.h"
 #include "Meta.h"
 
 #include <d3d12.h>
@@ -121,10 +122,28 @@ namespace TypedD3D::D3D12
                 return feature;
             }
 
-            Utils::Expected<ComPtr<ID3D12DescriptorHeap>, HRESULT> CreateDescriptorHeap(
-                const D3D12_DESCRIPTOR_HEAP_DESC& pDescriptorHeapDesc)
+            template<D3D12_DESCRIPTOR_HEAP_TYPE Type>
+            Utils::Expected<DescriptorHeap::DescriptorHeap_t<Type>, HRESULT> CreateDescriptorHeap(
+                UINT NumDescriptors,
+                D3D12_DESCRIPTOR_HEAP_FLAGS Flags,
+                UINT NodeMask)
             {
-                return Helpers::D3D12::CreateDescriptorHeap(InternalGetDevice(), pDescriptorHeapDesc);
+                using DescriptorHeap_t = DescriptorHeap::DescriptorHeap_t<Type>;
+
+                D3D12_DESCRIPTOR_HEAP_DESC desc
+                {
+                    .Type = Type,
+                    .NumDescriptors = NumDescriptors,
+                    .Flags = Flags,
+                    .NodeMask = NodeMask
+                };
+
+                auto descriptorHeap = Helpers::D3D12::CreateDescriptorHeap(InternalGetDevice(), desc);
+
+                if(!descriptorHeap)
+                    return Utils::Unexpected(descriptorHeap.GetError());
+
+                return DescriptorHeap_t(descriptorHeap.GetValue());
             }
 
             UINT GetDescriptorHandleIncrementSize(
@@ -142,45 +161,74 @@ namespace TypedD3D::D3D12
             }
 
             void CreateConstantBufferView(
-                const D3D12_CONSTANT_BUFFER_VIEW_DESC* pDesc,
-                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor)
+                const D3D12_CONSTANT_BUFFER_VIEW_DESC& pDesc,
+                DescriptorHandle::CPU_CBV_SRV_UAV DestDescriptor)
             {
+                InternalGetDevice().CreateConstantBufferView(pDesc, DestDescriptor.Data());
             }
 
+
             void CreateShaderResourceView(
-                ID3D12Resource* pResource,
-                const D3D12_SHADER_RESOURCE_VIEW_DESC* pDesc,
-                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor)
+                ID3D12Resource& pResource,
+                const D3D12_SHADER_RESOURCE_VIEW_DESC* optDesc,
+                DescriptorHandle::CPU_CBV_SRV_UAV DestDescriptor)
             {
+                InternalGetDevice().CreateShaderResourceView(&pResource, optDesc, DestDescriptor.Data());
+            }
+
+            void CreateNullShaderResourceView(
+                const D3D12_SHADER_RESOURCE_VIEW_DESC& pDesc,
+                DescriptorHandle::CPU_CBV_SRV_UAV DestDescriptor)
+            {
+                InternalGetDevice().CreateShaderResourceView(nullptr, &pDesc, DestDescriptor.Data());
             }
 
             void CreateUnorderedAccessView(
-                ID3D12Resource* pResource,
-                ID3D12Resource* pCounterResource,
-                const D3D12_UNORDERED_ACCESS_VIEW_DESC* pDesc,
-                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor)
+                ID3D12Resource& pResource,
+                ID3D12Resource& pCounterResource,
+                const D3D12_UNORDERED_ACCESS_VIEW_DESC& pDesc,
+                DescriptorHandle::CPU_CBV_SRV_UAV DestDescriptor)
             {
+                InternalGetDevice().CreateUnorderedAccessView(&pResource, &pCounterResource, &pDesc, DestDescriptor.Data());
             }
 
             void CreateRenderTargetView(
-                ID3D12Resource* pResource,
-                const D3D12_RENDER_TARGET_VIEW_DESC* pDesc,
-                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor)
+                ID3D12Resource& Resource,
+                const D3D12_RENDER_TARGET_VIEW_DESC* optDesc,
+                DescriptorHandle::CPU_RTV DestDescriptor)
             {
+                InternalGetDevice().CreateRenderTargetView(&Resource, optDesc, DestDescriptor.Data());
+            }
+
+            void CreateNullRenderTargetView(
+                const D3D12_RENDER_TARGET_VIEW_DESC& Desc,
+                DescriptorHandle::CPU_RTV DestDescriptor)
+            {
+                InternalGetDevice().CreateRenderTargetView(nullptr, &Desc, DestDescriptor.Data());
             }
 
             void CreateDepthStencilView(
-                ID3D12Resource* pResource,
-                const D3D12_DEPTH_STENCIL_VIEW_DESC* pDesc,
-                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor)
+                ID3D12Resource& Resource,
+                const D3D12_DEPTH_STENCIL_VIEW_DESC* optDesc,
+                DescriptorHandle::CPU_DSV DestDescriptor)
             {
+                InternalGetDevice().CreateDepthStencilView(&Resource, optDesc, DestDescriptor.Data());
+            }
+
+            void CreateNullDepthStencilView(
+                const D3D12_DEPTH_STENCIL_VIEW_DESC& optDesc,
+                DescriptorHandle::CPU_DSV DestDescriptor)
+            {
+                InternalGetDevice().CreateDepthStencilView(nullptr, optDesc, DestDescriptor.Data());
             }
 
             void CreateSampler(
-                const D3D12_SAMPLER_DESC* pDesc,
-                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor)
+                const D3D12_SAMPLER_DESC& pDesc,
+                DescriptorHandle::CPU_SAMPLER DestDescriptor)
             {
+                InternalGetDevice().CreateSampler(&pDesc, DestDescriptor.Data());
             }
+
 
             void CopyDescriptors(
                 UINT NumDestDescriptorRanges,
@@ -191,14 +239,23 @@ namespace TypedD3D::D3D12
                 const UINT* pSrcDescriptorRangeSizes,
                 D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapsType)
             {
+                InternalGetDevice().CopyDescriptors(
+                    NumDestDescriptorRanges,
+                    pDestDescriptorRangeStarts,
+                    pDestDescriptorRangeSizes,
+                    NumSrcDescriptorRanges,
+                    pSrcDescriptorRangeStarts,
+                    pSrcDescriptorRangeSizes,
+                    DescriptorHeapsType);
             }
 
+            template<D3D12_DESCRIPTOR_HEAP_TYPE Type>
             void CopyDescriptorsSimple(
                 UINT NumDescriptors,
-                D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptorRangeStart,
-                D3D12_CPU_DESCRIPTOR_HANDLE SrcDescriptorRangeStart,
-                D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapsType)
+                DescriptorHandle::CPU_t<Type> DestDescriptorRangeStart,
+                DescriptorHandle::CPU_t<Type> SrcDescriptorRangeStart)
             {
+                InternalGetDevice().CopyDescriptorsSimple(NumDescriptors, DestDescriptorRangeStart.Data(), SrcDescriptorRangeStart.Data(), Type);
             }
 
             D3D12_RESOURCE_ALLOCATION_INFO GetResourceAllocationInfo(
@@ -324,9 +381,9 @@ namespace TypedD3D::D3D12
             }
 
             Utils::Expected<ComPtr<ID3D12QueryHeap>, HRESULT> CreateQueryHeap(
-                const D3D12_QUERY_HEAP_DESC* pDesc)
+                const D3D12_QUERY_HEAP_DESC& pDesc)
             {
-                return Utils::Unexpected(HRESULT(0));
+                return Helpers::D3D12::CreateQueryHeap(InternalGetDevice(), pDesc);
             }
 
             HRESULT SetStablePowerState(
