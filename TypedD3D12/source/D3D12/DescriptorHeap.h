@@ -23,7 +23,6 @@ namespace TypedD3D::D3D12::DescriptorHandle
         public:
             SIZE_T& Ptr() { return m_handle.ptr; }
             const SIZE_T& Ptr() const { return m_handle.ptr; }
-            D3D12_CPU_DESCRIPTOR_HANDLE& Data() { return m_handle; }
             const D3D12_CPU_DESCRIPTOR_HANDLE& Data() const { return m_handle; }
         };
 
@@ -44,7 +43,6 @@ namespace TypedD3D::D3D12::DescriptorHandle
         public:
             SIZE_T& Ptr() { return m_handle.ptr; }
             const SIZE_T& Ptr() const { return m_handle.ptr; }
-            D3D12_GPU_DESCRIPTOR_HANDLE& Data() { return m_handle; }
             const D3D12_GPU_DESCRIPTOR_HANDLE& Data() const { return m_handle; }
         };
     }
@@ -52,14 +50,13 @@ namespace TypedD3D::D3D12::DescriptorHandle
     template<D3D12_DESCRIPTOR_HEAP_TYPE Type>
     using CPU_t = Internal::CPU_DESCRIPTOR_HANDLE<Type>;
 
-    template<D3D12_DESCRIPTOR_HEAP_TYPE Type>
-    using GPU_t = Internal::GPU_DESCRIPTOR_HANDLE<Type>;
-    
-
     using CPU_CBV_SRV_UAV = CPU_t<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV>;
     using CPU_SAMPLER = CPU_t<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER>;
     using CPU_RTV = CPU_t<D3D12_DESCRIPTOR_HEAP_TYPE_RTV>;
     using CPU_DSV = CPU_t<D3D12_DESCRIPTOR_HEAP_TYPE_DSV>;
+
+    template<D3D12_DESCRIPTOR_HEAP_TYPE Type>
+    using GPU_t = Internal::GPU_DESCRIPTOR_HANDLE<Type>;
     
     using GPU_CBV_SRV_UAV = GPU_t<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV>;
     using GPU_SAMPLER = GPU_t<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER>;
@@ -84,11 +81,8 @@ namespace TypedD3D::D3D12::DescriptorHeap
 
         public:
             D3D12_DESCRIPTOR_HEAP_DESC GetDesc() { return Get()->GetDesc(); }
-
-            DescriptorHandle::CPU_t<Type> GetCPUDescriptorHandleForHeapStart(void) { return DescriptorHandle::CPU_t<Type>(Get()->GetCPUDescriptorHandleForHeapStart()); }
-
-            DescriptorHandle::GPU_t<Type> GetGPUDescriptorHandleForHeapStart(void) { return DescriptorHandle::GPU_t<Type>(Get()->GetGPUDescriptorHandleForHeapStart()); }
-
+            DescriptorHandle::CPU_t<Type> GetCPUDescriptorHandleForHeapStart() { return DescriptorHandle::CPU_t<Type>(Get()->GetCPUDescriptorHandleForHeapStart()); }
+            DescriptorHandle::GPU_t<Type> GetGPUDescriptorHandleForHeapStart() { return DescriptorHandle::GPU_t<Type>(Get()->GetGPUDescriptorHandleForHeapStart()); }
         };
     }
 

@@ -15,6 +15,7 @@
 namespace TypedD3D::D3D12
 {
     using Microsoft::WRL::ComPtr;
+
     namespace Internal
     {
         template<class Ty>
@@ -85,7 +86,7 @@ namespace TypedD3D::D3D12
             Utils::Expected<PipelineState::Compute, HRESULT> CreateComputePipelineState(
                 const D3D12_COMPUTE_PIPELINE_STATE_DESC& pDesc)
             {
-                auto pipelineState = Helpers::D3D12::CreateGraphicsPipelineState(InternalGetDevice(), pDesc);
+                auto pipelineState = Helpers::D3D12::CreateComputePipelineState(InternalGetDevice(), pDesc);
 
                 if(!pipelineState)
                     Utils::Unexpected(pipelineState.GetError());
@@ -260,100 +261,136 @@ namespace TypedD3D::D3D12
 
             D3D12_RESOURCE_ALLOCATION_INFO GetResourceAllocationInfo(
                 UINT visibleMask,
-                UINT numResourceDescs,
-                const D3D12_RESOURCE_DESC* pResourceDescs)
+                const std::span<D3D12_RESOURCE_DESC> resourceDescs)
             {
-                return {};
+                return InternalGetDevice().GetResourceAllocationInfo(
+                    visibleMask, 
+                    static_cast<UINT>(resourceDescs.size()), 
+                    resourceDescs.data());
             }
 
             D3D12_HEAP_PROPERTIES GetCustomHeapProperties(
                 UINT nodeMask,
                 D3D12_HEAP_TYPE heapType)
             {
-                return {};
+                return InternalGetDevice().GetCustomHeapProperties(nodeMask, heapType);
             }
 
             Utils::Expected<ComPtr<ID3D12Resource>, HRESULT> CreateCommittedResource(
-                const D3D12_HEAP_PROPERTIES* pHeapProperties,
+                const D3D12_HEAP_PROPERTIES& pHeapProperties,
                 D3D12_HEAP_FLAGS HeapFlags,
-                const D3D12_RESOURCE_DESC* pDesc,
+                const D3D12_RESOURCE_DESC& pDesc,
                 D3D12_RESOURCE_STATES InitialResourceState,
-                const D3D12_CLEAR_VALUE* pOptimizedClearValue,
-                const IID& riidResource,
-                void** ppvResource)
+                const D3D12_CLEAR_VALUE* optOptimizedClearValue)
             {
-                return Utils::Unexpected(HRESULT(0));
+                return Helpers::D3D12::CreateCommittedResource(
+                    InternalGetDevice(),
+                    pHeapProperties,
+                    HeapFlags,
+                    pDesc,
+                    InitialResourceState,
+                    optOptimizedClearValue);
             }
 
             Utils::Expected<ComPtr<ID3D12Heap>, HRESULT> CreateHeap(
-                const D3D12_HEAP_DESC* pDesc,
-                const IID& riid,
-                void** ppvHeap)
+                const D3D12_HEAP_DESC& pDesc)
             {
-                return Utils::Unexpected(HRESULT(0));
+                return Helpers::D3D12::CreateHeap(
+                    InternalGetDevice(),
+                    pDesc);
             }
 
             Utils::Expected<ComPtr<ID3D12Resource>, HRESULT> CreatePlacedResource(
-                ID3D12Heap* pHeap,
+                ID3D12Heap& pHeap,
                 UINT64 HeapOffset,
-                const D3D12_RESOURCE_DESC* pDesc,
+                const D3D12_RESOURCE_DESC& pDesc,
                 D3D12_RESOURCE_STATES InitialState,
-                const D3D12_CLEAR_VALUE* pOptimizedClearValue,
-                const IID& riid,
-                void** ppvResource)
+                const D3D12_CLEAR_VALUE* optOptimizedClearValue)
             {
-                return Utils::Unexpected(HRESULT(0));
+                return Helpers::D3D12::CreatePlacedResource(
+                    InternalGetDevice(),
+                    pHeap,
+                    HeapOffset,
+                    pDesc,
+                    InitialState,
+                    optOptimizedClearValue);
             }
 
             Utils::Expected<ComPtr<ID3D12Resource>, HRESULT> CreateReservedResource(
-                const D3D12_RESOURCE_DESC* pDesc,
+                const D3D12_RESOURCE_DESC& pDesc,
                 D3D12_RESOURCE_STATES InitialState,
-                const D3D12_CLEAR_VALUE* pOptimizedClearValue,
-                const IID& riid,
-                void** ppvResource)
+                const D3D12_CLEAR_VALUE* optOptimizedClearValue)
             {
-                return Utils::Unexpected(HRESULT(0));
+                return Helpers::D3D12::CreateReservedResource(
+                    InternalGetDevice(),
+                    pDesc,
+                    InitialState,
+                    optOptimizedClearValue);
             }
 
-            Utils::Expected<int, HRESULT> CreateSharedHandle(
-                ID3D12DeviceChild* pObject,
-                const SECURITY_ATTRIBUTES* pAttributes,
+            Utils::Expected<HANDLE, HRESULT> CreateSharedHandle(
+                ID3D12DeviceChild& pObject,
+                const SECURITY_ATTRIBUTES* optAttributes,
                 DWORD Access,
-                LPCWSTR Name,
-                HANDLE* pHandle)
+                LPCWSTR Name)
             {
-                return Utils::Unexpected(HRESULT(0));
+                HANDLE handle;
+
+                HRESULT result = InternalGetDevice().CreateSharedHandle(
+                    &pObject,
+                    optAttributes,
+                    Access,
+                    Name,
+                    &handle);
+
+                if(FAILED(result))
+                    return Utils::Unexpected(result);
+
+                return handle;
             }
 
-            Utils::Expected<int, HRESULT> OpenSharedHandle(
+            HRESULT OpenSharedHandle(
                 HANDLE NTHandle,
                 const IID& riid,
                 void** ppvObj)
             {
-                return Utils::Unexpected(HRESULT(0));
+                return InternalGetDevice().OpenSharedHandle(
+                    NTHandle,
+                    riid,
+                    ppvObj);
             }
 
-            Utils::Expected<int, HRESULT> OpenSharedHandleByName(
+            Utils::Expected<HANDLE, HRESULT> OpenSharedHandleByName(
                 LPCWSTR Name,
-                DWORD Access,
-                HANDLE* pNTHandle)
+                DWORD Access)
             {
-                return Utils::Unexpected(HRESULT(0));
+                HANDLE handle;
+
+                HRESULT result = InternalGetDevice().OpenSharedHandleByName(
+                    Name,
+                    Access,
+                    &handle);
+
+                if(FAILED(result))
+                    return Utils::Unexpected(result);
+
+                return handle;
             }
 
             HRESULT MakeResident(
-                UINT NumObjects,
-                ID3D12Pageable* const* ppObjects)
+                const std::span<ID3D12Pageable*> objects)
             {
-                return HRESULT(0);
+                return InternalGetDevice().MakeResident(
+                    static_cast<UINT>(objects.size()),
+                    objects.data());
             }
 
             HRESULT Evict(
-                UINT NumObjects,
-                ID3D12Pageable* const* ppObjects)
-
+                const std::span<ID3D12Pageable*> objects)
             {
-                return HRESULT(0);
+                return InternalGetDevice().Evict(
+                    static_cast<UINT>(objects.size()),
+                    objects.data());
             }
 
             Utils::Expected<ComPtr<ID3D12Fence>, HRESULT> CreateFence(
@@ -369,15 +406,24 @@ namespace TypedD3D::D3D12
             }
 
             void GetCopyableFootprints(
-                const D3D12_RESOURCE_DESC* pResourceDesc,
+                const D3D12_RESOURCE_DESC& pResourceDesc,
                 UINT FirstSubresource,
                 UINT NumSubresources,
                 UINT64 BaseOffset,
-                D3D12_PLACED_SUBRESOURCE_FOOTPRINT* pLayouts,
-                UINT* pNumRows,
-                UINT64* pRowSizeInBytes,
-                UINT64* pTotalBytes)
+                D3D12_PLACED_SUBRESOURCE_FOOTPRINT* optOutLayouts,
+                UINT* optOutNumRows,
+                UINT64* optOutRowSizeInBytes,
+                UINT64* optOutTotalBytes)
             {
+                InternalGetDevice().GetCopyableFootprints(
+                    &pResourceDesc,
+                    FirstSubresource,
+                    NumSubresources,
+                    BaseOffset,
+                    optOutLayouts,
+                    optOutNumRows,
+                    optOutRowSizeInBytes,
+                    optOutTotalBytes);
             }
 
             Utils::Expected<ComPtr<ID3D12QueryHeap>, HRESULT> CreateQueryHeap(
@@ -393,23 +439,29 @@ namespace TypedD3D::D3D12
             }
 
             Utils::Expected<ComPtr<ID3D12CommandSignature>, HRESULT> CreateCommandSignature(
-                const D3D12_COMMAND_SIGNATURE_DESC* pDesc,
-                ID3D12RootSignature* pRootSignature,
-                const IID& riid,
-                void** ppvCommandSignature)
+                const D3D12_COMMAND_SIGNATURE_DESC& pDesc,
+                ID3D12RootSignature* optRootSignature)
             {
-                return Utils::Unexpected(HRESULT(0));
+                return Helpers::D3D12::CreateCommandSignature(InternalGetDevice(), pDesc, optRootSignature);
             }
 
             void GetResourceTiling(
-                ID3D12Resource* pTiledResource,
-                UINT* pNumTilesForEntireResource,
-                D3D12_PACKED_MIP_INFO* pPackedMipDesc,
-                D3D12_TILE_SHAPE* pStandardTileShapeForNonPackedMips,
+                ID3D12Resource& pTiledResource,
+                UINT* optOutNumTilesForEntireResource,
+                D3D12_PACKED_MIP_INFO* optOutPackedMipDesc,
+                D3D12_TILE_SHAPE* optOutStandardTileShapeForNonPackedMips,
                 UINT* pNumSubresourceTilings,
                 UINT FirstSubresourceTilingToGet,
-                D3D12_SUBRESOURCE_TILING* pSubresourceTilingsForNonPackedMips)
+                D3D12_SUBRESOURCE_TILING& pSubresourceTilingsForNonPackedMips)
             {
+                InternalGetDevice().GetResourceTiling(
+                    &pTiledResource,
+                    optOutNumTilesForEntireResource,
+                    optOutPackedMipDesc,
+                    optOutStandardTileShapeForNonPackedMips,
+                    pNumSubresourceTilings,
+                    FirstSubresourceTilingToGet,
+                    &pSubresourceTilingsForNonPackedMips);
             }
 
             LUID GetAdapterLuid()
