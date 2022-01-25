@@ -6,6 +6,7 @@
 //*********************************************************
 #pragma once
 #include "CommandAllocator.h"
+#include "DescriptorHeap.h"
 #include "Meta.h"
 #include <d3d12.h>
 #include <array>
@@ -166,40 +167,40 @@ namespace TypedD3D::D3D12::CommandList
             }
 
             void CopyResource(
-                ID3D12Resource* pDstResource,
-                ID3D12Resource* pSrcResource)
+                ID3D12Resource& pDstResource,
+                ID3D12Resource& pSrcResource)
             {
-                InternalCommandList().CopyResource(pDstResource, pSrcResource);
+                InternalCommandList().CopyResource(&pDstResource, &pSrcResource);
             }
 
             void CopyTiles(
-                ID3D12Resource* pTiledResource,
-                const D3D12_TILED_RESOURCE_COORDINATE* pTileRegionStartCoordinate,
-                const D3D12_TILE_REGION_SIZE* pTileRegionSize,
-                ID3D12Resource* pBuffer,
+                ID3D12Resource& pTiledResource,
+                const D3D12_TILED_RESOURCE_COORDINATE& pTileRegionStartCoordinate,
+                const D3D12_TILE_REGION_SIZE& pTileRegionSize,
+                ID3D12Resource& pBuffer,
                 UINT64 BufferStartOffsetInBytes,
                 D3D12_TILE_COPY_FLAGS Flags)
             {
                 InternalCommandList().CopyTiles(
-                    pTiledResource,
-                    pTileRegionStartCoordinate,
-                    pTileRegionSize,
-                    pBuffer,
+                    &pTiledResource,
+                    &pTileRegionStartCoordinate,
+                    &pTileRegionSize,
+                    &pBuffer,
                     BufferStartOffsetInBytes,
                     Flags);
             }
 
             void ResolveSubresource(
-                ID3D12Resource* pDstResource,
+                ID3D12Resource& pDstResource,
                 UINT DstSubresource,
-                ID3D12Resource* pSrcResource,
+                ID3D12Resource& pSrcResource,
                 UINT SrcSubresource,
                 DXGI_FORMAT Format)
             {
                 InternalCommandList().ResolveSubresource(
-                    pDstResource,
+                    &pDstResource,
                     DstSubresource,
-                    pSrcResource,
+                    &pSrcResource,
                     SrcSubresource,
                     Format);
             }
@@ -211,17 +212,15 @@ namespace TypedD3D::D3D12::CommandList
             }
 
             void RSSetViewports(
-                UINT NumViewports,
-                const D3D12_VIEWPORT* pViewports)
+                std::span<D3D12_VIEWPORT> viewports)
             {
-                InternalCommandList().RSSetViewports(NumViewports, pViewports);
+                InternalCommandList().RSSetViewports(static_cast<UINT>(viewports.size()), viewports.data());
             }
 
             void RSSetScissorRects(
-                UINT NumRects,
-                const D3D12_RECT* pRects)
+                std::span<D3D12_VIEWPORT> rects)
             {
-                InternalCommandList().RSSetScissorRects(NumRects, pRects);
+                InternalCommandList().RSSetScissorRects(static_cast<UINT>(rects.size()), rects.data());
             }
 
             void OMSetBlendFactor(const std::array<float, 4>& BlendFactor)
@@ -246,9 +245,22 @@ namespace TypedD3D::D3D12::CommandList
 
             void ExecuteBundle(Bundle<ID3D12GraphicsCommandList> pCommandList);
 
-            void SetDescriptorHeaps(const std::span<ID3D12DescriptorHeap*> descriptorHeaps)
+            void SetDescriptorHeaps(D3D12::DescriptorHeap::CBV_SRV_UAV descriptorHeap)
             {
-                InternalCommandList().SetDescriptorHeaps(static_cast<UINT>(descriptorHeaps.size()), descriptorHeaps.data());
+                ID3D12DescriptorHeap* heaps[] = { descriptorHeap.Get() };
+                InternalCommandList().SetDescriptorHeaps(1, heaps);
+            }
+
+            void SetDescriptorHeaps(D3D12::DescriptorHeap::Sampler descriptorHeap)
+            {
+                ID3D12DescriptorHeap* heaps[] = { descriptorHeap.Get() };
+                InternalCommandList().SetDescriptorHeaps(1, heaps);
+            }
+
+            void SetDescriptorHeaps(D3D12::DescriptorHeap::CBV_SRV_UAV cbv_srv_uavHeap, D3D12::DescriptorHeap::Sampler samplerHeap)
+            {
+                ID3D12DescriptorHeap* heaps[] = { cbv_srv_uavHeap.Get(), samplerHeap.Get() };
+                InternalCommandList().SetDescriptorHeaps(2, heaps);
             }
 
             void SetComputeRootSignature(ID3D12RootSignature* pRootSignature)
@@ -301,44 +313,44 @@ namespace TypedD3D::D3D12::CommandList
 
             void SetComputeRootConstantBufferView(
                 UINT RootParameterIndex,
-                D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
+                D3D12::DescriptorHandle::GPU_CBV_SRV_UAV BufferLocation)
             {
-                InternalCommandList().SetComputeRootConstantBufferView(RootParameterIndex, BufferLocation);
+                InternalCommandList().SetComputeRootConstantBufferView(RootParameterIndex, BufferLocation.Data());
             }
 
             void SetGraphicsRootConstantBufferView(
                 UINT RootParameterIndex,
-                D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
+                D3D12::DescriptorHandle::GPU_CBV_SRV_UAV BufferLocation)
             {
-                InternalCommandList().SetGraphicsRootConstantBufferView(RootParameterIndex, BufferLocation);
+                InternalCommandList().SetGraphicsRootConstantBufferView(RootParameterIndex, BufferLocation.Data());
             }
 
             void SetComputeRootShaderResourceView(
                 UINT RootParameterIndex,
-                D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
+                D3D12::DescriptorHandle::GPU_CBV_SRV_UAV BufferLocation)
             {
-                InternalCommandList().SetComputeRootShaderResourceView(RootParameterIndex, BufferLocation);
+                InternalCommandList().SetComputeRootShaderResourceView(RootParameterIndex, BufferLocation.Data());
             }
 
             void SetGraphicsRootShaderResourceView(
                 UINT RootParameterIndex,
-                D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
+                D3D12::DescriptorHandle::GPU_CBV_SRV_UAV BufferLocation)
             {
-                InternalCommandList().SetGraphicsRootShaderResourceView(RootParameterIndex, BufferLocation);
+                InternalCommandList().SetGraphicsRootShaderResourceView(RootParameterIndex, BufferLocation.Data());
             }
 
             void SetComputeRootUnorderedAccessView(
                 UINT RootParameterIndex,
-                D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
+                D3D12::DescriptorHandle::GPU_CBV_SRV_UAV BufferLocation)
             {
-                InternalCommandList().SetComputeRootUnorderedAccessView(RootParameterIndex, BufferLocation);
+                InternalCommandList().SetComputeRootUnorderedAccessView(RootParameterIndex, BufferLocation.Data());
             }
 
             void SetGraphicsRootUnorderedAccessView(
                 UINT RootParameterIndex,
-                D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
+                D3D12::DescriptorHandle::GPU_CBV_SRV_UAV BufferLocation)
             {
-                InternalCommandList().SetGraphicsRootUnorderedAccessView(RootParameterIndex, BufferLocation);
+                InternalCommandList().SetGraphicsRootUnorderedAccessView(RootParameterIndex, BufferLocation.Data());
             }
 
             void IASetIndexBuffer(
@@ -410,37 +422,37 @@ namespace TypedD3D::D3D12::CommandList
             }
 
             void DiscardResource(
-                ID3D12Resource* pResource,
+                ID3D12Resource& pResource,
                 const D3D12_DISCARD_REGION* pRegion)
             {
-                InternalCommandList().DiscardResource(pResource, pRegion);
+                InternalCommandList().DiscardResource(&pResource, pRegion);
             }
 
             void BeginQuery(
-                ID3D12QueryHeap* pQueryHeap,
+                ID3D12QueryHeap& pQueryHeap,
                 D3D12_QUERY_TYPE Type,
                 UINT Index)
             {
-                InternalCommandList().BeginQuery(pQueryHeap, Type, Index);
+                InternalCommandList().BeginQuery(&pQueryHeap, Type, Index);
             }
 
             void EndQuery(
-                ID3D12QueryHeap* pQueryHeap,
+                ID3D12QueryHeap& pQueryHeap,
                 D3D12_QUERY_TYPE Type,
                 UINT Index)
             {
-                InternalCommandList().EndQuery(pQueryHeap, Type, Index);
+                InternalCommandList().EndQuery(&pQueryHeap, Type, Index);
             }
 
             void ResolveQueryData(
-                ID3D12QueryHeap* pQueryHeap,
+                ID3D12QueryHeap& pQueryHeap,
                 D3D12_QUERY_TYPE Type,
                 UINT StartIndex,
                 UINT NumQueries,
-                ID3D12Resource* pDestinationBuffer,
+                ID3D12Resource& pDestinationBuffer,
                 UINT64 AlignedDestinationBufferOffset)
             {
-                InternalCommandList().ResolveQueryData(pQueryHeap, Type, StartIndex, NumQueries, pDestinationBuffer, AlignedDestinationBufferOffset);
+                InternalCommandList().ResolveQueryData(&pQueryHeap, Type, StartIndex, NumQueries, &pDestinationBuffer, AlignedDestinationBufferOffset);
             }
 
             void SetPredication(
@@ -539,7 +551,6 @@ namespace TypedD3D::D3D12::CommandList
         private:
             list_value_type& InternalCommandList() { return *static_cast<wrapper_type&>(*this).Get(); }
         };
-
 
         template<class WrapperTy>
         class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList>
