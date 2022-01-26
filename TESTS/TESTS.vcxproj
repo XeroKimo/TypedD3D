@@ -22,11 +22,6 @@
     <ClCompile Include="D3D12Test.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\TypedD3D12\TypedD3D12.vcxproj">
-      <Project>{4c07b140-d4bd-40d4-be41-18e6aa4d78ef}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

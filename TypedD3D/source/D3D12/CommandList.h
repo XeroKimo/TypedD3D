@@ -223,7 +223,7 @@ namespace TypedD3D::D3D12::CommandList
                 InternalCommandList().RSSetScissorRects(static_cast<UINT>(rects.size()), rects.data());
             }
 
-            void OMSetBlendFactor(const std::array<float, 4>& BlendFactor)
+            void OMSetBlendFactor(std::span<const float, 4> BlendFactor)
             {
                 InternalCommandList().OMSetBlendFactor(BlendFactor.data());
             }
@@ -238,7 +238,7 @@ namespace TypedD3D::D3D12::CommandList
                 InternalCommandList().SetPipelineState(pPipelineState);
             }
 
-            void ResourceBarrier(const std::span<D3D12_RESOURCE_BARRIER> Barriers)
+            void ResourceBarrier(std::span<const D3D12_RESOURCE_BARRIER> Barriers)
             {
                 InternalCommandList().ResourceBarrier(static_cast<UINT>(Barriers.size()), Barriers.data());
             }
@@ -376,47 +376,47 @@ namespace TypedD3D::D3D12::CommandList
             }
 
             void OMSetRenderTargets(
-                const std::span<D3D12_CPU_DESCRIPTOR_HANDLE> pRenderTargetDescriptors,
+                std::span<const DescriptorHandle::CPU_RTV> pRenderTargetDescriptors,
                 BOOL RTsSingleHandleToDescriptorRange,
-                const D3D12_CPU_DESCRIPTOR_HANDLE* pDepthStencilDescriptor)
+                const DescriptorHandle::CPU_DSV* pDepthStencilDescriptor)
             {
                 InternalCommandList().OMSetRenderTargets(static_cast<UINT>(pRenderTargetDescriptors.size()), pRenderTargetDescriptors.data(), RTsSingleHandleToDescriptorRange, pDepthStencilDescriptor);
             }
 
             void ClearDepthStencilView(
-                D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView,
+                DescriptorHandle::CPU_DSV DepthStencilView,
                 D3D12_CLEAR_FLAGS ClearFlags,
                 FLOAT Depth,
                 UINT8 Stencil,
-                const std::span<D3D12_RECT> rects)
+                std::span<const D3D12_RECT> rects)
             {
                 InternalCommandList().ClearDepthStencilView(DepthStencilView, ClearFlags, Depth, Stencil, static_cast<UINT>(rects.size()), rects.data());
             }
 
             void ClearRenderTargetView(
-                D3D12_CPU_DESCRIPTOR_HANDLE RenderTargetView,
-                const std::array<float, 4>& colorRGBA,
-                std::span<D3D12_RECT> rects)
+                DescriptorHandle::CPU_RTV RenderTargetView,
+                std::span<const float, 4> colorRGBA,
+                std::span<const D3D12_RECT> rects)
             {
-                InternalCommandList().ClearRenderTargetView(RenderTargetView, colorRGBA.data(), static_cast<UINT>(rects.size()), rects.data());
+                InternalCommandList().ClearRenderTargetView(RenderTargetView.Data(), colorRGBA.data(), static_cast<UINT>(rects.size()), rects.data());
             }
 
             void ClearUnorderedAccessViewUint(
-                D3D12_GPU_DESCRIPTOR_HANDLE ViewGPUHandleInCurrentHeap,
-                D3D12_CPU_DESCRIPTOR_HANDLE ViewCPUHandle,
+                DescriptorHandle::GPU_CBV_SRV_UAV ViewGPUHandleInCurrentHeap,
+                DescriptorHandle::CPU_CBV_SRV_UAV ViewCPUHandle,
                 ID3D12Resource* pResource,
-                const std::array<UINT, 4>& values,
-                std::span<D3D12_RECT> rects)
+                std::span<const UINT, 4> values,
+                std::span<const D3D12_RECT> rects)
             {
                 InternalCommandList().ClearUnorderedAccessViewUint(ViewGPUHandleInCurrentHeap, ViewCPUHandle, pResource, values.data(), static_cast<UINT>(rects.size()), rects.data());
             }
 
             void ClearUnorderedAccessViewFloat(
-                D3D12_GPU_DESCRIPTOR_HANDLE ViewGPUHandleInCurrentHeap,
-                D3D12_CPU_DESCRIPTOR_HANDLE ViewCPUHandle,
+                DescriptorHandle::GPU_CBV_SRV_UAV ViewGPUHandleInCurrentHeap,
+                DescriptorHandle::CPU_CBV_SRV_UAV ViewCPUHandle,
                 ID3D12Resource* pResource,
-                const std::array<float, 4>& values,
-                std::span<D3D12_RECT> rects)
+                std::span<const float, 4> values,
+                std::span<const D3D12_RECT> rects)
             {
                 InternalCommandList().ClearUnorderedAccessViewFloat(ViewGPUHandleInCurrentHeap, ViewCPUHandle, pResource, values.data(), static_cast<UINT>(rects.size()), rects.data());
             }
