@@ -478,12 +478,28 @@ namespace TypedD3D::D3D12
         {
         public:
             using ComWrapper<Ty>::ComWrapper;
-
+            using value_type = Ty;
         };
     }
 
 
     using Device = Internal::Device<ID3D12Device>;
 
+    template<class DeviceTy = Device>
+    Utils::Expected<Device, HRESULT> CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
+    {
+        Utils::Expected<ComPtr<ID3D12Device>, HRESULT> device = Helpers::D3D12::CreateDevice(minimumFeatureLevel, optAdapter);
 
+        if(!device)
+            return Utils::Unexpected(device.GetError());
+
+        if constexpr(std::same_as<typename DeviceTy::value_type, ID3D12Device>)
+            return DeviceTy(device.GetValue());
+        else
+        {
+            using DerivedDevice = typename DeviceTy::value_type;
+            ComPtr<DerivedDevice> derived = Helpers::COM::Cast<DerivedDevice>(device.GetValue());
+            return DeviceTy(derived);
+        }
+    }
 }

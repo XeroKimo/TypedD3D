@@ -18,7 +18,7 @@
     <ClInclude Include="source\D3D12\CommandList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TypedD3D12.h">
+    <ClInclude Include="TypedD3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\Helpers\COMHelpers.h">

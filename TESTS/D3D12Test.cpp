@@ -1,4 +1,4 @@
-#include "TypedD3D12.h"
+#include "TypedD3D.h"
 #include <d3d12sdklayers.h>
 #include <assert.h>
 #include <Windows.h>
