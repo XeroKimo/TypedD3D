@@ -15,6 +15,14 @@ namespace
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    switch(uMsg)
+    {
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        return 0;
+        break;
+    }
+
     return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
@@ -29,9 +37,9 @@ void CreateWindow()
     windowClass.style = CS_HREDRAW | CS_VREDRAW;
 
 
-    if(!RegisterClass(&windowClass))
+    if(!RegisterClassW(&windowClass))
     {
-        MessageBox(NULL, L"Could not register class", L"Error", MB_OK);
+        MessageBoxW(NULL, L"Could not register class", L"Error", MB_OK);
         throw std::exception("Could not register class");
     }
 
@@ -53,6 +61,8 @@ void CreateWindow()
         MessageBox(NULL, L"Could not create window", L"Error", MB_OK);
         throw std::exception("Could not create window");
     }
+
+    ShowWindow(handle, SW_RESTORE);
 }
 
 using Microsoft::WRL::ComPtr;
@@ -61,72 +71,67 @@ void TestD3DHelpers()
 {
     CreateWindow();
 
-    auto factory = TypedD3D::Helpers::COM::IIDToObjectForwardFunction<IDXGIFactory7>(&CreateDXGIFactory1);
+    TypedD3D::Utils::Expected<ComPtr<IDXGIFactory7>, HRESULT> factory = TypedD3D::Helpers::COM::IIDToObjectForwardFunction<IDXGIFactory7>(&CreateDXGIFactory1);
 
     ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::COM::IIDToObjectForwardFunction<ID3D12Debug>(&D3D12GetDebugInterface).GetValue();
     debugLayer->EnableDebugLayer();
 
-    auto device = TypedD3D::Helpers::D3D12::CreateDevice(D3D_FEATURE_LEVEL_12_0);
+    TypedD3D::D3D12::Device device = TypedD3D::D3D12::CreateDevice(D3D_FEATURE_LEVEL_12_0).GetValue();
+    ComPtr<ID3D12DebugDevice2> debugDevice = TypedD3D::Helpers::COM::Cast<ID3D12DebugDevice2>(device.GetComPtr());
 
-    ComPtr<ID3D12DebugDevice2> debugDevice = TypedD3D::Helpers::COM::Cast<ID3D12DebugDevice2>(device.GetValue());
-    assert(device.HasValue());
+    TypedD3D::D3D12::CommandQueue::Direct commandQueue = device.CreateCommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>(D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE, 0).GetValue();
+    std::array<TypedD3D::D3D12::CommandAllocator::Direct, 2> commandAllocators;
+    commandAllocators[0] = device.CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().GetValue();
+    commandAllocators[1] = device.CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().GetValue();
+    TypedD3D::D3D12::CommandList::Direct commandList = device.CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0], 0, nullptr).GetValue();
+    commandList.Close();
 
-    D3D12_COMMAND_QUEUE_DESC desc;
-    desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-    desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_HIGH;
-    desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-    desc.NodeMask = 0;
-
-
-    ComPtr<ID3D12CommandQueue> commandQueue = TypedD3D::Helpers::D3D12::CreateCommandQueue(*device.GetValue().Get(), desc).GetValue();
-    auto allocator = TypedD3D::Helpers::D3D12::CreateCommandAllocator(*device.GetValue().Get(), D3D12_COMMAND_LIST_TYPE_DIRECT);
-
-    assert(allocator.HasValue());
-
-    debugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL | D3D12_RLDO_FLAGS::D3D12_RLDO_SUMMARY | D3D12_RLDO_IGNORE_INTERNAL);
-    device.GetValue()->CreateCommandQueue(&desc, IID_PPV_ARGS(&commandQueue));
-    assert(commandQueue);
-
-    auto fence = TypedD3D::Helpers::D3D12::CreateFence(*device.GetValue().Get(), D3D12_FENCE_FLAG_NONE);
-
+    UINT64 fenceValue = 0;
+    ComPtr<ID3D12Fence> fence = device.CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE).GetValue();
     HANDLE syncEvent = CreateEventW(nullptr, false, false, nullptr);
-    commandQueue->Signal(fence.GetValue().Get(), 2);
-    TypedD3D::Helpers::D3D12::StallCPUThread(*fence.GetValue().Get(), 2);
 
-    TypedD3D::D3D12::CommandList::Bundle b{};
-    TypedD3D::D3D12::Device dev;
+    constexpr UINT backBufferCount = 2;
 
-    dev.CheckFeatureSupport<D3D12_FEATURE_D3D12_OPTIONS>();
-
-    TypedD3D::D3D12::CommandList::Direct d{};
-    TypedD3D::D3D12::CommandQueue::Direct dq = dev.CreateCommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>(D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE, 0).GetValue();
-    TypedD3D::D3D12::CommandAllocator::Bundle da{};
-    TypedD3D::D3D12::CommandAllocator::Direct dir{};
-
-    TypedD3D::D3D12::CommandList::Bundle b2 = dev.CreateCommandList<D3D12_COMMAND_LIST_TYPE_BUNDLE>(da, 0, nullptr).GetValue();
-
-    dev.CreateGraphicsPipelineState({});
-    std::array<TypedD3D::D3D12::CommandList::Direct*, 1> submit;
-    submit[0] = &d;
-    std::span sub = submit;
-    std::span<TypedD3D::D3D12::CommandList::Internal::CommandList<D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>*, 1> sub2 = submit;
-    static_assert(std::same_as<TypedD3D::D3D12::CommandQueue::Direct::list_type, TypedD3D::D3D12::CommandList::Direct>);
-    dq.ExecuteCommandLists(std::span(submit));
-    d.Reset(dir, nullptr);
-    b.Reset(da, nullptr);
-
-    d.ExecuteBundle(b);
-
-
-    auto swapChain = TypedD3D::Helpers::DXGI::SwapChain::CreateFlipDiscard(
+    TypedD3D::Utils::Expected<ComPtr<IDXGISwapChain1>, HRESULT> swapChain = TypedD3D::Helpers::DXGI::SwapChain::CreateFlipDiscard(
         *factory.GetValue().Get(),
         *commandQueue.Get(),
         handle,
         DXGI_FORMAT_R8G8B8A8_UNORM,
-        2,
+        backBufferCount,
         DXGI_SWAP_CHAIN_FLAG{},
         false);
-        
+    
+    UINT backBuffer = 0;
+    MSG msg;
+    while(true)
+    {
+        if(PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessageW(&msg);
+
+            if(msg.message == WM_QUIT)
+                break;
+        }
+        else
+        {
+            commandAllocators[backBuffer].Reset();
+            commandList.Reset(commandAllocators[backBuffer], nullptr);
+            commandList.Close();
+
+            std::array submitList = std::to_array({ &commandList });
+            commandQueue.ExecuteCommandLists(std::span(submitList));
+            TypedD3D::Helpers::D3D12::FlushCommandQueue(*commandQueue.Get(), *fence.Get(), fenceValue, syncEvent);
+
+            swapChain.GetValue()->Present(1, 0);
+            backBuffer = (backBuffer + 1) % backBufferCount;
+        }
+    }
+    TypedD3D::Helpers::D3D12::FlushCommandQueue(*commandQueue.Get(), *fence.Get(), fenceValue, syncEvent);
+
+    debugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL | D3D12_RLDO_FLAGS::D3D12_RLDO_SUMMARY | D3D12_RLDO_IGNORE_INTERNAL);
+
+
 
     assert(swapChain.HasValue());
     assert(factory.HasValue());
