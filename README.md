@@ -11,4 +11,9 @@ Various interfaces like the command lists and command queues only work when they
 All wrapper classes wrap around a ComPtr and is intended to work like a ComPtr, so manual reference counting is not required
 
 # Requirements
-C++20
+- C++20
+- VS2022 for now as I'm rather new to making libraries
+
+# Initializing TypedD3D
+TypedD3D comes with a helper CreateDevice() function that will initialize a ID3D12Device wrapper class with type safe interfaces. You can either call
+TypedD3D::D3D12::CreateDevice(), or initialize a TypedD3D::D3D12::Device using an existing ID3D12Device wrapped in a ComPtr
