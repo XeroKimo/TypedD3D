@@ -55,7 +55,7 @@ namespace TypedD3D::D3D12
                 auto commandQueue = Helpers::D3D12::CreateCommandQueue(InternalGetDevice(), desc);
 
                 if(!commandQueue)
-                    Utils::Unexpected(commandQueue.GetError());
+                    return Utils::Unexpected(commandQueue.GetError());
 
                 return queue_type(commandQueue.GetValue());
             }
@@ -67,7 +67,7 @@ namespace TypedD3D::D3D12
                 auto commandAllocator = Helpers::D3D12::CreateCommandAllocator(InternalGetDevice(), Type);
 
                 if(!commandAllocator)
-                    Utils::Unexpected(commandAllocator.GetError());
+                    return Utils::Unexpected(commandAllocator.GetError());
 
                 return allocator_type(commandAllocator.GetValue());
             }
@@ -78,7 +78,7 @@ namespace TypedD3D::D3D12
                 auto pipelineState = Helpers::D3D12::CreateGraphicsPipelineState(InternalGetDevice(), pDesc);
 
                 if(!pipelineState)
-                    Utils::Unexpected(pipelineState.GetError());
+                    return Utils::Unexpected(pipelineState.GetError());
 
                 return PipelineState::Graphics(pipelineState.GetValue());
             }
@@ -89,7 +89,7 @@ namespace TypedD3D::D3D12
                 auto pipelineState = Helpers::D3D12::CreateComputePipelineState(InternalGetDevice(), pDesc);
 
                 if(!pipelineState)
-                    Utils::Unexpected(pipelineState.GetError());
+                    return Utils::Unexpected(pipelineState.GetError());
 
                 return PipelineState::Compute(pipelineState.GetValue());
             }
@@ -104,7 +104,7 @@ namespace TypedD3D::D3D12
                 auto commandList = Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(InternalGetDevice(), command_list_type::value, *pCommandAllocator.Get(), nodeMask, optInitialState);
 
                 if(!commandList)
-                    Utils::Unexpected(commandList.GetError());
+                    return Utils::Unexpected(commandList.GetError());
 
                 return command_list_type(commandList.GetValue());
             }
@@ -264,8 +264,8 @@ namespace TypedD3D::D3D12
                 const std::span<D3D12_RESOURCE_DESC> resourceDescs)
             {
                 return InternalGetDevice().GetResourceAllocationInfo(
-                    visibleMask, 
-                    static_cast<UINT>(resourceDescs.size()), 
+                    visibleMask,
+                    static_cast<UINT>(resourceDescs.size()),
                     resourceDescs.data());
             }
 
