@@ -1,4 +1,5 @@
 #include "TypedD3D.h"
+#include <d3dcompiler.h>
 #include <d3d12sdklayers.h>
 #include <assert.h>
 #include <Windows.h>
@@ -66,7 +67,110 @@ void D3D12HelloWorld()
         device.CreateRenderTargetView(*swapChainBuffers[i].Get(), nullptr, handle);
         handle.Ptr() += rtvOffset;
     }
-    
+
+
+
+    D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc
+    {
+        .NumParameters = 0,
+        .pParameters = nullptr,
+        .NumStaticSamplers = 0,
+        .pStaticSamplers = nullptr,
+        .Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
+    };
+
+    ComPtr<ID3DBlob> signatureBlob;
+    D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, nullptr);
+    ComPtr<ID3D12RootSignature> rootSignature = device.CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize()).GetValue();
+
+    ComPtr<ID3DBlob> vertexBlob;
+    HRESULT hr = D3DCompileFromFile(L"VertexShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", 0, 0, &vertexBlob, nullptr);
+    if(FAILED(hr))
+        return;
+
+    D3D12_SHADER_BYTECODE vertexByteCode{};
+    vertexByteCode.BytecodeLength = vertexBlob->GetBufferSize();
+    vertexByteCode.pShaderBytecode = vertexBlob->GetBufferPointer();
+
+    ComPtr<ID3DBlob> pixelBlob;
+    hr = D3DCompileFromFile(L"PixelShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", 0, 0, &pixelBlob, nullptr);
+    if(FAILED(hr))
+        return;
+
+    D3D12_SHADER_BYTECODE pixelByteCode{};
+    pixelByteCode.BytecodeLength = pixelBlob->GetBufferSize();
+    pixelByteCode.pShaderBytecode = pixelBlob->GetBufferPointer();
+
+    std::array<D3D12_INPUT_ELEMENT_DESC, 1> inputLayout
+    {
+        D3D12_INPUT_ELEMENT_DESC
+        {
+            .SemanticName = "POSITION",
+            .SemanticIndex = 0,
+            .Format = DXGI_FORMAT_R32G32B32_FLOAT,
+            .InputSlot = 0,
+            .AlignedByteOffset = 0,
+            .InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+            .InstanceDataStepRate = 0
+        }
+    };
+
+    D3D12_INPUT_LAYOUT_DESC layoutDesc
+    {
+        .pInputElementDescs = inputLayout.data(),
+        .NumElements = inputLayout.size()
+    };
+
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineState
+    {
+        .pRootSignature = rootSignature.Get(),
+        .VS = vertexByteCode,
+        .PS = pixelByteCode,
+        .BlendState = D3D12_BLEND_DESC
+        {
+            .AlphaToCoverageEnable = false,
+            .IndependentBlendEnable = false
+        },
+        .SampleMask = 0xff'ff'ff'ff,
+        .RasterizerState = D3D12_RASTERIZER_DESC
+        {
+            .FillMode = D3D12_FILL_MODE_SOLID,
+            .CullMode = D3D12_CULL_MODE_NONE,
+            .FrontCounterClockwise = true,
+            .DepthBias = 0,
+            .DepthBiasClamp = 0,
+            .SlopeScaledDepthBias = 0,
+            .DepthClipEnable = true,
+            .MultisampleEnable = false,
+            .AntialiasedLineEnable = false,
+            .ForcedSampleCount = 0,
+            .ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF,
+        },
+        .InputLayout = layoutDesc,
+        .PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+        .NumRenderTargets = 1,
+        .SampleDesc = TypedD3D::Helpers::Common::GetDescription(*swapChain.Get()).SampleDesc,
+    };
+
+    graphicsPipelineState.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
+    graphicsPipelineState.BlendState.RenderTarget[0].DestBlend = D3D12_BLEND_ZERO;
+    graphicsPipelineState.BlendState.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+    graphicsPipelineState.BlendState.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+    graphicsPipelineState.BlendState.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+    graphicsPipelineState.BlendState.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+    graphicsPipelineState.BlendState.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
+    graphicsPipelineState.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+    graphicsPipelineState.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+    auto pipelineState = device.CreateGraphicsPipelineState(graphicsPipelineState);
+    if(!pipelineState)
+    {
+        pipelineState.GetError();
+    }
+
+
+
     UINT backBuffer = 0;
     MSG msg;
 
