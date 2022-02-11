@@ -23,7 +23,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="VertexShader.hlsl" />
     <FxCompile Include="PixelShader.hlsl" />
+    <FxCompile Include="VertexShader.hlsl" />
   </ItemGroup>
 </Project>

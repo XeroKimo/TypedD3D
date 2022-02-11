@@ -25,6 +25,7 @@
     <ClInclude Include="source\D3D12\DescriptorHeap.h" />
     <ClInclude Include="source\D3D12\Meta.h" />
     <ClInclude Include="source\D3D12\PipelineState.h" />
+    <ClInclude Include="d3dx12.h" />
     <ClInclude Include="source\Helpers\COMHelpers.h" />
     <ClInclude Include="source\Helpers\CommonHelpers.h" />
     <ClInclude Include="source\Helpers\D3D12Helpers.h" />

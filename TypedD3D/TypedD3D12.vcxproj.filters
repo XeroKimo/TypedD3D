@@ -57,6 +57,9 @@
     <ClInclude Include="source\D3D12\DescriptorHeap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="d3dx12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp">
