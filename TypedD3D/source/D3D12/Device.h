@@ -78,7 +78,7 @@ namespace TypedD3D::D3D12
                 auto pipelineState = Helpers::D3D12::CreateGraphicsPipelineState(InternalGetDevice(), pDesc);
 
                 if(!pipelineState)
-                    return  Utils::Unexpected(pipelineState.GetError());
+                    return Utils::Unexpected(pipelineState.GetError());
 
                 return PipelineState::Graphics(pipelineState.GetValue());
             }
@@ -264,8 +264,8 @@ namespace TypedD3D::D3D12
                 const std::span<D3D12_RESOURCE_DESC> resourceDescs)
             {
                 return InternalGetDevice().GetResourceAllocationInfo(
-                    visibleMask, 
-                    static_cast<UINT>(resourceDescs.size()), 
+                    visibleMask,
+                    static_cast<UINT>(resourceDescs.size()),
                     resourceDescs.data());
             }
 
