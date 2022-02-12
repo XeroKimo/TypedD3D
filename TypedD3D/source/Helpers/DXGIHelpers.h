@@ -102,7 +102,7 @@ namespace TypedD3D::Helpers::DXGI
             return Create<SwapChain>(factory, device, hWnd, desc, &fullscreenDesc, optRestrictToOutput);
         }
 
-        template<class Resource>
+        template<class Resource = ID3D12Resource>
         inline Utils::Expected<Microsoft::WRL::ComPtr<Resource>, HRESULT> GetBuffer(IDXGISwapChain& swapChain, UINT index)
         {
             return COM::IIDToObjectForwardFunction<Resource>(&IDXGISwapChain::GetBuffer, swapChain, index);

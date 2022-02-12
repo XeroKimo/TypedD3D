@@ -278,4 +278,13 @@ namespace TypedD3D::Helpers::D3D12
         D3D12_RESOURCE_BARRIER Aliasing(ID3D12Resource* optResourceBefore, ID3D12Resource* optResourceAfter, D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE);
         D3D12_RESOURCE_BARRIER UAV(ID3D12Resource& resource, D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE);
     }
+
+    template<class DebugTy = ID3D12Debug>
+    Utils::Expected<Microsoft::WRL::ComPtr<DebugTy>, HRESULT> GetDebugInterface()
+    {
+        if constexpr(std::same_as<DebugTy, ID3D12Debug>)
+            return Helpers::COM::IIDToObjectForwardFunction<ID3D12Debug>(&D3D12GetDebugInterface).GetValue();
+        else
+            return Helpers::COM::Cast<DebugTy>(GetDebugInterface<ID3D12Debug>());
+    }
 }
