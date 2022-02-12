@@ -7,8 +7,14 @@ namespace TypedD3D::D3D12::CommandQueue
 {
     namespace Internal
     {
-        using GPU_TIMESTAMP = UINT64;
-        using CPU_TIMESTAMP = UINT64;
+        struct GPU_TIMESTAMP
+        {
+            UINT64 value;
+        };
+        struct CPU_TIMESTAMP
+        {
+            UINT64 value;
+        };
 
         template<D3D12_COMMAND_LIST_TYPE Type>
         struct command_queue_tag : Meta::command_list_type_tag<Type>
@@ -139,7 +145,7 @@ namespace TypedD3D::D3D12::CommandQueue
             std::pair<GPU_TIMESTAMP, CPU_TIMESTAMP> GetClockCalibration() 
             {
                 std::pair<GPU_TIMESTAMP, CPU_TIMESTAMP> timeStamps;
-                Get()->GetClockCalibration(&timeStamps.first, &timeStamps.second);
+                Get()->GetClockCalibration(&timeStamps.first.value, &timeStamps.second.value);
                 return timeStamps;
             }
 

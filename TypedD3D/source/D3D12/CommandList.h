@@ -136,34 +136,34 @@ namespace TypedD3D::D3D12::CommandList
             }
 
             void CopyBufferRegion(
-                ID3D12Resource* pDstBuffer,
+                ID3D12Resource& pDstBuffer,
                 UINT64 DstOffset,
-                ID3D12Resource* pSrcBuffer,
+                ID3D12Resource& pSrcBuffer,
                 UINT64 SrcOffset,
                 UINT64 NumBytes)
             {
                 InternalCommandList().CopyBufferRegion(
-                    pDstBuffer,
+                    &pDstBuffer,
                     DstOffset,
-                    pSrcBuffer,
+                    &pSrcBuffer,
                     SrcOffset,
                     NumBytes);
             }
 
             void CopyTextureRegion(
-                const D3D12_TEXTURE_COPY_LOCATION* pDst,
+                const D3D12_TEXTURE_COPY_LOCATION& pDst,
                 UINT DstX,
                 UINT DstY,
                 UINT DstZ,
-                const D3D12_TEXTURE_COPY_LOCATION* pSrc,
+                const D3D12_TEXTURE_COPY_LOCATION& pSrc,
                 const D3D12_BOX* pSrcBox)
             {
                 InternalCommandList().CopyTextureRegion(
-                    pDst,
+                    &pDst,
                     DstX,
                     DstY,
                     DstZ,
-                    pSrc,
+                    &pSrc,
                     pSrcBox);
             }
 
@@ -362,18 +362,16 @@ namespace TypedD3D::D3D12::CommandList
 
             void IASetVertexBuffers(
                 UINT StartSlot,
-                UINT NumViews,
-                const D3D12_VERTEX_BUFFER_VIEW* pViews)
+                std::span<const D3D12_VERTEX_BUFFER_VIEW> views)
             {
-                InternalCommandList().IASetVertexBuffers(StartSlot, NumViews, pViews);
+                InternalCommandList().IASetVertexBuffers(StartSlot, static_cast<UINT>(views.size()), views.data());
             }
 
             void SOSetTargets(
                 UINT StartSlot,
-                UINT NumViews,
-                const D3D12_STREAM_OUTPUT_BUFFER_VIEW* pViews)
+                std::span<const D3D12_STREAM_OUTPUT_BUFFER_VIEW> views)
             {
-                InternalCommandList().SOSetTargets(StartSlot, NumViews, pViews);
+                InternalCommandList().SOSetTargets(StartSlot, static_cast<UINT>(views.size()), views.data());
             }
 
             void OMSetRenderTargets(
@@ -414,21 +412,21 @@ namespace TypedD3D::D3D12::CommandList
             void ClearUnorderedAccessViewUint(
                 DescriptorHandle::GPU_CBV_SRV_UAV ViewGPUHandleInCurrentHeap,
                 DescriptorHandle::CPU_CBV_SRV_UAV ViewCPUHandle,
-                ID3D12Resource* pResource,
+                ID3D12Resource& pResource,
                 std::span<const UINT, 4> values,
                 std::span<const D3D12_RECT> rects)
             {
-                InternalCommandList().ClearUnorderedAccessViewUint(ViewGPUHandleInCurrentHeap.Data(), ViewCPUHandle.Data(), pResource, values.data(), static_cast<UINT>(rects.size()), rects.data());
+                InternalCommandList().ClearUnorderedAccessViewUint(ViewGPUHandleInCurrentHeap.Data(), ViewCPUHandle.Data(), &pResource, values.data(), static_cast<UINT>(rects.size()), rects.data());
             }
 
             void ClearUnorderedAccessViewFloat(
                 DescriptorHandle::GPU_CBV_SRV_UAV ViewGPUHandleInCurrentHeap,
                 DescriptorHandle::CPU_CBV_SRV_UAV ViewCPUHandle,
-                ID3D12Resource* pResource,
+                ID3D12Resource& pResource,
                 std::span<const float, 4> values,
                 std::span<const D3D12_RECT> rects)
             {
-                InternalCommandList().ClearUnorderedAccessViewFloat(ViewGPUHandleInCurrentHeap.Data(), ViewCPUHandle.Data(), pResource, values.data(), static_cast<UINT>(rects.size()), rects.data());
+                InternalCommandList().ClearUnorderedAccessViewFloat(ViewGPUHandleInCurrentHeap.Data(), ViewCPUHandle.Data(), &pResource, values.data(), static_cast<UINT>(rects.size()), rects.data());
             }
 
             void DiscardResource(

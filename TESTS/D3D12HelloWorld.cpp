@@ -100,7 +100,7 @@ void D3D12HelloWorld()
     {
         char* message = static_cast<char*>(errorBlob->GetBufferPointer());
         std::unique_ptr<wchar_t[]> messageT = std::make_unique<wchar_t[]>(errorBlob->GetBufferSize());
-        MultiByteToWideChar(CP_ACP, MB_COMPOSITE, message, errorBlob->GetBufferSize(), messageT.get(), errorBlob->GetBufferSize());
+        MultiByteToWideChar(CP_ACP, MB_COMPOSITE, message, static_cast<int>(errorBlob->GetBufferSize()), messageT.get(), static_cast<int>(errorBlob->GetBufferSize()));
         MessageBox(handle, messageT.get(), L"Error", MB_OK);
         return;
     }
@@ -179,7 +179,7 @@ void D3D12HelloWorld()
 
     graphicsPipelineState.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    auto pipelineState = device.CreateGraphicsPipelineState(graphicsPipelineState);
+    TypedD3D::Utils::Expected<TypedD3D::D3D12::PipelineState::Graphics, HRESULT> pipelineState = device.CreateGraphicsPipelineState(graphicsPipelineState);
     if(!pipelineState)
     {
         pipelineState.GetError();
@@ -193,7 +193,7 @@ void D3D12HelloWorld()
         });
 
     D3D12_HEAP_PROPERTIES vertexHeap
-    { 
+    {
         .Type = D3D12_HEAP_TYPE_DEFAULT,
         .CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN,
         .MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN,
@@ -261,7 +261,7 @@ void D3D12HelloWorld()
 
     TypedD3D::Helpers::D3D12::FlushCommandQueue(*commandQueue.Get(), *fence.Get(), fenceValue, syncEvent);
 
-    D3D12_VERTEX_BUFFER_VIEW vertexBufferView 
+    D3D12_VERTEX_BUFFER_VIEW vertexBufferView
     {
         .BufferLocation = vertexResource->GetGPUVirtualAddress(),
         .SizeInBytes = static_cast<UINT>(sizeof(Vertex) * vertices.size()),
@@ -323,8 +323,8 @@ void D3D12HelloWorld()
             commandList.RSSetViewports(std::span(&viewport, 1));
             commandList.RSSetScissorRects(std::span(&rect, 1));
             commandList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            commandList.IASetVertexBuffers(0, 1, &vertexBufferView);
-            commandList.DrawInstanced(3, 1, 0, 0 );
+            commandList.IASetVertexBuffers(0, std::span(&vertexBufferView, 1));
+            commandList.DrawInstanced(3, 1, 0, 0);
 
 
             barrier = TypedD3D::Helpers::D3D12::ResourceBarrier::Transition(

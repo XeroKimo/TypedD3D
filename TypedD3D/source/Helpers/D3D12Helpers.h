@@ -196,10 +196,6 @@ namespace TypedD3D::Helpers::D3D12
     /// <param name="fenceValue"></param>
     void SignalFenceCPU(ID3D12Fence& fence, UINT64 fenceValue);
 
-    /// <summary>
-    /// Resets the fence value to 0
-    /// </summary>
-    /// <param name="fence"></param>
     inline void ResetFence(ID3D12Fence& fence) { fence.Signal(0); }
 
     void FlushCommandQueue(ID3D12CommandQueue& commandQueue, ID3D12Fence& fence, UINT64& currentFenceValue, HANDLE waitEvent = nullptr);
@@ -225,51 +221,6 @@ namespace TypedD3D::Helpers::D3D12
     /// <param name="fence"> The fence that will be signaled </param>
     /// <param name="fenceValue"> The value we're waiting for before </param>
     void StallCommandQueue(ID3D12CommandQueue& commandQueue, ID3D12Fence& fence, UINT64 fenceValue);
-
-    //Helper function to resize swap chain back buffers, should be called when chainging states
-    template<class Resource = ID3D12Resource>
-    std::vector<Microsoft::WRL::ComPtr<Resource>> ResizeSwapChain(ID3D12Device& device, IDXGISwapChain1& swapChain, ID3D12DescriptorHeap& descriptor, std::span<ID3D12CommandQueue*> commandQueues, std::span<ID3D12Fence*> fences, std::span<HANDLE> fenceHandles, std::span<UINT64*> fenceValues, UINT width, UINT height, std::optional<UINT> newBufferCount = std::nullopt)
-    {
-        assert(commandQueues.size() == fences.size());
-        assert(fences.size() == fenceHandles.size());
-        assert(fences.size() == fenceValues.size());
-
-        //Flushes all command queues to make sure none is currently using swap chain buffers
-        for(size_t i = 0; i < commandQueues.size(); i++)
-        {
-            FlushCommandQueue(*commandQueues[i], *fences[i], *fenceValues[i], fenceHandles[i]);
-        }
-
-        DXGI_SWAP_CHAIN_DESC1 desc = Common::GetDescription(swapChain);
-        width = std::max<UINT>(1, width);
-        height = std::max<UINT>(1, height);
-
-        swapChain.ResizeBuffers(newBufferCount.value_or(desc.BufferCount), width, height, desc.Format, desc.Flags);
-
-        return CreateSwapChainRenderTargets<Resource>(device, swapChain, descriptor);
-    }
-
-    //Helper function for chainging swap chain's fullscreen state
-    template<class Resource = ID3D12Resource>
-    std::vector<Microsoft::WRL::ComPtr<Resource>> SetSwapChainFullscreen(ID3D12Device& device, IDXGISwapChain1& swapChain, ID3D12DescriptorHeap& descriptor, std::span<ID3D12CommandQueue*> commandQueues, std::span<ID3D12Fence*> fences, std::span<HANDLE> fenceHandles, std::span<UINT64*> fenceValues, bool setFullScreenState, std::optional<UINT> newBufferCount = std::nullopt)
-    {
-        assert(commandQueues.size() == fences.size());
-        assert(fences.size() == fenceHandles.size());
-        assert(fences.size() == fenceValues.size());
-
-        //Flushes all command queues to make sure none is currently using swap chain buffers
-        for(size_t i = 0; i < commandQueues.size(); i++)
-        {
-            FlushCommandQueue(*commandQueues[i], *fences[i], *fenceValues[i], fenceHandles[i]);
-        }
-
-        swapChain.SetFullscreenState(setFullScreenState, nullptr);
-
-        DXGI_SWAP_CHAIN_DESC1 desc = Common::GetDescription(swapChain);
-        swapChain.ResizeBuffers(newBufferCount.value_or(desc.BufferCount), desc.Width, desc.Height, desc.Format, desc.Flags);
-
-        return CreateSwapChainRenderTargets<Resource>(device, swapChain, descriptor);
-    }
 #pragma pop_macro("max")
 
     namespace ResourceBarrier
