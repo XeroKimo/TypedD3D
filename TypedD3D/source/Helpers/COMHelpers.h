@@ -18,7 +18,7 @@ namespace TypedD3D::Helpers::COM
         return to;
     }
 
-    template<class From, class To>
+    template<class To, class From>
     To* Cast(From* from)
     {
         To* to;

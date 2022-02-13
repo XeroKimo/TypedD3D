@@ -46,7 +46,12 @@ void D3D12HelloWorld()
     std::array<TypedD3D::D3D12::CommandAllocator::Direct, backBufferCount> commandAllocators;
     commandAllocators[0] = device.CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().GetValue();
     commandAllocators[1] = device.CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().GetValue();
-    TypedD3D::D3D12::CommandList::Direct commandList = device.CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0], 0, nullptr).GetValue();
+    TypedD3D::D3D12::CommandList::Direct temp = device.CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0], 0, nullptr).GetValue();
+
+
+    TypedD3D::D3D12::CommandList::Direct1 commandList = temp.As<TypedD3D::D3D12::CommandList::Direct1>();
+
+
 
 
     UINT64 fenceValue = 0;
@@ -256,7 +261,7 @@ void D3D12HelloWorld()
     commandList.ResourceBarrier(std::span(&barrier, 1));
     commandList.Close();
 
-    std::array submitList = std::to_array({ &commandList });
+    std::array submitList = std::to_array<TypedD3D::D3D12::CommandList::Direct>({ commandList });
     commandQueue.ExecuteCommandLists(std::span(submitList));
 
     TypedD3D::Helpers::D3D12::FlushCommandQueue(*commandQueue.Get(), *fence.Get(), fenceValue, syncEvent);
@@ -335,7 +340,7 @@ void D3D12HelloWorld()
 
             commandList.Close();
 
-            std::array submitList = std::to_array({ &commandList });
+            std::array submitList = std::to_array<TypedD3D::D3D12::CommandList::Direct>({ commandList });
             commandQueue.ExecuteCommandLists(std::span(submitList));
 
             swapChain->Present(1, 0);
@@ -348,8 +353,6 @@ void D3D12HelloWorld()
     TypedD3D::Helpers::D3D12::FlushCommandQueue(*commandQueue.Get(), *fence.Get(), fenceValue, syncEvent);
 
     debugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL | D3D12_RLDO_FLAGS::D3D12_RLDO_SUMMARY | D3D12_RLDO_IGNORE_INTERNAL);
-
-
 
     //assert(swapChain.HasValue());
     //assert(factory.HasValue());

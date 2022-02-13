@@ -77,7 +77,7 @@ namespace TypedD3D::D3D12::CommandQueue
 
             template<size_t Extents>
             void ExecuteCommandLists(
-                std::span<list_type*, Extents> commandLists)
+                std::span<list_type, Extents> commandLists)
             {
                 if constexpr(Extents == std::dynamic_extent)
                 {
@@ -85,7 +85,7 @@ namespace TypedD3D::D3D12::CommandQueue
 
                     for(size_t i = 0; i < commandLists.size(); i++)
                     {
-                        submitList[i] = commandLists[i]->Get();
+                        submitList[i] = commandLists[i].Get();
                     }
 
                     Get()->ExecuteCommandLists(static_cast<UINT>(commandLists.size()), submitList.get());
@@ -96,7 +96,7 @@ namespace TypedD3D::D3D12::CommandQueue
 
                     for(size_t i = 0; i < commandLists.size(); i++)
                     {
-                        submitList[i] = commandLists[i]->Get();
+                        submitList[i] = commandLists[i].Get();
                     }
 
                     Get()->ExecuteCommandLists(static_cast<UINT>(commandLists.size()), submitList.data());

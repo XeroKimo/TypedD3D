@@ -19,12 +19,12 @@ namespace TypedD3D::D3D12
 
         }
 
-        //template<class Derived>
-        //    requires std::is_base_of_v<T, Derived>
-        //ComWrapper(Microsoft::WRL::ComPtr<Derived> ptr) :
-        //    m_ptr(ptr)
-        //{
-        //}
+        template<class Derived>
+            requires std::is_base_of_v<T, Derived>
+        ComWrapper(Microsoft::WRL::ComPtr<Derived> ptr) :
+            m_ptr(ptr)
+        {
+        }
 
         bool operator==(ComWrapper other) const noexcept { return m_ptr == other.m_ptr; }
         bool operator!=(ComWrapper other) const noexcept { return m_ptr != other.m_ptr; }

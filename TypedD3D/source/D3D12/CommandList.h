@@ -18,6 +18,7 @@
 
 #pragma warning (push)
 #pragma warning (disable : 4584)
+
 namespace TypedD3D::D3D12::CommandList
 {
     using Microsoft::WRL::ComPtr;
@@ -667,6 +668,160 @@ namespace TypedD3D::D3D12::CommandList
 
         };
 
+        template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
+        class ListInterface<WrapperTy, Type, ID3D12GraphicsCommandList1>
+        {
+        private:
+            using trait_value_type = command_list_trait<Type, ID3D12GraphicsCommandList1>;
+            using list_value_type = typename trait_value_type::list_value_type;
+            using allocator_value_type = typename trait_value_type::allocator_value_type;
+            using wrapper_type = WrapperTy;
+
+        public:
+            void AtomicCopyBufferUINT(
+                ID3D12Resource& pDstBuffer,
+                UINT64 DstOffset,
+                ID3D12Resource& pSrcBuffer,
+                UINT64 SrcOffset,
+                UINT Dependencies,
+                ID3D12Resource* const* ppDependentResources,
+                const D3D12_SUBRESOURCE_RANGE_UINT64* pDependentSubresourceRanges)
+            {
+                InternalCommandList().AtomicCopyBufferUINT(
+                    &pDstBuffer,
+                    DstOffset,
+                    &pSrcBuffer,
+                    SrcOffset,
+                    Dependencies,
+                    ppDependentResources,
+                    pDependentSubresourceRanges);
+            }
+
+            void AtomicCopyBufferUINT64(
+                ID3D12Resource& pDstBuffer,
+                UINT64 DstOffset,
+                ID3D12Resource& pSrcBuffer,
+                UINT64 SrcOffset,
+                UINT Dependencies,
+                ID3D12Resource* const* ppDependentResources,
+                const D3D12_SUBRESOURCE_RANGE_UINT64* pDependentSubresourceRanges)
+            {
+                InternalCommandList().AtomicCopyBufferUINT64(
+                    &pDstBuffer,
+                    DstOffset,
+                    &pSrcBuffer,
+                    SrcOffset,
+                    Dependencies,
+                    ppDependentResources,
+                    pDependentSubresourceRanges);
+            }
+
+            void OMSetDepthBounds(
+                FLOAT Min,
+                FLOAT Max)
+            {
+                InternalCommandList().OMSetDepthBounds(Min, Max);
+            }
+
+            void SetSamplePositions(
+                UINT NumSamplesPerPixel,
+                UINT NumPixels,
+                D3D12_SAMPLE_POSITION* pSamplePositions)
+            {
+                InternalCommandList().SetSamplePositions(
+                    NumSamplesPerPixel,
+                    NumPixels,
+                    pSamplePositions);
+            }
+
+            void ResolveSubresourceRegion(
+                ID3D12Resource& pDstResource,
+                UINT DstSubresource,
+                UINT DstX,
+                UINT DstY,
+                ID3D12Resource& pSrcResource,
+                UINT SrcSubresource,
+                D3D12_RECT* pSrcRect,
+                DXGI_FORMAT Format,
+                D3D12_RESOLVE_MODE ResolveMode)
+            {
+                InternalCommandList().ResolveSubresourceRegion(
+                    &pDstResource,
+                    DstSubresource,
+                    DstX,
+                    DstY,
+                    &pSrcResource,
+                    SrcSubresource,
+                    pSrcRect,
+                    Format,
+                    ResolveMode
+                );
+            }
+
+            void SetViewInstanceMask(
+                UINT Mask)
+            {
+                InternalCommandList().SetViewInstanceMask(Mask);
+            }
+
+
+            //In code order                                                          //Alphabetical order
+            //using Base::AtomicCopyBufferUINT;                                      using Base::AtomicCopyBufferUINT;
+            //using Base::AtomicCopyBufferUINT64;                                    using Base::AtomicCopyBufferUINT64;
+            //using Base::OMSetDepthBounds;                                          using Base::OMSetDepthBounds;
+            //using Base::SetSamplePositions;                                        using Base::ResolveSubresourceRegion;
+            //using Base::ResolveSubresourceRegion;                                  using Base::SetSamplePositions;
+            //using Base::SetViewInstanceMask;                                       using Base::SetViewInstanceMask;     
+        private:
+            list_value_type& InternalCommandList() { return *static_cast<wrapper_type&>(*this).Get(); }
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList1> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList1>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList1>;
+
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
+            friend Base;
+
+        public:
+            using Base::OMSetDepthBounds;
+            using Base::SetSamplePositions;
+            using Base::SetViewInstanceMask;
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList1> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList1>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList1>;
+
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
+            friend Base;
+
+        public:
+            using Base::AtomicCopyBufferUINT;
+            using Base::AtomicCopyBufferUINT64;
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList1> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList1>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList1>;
+
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
+            friend Base;
+        public:
+            using Base::AtomicCopyBufferUINT;
+            using Base::AtomicCopyBufferUINT64;
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1> : public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1>;
+
+        };
+
         template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
         class CommandList : public ComWrapper<ListTy>, public interface_type<Type, ListTy>
         {
@@ -678,6 +833,33 @@ namespace TypedD3D::D3D12::CommandList
 
         public:
             using ComWrapper<ListTy>::ComWrapper;
+
+        public:
+            template<class DerivedListTy>
+            CommandList(const CommandList<Type, DerivedListTy>& other) :
+                ComWrapper<ListTy>::ComWrapper(other.GetComPtr())
+            {
+
+            }
+
+        public:
+            template<class Ty>
+            Ty As()
+            {
+
+                if constexpr(Ty::value == value)
+                {
+                    ComPtr<typename Ty::list_value_type> derived;
+
+                    ComWrapper<ListTy>::GetComPtr().As<typename Ty::list_value_type>(&derived);
+
+                    return Ty(derived);
+                }
+                else
+                {
+                    return Ty();
+                }
+            }
         };
 
         template<class WrapperTy, D3D12_COMMAND_LIST_TYPE type>
@@ -691,7 +873,7 @@ namespace TypedD3D::D3D12::CommandList
     using CommandList_t = Internal::CommandList<Type, ListTy>;
 
     using Direct = Internal::Direct<ID3D12GraphicsCommandList>;
-    //using Direct1 = Internal::Direct<ID3D12GraphicsCommandList1>;
+    using Direct1 = Internal::Direct<ID3D12GraphicsCommandList1>;
     //using Direct2 = Internal::Direct<ID3D12GraphicsCommandList2>;
     //using Direct3 = Internal::Direct<ID3D12GraphicsCommandList3>;
     //using Direct4 = Internal::Direct<ID3D12GraphicsCommandList4>;
@@ -699,7 +881,7 @@ namespace TypedD3D::D3D12::CommandList
     //using Direct6 = Internal::Direct<ID3D12GraphicsCommandList6>;
 
     using Bundle = Internal::Bundle<ID3D12GraphicsCommandList>;
-    //using Bundle1 = Internal::Bundle<ID3D12GraphicsCommandList1>;
+    using Bundle1 = Internal::Bundle<ID3D12GraphicsCommandList1>;
     //using Bundle2 = Internal::Bundle<ID3D12GraphicsCommandList2>;
     //using Bundle3 = Internal::Bundle<ID3D12GraphicsCommandList3>;
     //using Bundle4 = Internal::Bundle<ID3D12GraphicsCommandList4>;
@@ -707,7 +889,7 @@ namespace TypedD3D::D3D12::CommandList
     //using Bundle6 = Internal::Bundle<ID3D12GraphicsCommandList6>;
 
     using Compute = Internal::Compute<ID3D12GraphicsCommandList>;
-    //using Compute1 = Internal::Compute<ID3D12GraphicsCommandList1>;
+    using Compute1 = Internal::Compute<ID3D12GraphicsCommandList1>;
     //using Compute2 = Internal::Compute<ID3D12GraphicsCommandList2>;
     //using Compute3 = Internal::Compute<ID3D12GraphicsCommandList3>;
     //using Compute4 = Internal::Compute<ID3D12GraphicsCommandList4>;
@@ -715,7 +897,7 @@ namespace TypedD3D::D3D12::CommandList
     //using Compute6 = Internal::Compute<ID3D12GraphicsCommandList6>;
 
     using Copy = Internal::Copy<ID3D12GraphicsCommandList>;
-    //using Copy1 = Internal::Copy<ID3D12GraphicsCommandList1>;
+    using Copy1 = Internal::Copy<ID3D12GraphicsCommandList1>;
     //using Copy2 = Internal::Copy<ID3D12GraphicsCommandList2>;
     //using Copy3 = Internal::Copy<ID3D12GraphicsCommandList3>;
     //using Copy4 = Internal::Copy<ID3D12GraphicsCommandList4>;
