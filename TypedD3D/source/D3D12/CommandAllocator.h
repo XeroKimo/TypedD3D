@@ -12,16 +12,33 @@ namespace TypedD3D::D3D12::CommandAllocator
     {
         using Microsoft::WRL::ComPtr;
 
-        template<D3D12_COMMAND_LIST_TYPE Type>
-        class CommandAllocator : public ComWrapper<ID3D12CommandAllocator>
+        template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
+        class AllocatorInterface
         {
             static constexpr D3D12_COMMAND_LIST_TYPE value = Type;
+
+        public:
+
+            HRESULT Reset() { return InternalGet().Reset(); }
+
+        private:
+            ID3D12CommandAllocator& InternalGet() { return *static_cast<WrapperTy&>(*this).Get(); }
+        };
+
+        template<D3D12_COMMAND_LIST_TYPE Type>
+        class CommandAllocator : public ComWrapper<ID3D12CommandAllocator>, private AllocatorInterface<CommandAllocator<Type>, Type>
+        {
+            static constexpr D3D12_COMMAND_LIST_TYPE value = Type;
+
+            template<class WrapperTy2, D3D12_COMMAND_LIST_TYPE Type2>
+            friend class AllocatorInterface;
 
         public:
             using ComWrapper<ID3D12CommandAllocator>::ComWrapper;
 
         public:
-            HRESULT Reset() { return Get()->Reset(); }
+            AllocatorInterface<CommandAllocator<Type>, Type>* GetInterrface() { return this; }
+            AllocatorInterface<CommandAllocator<Type>, Type>* operator->() { return this; }
         };
     }
 

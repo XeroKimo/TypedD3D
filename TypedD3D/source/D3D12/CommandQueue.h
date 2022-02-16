@@ -22,15 +22,12 @@ namespace TypedD3D::D3D12::CommandQueue
             using list_type = CommandList::Internal::CommandList<Type, ID3D12GraphicsCommandList>;
         };
 
-        template<D3D12_COMMAND_LIST_TYPE Type>
-        class CommandQueue : public ComWrapper<ID3D12CommandQueue>
+        template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
+        class QueueInterface
         {
-        public:
             using tag = command_queue_tag<Type>;
             using list_type = typename tag::list_type;
-
-        public:
-            using ComWrapper<ID3D12CommandQueue>::ComWrapper;
+            static constexpr D3D12_COMMAND_LIST_TYPE value = Type;
 
         public:
             void UpdateTileMappings(
@@ -43,9 +40,9 @@ namespace TypedD3D::D3D12::CommandQueue
                 const D3D12_TILE_RANGE_FLAGS* pRangeFlags,
                 const UINT* pHeapRangeStartOffsets,
                 const UINT* pRangeTileCounts,
-                D3D12_TILE_MAPPING_FLAGS Flags) 
+                D3D12_TILE_MAPPING_FLAGS Flags)
             {
-                Get()->UpdateTileMappings(
+                InternalGet()->UpdateTileMappings(
                     &pResource,
                     NumResourceRegions,
                     pResourceRegionStartCoordinates,
@@ -64,9 +61,9 @@ namespace TypedD3D::D3D12::CommandQueue
                 ID3D12Resource& pSrcResource,
                 const D3D12_TILED_RESOURCE_COORDINATE& pSrcRegionStartCoordinate,
                 const D3D12_TILE_REGION_SIZE& pRegionSize,
-                D3D12_TILE_MAPPING_FLAGS Flags) 
+                D3D12_TILE_MAPPING_FLAGS Flags)
             {
-                Get()->CopyTileMappings(
+                InternalGet()->CopyTileMappings(
                     &pDstResource,
                     &pDstRegionStartCoordinate,
                     &pSrcResource,
@@ -88,7 +85,7 @@ namespace TypedD3D::D3D12::CommandQueue
                         submitList[i] = commandLists[i].Get();
                     }
 
-                    Get()->ExecuteCommandLists(static_cast<UINT>(commandLists.size()), submitList.get());
+                    InternalGet()->ExecuteCommandLists(static_cast<UINT>(commandLists.size()), submitList.get());
                 }
                 else
                 {
@@ -99,57 +96,80 @@ namespace TypedD3D::D3D12::CommandQueue
                         submitList[i] = commandLists[i].Get();
                     }
 
-                    Get()->ExecuteCommandLists(static_cast<UINT>(commandLists.size()), submitList.data());
+                    InternalGet()->ExecuteCommandLists(static_cast<UINT>(commandLists.size()), submitList.data());
                 }
             }
 
             void SetMarker(
                 UINT Metadata,
                 const void* pData,
-                UINT Size) 
+                UINT Size)
             {
-                Get()->SetMarker(Metadata, pData, Size);
+                InternalGet()->SetMarker(Metadata, pData, Size);
             }
 
             void BeginEvent(
                 UINT Metadata,
                 const void* pData,
-                UINT Size) 
+                UINT Size)
             {
-                Get()->BeginEvent(Metadata, pData, Size);
+                InternalGet()->BeginEvent(Metadata, pData, Size);
             }
 
-            void EndEvent() { Get()->EndEvent(); }
+            void EndEvent() { InternalGet()->EndEvent(); }
 
             HRESULT Signal(
                 ID3D12Fence& Fence,
-                UINT64 Value) 
+                UINT64 Value)
             {
-                return Get()->Signal(&Fence, Value);
+                return InternalGet()->Signal(&Fence, Value);
             }
 
             HRESULT Wait(
                 ID3D12Fence& Fence,
-                UINT64 Value) 
+                UINT64 Value)
             {
-                return Get()->Wait(&Fence, Value);
+                return InternalGet()->Wait(&Fence, Value);
             }
 
-            UINT64 GetTimestampFrequency() 
+            UINT64 GetTimestampFrequency()
             {
                 UINT64 frequency = 0;
-                Get()->GetTimestampFrequency(&frequency);
+                InternalGet()->GetTimestampFrequency(&frequency);
                 return frequency;
             }
 
-            std::pair<GPU_TIMESTAMP, CPU_TIMESTAMP> GetClockCalibration() 
+            std::pair<GPU_TIMESTAMP, CPU_TIMESTAMP> GetClockCalibration()
             {
                 std::pair<GPU_TIMESTAMP, CPU_TIMESTAMP> timeStamps;
-                Get()->GetClockCalibration(&timeStamps.first.value, &timeStamps.second.value);
+                InternalGet()->GetClockCalibration(&timeStamps.first.value, &timeStamps.second.value);
                 return timeStamps;
             }
 
-            D3D12_COMMAND_QUEUE_DESC GetDesc() { return Get()->GetDesc(); }
+            D3D12_COMMAND_QUEUE_DESC GetDesc() { return InternalGet()->GetDesc(); }
+
+        private:
+            ID3D12CommandQueue* InternalGet() { return static_cast<WrapperTy&>(*this).Get(); }
+        };
+        
+
+        template<D3D12_COMMAND_LIST_TYPE Type>
+        class CommandQueue : public ComWrapper<ID3D12CommandQueue>, private QueueInterface<CommandQueue<Type>, Type>
+        {
+            template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type2>
+            friend class QueueInterface;
+
+        public:
+            using tag = command_queue_tag<Type>;
+            using list_type = typename tag::list_type;
+            static constexpr D3D12_COMMAND_LIST_TYPE value = Type;
+
+        public:
+            using ComWrapper<ID3D12CommandQueue>::ComWrapper;
+
+        public:
+            QueueInterface<CommandQueue<Type>, Type>* GetInterrface() { return this; }
+            QueueInterface<CommandQueue<Type>, Type>* operator->() { return this; }
         };
     };
 

@@ -68,10 +68,25 @@ namespace TypedD3D::D3D12::DescriptorHeap
 {
     namespace Internal
     {
+        template<class WrapperTy, D3D12_DESCRIPTOR_HEAP_TYPE Type>
+        class DescriptorHeapInterface
+        {
+        public:
+            D3D12_DESCRIPTOR_HEAP_DESC GetDesc() { return InternalGet().GetDesc(); }
+            DescriptorHandle::CPU_t<Type> GetCPUDescriptorHandleForHeapStart() { return DescriptorHandle::CPU_t<Type>(InternalGet().GetCPUDescriptorHandleForHeapStart()); }
+            DescriptorHandle::GPU_t<Type> GetGPUDescriptorHandleForHeapStart() { return DescriptorHandle::GPU_t<Type>(InternalGet().GetGPUDescriptorHandleForHeapStart()); }
+
+        private:
+            ID3D12DescriptorHeap& InternalGet() { return  *static_cast<WrapperTy&>(*this).Get(); }
+        };
+
         template<D3D12_DESCRIPTOR_HEAP_TYPE Type>
-        class DescriptorHeap : public ComWrapper<ID3D12DescriptorHeap>
+        class DescriptorHeap : public ComWrapper<ID3D12DescriptorHeap>, private DescriptorHeapInterface<DescriptorHeap<Type>, Type>
         {
             static_assert(Type != D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES, "Num types is not a valid descriptor heap type");
+
+            template<class WrapperTy2, D3D12_DESCRIPTOR_HEAP_TYPE Type2>
+            friend class DescriptorHeapInterface;
 
         public:
             static constexpr D3D12_DESCRIPTOR_HEAP_TYPE value = Type;
@@ -80,9 +95,8 @@ namespace TypedD3D::D3D12::DescriptorHeap
             using ComWrapper<ID3D12DescriptorHeap>::ComWrapper;
 
         public:
-            D3D12_DESCRIPTOR_HEAP_DESC GetDesc() { return Get()->GetDesc(); }
-            DescriptorHandle::CPU_t<Type> GetCPUDescriptorHandleForHeapStart() { return DescriptorHandle::CPU_t<Type>(Get()->GetCPUDescriptorHandleForHeapStart()); }
-            DescriptorHandle::GPU_t<Type> GetGPUDescriptorHandleForHeapStart() { return DescriptorHandle::GPU_t<Type>(Get()->GetGPUDescriptorHandleForHeapStart()); }
+            DescriptorHeapInterface<DescriptorHeap<Type>, Type>* GetInterrface() { return this; }
+            DescriptorHeapInterface<DescriptorHeap<Type>, Type>* operator->() { return this; }
         };
     }
 

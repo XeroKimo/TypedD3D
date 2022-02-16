@@ -39,9 +39,6 @@
     <ClInclude Include="source\Helpers\DXGIHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\D3D12\CommandAllocator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\D3D12\Meta.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -58,6 +55,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="d3dx12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\D3D12\CommandAllocator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

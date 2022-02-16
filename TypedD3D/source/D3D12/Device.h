@@ -474,11 +474,18 @@ namespace TypedD3D::D3D12
         };
 
         template<class Ty>
-        class Device : public ComWrapper<Ty>, public DeviceInterface<Device<Ty>, Ty>
+        class Device : public ComWrapper<Ty>, private DeviceInterface<Device<Ty>, Ty>
         {
+            template<class WrapperTy2, class Ty2>
+            friend class DeviceInterface;
+
         public:
             using ComWrapper<Ty>::ComWrapper;
             using value_type = Ty;
+
+        public:
+            DeviceInterface<Device<Ty>, Ty>* GetInterrface() { return this; }
+            DeviceInterface<Device<Ty>, Ty>* operator->() { return this; }
         };
     }
 

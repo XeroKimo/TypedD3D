@@ -8,6 +8,7 @@
 #include "CommandAllocator.h"
 #include "DescriptorHeap.h"
 #include "Meta.h"
+#include "../Helpers/COMHelpers.h"
 #include <memory>
 #include <d3d12.h>
 #include <array>
@@ -819,12 +820,15 @@ namespace TypedD3D::D3D12::CommandList
         class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1> : public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1>;
-
         };
 
         template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
-        class CommandList : public ComWrapper<ListTy>, public interface_type<Type, ListTy>
+        class CommandList : public ComWrapper<ListTy>, private interface_type<Type, ListTy>
         {
+        private:
+            template<class WrapperT, D3D12_COMMAND_LIST_TYPE Type2, class List>
+            friend class ListInterface;
+
         public:
             using trait_value_type = command_list_trait<Type, ListTy>;
             using list_value_type = typename trait_value_type::list_value_type;
@@ -843,17 +847,15 @@ namespace TypedD3D::D3D12::CommandList
             }
 
         public:
+            interface_type<Type, ListTy>* GetInterface() { return this; }
+            interface_type<Type, ListTy>* operator->() { return this; }
+
             template<class Ty>
             Ty As()
             {
-
                 if constexpr(Ty::value == value)
                 {
-                    ComPtr<typename Ty::list_value_type> derived;
-
-                    ComWrapper<ListTy>::GetComPtr().As<typename Ty::list_value_type>(&derived);
-
-                    return Ty(derived);
+                    return Ty(Helpers::COM::Cast<Ty::list_value_type>(ComWrapper<ListTy>::GetComPtr()));
                 }
                 else
                 {

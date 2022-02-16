@@ -42,11 +42,11 @@ void D3D12HelloWorld()
 
     constexpr UINT backBufferCount = 2;
 
-    TypedD3D::D3D12::CommandQueue::Direct commandQueue = device.CreateCommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>(D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE, 0).GetValue();
+    TypedD3D::D3D12::CommandQueue::Direct commandQueue = device->CreateCommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>(D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE, 0).GetValue();
     std::array<TypedD3D::D3D12::CommandAllocator::Direct, backBufferCount> commandAllocators;
-    commandAllocators[0] = device.CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().GetValue();
-    commandAllocators[1] = device.CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().GetValue();
-    TypedD3D::D3D12::CommandList::Direct temp = device.CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0], 0, nullptr).GetValue();
+    commandAllocators[0] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().GetValue();
+    commandAllocators[1] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().GetValue();
+    TypedD3D::D3D12::CommandList::Direct temp = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0], 0, nullptr).GetValue();
 
 
     TypedD3D::D3D12::CommandList::Direct1 commandList = temp.As<TypedD3D::D3D12::CommandList::Direct1>();
@@ -55,7 +55,7 @@ void D3D12HelloWorld()
 
 
     UINT64 fenceValue = 0;
-    ComPtr<ID3D12Fence> fence = device.CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE).GetValue();
+    ComPtr<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE).GetValue();
     HANDLE syncEvent = CreateEventW(nullptr, false, false, nullptr);
 
     ComPtr<IDXGISwapChain1> swapChain = TypedD3D::Helpers::DXGI::SwapChain::CreateFlipDiscard(
@@ -67,10 +67,10 @@ void D3D12HelloWorld()
         DXGI_SWAP_CHAIN_FLAG{},
         false).GetValue();
 
-    TypedD3D::D3D12::DescriptorHeap::RTV swapChainBufferDescriptorHeap = device.CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV>(2, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 0).GetValue();
+    TypedD3D::D3D12::DescriptorHeap::RTV swapChainBufferDescriptorHeap = device->CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV>(2, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 0).GetValue();
 
-    UINT rtvOffset = device.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    TypedD3D::D3D12::DescriptorHandle::CPU_RTV descriptorHandle = swapChainBufferDescriptorHeap.GetCPUDescriptorHandleForHeapStart();
+    UINT rtvOffset = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    TypedD3D::D3D12::DescriptorHandle::CPU_RTV descriptorHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
     DXGI_SWAP_CHAIN_DESC1 desc = TypedD3D::Helpers::Common::GetDescription(*swapChain.Get());
 
     std::array<ComPtr<ID3D12Resource>, 2> swapChainBuffers;
@@ -79,7 +79,7 @@ void D3D12HelloWorld()
     {
         swapChainBuffers[i] = TypedD3D::Helpers::DXGI::SwapChain::GetBuffer(*swapChain.Get(), i).GetValue();
 
-        device.CreateRenderTargetView(*swapChainBuffers[i].Get(), nullptr, descriptorHandle);
+        device->CreateRenderTargetView(*swapChainBuffers[i].Get(), nullptr, descriptorHandle);
         descriptorHandle.Ptr() += rtvOffset;
     }
 
@@ -96,7 +96,7 @@ void D3D12HelloWorld()
 
     ComPtr<ID3DBlob> signatureBlob;
     D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, nullptr);
-    ComPtr<ID3D12RootSignature> rootSignature = device.CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize()).GetValue();
+    ComPtr<ID3D12RootSignature> rootSignature = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize()).GetValue();
 
     ComPtr<ID3DBlob> vertexBlob;
     ComPtr<ID3DBlob> errorBlob;
@@ -184,7 +184,7 @@ void D3D12HelloWorld()
 
     graphicsPipelineState.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    TypedD3D::Utils::Expected<TypedD3D::D3D12::PipelineState::Graphics, HRESULT> pipelineState = device.CreateGraphicsPipelineState(graphicsPipelineState);
+    TypedD3D::Utils::Expected<TypedD3D::D3D12::PipelineState::Graphics, HRESULT> pipelineState = device->CreateGraphicsPipelineState(graphicsPipelineState);
     if(!pipelineState)
     {
         pipelineState.GetError();
@@ -221,7 +221,7 @@ void D3D12HelloWorld()
     };
 
 
-    ComPtr<ID3D12Resource> vertexResource = device.CreateCommittedResource(
+    ComPtr<ID3D12Resource> vertexResource = device->CreateCommittedResource(
         vertexHeap,
         D3D12_HEAP_FLAG_NONE,
         vertexDesc,
@@ -237,7 +237,7 @@ void D3D12HelloWorld()
         .CreationNodeMask = 0,
         .VisibleNodeMask = 0
     };
-    ComPtr<ID3D12Resource> vertexUpload = device.CreateCommittedResource(
+    ComPtr<ID3D12Resource> vertexUpload = device->CreateCommittedResource(
         uploadProperties,
         D3D12_HEAP_FLAG_NONE,
         vertexDesc,
@@ -258,11 +258,11 @@ void D3D12HelloWorld()
         *vertexResource.Get(),
         D3D12_RESOURCE_STATE_COPY_DEST,
         D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-    commandList.ResourceBarrier(std::span(&barrier, 1));
-    commandList.Close();
+    commandList->ResourceBarrier(std::span(&barrier, 1));
+    commandList->Close();
 
     std::array submitList = std::to_array<TypedD3D::D3D12::CommandList::Direct>({ commandList });
-    commandQueue.ExecuteCommandLists(std::span(submitList));
+    commandQueue->ExecuteCommandLists(std::span(submitList));
 
     TypedD3D::Helpers::D3D12::FlushCommandQueue(*commandQueue.Get(), *fence.Get(), fenceValue, syncEvent);
 
@@ -308,40 +308,40 @@ void D3D12HelloWorld()
         }
         else
         {
-            commandAllocators[backBuffer].Reset();
-            commandList.Reset(commandAllocators[backBuffer], nullptr);
+            commandAllocators[backBuffer]->Reset();
+            commandList->Reset(commandAllocators[backBuffer], nullptr);
 
             D3D12_RESOURCE_BARRIER barrier = TypedD3D::Helpers::D3D12::ResourceBarrier::Transition(
                 *swapChainBuffers[backBuffer].Get(),
                 D3D12_RESOURCE_STATE_PRESENT,
                 D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-            commandList.ResourceBarrier(std::span(&barrier, 1));
+            commandList->ResourceBarrier(std::span(&barrier, 1));
 
-            TypedD3D::D3D12::DescriptorHandle::CPU_RTV backBufferHandle = swapChainBufferDescriptorHeap.GetCPUDescriptorHandleForHeapStart();
+            TypedD3D::D3D12::DescriptorHandle::CPU_RTV backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
             backBufferHandle.Ptr() += static_cast<SIZE_T>(rtvOffset) * backBuffer;
-            commandList.ClearRenderTargetView(backBufferHandle, std::to_array({ 0.f, 0.3f, 0.7f, 1.f }), {});
-            commandList.OMSetRenderTargets(std::span(&backBufferHandle, 1), true, nullptr);
+            commandList->ClearRenderTargetView(backBufferHandle, std::to_array({ 0.f, 0.3f, 0.7f, 1.f }), {});
+            commandList->OMSetRenderTargets(std::span(&backBufferHandle, 1), true, nullptr);
 
-            commandList.SetPipelineState(pipelineState.GetValue().Get());
-            commandList.SetGraphicsRootSignature(rootSignature.Get());
-            commandList.RSSetViewports(std::span(&viewport, 1));
-            commandList.RSSetScissorRects(std::span(&rect, 1));
-            commandList.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            commandList.IASetVertexBuffers(0, std::span(&vertexBufferView, 1));
-            commandList.DrawInstanced(3, 1, 0, 0);
+            commandList->SetPipelineState(pipelineState.GetValue().Get());
+            commandList->SetGraphicsRootSignature(rootSignature.Get());
+            commandList->RSSetViewports(std::span(&viewport, 1));
+            commandList->RSSetScissorRects(std::span(&rect, 1));
+            commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            commandList->IASetVertexBuffers(0, std::span(&vertexBufferView, 1));
+            commandList->DrawInstanced(3, 1, 0, 0);
 
 
             barrier = TypedD3D::Helpers::D3D12::ResourceBarrier::Transition(
                 *swapChainBuffers[backBuffer].Get(),
                 D3D12_RESOURCE_STATE_RENDER_TARGET,
                 D3D12_RESOURCE_STATE_PRESENT);
-            commandList.ResourceBarrier(std::span(&barrier, 1));
+            commandList->ResourceBarrier(std::span(&barrier, 1));
 
-            commandList.Close();
+            commandList->Close();
 
             std::array submitList = std::to_array<TypedD3D::D3D12::CommandList::Direct>({ commandList });
-            commandQueue.ExecuteCommandLists(std::span(submitList));
+            commandQueue->ExecuteCommandLists(std::span(submitList));
 
             swapChain->Present(1, 0);
 
