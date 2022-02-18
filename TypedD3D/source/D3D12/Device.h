@@ -1,5 +1,6 @@
 #pragma once
 #include "../Helpers/D3D12Helpers.h"
+#include "../Helpers/COMHelpers.h"
 #include "../Utils.h"
 #include "ComWrapper.h"
 #include "CommandList.h"
@@ -473,6 +474,51 @@ namespace TypedD3D::D3D12
             type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get(); }
         };
 
+        template<class WrapperTy>
+        class DeviceInterface<WrapperTy, ID3D12Device1> : public DeviceInterface<WrapperTy, ID3D12Device>
+        {
+        private:
+            using type = ID3D12Device1;
+
+        public:
+            Utils::Expected<ComPtr<ID3D12PipelineLibrary>, HRESULT> CreatePipelineLibrary(
+                const void* pLibraryBlob,
+                SIZE_T BlobLength)
+            {
+                return Helpers::COM::IIDToObjectForwardFunction<ID3D12PipelineLibrary>(ID3D12Device1::CreatePipelineLibrary, InternalGetDevice(), pLibraryBlob, BlobLength);
+            }
+
+            HRESULT SetEventOnMultipleFenceCompletion(
+                std::span<const ID3D12Fence*> fences,
+                std::span<const UINT64> fenceValues,
+                D3D12_MULTIPLE_FENCE_WAIT_FLAGS Flags,
+                HANDLE hEvent)
+            {
+                assert(fences.size() == fenceValues.size());
+
+                return InternalGetDevice().SetEventOnMultipleFenceCompletion(
+                    fences.data(), 
+                    fenceValues.data(), 
+                    static_cast<UINT>(fences.size()), 
+                    Flags, 
+                    hEvent);
+            }
+
+            HRESULT SetResidencyPriority(
+                std::span<ID3D12Pageable*> ppObjects,
+                std::span<const D3D12_RESIDENCY_PRIORITY> priorities)
+            {
+                assert(ppObjects.size() == priorities.size());
+                return InternalGetDevice().SetResidencyPriority(
+                    static_cast<UINT>(ppObjects.size()),
+                    ppObjects.data(),
+                    priorities.data());
+            }
+
+        private:
+            type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get(); }
+        };
+
         template<class Ty>
         class Device : public ComWrapper<Ty>, private DeviceInterface<Device<Ty>, Ty>
         {
@@ -484,16 +530,31 @@ namespace TypedD3D::D3D12
             using value_type = Ty;
 
         public:
+            template<class DerivedDeviceTy>
+            Device(const Device<DerivedDeviceTy>& other) :
+                ComWrapper<Ty>::ComWrapper(other.GetComPtr())
+            {
+
+            }
+
+        public:
             DeviceInterface<Device<Ty>, Ty>* GetInterrface() { return this; }
             DeviceInterface<Device<Ty>, Ty>* operator->() { return this; }
+
+            template<class Ty2>
+            Ty2 As()
+            {
+                return Ty2(Helpers::COM::Cast<typename Ty2::value_type>(ComWrapper<Ty>::GetComPtr()));
+            }
         };
     }
 
 
     using Device = Internal::Device<ID3D12Device>;
+    using Device1 = Internal::Device<ID3D12Device1>;
 
     template<class DeviceTy = Device>
-    Utils::Expected<Device, HRESULT> CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
+    Utils::Expected<DeviceTy, HRESULT> CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
     {
         Utils::Expected<ComPtr<ID3D12Device>, HRESULT> device = Helpers::D3D12::CreateDevice(minimumFeatureLevel, optAdapter);
 

@@ -37,7 +37,7 @@ void D3D12HelloWorld()
     ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface().GetValue();
     debugLayer->EnableDebugLayer();
 
-    TypedD3D::D3D12::Device device = TypedD3D::D3D12::CreateDevice(D3D_FEATURE_LEVEL_12_0).GetValue();
+    TypedD3D::D3D12::Device1 device = TypedD3D::D3D12::CreateDevice<TypedD3D::D3D12::Device1>(D3D_FEATURE_LEVEL_12_0).GetValue();
     ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Helpers::COM::Cast<ID3D12DebugDevice>(device.GetComPtr());
 
     constexpr UINT backBufferCount = 2;
@@ -47,12 +47,7 @@ void D3D12HelloWorld()
     commandAllocators[0] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().GetValue();
     commandAllocators[1] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().GetValue();
     TypedD3D::D3D12::CommandList::Direct temp = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0], 0, nullptr).GetValue();
-
-
     TypedD3D::D3D12::CommandList::Direct1 commandList = temp.As<TypedD3D::D3D12::CommandList::Direct1>();
-
-
-
 
     UINT64 fenceValue = 0;
     ComPtr<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE).GetValue();
