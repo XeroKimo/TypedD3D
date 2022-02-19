@@ -892,6 +892,73 @@ namespace TypedD3D::D3D12::CommandList
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList2>;
         };
 
+
+
+        template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
+        class ListInterface<WrapperTy, Type, ID3D12GraphicsCommandList3>
+        {
+        private:
+            using trait_value_type = command_list_trait<Type, ID3D12GraphicsCommandList3>;
+            using list_value_type = typename trait_value_type::list_value_type;
+            using allocator_value_type = typename trait_value_type::allocator_value_type;
+            using wrapper_type = WrapperTy;
+
+        public:
+            void SetProtectedResourceSession(
+                ID3D12ProtectedResourceSession* pProtectedResourceSession)
+            {
+                InternalCommandList().SetProtectedResourceSession(pProtectedResourceSession);
+            }
+
+
+            //In code order                                                          //Alphabetical order
+            //using Base::SetProtectedResourceSession;                               using Base::SetProtectedResourceSession;
+        private:
+            list_value_type& InternalCommandList() { return *static_cast<wrapper_type&>(*this).Get(); }
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList3> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList3>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList2>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList3>;
+
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
+            friend Base;
+
+        public:
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList3> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList3>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList2>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList3>;
+
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
+            friend Base;
+
+        public:
+            using Base::SetProtectedResourceSession;
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList3> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList3>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList2>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList3>;
+
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
+            friend Base;
+        public:
+            using Base::SetProtectedResourceSession;
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList3> : public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList3>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList2>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList3>;
+        };
+
+
+
         template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
         class CommandList : public ComWrapper<ListTy>, private interface_type<Type, ListTy>
         {
