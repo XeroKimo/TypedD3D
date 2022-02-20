@@ -381,7 +381,7 @@ namespace TypedD3D::D3D12::CommandList
                 BOOL RTsSingleHandleToDescriptorRange,
                 const DescriptorHandle::CPU_DSV* pDepthStencilDescriptor)
             {
-                std::unique_ptr<D3D12_CPU_DESCRIPTOR_HANDLE []> renderTargets = std::make_unique<D3D12_CPU_DESCRIPTOR_HANDLE []>(pRenderTargetDescriptors.size());
+                std::unique_ptr<D3D12_CPU_DESCRIPTOR_HANDLE[]> renderTargets = std::make_unique<D3D12_CPU_DESCRIPTOR_HANDLE[]>(pRenderTargetDescriptors.size());
 
                 for(size_t i = 0; i < pRenderTargetDescriptors.size(); i++)
                 {
@@ -668,8 +668,6 @@ namespace TypedD3D::D3D12::CommandList
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>;
 
         };
-
-
 
         template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
         class ListInterface<WrapperTy, Type, ID3D12GraphicsCommandList1>
@@ -958,6 +956,245 @@ namespace TypedD3D::D3D12::CommandList
         };
 
 
+        template<class WrapperTy, class ListTy>
+        class RenderPassInterface;
+
+        template<class ListTy>
+        class RenderPass;
+
+
+        template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
+        class ListInterface<WrapperTy, Type, ID3D12GraphicsCommandList4>
+        {
+        private:
+            using trait_value_type = command_list_trait<Type, ID3D12GraphicsCommandList4>;
+            using list_value_type = typename trait_value_type::list_value_type;
+            using allocator_value_type = typename trait_value_type::allocator_value_type;
+            using wrapper_type = WrapperTy;
+
+        public:
+            RenderPass<ID3D12GraphicsCommandList4> BeginRenderPass(
+                std::span<const D3D12_RENDER_PASS_RENDER_TARGET_DESC> renderTargets,
+                const D3D12_RENDER_PASS_DEPTH_STENCIL_DESC* pDepthStencil,
+                D3D12_RENDER_PASS_FLAGS Flags);
+
+            void EndRenderPass()
+            {
+                InternalCommandList().EndRenderPass();
+            }
+
+            void InitializeMetaCommand(
+                ID3D12MetaCommand& pMetaCommand,
+                const void* pInitializationParametersData,
+                SIZE_T InitializationParametersDataSizeInBytes)
+            {
+                InternalCommandList().InitializeMetaCommand(&pMetaCommand, pInitializationParametersData, InitializationParametersDataSizeInBytes);
+            }
+
+            void InitializeMetaCommand(
+                ID3D12MetaCommand& pMetaCommand)
+            {
+                InitializeMetaCommand(pMetaCommand, nullptr, 0);
+            }
+
+            template<class T>
+            void InitializeMetaCommand(
+                ID3D12MetaCommand& pMetaCommand,
+                const T& pInitializationParametersData)
+            {
+                InitializeMetaCommand(pMetaCommand, &pInitializationParametersData, sizeof(T));
+            }
+
+            void ExecuteMetaCommand(
+                ID3D12MetaCommand& pMetaCommand,
+                const void* pExecutionParametersData,
+                SIZE_T ExecutionParametersDataSizeInBytes)
+            {
+                InternalCommandList().ExecuteMetaCommand(&pMetaCommand, pExecutionParametersData, ExecutionParametersDataSizeInBytes);
+            }
+
+            void ExecuteMetaCommand(
+                ID3D12MetaCommand& pMetaCommand)
+            {
+                ExecuteMetaCommand(pMetaCommand, nullptr, 0);
+            }
+
+            template<class T>
+            void ExecuteMetaCommand(
+                ID3D12MetaCommand& pMetaCommand,
+                const T& pExecutionParametersData)
+            {
+                ExecuteMetaCommand(pMetaCommand, &pExecutionParametersData, sizeof(T));
+            }
+
+            void BuildRaytracingAccelerationStructure(
+                const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC& pDesc,
+                std::span<const D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_DESC> pPostbuildInfoDescs)
+            {
+                InternalCommandList().BuildRaytracingAccelerationStructure(
+                    &pDesc,
+                    static_cast<UINT>(pPostbuildInfoDescs.size()),
+                    pPostbuildInfoDescs.data());
+            }
+
+            void EmitRaytracingAccelerationStructurePostbuildInfo(
+                const D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_DESC& pDesc,
+                std::span<const D3D12_GPU_VIRTUAL_ADDRESS> pSourceAccelerationStructureData)
+            {
+                InternalCommandList().EmitRaytracingAccelerationStructurePostbuildInfo(
+                    &pDesc,
+                    static_cast<UINT>(pSourceAccelerationStructureData.size()),
+                    pSourceAccelerationStructureData.data());
+            }
+
+            void CopyRaytracingAccelerationStructure(
+                D3D12_GPU_VIRTUAL_ADDRESS DestAccelerationStructureData,
+                D3D12_GPU_VIRTUAL_ADDRESS SourceAccelerationStructureData,
+                D3D12_RAYTRACING_ACCELERATION_STRUCTURE_COPY_MODE Mode)
+            {
+                InternalCommandList().CopyRaytracingAccelerationStructure(
+                    DestAccelerationStructureData,
+                    SourceAccelerationStructureData,
+                    Mode);
+            }
+
+            void SetPipelineState1(
+                ID3D12StateObject* pStateObject)
+            {
+                InternalCommandList().SetPipelineState1(pStateObject);
+            }
+
+            void DispatchRays(
+                const D3D12_DISPATCH_RAYS_DESC& pDesc)
+            {
+                InternalCommandList().DispatchRays(&pDesc);
+            }
+
+
+            //In code order                                                          //Alphabetical order
+            //using Base::BeginRenderPass;                                           using Base::BeginRenderPass;
+            //using Base::EndRenderPass;                                             using Base::BuildRaytracingAccelerationStructure;
+            //using Base::InitializeMetaCommand;                                     using Base::CopyRaytracingAccelerationStructure;
+            //using Base::ExecuteMetaCommand;                                        using Base::DispatchRays;
+            //using Base::BuildRaytracingAccelerationStructure;                      using Base::EmitRaytracingAccelerationStructurePostbuildInfo;
+            //using Base::EmitRaytracingAccelerationStructurePostbuildInfo;          using Base::EndRenderPass;
+            //using Base::CopyRaytracingAccelerationStructure;                       using Base::ExecuteMetaCommand;
+            //using Base::SetPipelineState1;                                         using Base::InitializeMetaCommand;
+            //using Base::DispatchRays;                                              using Base::SetPipelineState1;
+        private:
+            list_value_type& InternalCommandList() { return *static_cast<wrapper_type&>(*this).Get(); }
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList4> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList4>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList3>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList4>;
+
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
+            friend Base;
+
+        public:
+            using Base::DispatchRays;
+            using Base::SetPipelineState1;
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList4> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList4>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList3>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList4>;
+
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
+            friend Base;
+
+        public:
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList4> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList4>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList3>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList4>;
+
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
+            friend Base;
+        public:
+            using Base::BuildRaytracingAccelerationStructure;
+            using Base::CopyRaytracingAccelerationStructure;
+            using Base::DispatchRays;
+            using Base::EmitRaytracingAccelerationStructurePostbuildInfo;
+            using Base::ExecuteMetaCommand;
+            using Base::InitializeMetaCommand;
+            using Base::SetPipelineState1;
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList4> : public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList4>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList3>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList4>;
+        };
+
+        template<class WrapperTy>
+        class RenderPassInterface<WrapperTy, ID3D12GraphicsCommandList4> : 
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>,
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1>,
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList2>,
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList3>,
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList4>
+        {
+            template<class WrapperTy, D3D12_COMMAND_LIST_TYPE type, class ListTy>
+            friend class ListInterface;
+
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>;
+            using Base1 = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1>;
+            using Base2 = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList2>;
+            using Base3 = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList3>;
+            using Base4 = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList4>;
+
+        public:
+            using Base::BeginQuery;
+            using Base::Close;
+            using Base::DrawIndexedInstanced;
+            using Base::DrawInstanced;
+            using Base::EndEvent;
+            using Base::EndQuery;
+            using Base::ExecuteBundle;
+            using Base::ExecuteIndirect;
+            using Base::IASetIndexBuffer;
+            using Base::IASetPrimitiveTopology;
+            using Base::IASetVertexBuffers;
+            using Base::OMSetBlendFactor;
+            using Base::OMSetStencilRef;
+            using Base::Reset;
+            using Base::ResourceBarrier;
+            using Base::RSSetScissorRects;
+            using Base::RSSetViewports;
+            using Base::SetComputeRoot32BitConstant;
+            using Base::SetComputeRoot32BitConstants;
+            using Base::SetComputeRootConstantBufferView;
+            using Base::SetComputeRootDescriptorTable;
+            using Base::SetComputeRootShaderResourceView;
+            using Base::SetComputeRootSignature;
+            using Base::SetComputeRootUnorderedAccessView;
+            using Base::SetDescriptorHeaps;
+            using Base::SetGraphicsRoot32BitConstant;
+            using Base::SetGraphicsRoot32BitConstants;
+            using Base::SetGraphicsRootConstantBufferView;
+            using Base::SetGraphicsRootDescriptorTable;
+            using Base::SetGraphicsRootShaderResourceView;
+            using Base::SetGraphicsRootSignature;
+            using Base::SetGraphicsRootUnorderedAccessView;
+            using Base::SetMarker;
+            using Base::SetPipelineState;
+            using Base::SetPredication;
+            using Base::SOSetTargets;
+
+            using Base1::OMSetDepthBounds;
+            using Base1::SetSamplePositions;
+            using Base1::SetViewInstanceMask;
+
+            using Base2::WriteBufferImmediate;
+
+            using Base4::EndRenderPass;
+        };
 
         template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
         class CommandList : public ComWrapper<ListTy>, private interface_type<Type, ListTy>
@@ -1006,6 +1243,35 @@ namespace TypedD3D::D3D12::CommandList
         {
             InternalCommandList().ExecuteBundle(pCommandList.Get());
         }
+
+        template<class ListTy>
+        class RenderPass : public ComWrapper<ListTy>, private RenderPassInterface<RenderPass<ListTy>, ListTy>
+        {
+            template<class WrapperTy, class ListTy2>
+            friend class RenderPassInterface;
+
+            using internal_interface_type = RenderPassInterface<RenderPass<ListTy>, ListTy>;
+
+        public:
+            using trait_value_type = command_list_trait<D3D12_COMMAND_LIST_TYPE_DIRECT, ListTy>;
+            using list_value_type = typename trait_value_type::list_value_type;
+            using allocator_value_type = typename trait_value_type::allocator_value_type;
+            static constexpr D3D12_COMMAND_LIST_TYPE value = trait_value_type::value;
+
+        public:
+            using ComWrapper<ListTy>::ComWrapper;
+
+        public:
+            internal_interface_type* GetInterface() { return this; }
+            internal_interface_type* operator->() { return this; }
+        };
+
+        template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
+        RenderPass<ID3D12GraphicsCommandList4> ListInterface<WrapperTy, Type, ID3D12GraphicsCommandList4>::BeginRenderPass(std::span<const D3D12_RENDER_PASS_RENDER_TARGET_DESC> renderTargets, const D3D12_RENDER_PASS_DEPTH_STENCIL_DESC* pDepthStencil, D3D12_RENDER_PASS_FLAGS Flags)
+        {
+            InternalCommandList().BeginRenderPass(static_cast<UINT>(renderTargets.size()), renderTargets.data(), pDepthStencil, Flags);
+            return RenderPass(static_cast<wrapper_type&>(*this).GetComPtr());
+        }
     }
 
     template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
@@ -1014,34 +1280,36 @@ namespace TypedD3D::D3D12::CommandList
     using Direct = Internal::Direct<ID3D12GraphicsCommandList>;
     using Direct1 = Internal::Direct<ID3D12GraphicsCommandList1>;
     using Direct2 = Internal::Direct<ID3D12GraphicsCommandList2>;
-    //using Direct3 = Internal::Direct<ID3D12GraphicsCommandList3>;
-    //using Direct4 = Internal::Direct<ID3D12GraphicsCommandList4>;
+    using Direct3 = Internal::Direct<ID3D12GraphicsCommandList3>;
+    using Direct4 = Internal::Direct<ID3D12GraphicsCommandList4>;
     //using Direct5 = Internal::Direct<ID3D12GraphicsCommandList5>;
     //using Direct6 = Internal::Direct<ID3D12GraphicsCommandList6>;
 
     using Bundle = Internal::Bundle<ID3D12GraphicsCommandList>;
     using Bundle1 = Internal::Bundle<ID3D12GraphicsCommandList1>;
     using Bundle2 = Internal::Bundle<ID3D12GraphicsCommandList2>;
-    //using Bundle3 = Internal::Bundle<ID3D12GraphicsCommandList3>;
-    //using Bundle4 = Internal::Bundle<ID3D12GraphicsCommandList4>;
+    using Bundle3 = Internal::Bundle<ID3D12GraphicsCommandList3>;
+    using Bundle4 = Internal::Bundle<ID3D12GraphicsCommandList4>;
     //using Bundle5 = Internal::Bundle<ID3D12GraphicsCommandList5>;
     //using Bundle6 = Internal::Bundle<ID3D12GraphicsCommandList6>;
 
     using Compute = Internal::Compute<ID3D12GraphicsCommandList>;
     using Compute1 = Internal::Compute<ID3D12GraphicsCommandList1>;
     using Compute2 = Internal::Compute<ID3D12GraphicsCommandList2>;
-    //using Compute3 = Internal::Compute<ID3D12GraphicsCommandList3>;
-    //using Compute4 = Internal::Compute<ID3D12GraphicsCommandList4>;
+    using Compute3 = Internal::Compute<ID3D12GraphicsCommandList3>;
+    using Compute4 = Internal::Compute<ID3D12GraphicsCommandList4>;
     //using Compute5 = Internal::Compute<ID3D12GraphicsCommandList5>;
     //using Compute6 = Internal::Compute<ID3D12GraphicsCommandList6>;
 
     using Copy = Internal::Copy<ID3D12GraphicsCommandList>;
     using Copy1 = Internal::Copy<ID3D12GraphicsCommandList1>;
     using Copy2 = Internal::Copy<ID3D12GraphicsCommandList2>;
-    //using Copy3 = Internal::Copy<ID3D12GraphicsCommandList3>;
-    //using Copy4 = Internal::Copy<ID3D12GraphicsCommandList4>;
+    using Copy3 = Internal::Copy<ID3D12GraphicsCommandList3>;
+    using Copy4 = Internal::Copy<ID3D12GraphicsCommandList4>;
     //using Copy5 = Internal::Copy<ID3D12GraphicsCommandList5>;
     //using Copy6 = Internal::Copy<ID3D12GraphicsCommandList6>;
+
+    using RenderPass = Internal::RenderPass<ID3D12GraphicsCommandList4>;
 };
 
 #pragma warning(pop)
