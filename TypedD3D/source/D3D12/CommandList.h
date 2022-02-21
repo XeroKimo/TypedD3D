@@ -563,7 +563,8 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList>;
 
@@ -602,7 +603,8 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList>;
 
@@ -626,7 +628,8 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList>;
 
@@ -663,11 +666,14 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList> : public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList> :
+            public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>;
 
         };
+
+
 
         template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
         class ListInterface<WrapperTy, Type, ID3D12GraphicsCommandList1>
@@ -778,7 +784,9 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList1> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList1>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList1> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList1>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList1>;
 
@@ -792,7 +800,9 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList1> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList1>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList1> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList1>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList1>;
 
@@ -805,7 +815,9 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList1> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList1>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList1> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList1>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList1>;
 
@@ -817,7 +829,9 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1> : public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1> :
+            public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1>;
         };
@@ -850,7 +864,9 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList2> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList2>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList1>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList2> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList2>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList1>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList2>;
 
@@ -862,7 +878,9 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList2> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList2>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList1>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList2> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList2>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList1>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList2>;
 
@@ -874,7 +892,9 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList2> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList2>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList1>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList2> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList2>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList1>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList2>;
 
@@ -885,7 +905,9 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList2> : public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList2>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList2> :
+            public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList2>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList2>;
         };
@@ -916,7 +938,9 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList3> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList3>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList2>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList3> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList3>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList2>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList3>;
 
@@ -927,7 +951,9 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList3> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList3>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList2>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList3> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList3>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList2>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList3>;
 
@@ -939,7 +965,9 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList3> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList3>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList2>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList3> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList3>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList2>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList3>;
 
@@ -950,10 +978,13 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList3> : public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList3>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList2>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList3> :
+            public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList3>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList2>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList3>;
         };
+
 
 
         template<class WrapperTy, class ListTy>
@@ -961,7 +992,6 @@ namespace TypedD3D::D3D12::CommandList
 
         template<class ListTy>
         class RenderPass;
-
 
         template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
         class ListInterface<WrapperTy, Type, ID3D12GraphicsCommandList4>
@@ -1086,7 +1116,9 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList4> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList4>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList3>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList4> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList4>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList3>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList4>;
 
@@ -1099,7 +1131,9 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList4> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList4>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList3>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList4> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList4>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList3>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList4>;
 
@@ -1110,7 +1144,9 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList4> : private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList4>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList3>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList4> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList4>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList3>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList4>;
 
@@ -1127,13 +1163,15 @@ namespace TypedD3D::D3D12::CommandList
         };
 
         template<class WrapperTy>
-        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList4> : public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList4>, public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList3>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList4> :
+            public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList4>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList3>
         {
             using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList4>;
         };
 
         template<class WrapperTy>
-        class RenderPassInterface<WrapperTy, ID3D12GraphicsCommandList4> : 
+        class RenderPassInterface<WrapperTy, ID3D12GraphicsCommandList4> :
             private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>,
             private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1>,
             private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList2>,
@@ -1143,7 +1181,7 @@ namespace TypedD3D::D3D12::CommandList
             template<class WrapperTy, D3D12_COMMAND_LIST_TYPE type, class ListTy>
             friend class ListInterface;
 
-            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>;
+            using Base =  ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList>;
             using Base1 = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList1>;
             using Base2 = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList2>;
             using Base3 = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList3>;
@@ -1196,6 +1234,105 @@ namespace TypedD3D::D3D12::CommandList
             using Base4::EndRenderPass;
         };
 
+
+        template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
+        class ListInterface<WrapperTy, Type, ID3D12GraphicsCommandList5>
+        {
+        private:
+            using trait_value_type = command_list_trait<Type, ID3D12GraphicsCommandList5>;
+            using list_value_type = typename trait_value_type::list_value_type;
+            using allocator_value_type = typename trait_value_type::allocator_value_type;
+            using wrapper_type = WrapperTy;
+
+        public:
+            void RSSetShadingRate(
+                D3D12_SHADING_RATE baseShadingRate,
+                const D3D12_SHADING_RATE_COMBINER* combiners)
+            {
+                InternalCommandList().RSSetShadingRate(
+                    baseShadingRate,
+                    combiners);
+            }
+
+            void RSSetShadingRateImage(
+                ID3D12Resource* shadingRateImage)
+            {
+                InternalCommandList().RSSetShadingRateImage(
+                    shadingRateImage);
+            }
+
+        public:
+
+            //In code order                                                          //Alphabetical order
+            //using Base::RSSetShadingRate;                                          using Base::RSSetShadingRate;
+            //using Base::RSSetShadingRateImage;                                     using Base::RSSetShadingRateImage;
+        private:
+            list_value_type& InternalCommandList() { return *static_cast<wrapper_type&>(*this).Get(); }
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList5> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList5>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList4>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_BUNDLE, ID3D12GraphicsCommandList5>;
+
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
+            friend Base;
+
+        public:
+            using Base::RSSetShadingRate;
+            using Base::RSSetShadingRateImage;
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList5> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList5>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList4>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COPY, ID3D12GraphicsCommandList5>;
+
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
+            friend Base;
+
+        public:
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList5> :
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList5>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList4>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_COMPUTE, ID3D12GraphicsCommandList5>;
+
+            //Enables casting to WrapperTy as WrapperTy would not know it inherits from ListInterface
+            friend Base;
+        public:
+
+        };
+
+        template<class WrapperTy>
+        class PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList5> :
+            public ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList5>,
+            public PublicListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList4>
+        {
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList5>;
+        };
+
+        template<class WrapperTy>
+        class RenderPassInterface<WrapperTy, ID3D12GraphicsCommandList5> :
+            public RenderPassInterface<WrapperTy, ID3D12GraphicsCommandList4>,
+            private ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList5>
+        {
+            template<class WrapperTy, D3D12_COMMAND_LIST_TYPE type, class ListTy>
+            friend class ListInterface;
+
+            using Base = ListInterface<WrapperTy, D3D12_COMMAND_LIST_TYPE_DIRECT, ID3D12GraphicsCommandList5>;
+        public:
+            using Base::RSSetShadingRate;
+            using Base::RSSetShadingRateImage;
+        };
+
         template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
         class CommandList : public ComWrapper<ListTy>, private interface_type<Type, ListTy>
         {
@@ -1229,7 +1366,7 @@ namespace TypedD3D::D3D12::CommandList
             {
                 if constexpr(Ty::value == value)
                 {
-                    return Ty(Helpers::COM::Cast<Ty::list_value_type>(ComWrapper<ListTy>::GetComPtr()));
+                    return Ty(Helpers::COM::Cast<typename Ty::list_value_type>(ComWrapper<ListTy>::GetComPtr()));
                 }
                 else
                 {
@@ -1250,6 +1387,9 @@ namespace TypedD3D::D3D12::CommandList
             template<class WrapperTy, class ListTy2>
             friend class RenderPassInterface;
 
+            template<class WrapperT, D3D12_COMMAND_LIST_TYPE Type2, class List>
+            friend class ListInterface;
+
             using internal_interface_type = RenderPassInterface<RenderPass<ListTy>, ListTy>;
 
         public:
@@ -1264,6 +1404,19 @@ namespace TypedD3D::D3D12::CommandList
         public:
             internal_interface_type* GetInterface() { return this; }
             internal_interface_type* operator->() { return this; }
+
+            template<class Ty>
+            Ty As()
+            {
+                if constexpr(Ty::value == value)
+                {
+                    return Ty(Helpers::COM::Cast<typename Ty::list_value_type>(ComWrapper<ListTy>::GetComPtr()));
+                }
+                else
+                {
+                    return Ty();
+                }
+            }
         };
 
         template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
@@ -1282,7 +1435,7 @@ namespace TypedD3D::D3D12::CommandList
     using Direct2 = Internal::Direct<ID3D12GraphicsCommandList2>;
     using Direct3 = Internal::Direct<ID3D12GraphicsCommandList3>;
     using Direct4 = Internal::Direct<ID3D12GraphicsCommandList4>;
-    //using Direct5 = Internal::Direct<ID3D12GraphicsCommandList5>;
+    using Direct5 = Internal::Direct<ID3D12GraphicsCommandList5>;
     //using Direct6 = Internal::Direct<ID3D12GraphicsCommandList6>;
 
     using Bundle = Internal::Bundle<ID3D12GraphicsCommandList>;
@@ -1290,7 +1443,7 @@ namespace TypedD3D::D3D12::CommandList
     using Bundle2 = Internal::Bundle<ID3D12GraphicsCommandList2>;
     using Bundle3 = Internal::Bundle<ID3D12GraphicsCommandList3>;
     using Bundle4 = Internal::Bundle<ID3D12GraphicsCommandList4>;
-    //using Bundle5 = Internal::Bundle<ID3D12GraphicsCommandList5>;
+    using Bundle5 = Internal::Bundle<ID3D12GraphicsCommandList5>;
     //using Bundle6 = Internal::Bundle<ID3D12GraphicsCommandList6>;
 
     using Compute = Internal::Compute<ID3D12GraphicsCommandList>;
@@ -1298,7 +1451,7 @@ namespace TypedD3D::D3D12::CommandList
     using Compute2 = Internal::Compute<ID3D12GraphicsCommandList2>;
     using Compute3 = Internal::Compute<ID3D12GraphicsCommandList3>;
     using Compute4 = Internal::Compute<ID3D12GraphicsCommandList4>;
-    //using Compute5 = Internal::Compute<ID3D12GraphicsCommandList5>;
+    using Compute5 = Internal::Compute<ID3D12GraphicsCommandList5>;
     //using Compute6 = Internal::Compute<ID3D12GraphicsCommandList6>;
 
     using Copy = Internal::Copy<ID3D12GraphicsCommandList>;
@@ -1306,10 +1459,11 @@ namespace TypedD3D::D3D12::CommandList
     using Copy2 = Internal::Copy<ID3D12GraphicsCommandList2>;
     using Copy3 = Internal::Copy<ID3D12GraphicsCommandList3>;
     using Copy4 = Internal::Copy<ID3D12GraphicsCommandList4>;
-    //using Copy5 = Internal::Copy<ID3D12GraphicsCommandList5>;
+    using Copy5 = Internal::Copy<ID3D12GraphicsCommandList5>;
     //using Copy6 = Internal::Copy<ID3D12GraphicsCommandList6>;
 
     using RenderPass = Internal::RenderPass<ID3D12GraphicsCommandList4>;
+    using RenderPass1 = Internal::RenderPass<ID3D12GraphicsCommandList5>;
 };
 
 #pragma warning(pop)
