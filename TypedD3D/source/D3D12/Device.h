@@ -474,6 +474,8 @@ namespace TypedD3D::D3D12
             type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get(); }
         };
 
+
+
         template<class WrapperTy>
         class DeviceInterface<WrapperTy, ID3D12Device1> : public DeviceInterface<WrapperTy, ID3D12Device>
         {
@@ -519,6 +521,25 @@ namespace TypedD3D::D3D12
             type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get(); }
         };
 
+
+
+        template<class WrapperTy>
+        class DeviceInterface<WrapperTy, ID3D12Device2> : public DeviceInterface<WrapperTy, ID3D12Device1>
+        {
+        private:
+            using type = ID3D12Device2;
+
+        public:
+            Utils::Expected<ComPtr<ID3D12PipelineState>, HRESULT> CreatePipelineState(
+                const D3D12_PIPELINE_STATE_STREAM_DESC pDesc)
+            {
+                return Helpers::COM::IIDToObjectForwardFunction<ID3D12PipelineState>(&ID3D12Device2::CreatePipelineState, InternalGetDevice(), &pDesc);
+            }
+
+        private:
+            type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get(); }
+        };
+
         template<class Ty>
         class Device : public ComWrapper<Ty>, private DeviceInterface<Device<Ty>, Ty>
         {
@@ -552,6 +573,7 @@ namespace TypedD3D::D3D12
 
     using Device = Internal::Device<ID3D12Device>;
     using Device1 = Internal::Device<ID3D12Device1>;
+    using Device2 = Internal::Device<ID3D12Device2>;
 
     template<class DeviceTy = Device>
     Utils::Expected<DeviceTy, HRESULT> CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
