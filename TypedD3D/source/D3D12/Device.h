@@ -540,6 +540,44 @@ namespace TypedD3D::D3D12
             type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get(); }
         };
 
+
+
+        template<class WrapperTy>
+        class DeviceInterface<WrapperTy, ID3D12Device3> : public DeviceInterface<WrapperTy, ID3D12Device2>
+        {
+        private:
+            using type = ID3D12Device3;
+
+        public:
+            Utils::Expected<ComPtr<ID3D12Heap>, HRESULT> OpenExistingHeapFromAddress(
+                const void* pAddress)
+            {
+                return Helpers::COM::IIDToObjectForwardFunction<ID3D12Heap>(&ID3D12Device3::OpenExistingHeapFromAddress, InternalGetDevice(), pAddress);
+            }
+
+            HRESULT OpenExistingHeapFromFileMapping(
+                HANDLE hFileMapping)
+            {
+                return Helpers::COM::IIDToObjectForwardFunction<ID3D12Heap>(&ID3D12Device3::OpenExistingHeapFromFileMapping, InternalGetDevice(), hFileMapping);
+            }
+
+            HRESULT EnqueueMakeResident(
+                D3D12_RESIDENCY_FLAGS Flags,
+                std::span<ID3D12Pageable*> ppObjects,
+                ID3D12Fence& pFenceToSignal,
+                UINT64 FenceValueToSignal)
+            {
+                return InternalGetDevice().EnqueueMakeResident(
+                    Flags,
+                    static_cast<UINT>(ppObjects.size()),
+                    ppObjects.data(),
+                    &pFenceToSignal, FenceValueToSignal);
+            }
+
+        private:
+            type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get(); }
+        };
+
         template<class Ty>
         class Device : public ComWrapper<Ty>, private DeviceInterface<Device<Ty>, Ty>
         {
@@ -574,6 +612,7 @@ namespace TypedD3D::D3D12
     using Device = Internal::Device<ID3D12Device>;
     using Device1 = Internal::Device<ID3D12Device1>;
     using Device2 = Internal::Device<ID3D12Device2>;
+    using Device3 = Internal::Device<ID3D12Device3>;
 
     template<class DeviceTy = Device>
     Utils::Expected<DeviceTy, HRESULT> CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
