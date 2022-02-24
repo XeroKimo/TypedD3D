@@ -578,6 +578,133 @@ namespace TypedD3D::D3D12
             type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get(); }
         };
 
+
+
+        template<class WrapperTy>
+        class DeviceInterface<WrapperTy, ID3D12Device3> : public DeviceInterface<WrapperTy, ID3D12Device2>
+        {
+        private:
+            using type = ID3D12Device3;
+
+        public:
+            Utils::Expected<ComPtr<ID3D12Heap>, HRESULT> OpenExistingHeapFromAddress(
+                const void* pAddress)
+            {
+                return Helpers::COM::IIDToObjectForwardFunction<ID3D12Heap>(&ID3D12Device3::OpenExistingHeapFromAddress, InternalGetDevice(), pAddress);
+            }
+
+            HRESULT OpenExistingHeapFromFileMapping(
+                HANDLE hFileMapping)
+            {
+                return Helpers::COM::IIDToObjectForwardFunction<ID3D12Heap>(&ID3D12Device3::OpenExistingHeapFromFileMapping, InternalGetDevice(), hFileMapping);
+            }
+
+            HRESULT EnqueueMakeResident(
+                D3D12_RESIDENCY_FLAGS Flags,
+                std::span<ID3D12Pageable*> ppObjects,
+                ID3D12Fence& pFenceToSignal,
+                UINT64 FenceValueToSignal)
+            {
+                return InternalGetDevice().EnqueueMakeResident(
+                    Flags,
+                    static_cast<UINT>(ppObjects.size()),
+                    ppObjects.data(),
+                    &pFenceToSignal, FenceValueToSignal);
+            }
+
+        private:
+            type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get(); }
+        };
+
+
+
+        template<class WrapperTy>
+        class DeviceInterface<WrapperTy, ID3D12Device4> : public DeviceInterface<WrapperTy, ID3D12Device3>
+        {
+        private:
+            using type = ID3D12Device4;
+
+        public:
+            template<D3D12_COMMAND_LIST_TYPE type>
+            Utils::Expected<CommandList::CommandList_t<type, ID3D12GraphicsCommandList>, HRESULT> CreateCommandList1(
+                UINT nodeMask,
+                D3D12_COMMAND_LIST_FLAGS flags)
+            {
+                Utils::Expected<ComPtr<ID3D12GraphicsCommandList>, HRESULT> cl = Helpers::D3D12::CreateCommandList(InternalGetDevice(), type, flags, nodeMask);
+
+                if(!cl.HasValue())
+                    return cl.GetError();
+
+                return CommandList::CommandList_t<type, ID3D12GraphicsCommandList>(cl.GetValue());
+            }
+
+            Utils::Expected<ComPtr<ID3D12ProtectedResourceSession>, HRESULT> CreateProtectedResourceSession(
+                const D3D12_PROTECTED_RESOURCE_SESSION_DESC& pDesc)
+            {
+                return Helpers::COM::IIDToObjectForwardFunction<ID3D12ProtectedResourceSession>(&ID3D12Device4::CreateProtectedResourceSession, InternalGetDevice(), &pDesc);
+            }
+
+            Utils::Expected<ComPtr<ID3D12Resource>, HRESULT> CreateCommittedResource1(
+                const D3D12_HEAP_PROPERTIES& pHeapProperties,
+                D3D12_HEAP_FLAGS HeapFlags,
+                const D3D12_RESOURCE_DESC& pDesc,
+                D3D12_RESOURCE_STATES InitialResourceState,
+                const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+                ID3D12ProtectedResourceSession* pProtectedSession)
+            {
+                return Helpers::COM::IIDToObjectForwardFunction<ID3D12Resource>(
+                    &ID3D12Device4::CreateCommittedResource1, 
+                    InternalGetDevice(), 
+                    &pHeapProperties, 
+                    HeapFlags, 
+                    &pDesc, 
+                    InitialResourceState, 
+                    pOptimizedClearValue, 
+                    pProtectedSession);
+            }
+
+            Utils::Expected<ComPtr<ID3D12Heap>, HRESULT> CreateHeap1(
+                const D3D12_HEAP_DESC& pDesc,
+                ID3D12ProtectedResourceSession* pProtectedSession)
+            {
+                return Helpers::COM::IIDToObjectForwardFunction<ID3D12Heap>(
+                    &ID3D12Device4::CreateHeap1,
+                    InternalGetDevice(),
+                    &pDesc,
+                    pProtectedSession);
+            }
+
+            Utils::Expected<ComPtr<ID3D12Resource>, HRESULT> CreateReservedResource1(
+                const D3D12_RESOURCE_DESC& pDesc,
+                D3D12_RESOURCE_STATES InitialState,
+                const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+                ID3D12ProtectedResourceSession* pProtectedSession)
+            {
+                return Helpers::COM::IIDToObjectForwardFunction<ID3D12Heap>(
+                    &ID3D12Device4::CreateReservedResource1,
+                    InternalGetDevice(),
+                    &pDesc,
+                    InitialState,
+                    pOptimizedClearValue,
+                    pProtectedSession);
+            }
+
+            std::vector<D3D12_RESOURCE_ALLOCATION_INFO1> GetResourceAllocationInfo1(
+                UINT visibleMask,
+                std::span<const D3D12_RESOURCE_DESC> pResourceDescs)
+            {
+                std::vector<D3D12_RESOURCE_ALLOCATION_INFO1> pResourceAllocationInfo1(pResourceDescs.size());
+                InternalGetDevice().GetResourceAllocationInfo1(visibleMask, static_cast<UINT>(pResourceDescs.size()), pResourceDescs.data(), pResourceAllocationInfo1.data());
+                return pResourceAllocationInfo1;
+            }
+
+
+        private:
+            type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get(); }
+        };
+
+
+
         template<class Ty>
         class Device : public ComWrapper<Ty>, private DeviceInterface<Device<Ty>, Ty>
         {
@@ -613,6 +740,7 @@ namespace TypedD3D::D3D12
     using Device1 = Internal::Device<ID3D12Device1>;
     using Device2 = Internal::Device<ID3D12Device2>;
     using Device3 = Internal::Device<ID3D12Device3>;
+    using Device4 = Internal::Device<ID3D12Device4>;
 
     template<class DeviceTy = Device>
     Utils::Expected<DeviceTy, HRESULT> CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)

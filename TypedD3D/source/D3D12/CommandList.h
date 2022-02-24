@@ -1235,6 +1235,7 @@ namespace TypedD3D::D3D12::CommandList
         };
 
 
+
         template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
         class ListInterface<WrapperTy, Type, ID3D12GraphicsCommandList5>
         {
@@ -1332,6 +1333,8 @@ namespace TypedD3D::D3D12::CommandList
             using Base::RSSetShadingRate;
             using Base::RSSetShadingRateImage;
         };
+
+
 
         template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
         class CommandList : public ComWrapper<ListTy>, private interface_type<Type, ListTy>
