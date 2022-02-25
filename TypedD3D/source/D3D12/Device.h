@@ -17,6 +17,14 @@ namespace TypedD3D::D3D12
 {
     using Microsoft::WRL::ComPtr;
 
+
+    struct MetaCommandParameterInfo
+    {
+        UINT totalStructureSizeInBytes;
+        UINT parameterCount;
+        std::vector<D3D12_META_COMMAND_PARAMETER_DESC> parameterDescs;
+    };
+
     namespace Internal
     {
         template<class Ty>
@@ -703,6 +711,141 @@ namespace TypedD3D::D3D12
             type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get(); }
         };
 
+        template<class WrapperTy>
+        class DeviceInterface<WrapperTy, ID3D12Device5> : public DeviceInterface<WrapperTy, ID3D12Device4>
+        {
+        private:
+            using type = ID3D12Device5;
+
+        public:
+            HRESULT CreateLifetimeTracker(
+                ID3D12LifetimeOwner& pOwner,
+                REFIID riid,
+                void** ppvTracker)
+            {
+                return InternalGetDevice().CreateLifetimeTracker(&pOwner, riid, ppvTracker);
+            }
+
+            void RemoveDevice()
+            {
+                InternalGetDevice().RemoveDevice();
+            }
+
+            UINT GetNumMetaCommands()
+            {
+                UINT pNumMetaCommands = 0;
+                InternalGetDevice().EnumerateMetaCommands(&pNumMetaCommands, nullptr);
+                return pNumMetaCommands;
+            }
+
+            Utils::Expected<std::vector<D3D12_META_COMMAND_DESC>, HRESULT> EnumerateMetaCommands(
+                UINT pNumMetaCommands)
+            {
+                std::vector<D3D12_META_COMMAND_DESC> pDescs(pNumMetaCommands);
+                HRESULT result = InternalGetDevice().EnumerateMetaCommands(&pNumMetaCommands, pDescs.data());
+                if(FAILED(hr))
+                    return Utils::Unexpected(result);
+                return pDescs;
+            }
+
+            UINT GetNumMetaCommandParameters(
+                REFGUID CommandId,
+                D3D12_META_COMMAND_PARAMETER_STAGE Stage)
+            {
+                UINT pNumMetaCommandParams = 0;
+                InternalGetDevice().EnumerateMetaCommandParameters(CommandId, Stage, nullptr, &pNumMetaCommandParams, nullptr);
+                return pNumMetaCommandParams;
+            }
+
+
+            Utils::Expected<MetaCommandParameterInfo, HRESULT> STDMETHODCALLTYPE EnumerateMetaCommandParameters(
+                _In_  REFGUID CommandId,
+                _In_  D3D12_META_COMMAND_PARAMETER_STAGE Stage,
+                UINT parameterCount)
+            {
+                MetaCommandParameterInfo info{};
+
+                info.parameterCount = parameterCount;
+                info.parameterDescs.resize(parameterCount);
+
+                HRESULT result = InternalGetDevice().EnumerateMetaCommandParameters(
+                    CommandId,
+                    Stage,
+                    &info.totalStructureSizeInBytes,
+                    &info.parameterCount,
+                    info.parameterDescs.data());
+
+                if(FAILED(result))
+                    return Utils::Unexpected(result);
+                return info;
+            }
+                _Out_opt_  UINT* pTotalStructureSizeInBytes,
+                _Inout_  UINT* pParameterCount,
+                _Out_writes_opt_(*pParameterCount)  D3D12_META_COMMAND_PARAMETER_DESC* pParameterDescs) = 0;
+
+            Utils::Expected<ComPtr<ID3D12MetaCommand>, HRESULT> CreateMetaCommand(
+                REFGUID CommandId,
+                UINT NodeMask,
+                const void* pCreationParametersData,
+                SIZE_T CreationParametersDataSizeInBytes)
+            {
+                return Helpers::COM::IIDToObjectForwardFunction<ID3D12MetaCommand>(
+                    &ID3D12Device5::CreateMetaCommand,
+                    InternalGetDevice(),
+                    CommandId,
+                    NodeMask,
+                    pCreationParametersData,
+                    CreationParametersDataSizeInBytes);
+            }             
+            
+            template<class CreationParamStruct>
+            Utils::Expected<ComPtr<ID3D12MetaCommand>, HRESULT> CreateMetaCommand(
+                REFGUID CommandId,
+                UINT NodeMask,
+                const CreationParamStruct& pCreationParametersData)
+            {
+                return CreateMetaCommand(CommandId, NodeMask, &pCreationParametersData, sizeof(CreationParamStruct));
+            }           
+            
+            Utils::Expected<ComPtr<ID3D12MetaCommand>, HRESULT> CreateMetaCommand(
+                REFGUID CommandId,
+                UINT NodeMask)
+            {
+                return CreateMetaCommand(CommandId, NodeMask, nullptr, 0);
+            }
+
+            Utils::Expected<ComPtr<ID3D12StateObject>, HRESULT> CreateStateObject(
+                const D3D12_STATE_OBJECT_DESC& pDesc)
+            {
+                return Helpers::COM::IIDToObjectForwardFunction<ID3D12StateObject>(
+                    &ID3D12Device5::CreateStateObject,
+                    InternalGetDevice(),
+                    &pDesc);
+            }
+
+            D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO GetRaytracingAccelerationStructurePrebuildInfo(
+                const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& pDesc)
+            {
+                D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuildInfo;
+                InternalGetDevice().GetRaytracingAccelerationStructurePrebuildInfo(&pDesc, &prebuildInfo);
+                return prebuildInfo;
+            }
+
+            D3D12_DRIVER_MATCHING_IDENTIFIER_STATUS CheckDriverMatchingIdentifier(
+                D3D12_SERIALIZED_DATA_TYPE SerializedDataType,
+                const D3D12_SERIALIZED_DATA_DRIVER_MATCHING_IDENTIFIER& pIdentifierToCheck)
+            {
+                return InternalGetDevice().CheckDriverMatchingIdentifier(
+                    SerializedDataType,
+                    &pIdentifierToCheck);
+            }
+
+
+
+        private:
+            type& InternalGetDevice() { return *static_cast<WrapperTy&>(*this).Get(); }
+        };
+
 
 
         template<class Ty>
@@ -741,6 +884,7 @@ namespace TypedD3D::D3D12
     using Device2 = Internal::Device<ID3D12Device2>;
     using Device3 = Internal::Device<ID3D12Device3>;
     using Device4 = Internal::Device<ID3D12Device4>;
+    using Device5 = Internal::Device<ID3D12Device5>;
 
     template<class DeviceTy = Device>
     Utils::Expected<DeviceTy, HRESULT> CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
