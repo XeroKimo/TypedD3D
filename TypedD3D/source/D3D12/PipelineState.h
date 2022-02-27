@@ -31,7 +31,7 @@ namespace TypedD3D::D3D12::PipelineState
             using ComWrapper<ID3D12PipelineState>::ComWrapper;
 
         public:
-            PipelineInterface<PipelineState<PipelineTy>>* GetInterrface() { return this; }
+            PipelineInterface<PipelineState<PipelineTy>>* GetInterface() { return this; }
             PipelineInterface<PipelineState<PipelineTy>>* operator->() { return this; }
         };
         

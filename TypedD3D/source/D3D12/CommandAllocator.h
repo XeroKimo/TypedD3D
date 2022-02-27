@@ -37,7 +37,7 @@ namespace TypedD3D::D3D12::CommandAllocator
             using ComWrapper<ID3D12CommandAllocator>::ComWrapper;
 
         public:
-            AllocatorInterface<CommandAllocator<Type>, Type>* GetInterrface() { return this; }
+            AllocatorInterface<CommandAllocator<Type>, Type>* GetInterface() { return this; }
             AllocatorInterface<CommandAllocator<Type>, Type>* operator->() { return this; }
         };
     }

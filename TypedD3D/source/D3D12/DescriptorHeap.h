@@ -95,7 +95,7 @@ namespace TypedD3D::D3D12::DescriptorHeap
             using ComWrapper<ID3D12DescriptorHeap>::ComWrapper;
 
         public:
-            DescriptorHeapInterface<DescriptorHeap<Type>, Type>* GetInterrface() { return this; }
+            DescriptorHeapInterface<DescriptorHeap<Type>, Type>* GetInterface() { return this; }
             DescriptorHeapInterface<DescriptorHeap<Type>, Type>* operator->() { return this; }
         };
     }

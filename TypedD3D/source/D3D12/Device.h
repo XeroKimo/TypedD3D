@@ -603,7 +603,7 @@ namespace TypedD3D::D3D12
                 Utils::Expected<ComPtr<ID3D12GraphicsCommandList>, HRESULT> cl = Helpers::D3D12::CreateCommandList(InternalGetDevice(), type, flags, nodeMask);
 
                 if(!cl.HasValue())
-                    return cl.GetError();
+                    return Utils::Unexpected(cl.GetError());
 
                 return CommandList::CommandList_t<type, ID3D12GraphicsCommandList>(cl.GetValue());
             }
@@ -825,7 +825,7 @@ namespace TypedD3D::D3D12
             }
 
         public:
-            DeviceInterface<Device<Ty>, Ty>* GetInterrface() { return this; }
+            DeviceInterface<Device<Ty>, Ty>* GetInterface() { return this; }
             DeviceInterface<Device<Ty>, Ty>* operator->() { return this; }
 
             template<class Ty2>

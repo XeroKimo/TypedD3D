@@ -168,7 +168,7 @@ namespace TypedD3D::D3D12::CommandQueue
             using ComWrapper<ID3D12CommandQueue>::ComWrapper;
 
         public:
-            QueueInterface<CommandQueue<Type>, Type>* GetInterrface() { return this; }
+            QueueInterface<CommandQueue<Type>, Type>* GetInterface() { return this; }
             QueueInterface<CommandQueue<Type>, Type>* operator->() { return this; }
         };
     };
