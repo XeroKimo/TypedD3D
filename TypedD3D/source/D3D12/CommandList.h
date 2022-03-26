@@ -316,44 +316,44 @@ namespace TypedD3D::D3D12::CommandList
 
             void SetComputeRootConstantBufferView(
                 UINT RootParameterIndex,
-                D3D12::DescriptorHandle::GPU_CBV_SRV_UAV BufferLocation)
+                D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
             {
-                InternalCommandList().SetComputeRootConstantBufferView(RootParameterIndex, BufferLocation.Data());
+                InternalCommandList().SetComputeRootConstantBufferView(RootParameterIndex, BufferLocation);
             }
 
             void SetGraphicsRootConstantBufferView(
                 UINT RootParameterIndex,
-                D3D12::DescriptorHandle::GPU_CBV_SRV_UAV BufferLocation)
+                D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
             {
-                InternalCommandList().SetGraphicsRootConstantBufferView(RootParameterIndex, BufferLocation.Data());
+                InternalCommandList().SetGraphicsRootConstantBufferView(RootParameterIndex, BufferLocation);
             }
 
             void SetComputeRootShaderResourceView(
                 UINT RootParameterIndex,
-                D3D12::DescriptorHandle::GPU_CBV_SRV_UAV BufferLocation)
+                D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
             {
-                InternalCommandList().SetComputeRootShaderResourceView(RootParameterIndex, BufferLocation.Data());
+                InternalCommandList().SetComputeRootShaderResourceView(RootParameterIndex, BufferLocation);
             }
 
             void SetGraphicsRootShaderResourceView(
                 UINT RootParameterIndex,
-                D3D12::DescriptorHandle::GPU_CBV_SRV_UAV BufferLocation)
+                D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
             {
-                InternalCommandList().SetGraphicsRootShaderResourceView(RootParameterIndex, BufferLocation.Data());
+                InternalCommandList().SetGraphicsRootShaderResourceView(RootParameterIndex, BufferLocation);
             }
 
             void SetComputeRootUnorderedAccessView(
                 UINT RootParameterIndex,
-                D3D12::DescriptorHandle::GPU_CBV_SRV_UAV BufferLocation)
+                D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
             {
-                InternalCommandList().SetComputeRootUnorderedAccessView(RootParameterIndex, BufferLocation.Data());
+                InternalCommandList().SetComputeRootUnorderedAccessView(RootParameterIndex, BufferLocation);
             }
 
             void SetGraphicsRootUnorderedAccessView(
                 UINT RootParameterIndex,
-                D3D12::DescriptorHandle::GPU_CBV_SRV_UAV BufferLocation)
+                D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
             {
-                InternalCommandList().SetGraphicsRootUnorderedAccessView(RootParameterIndex, BufferLocation.Data());
+                InternalCommandList().SetGraphicsRootUnorderedAccessView(RootParameterIndex, BufferLocation);
             }
 
             void IASetIndexBuffer(
