@@ -36,8 +36,7 @@ void D3D12HelloWorld()
 
     ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface().GetValue();
     debugLayer->EnableDebugLayer();
-
-    TypedD3D::Wrapper<ID3D12Device1> device = TypedD3D::D3D12::CreateDevice<TypedD3D::D3D12::Device1>(D3D_FEATURE_LEVEL_12_0).GetValue();
+    TypedD3D::Wrapper<ID3D12Device1> device(D3D_FEATURE_LEVEL_12_0);
     ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Helpers::COM::Cast<ID3D12DebugDevice>(device.GetComPtr());
 
     constexpr UINT backBufferCount = 2;

@@ -827,6 +827,12 @@ namespace TypedD3D::Internal
     public:
         using ComWrapper<DirectXClass>::ComWrapper;
 
+        InterfaceWrapper(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr) :
+            ComWrapper<DirectXClass>::ComWrapper(Helpers::D3D12::CreateDevice<underlying_type>(minimumFeatureLevel, optAdapter).GetValue())
+        {
+
+        }
+
     public:
         Interface* GetInterface() { return this; }
         Interface* operator->() { return this; }
@@ -853,20 +859,25 @@ namespace TypedD3D::D3D12
     using Device5 = Device_t<ID3D12Device5>;
 
     template<class DeviceTy = Device>
-    Utils::Expected<DeviceTy, HRESULT> CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
+    auto CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
     {
-        Utils::Expected<ComPtr<ID3D12Device>, HRESULT> device = Helpers::D3D12::CreateDevice(minimumFeatureLevel, optAdapter);
+        if constexpr(std::is_base_of_v<ID3D12Device, DeviceTy>)
+        {
+            Utils::Expected<ComPtr<DeviceTy>, HRESULT> device = Helpers::D3D12::CreateDevice<DeviceTy>(minimumFeatureLevel, optAdapter);
 
-        if(!device)
-            return Utils::Unexpected(device.GetError());
+            if(!device)
+                return Utils::Expected<Device_t<DeviceTy>, HRESULT>(Utils::Unexpected(device.GetError()));
 
-        if constexpr(std::same_as<typename DeviceTy::underlying_type, ID3D12Device>)
-            return DeviceTy(device.GetValue());
+            return Utils::Expected<Device_t<DeviceTy>, HRESULT>(Device_t<DeviceTy>(device.GetValue()));
+        }
         else
         {
-            using DerivedDevice = typename DeviceTy::underlying_type;
-            ComPtr<DerivedDevice> derived = Helpers::COM::Cast<DerivedDevice>(device.GetValue());
-            return DeviceTy(derived);
+            Utils::Expected<ComPtr<typename DeviceTy::underlying_type>, HRESULT> device = Helpers::D3D12::CreateDevice<typename DeviceTy::underlying_type>(minimumFeatureLevel, optAdapter);
+
+            if(!device)
+                return Utils::Expected<DeviceTy, HRESULT>(Utils::Unexpected(device.GetError()));
+
+            return Utils::Expected<DeviceTy, HRESULT>(DeviceTy(device.GetValue()));
         }
     }
 }
