@@ -313,7 +313,7 @@ void D3D12HelloWorld()
 
             commandList->ResourceBarrier(std::span(&barrier, 1));
 
-            TypedD3D::D3D12::DescriptorHandle::CPU_RTV backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+            TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
             backBufferHandle.ptr += static_cast<SIZE_T>(rtvOffset) * backBuffer;
             commandList->ClearRenderTargetView(backBufferHandle, std::to_array({ 0.f, 0.3f, 0.7f, 1.f }), {});
             commandList->OMSetRenderTargets(std::span(&backBufferHandle, 1), true, nullptr);

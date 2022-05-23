@@ -378,9 +378,9 @@ namespace TypedD3D::D3D12::CommandList
             }
 
             void OMSetRenderTargets(
-                std::span<const DescriptorHandle::CPU_RTV> pRenderTargetDescriptors,
+                std::span<const RTV<D3D12_CPU_DESCRIPTOR_HANDLE>> pRenderTargetDescriptors,
                 BOOL RTsSingleHandleToDescriptorRange,
-                const DescriptorHandle::CPU_DSV* pDepthStencilDescriptor)
+                const DSV<D3D12_CPU_DESCRIPTOR_HANDLE>* pDepthStencilDescriptor)
             {
                 std::unique_ptr<D3D12_CPU_DESCRIPTOR_HANDLE[]> renderTargets = std::make_unique<D3D12_CPU_DESCRIPTOR_HANDLE[]>(pRenderTargetDescriptors.size());
 
@@ -395,7 +395,7 @@ namespace TypedD3D::D3D12::CommandList
             }
 
             void ClearDepthStencilView(
-                DescriptorHandle::CPU_DSV DepthStencilView,
+                DSV<D3D12_CPU_DESCRIPTOR_HANDLE> DepthStencilView,
                 D3D12_CLEAR_FLAGS ClearFlags,
                 FLOAT Depth,
                 UINT8 Stencil,
@@ -405,7 +405,7 @@ namespace TypedD3D::D3D12::CommandList
             }
 
             void ClearRenderTargetView(
-                DescriptorHandle::CPU_RTV RenderTargetView,
+                RTV<D3D12_CPU_DESCRIPTOR_HANDLE> RenderTargetView,
                 std::span<const float, 4> colorRGBA,
                 std::span<const D3D12_RECT> rects)
             {
@@ -413,8 +413,8 @@ namespace TypedD3D::D3D12::CommandList
             }
 
             void ClearUnorderedAccessViewUint(
-                DescriptorHandle::GPU_CBV_SRV_UAV ViewGPUHandleInCurrentHeap,
-                DescriptorHandle::CPU_CBV_SRV_UAV ViewCPUHandle,
+                CBV_SRV_UAV<D3D12_GPU_DESCRIPTOR_HANDLE> ViewGPUHandleInCurrentHeap,
+                CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE> ViewCPUHandle,
                 ID3D12Resource& pResource,
                 std::span<const UINT, 4> values,
                 std::span<const D3D12_RECT> rects)
@@ -423,8 +423,8 @@ namespace TypedD3D::D3D12::CommandList
             }
 
             void ClearUnorderedAccessViewFloat(
-                DescriptorHandle::GPU_CBV_SRV_UAV ViewGPUHandleInCurrentHeap,
-                DescriptorHandle::CPU_CBV_SRV_UAV ViewCPUHandle,
+                CBV_SRV_UAV<D3D12_GPU_DESCRIPTOR_HANDLE> ViewGPUHandleInCurrentHeap,
+                CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE> ViewCPUHandle,
                 ID3D12Resource& pResource,
                 std::span<const float, 4> values,
                 std::span<const D3D12_RECT> rects)

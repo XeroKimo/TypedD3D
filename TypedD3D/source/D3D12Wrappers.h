@@ -19,6 +19,12 @@ namespace TypedD3D
             Graphics,
         };
 
+        template<TypeTag Type>
+        concept Is_Command_List_Type = (Type == TypeTag::Direct || Type == TypeTag::Compute || Type == TypeTag::Copy || Type == TypeTag::Bundle);
+
+        template<TypeTag Type>
+        concept Is_Descriptor_Heap_Type = (Type == TypeTag::CBV_SRV_UAV || Type == TypeTag::Sampler || Type == TypeTag::RTV || Type == TypeTag::DSV);
+
         template<TypeTag value>
         constexpr D3D12_COMMAND_LIST_TYPE listType;
 

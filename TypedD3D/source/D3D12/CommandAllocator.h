@@ -27,7 +27,7 @@ namespace TypedD3D::Internal
     }
 
     template<class DirectXClass, TypeTag Type>
-        requires std::is_base_of_v<ID3D12CommandAllocator, DirectXClass>
+        requires std::is_base_of_v<ID3D12CommandAllocator, DirectXClass> && Is_Command_List_Type<Type>
     class InterfaceWrapper<DirectXClass, Type> : public ComWrapper<DirectXClass>, private CommandAllocator::Interface<InterfaceWrapper<DirectXClass, Type>, listType<Type>>
     {
     private:
