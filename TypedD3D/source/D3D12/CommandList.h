@@ -1361,14 +1361,6 @@ namespace TypedD3D::Internal
     template<class CommandListTy, TypeTag Type>
     using CommandList_t = InterfaceWrapper<CommandListTy, Type>;
 
-    template<class IUnknownTy, TypeTag Type>
-        requires std::is_base_of_v<ID3D12GraphicsCommandList, IUnknownTy>
-    struct InterfaceMapper<IUnknownTy, Type>
-    {
-        using type = CommandList_t<IUnknownTy, Type>;
-    };
-
-
     namespace CommandList
     {
         template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>

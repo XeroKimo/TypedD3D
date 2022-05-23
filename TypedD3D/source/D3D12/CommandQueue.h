@@ -175,13 +175,6 @@ namespace TypedD3D::Internal
 
     template<TypeTag Type>
     using CommandQueue_t = InterfaceWrapper<ID3D12CommandQueue, Type>;
-
-    template<class IUnknownTy, TypeTag Type>
-        requires std::is_base_of_v<ID3D12CommandQueue, IUnknownTy>
-    struct InterfaceMapper<IUnknownTy, Type>
-    {
-        using type = CommandQueue_t<Type>;
-    };
 }
 
 namespace TypedD3D::D3D12

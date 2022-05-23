@@ -5,9 +5,6 @@ namespace TypedD3D
 {
     namespace Internal
     {
-        template<class IUnknownTy, auto EnumTypeConstraint = 0>
-        struct InterfaceMapper;
-
         template<class DirectXClass, auto EnumTypeConstraint = 0>
         class InterfaceWrapper;
 
@@ -19,7 +16,7 @@ namespace TypedD3D
     }
 
     template<class IUnknownTy>
-    using Wrapper = typename Internal::InterfaceMapper<IUnknownTy>::type;
+    using Wrapper = Internal::InterfaceWrapper<IUnknownTy>;
 
     template<class DerivedTy, class DirectXClass, auto EnumTypeConstraint>
         requires std::is_base_of_v<IUnknown, DerivedTy>

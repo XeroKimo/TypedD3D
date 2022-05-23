@@ -118,29 +118,29 @@ namespace TypedD3D
     }
 
     template<class IUnknownTy>
-    using Direct = typename Internal::InterfaceMapper<IUnknownTy, Internal::TypeTag::Direct>::type;
+    using Direct = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Direct>;
 
     template<class IUnknownTy>
-    using Compute = typename Internal::InterfaceMapper<IUnknownTy, Internal::TypeTag::Compute>::type;
+    using Compute = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Compute>;
 
     template<class IUnknownTy>
-    using Copy = typename Internal::InterfaceMapper<IUnknownTy, Internal::TypeTag::Copy>::type;
+    using Copy = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Copy>;
 
     template<class IUnknownTy>
-    using Bundle = typename Internal::InterfaceMapper<IUnknownTy, Internal::TypeTag::Bundle>::type;
+    using Bundle = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Bundle>;
 
     template<class IUnknownTy>
-    using CBV_SRV_UAV = typename Internal::InterfaceMapper<IUnknownTy, Internal::TypeTag::CBV_SRV_UAV>::type;
+    using CBV_SRV_UAV = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::CBV_SRV_UAV>;
 
     template<class IUnknownTy>
-    using Sampler = typename Internal::InterfaceMapper<IUnknownTy, Internal::TypeTag::Sampler>::type;
+    using Sampler = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Sampler>;
 
     template<class IUnknownTy>
-    using RTV = typename Internal::InterfaceMapper<IUnknownTy, Internal::TypeTag::RTV>::type;
+    using RTV = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::RTV>;
 
     template<class IUnknownTy>
-    using DSV = typename Internal::InterfaceMapper<IUnknownTy, Internal::TypeTag::DSV>::type;
+    using DSV = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::DSV>;
 
     template<class IUnknownTy>
-    using Graphics = typename Internal::InterfaceMapper<IUnknownTy, Internal::TypeTag::Graphics>::type;
+    using Graphics = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Graphics>;
 }

@@ -48,13 +48,6 @@ namespace TypedD3D::Internal
 
     template<TypeTag Type>
     using CommandAllocator_t = InterfaceWrapper<ID3D12CommandAllocator, Type>;
-
-    template<class IUnknownTy, TypeTag Type>
-        requires std::is_base_of_v<ID3D12CommandAllocator, IUnknownTy>
-    struct InterfaceMapper<IUnknownTy, Type>
-    {
-        using type = CommandAllocator_t<Type>;
-    };
 }
 
 namespace TypedD3D::D3D12

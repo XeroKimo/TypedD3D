@@ -41,13 +41,6 @@ namespace TypedD3D::Internal
 
     template<TypeTag Type>
     using PipelineState_t = InterfaceWrapper<ID3D12PipelineState, Type>;
-
-    template<class IUnknownTy, TypeTag Type>
-        requires std::is_base_of_v<ID3D12PipelineState, IUnknownTy>
-    struct InterfaceMapper<IUnknownTy, Type>
-    {
-        using type = PipelineState_t<Type>;
-    };
 }
 
 namespace TypedD3D::D3D12

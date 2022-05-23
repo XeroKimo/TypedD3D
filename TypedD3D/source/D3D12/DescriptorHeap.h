@@ -13,6 +13,7 @@ namespace TypedD3D::Internal
         using CPU_DESCRIPTOR_HANDLE = InterfaceWrapper<D3D12_CPU_DESCRIPTOR_HANDLE, Type>;
 
     public:
+        static constexpr TypeTag tag_value = Type;
         static constexpr D3D12_DESCRIPTOR_HEAP_TYPE value = descriptorHeapType<Type>;
 
     public:
@@ -46,6 +47,7 @@ namespace TypedD3D::Internal
         using GPU_DESCRIPTOR_HANDLE = InterfaceWrapper<D3D12_GPU_DESCRIPTOR_HANDLE, Type>;
 
     public:
+        static constexpr TypeTag tag_value = Type;
         static constexpr D3D12_DESCRIPTOR_HEAP_TYPE value = descriptorHeapType<Type>;
 
     public:
@@ -132,27 +134,6 @@ namespace TypedD3D::Internal
 
     template<TypeTag Type>
     using DescriptorHeap_t = InterfaceWrapper<ID3D12DescriptorHeap, Type>;
-
-    template<class IUnknownTy, TypeTag Type>
-        requires std::is_base_of_v<ID3D12DescriptorHeap, IUnknownTy>
-    struct InterfaceMapper<IUnknownTy, Type>
-    {
-        using type = DescriptorHeap_t<Type>;
-    };
-
-    template<class CpuDescriptorHandle, TypeTag Type>
-        requires std::same_as<D3D12_CPU_DESCRIPTOR_HANDLE, CpuDescriptorHandle>
-    struct InterfaceMapper<CpuDescriptorHandle, Type>
-    {
-        using type = DescriptorHeap::CPU_DESCRIPTOR_HANDLE<Type>;
-    };
-
-    template<class GpuDescriptorHandle, TypeTag Type>
-        requires std::same_as<D3D12_GPU_DESCRIPTOR_HANDLE, GpuDescriptorHandle>
-    struct InterfaceMapper<GpuDescriptorHandle, Type>
-    {
-        using type = DescriptorHeap::GPU_DESCRIPTOR_HANDLE<Type>;
-    };
 }
 
 namespace TypedD3D::D3D12
