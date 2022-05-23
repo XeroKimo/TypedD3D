@@ -74,47 +74,52 @@ namespace TypedD3D::Internal
         }
     };
 
-    namespace DescriptorHeap
+    namespace D3D12
     {
         template<TypeTag Type>
-        using CPU_DESCRIPTOR_HANDLE = InterfaceWrapper<D3D12_CPU_DESCRIPTOR_HANDLE, Type>;
+        using DescriptorHeap_t = InterfaceWrapper<ID3D12DescriptorHeap, Type>;
 
-        template<TypeTag Type>
-        using GPU_DESCRIPTOR_HANDLE = InterfaceWrapper<D3D12_GPU_DESCRIPTOR_HANDLE, Type>;
-
-        static_assert(sizeof(CPU_DESCRIPTOR_HANDLE<TypeTag::CBV_SRV_UAV>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
-        static_assert(sizeof(CPU_DESCRIPTOR_HANDLE<TypeTag::CBV_SRV_UAV>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
-        static_assert(sizeof(CPU_DESCRIPTOR_HANDLE<TypeTag::DSV>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
-        static_assert(sizeof(CPU_DESCRIPTOR_HANDLE<TypeTag::DSV>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
-
-        static_assert(sizeof(GPU_DESCRIPTOR_HANDLE<TypeTag::RTV>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
-        static_assert(sizeof(GPU_DESCRIPTOR_HANDLE<TypeTag::RTV>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
-        static_assert(sizeof(GPU_DESCRIPTOR_HANDLE<TypeTag::Sampler>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
-        static_assert(sizeof(GPU_DESCRIPTOR_HANDLE<TypeTag::Sampler>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
-
-        template<class WrapperTy, D3D12_DESCRIPTOR_HEAP_TYPE Type>
-        class Interface
+        namespace DescriptorHeap
         {
-        public:
-            using CPU_DESCRIPTOR_HANDLE = CPU_DESCRIPTOR_HANDLE<tagValue<Type>>;
-            using GPU_DESCRIPTOR_HANDLE = GPU_DESCRIPTOR_HANDLE<tagValue<Type>>;
+            template<TypeTag Type>
+            using CPU_DESCRIPTOR_HANDLE = InterfaceWrapper<D3D12_CPU_DESCRIPTOR_HANDLE, Type>;
 
-        public:
-            D3D12_DESCRIPTOR_HEAP_DESC GetDesc() { return InternalGet().GetDesc(); }
-            CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandleForHeapStart() { return CPU_DESCRIPTOR_HANDLE(InternalGet().GetCPUDescriptorHandleForHeapStart()); }
-            GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleForHeapStart() { return GPU_DESCRIPTOR_HANDLE(InternalGet().GetGPUDescriptorHandleForHeapStart()); }
+            template<TypeTag Type>
+            using GPU_DESCRIPTOR_HANDLE = InterfaceWrapper<D3D12_GPU_DESCRIPTOR_HANDLE, Type>;
 
-        private:
-            ID3D12DescriptorHeap& InternalGet() { return  *static_cast<WrapperTy&>(*this).Get(); }
-        };
+            static_assert(sizeof(CPU_DESCRIPTOR_HANDLE<TypeTag::CBV_SRV_UAV>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
+            static_assert(sizeof(CPU_DESCRIPTOR_HANDLE<TypeTag::CBV_SRV_UAV>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
+            static_assert(sizeof(CPU_DESCRIPTOR_HANDLE<TypeTag::DSV>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
+            static_assert(sizeof(CPU_DESCRIPTOR_HANDLE<TypeTag::DSV>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
+
+            static_assert(sizeof(GPU_DESCRIPTOR_HANDLE<TypeTag::RTV>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
+            static_assert(sizeof(GPU_DESCRIPTOR_HANDLE<TypeTag::RTV>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
+            static_assert(sizeof(GPU_DESCRIPTOR_HANDLE<TypeTag::Sampler>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
+            static_assert(sizeof(GPU_DESCRIPTOR_HANDLE<TypeTag::Sampler>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
+
+            template<class WrapperTy, D3D12_DESCRIPTOR_HEAP_TYPE Type>
+            class Interface
+            {
+            public:
+                using CPU_DESCRIPTOR_HANDLE = CPU_DESCRIPTOR_HANDLE<tagValue<Type>>;
+                using GPU_DESCRIPTOR_HANDLE = GPU_DESCRIPTOR_HANDLE<tagValue<Type>>;
+
+            public:
+                D3D12_DESCRIPTOR_HEAP_DESC GetDesc() { return InternalGet().GetDesc(); }
+                CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandleForHeapStart() { return CPU_DESCRIPTOR_HANDLE(InternalGet().GetCPUDescriptorHandleForHeapStart()); }
+                GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandleForHeapStart() { return GPU_DESCRIPTOR_HANDLE(InternalGet().GetGPUDescriptorHandleForHeapStart()); }
+
+            private:
+                ID3D12DescriptorHeap& InternalGet() { return  *static_cast<WrapperTy&>(*this).Get(); }
+            };
+        }
     }
-
     template<class DirectXClass, TypeTag Type>
         requires std::is_base_of_v<ID3D12DescriptorHeap, DirectXClass> && Is_Descriptor_Heap_Type<Type>
-    class InterfaceWrapper<DirectXClass, Type> : public ComWrapper<DirectXClass>, private DescriptorHeap::Interface<InterfaceWrapper<DirectXClass, Type>, descriptorHeapType<Type>>
+    class InterfaceWrapper<DirectXClass, Type> : public ComWrapper<DirectXClass>, private D3D12::DescriptorHeap::Interface<InterfaceWrapper<DirectXClass, Type>, descriptorHeapType<Type>>
     {
     private:
-        using Interface = DescriptorHeap::Interface<InterfaceWrapper<DirectXClass, Type>, descriptorHeapType<Type>>;
+        using Interface = D3D12::DescriptorHeap::Interface<InterfaceWrapper<DirectXClass, Type>, descriptorHeapType<Type>>;
         friend Interface;
 
     public:
@@ -131,15 +136,12 @@ namespace TypedD3D::Internal
         Interface* GetInterface() { return this; }
         Interface* operator->() { return this; }
     };
-
-    template<TypeTag Type>
-    using DescriptorHeap_t = InterfaceWrapper<ID3D12DescriptorHeap, Type>;
 }
 
 namespace TypedD3D::D3D12
 {
     template<D3D12_DESCRIPTOR_HEAP_TYPE Type>
-    using DescriptorHeap_t = TypedD3D::Internal::DescriptorHeap_t<TypedD3D::Internal::tagValue<Type>>;
+    using DescriptorHeap_t = TypedD3D::Internal::D3D12::DescriptorHeap_t<TypedD3D::Internal::tagValue<Type>>;
 
     namespace DescriptorHeap
     {
