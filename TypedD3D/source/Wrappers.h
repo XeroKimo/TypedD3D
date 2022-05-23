@@ -8,7 +8,7 @@ namespace TypedD3D
         template<class IUnknownTy, auto EnumTypeConstraint = 0>
         struct InterfaceMapper;
 
-        template<class DirectXClass, auto EnumTypeConstraint>
+        template<class DirectXClass, auto EnumTypeConstraint = 0>
         class InterfaceWrapper;
     }
 

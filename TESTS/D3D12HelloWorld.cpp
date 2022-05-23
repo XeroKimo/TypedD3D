@@ -46,8 +46,8 @@ void D3D12HelloWorld()
     std::array<TypedD3D::Direct<ID3D12CommandAllocator>, backBufferCount> commandAllocators;
     commandAllocators[0] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().GetValue();
     commandAllocators[1] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().GetValue();
-    TypedD3D::Direct<ID3D12GraphicsCommandList> temp = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0], 0, nullptr).GetValue();
-    TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList = temp.As<TypedD3D::D3D12::CommandList::Direct1>();
+    TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_DIRECT> temp = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0], 0, nullptr).GetValue();
+    TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList = TypedD3D::Cast<ID3D12GraphicsCommandList1>(temp);
 
     UINT64 fenceValue = 0;
     ComPtr<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE).GetValue();

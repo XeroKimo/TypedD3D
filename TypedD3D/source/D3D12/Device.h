@@ -104,12 +104,12 @@ namespace TypedD3D::D3D12
             }
 
             template<D3D12_COMMAND_LIST_TYPE Type>
-            Utils::Expected<CommandList::CommandList_t<Type, ID3D12GraphicsCommandList>, HRESULT> CreateCommandList(
+            Utils::Expected<CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList(
                 CommandAllocator_t<Type> pCommandAllocator,
                 UINT nodeMask = 0,
                 ID3D12PipelineState* optInitialState = nullptr)
             {
-                using command_list_type = CommandList::CommandList_t<Type, ID3D12GraphicsCommandList>;
+                using command_list_type = CommandList_t<ID3D12GraphicsCommandList, Type>;
                 auto commandList = Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(InternalGetDevice(), command_list_type::value, *pCommandAllocator.Get(), nodeMask, optInitialState);
 
                 if(!commandList)
@@ -596,7 +596,7 @@ namespace TypedD3D::D3D12
 
         public:
             template<D3D12_COMMAND_LIST_TYPE type>
-            Utils::Expected<CommandList::CommandList_t<type, ID3D12GraphicsCommandList>, HRESULT> CreateCommandList1(
+            Utils::Expected<CommandList_t<ID3D12GraphicsCommandList, type>, HRESULT> CreateCommandList1(
                 UINT nodeMask,
                 D3D12_COMMAND_LIST_FLAGS flags)
             {
@@ -605,7 +605,7 @@ namespace TypedD3D::D3D12
                 if(!cl.HasValue())
                     return Utils::Unexpected(cl.GetError());
 
-                return CommandList::CommandList_t<type, ID3D12GraphicsCommandList>(cl.GetValue());
+                return CommandList_t<ID3D12GraphicsCommandList, type>(cl.GetValue());
             }
 
             Utils::Expected<ComPtr<ID3D12ProtectedResourceSession>, HRESULT> CreateProtectedResourceSession(
