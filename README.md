@@ -34,3 +34,13 @@ DX12 has extra wrapper interfaces to help tag their specific types. They are:
 Some examples of this are Direct<ID3D12GraphicsCommandList>, Sampler<ID3D12DescriptorHeap>, Graphics<ID3D12PipelineState> and so on.
   
 Various interfaces like the command lists and command queues only work when they have the same type, so I provide stronger wrappers now tagged for interfaces like those. Command lists also have their interfaces restricted based on what kind of command list was created based on [microsoft's document](https://docs.microsoft.com/en-us/windows/win32/direct3d12/recording-command-lists-and-bundles#command-list-api-restrictions), so they no longer have to constantly be referred which commands are available for what type of list.
+  
+### Implemented Types
+- ID3D12Device up to ID3D12Device5
+- ID3D12CommandList up to ID3D12GraphicsCommandList5
+- ID3D12CommandAllocator
+- ID3D12CommandQueue
+- ID3D12DescriptorHeap
+- D3D12_CPU_DESCRIPTOR_HANDLE
+- D3D12_GPU_DESCRIPTOR_HANDLE
+- ID3D12PipelineState
