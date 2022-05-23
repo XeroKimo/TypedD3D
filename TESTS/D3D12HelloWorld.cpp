@@ -248,15 +248,14 @@ void D3D12HelloWorld()
 
     UpdateSubresources(commandList.Get(), vertexResource.Get(), vertexUpload.Get(), 0, 0, 1, &vertexData);
 
-
     D3D12_RESOURCE_BARRIER barrier = TypedD3D::Helpers::D3D12::ResourceBarrier::Transition(
         *vertexResource.Get(),
         D3D12_RESOURCE_STATE_COPY_DEST,
         D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
     commandList->ResourceBarrier(std::span(&barrier, 1));
     commandList->Close();
-
-    std::array submitList = std::to_array<TypedD3D::D3D12::CommandList::Direct>({ commandList });
+    TypedD3D::Direct<ID3D12CommandList> a = commandList;
+    std::array submitList = std::to_array<TypedD3D::Direct<ID3D12CommandList>>({ commandList });
     commandQueue->ExecuteCommandLists(std::span(submitList));
 
     TypedD3D::Helpers::D3D12::FlushCommandQueue(*commandQueue.Get(), *fence.Get(), fenceValue, syncEvent);
@@ -335,7 +334,7 @@ void D3D12HelloWorld()
 
             commandList->Close();
 
-            std::array submitList = std::to_array<TypedD3D::D3D12::CommandList::Direct>({ commandList });
+            std::array submitList = std::to_array<TypedD3D::Direct<ID3D12CommandList>>({ commandList });
             commandQueue->ExecuteCommandLists(std::span(submitList));
 
             swapChain->Present(1, 0);

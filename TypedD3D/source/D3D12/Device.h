@@ -50,12 +50,12 @@ namespace TypedD3D::Internal
                 }
 
                 template<D3D12_COMMAND_LIST_TYPE Type>
-                Utils::Expected<CommandQueue_t<tagValue<Type>>, HRESULT> CreateCommandQueue(
+                Utils::Expected<TypedD3D::D3D12::CommandQueue_t<Type>, HRESULT> CreateCommandQueue(
                     D3D12_COMMAND_QUEUE_PRIORITY priority,
                     D3D12_COMMAND_QUEUE_FLAGS flags,
                     UINT nodeMask)
                 {
-                    using queue_type = CommandQueue_t<tagValue<Type>>;
+                    using queue_type = TypedD3D::D3D12::CommandQueue_t<Type>;
 
                     D3D12_COMMAND_QUEUE_DESC desc
                     {
@@ -74,9 +74,9 @@ namespace TypedD3D::Internal
                 }
 
                 template<D3D12_COMMAND_LIST_TYPE Type>
-                Utils::Expected<CommandAllocator_t<tagValue<Type>>, HRESULT> CreateCommandAllocator()
+                Utils::Expected<TypedD3D::D3D12::CommandAllocator_t<Type>, HRESULT> CreateCommandAllocator()
                 {
-                    using allocator_type = CommandAllocator_t<tagValue<Type>>;
+                    using allocator_type = TypedD3D::D3D12::CommandAllocator_t<Type>;
                     auto commandAllocator = Helpers::D3D12::CreateCommandAllocator(InternalGetDevice(), Type);
 
                     if(!commandAllocator)
@@ -599,17 +599,17 @@ namespace TypedD3D::Internal
                 using type = ID3D12Device4;
 
             public:
-                template<D3D12_COMMAND_LIST_TYPE type>
-                Utils::Expected<CommandList_t<ID3D12GraphicsCommandList, type>, HRESULT> CreateCommandList1(
+                template<D3D12_COMMAND_LIST_TYPE Type>
+                Utils::Expected<TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList1(
                     UINT nodeMask,
                     D3D12_COMMAND_LIST_FLAGS flags)
                 {
-                    Utils::Expected<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>, HRESULT> cl = Helpers::D3D12::CreateCommandList(InternalGetDevice(), type, flags, nodeMask);
+                    Utils::Expected<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>, HRESULT> cl = Helpers::D3D12::CreateCommandList(InternalGetDevice(), Type, flags, nodeMask);
 
                     if(!cl.HasValue())
                         return Utils::Unexpected(cl.GetError());
 
-                    return CommandList_t<ID3D12GraphicsCommandList, type>(cl.GetValue());
+                    return TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, Type>(cl.GetValue());
                 }
 
                 Utils::Expected<Microsoft::WRL::ComPtr<ID3D12ProtectedResourceSession>, HRESULT> CreateProtectedResourceSession(

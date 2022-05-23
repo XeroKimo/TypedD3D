@@ -29,7 +29,7 @@ namespace TypedD3D::Internal
             class Interface
             {
             private:
-                using list_type = TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, Type>;
+                using list_type = TypedD3D::D3D12::CommandList_t<ID3D12CommandList, Type>;
 
             public:
                 static constexpr D3D12_COMMAND_LIST_TYPE value = Type;
