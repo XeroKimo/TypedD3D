@@ -3,12 +3,12 @@
 #include "../Helpers/COMHelpers.h"
 #include "../Utils.h"
 #include "../Internal/ComWrapper.h"
+#include "../Internal/D3D12/Meta.h"
 #include "CommandList.h"
 #include "CommandAllocator.h"
 #include "CommandQueue.h"
 #include "PipelineState.h"
 #include "DescriptorHeap.h"
-#include "Meta.h"
 
 #include <d3d12.h>
 #include <wrl/client.h>
@@ -123,9 +123,9 @@ namespace TypedD3D::Internal
                 }
 
                 template<D3D12_FEATURE Feature>
-                Utils::Expected<typename TypedD3D::D3D12::Meta::DeviceFeatureToType<Feature>::type, HRESULT> CheckFeatureSupport()
+                Utils::Expected<typename Meta::DeviceFeatureToType<Feature>::type, HRESULT> CheckFeatureSupport()
                 {
-                    using feature_t = typename TypedD3D::D3D12::Meta::DeviceFeatureToType<Feature>::type;
+                    using feature_t = typename Meta::DeviceFeatureToType<Feature>::type;
                     feature_t feature{};
 
                     HRESULT hr = InternalGetDevice().CheckFeatureSupport(Feature, &feature, sizeof(feature_t));

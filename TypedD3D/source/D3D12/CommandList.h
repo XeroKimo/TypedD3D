@@ -7,7 +7,7 @@
 #pragma once
 #include "CommandAllocator.h"
 #include "DescriptorHeap.h"
-#include "Meta.h"
+#include "../Internal/D3D12/Meta.h"
 #include "../Internal/ComWrapper.h"
 #include "../Helpers/COMHelpers.h"
 #include "../D3D12Wrappers.h"
@@ -42,7 +42,7 @@ namespace TypedD3D::Internal
             class CommandList;
 
             template<D3D12_COMMAND_LIST_TYPE Type, class ListTy>
-            struct command_list_trait : TypedD3D::D3D12::Meta::command_list_type_tag<Type>
+            struct command_list_trait : Meta::command_list_type_tag<Type>
             {
                 using trait_value_type = command_list_trait;
 

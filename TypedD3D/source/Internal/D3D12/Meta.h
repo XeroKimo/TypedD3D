@@ -2,7 +2,7 @@
 #include <d3d12.h>
 #include <type_traits>
 
-namespace TypedD3D::D3D12::Meta
+namespace TypedD3D::Internal::D3D12::Meta
 {
     template<D3D12_COMMAND_LIST_TYPE Type>
     struct command_list_type_tag : std::integral_constant<D3D12_COMMAND_LIST_TYPE, Type>

@@ -12,3 +12,5 @@
 #include "source/D3D12/CommandList.h"
 #include "source/D3D12/CommandQueue.h"
 #include "source/D3D12/Device.h"
+
+#include "source/D3D12Wrappers.h"

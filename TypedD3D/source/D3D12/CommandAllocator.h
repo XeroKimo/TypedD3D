@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Meta.h"
 #include "../Internal/ComWrapper.h"
 #include "../D3D12Wrappers.h"
 #include <d3d12.h>
