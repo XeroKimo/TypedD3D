@@ -63,6 +63,34 @@ namespace TypedD3D
         {
             using type = D3D12_GRAPHICS_PIPELINE_STATE_DESC;
         };
+
+        template<auto Type>
+        constexpr TypeTag tagValue;
+
+        template<>
+        constexpr TypeTag tagValue<D3D12_COMMAND_LIST_TYPE_DIRECT> = TypeTag::Direct;
+
+        template<>
+        constexpr TypeTag tagValue<D3D12_COMMAND_LIST_TYPE_COMPUTE> = TypeTag::Compute;
+
+        template<>
+        constexpr TypeTag tagValue<D3D12_COMMAND_LIST_TYPE_BUNDLE> = TypeTag::Bundle;
+
+        template<>
+        constexpr TypeTag tagValue<D3D12_COMMAND_LIST_TYPE_COPY> = TypeTag::Copy;
+
+        template<>
+        constexpr TypeTag tagValue<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV> = TypeTag::CBV_SRV_UAV;
+
+        template<>
+        constexpr TypeTag tagValue<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER> = TypeTag::Sampler;
+
+        template<>
+        constexpr TypeTag tagValue<D3D12_DESCRIPTOR_HEAP_TYPE_RTV> = TypeTag::RTV;
+
+        template<>
+        constexpr TypeTag tagValue<D3D12_DESCRIPTOR_HEAP_TYPE_DSV> = TypeTag::DSV;
+
     }
 
     template<class IUnknownTy>

@@ -70,9 +70,9 @@ namespace TypedD3D::D3D12
             }
 
             template<D3D12_COMMAND_LIST_TYPE Type>
-            Utils::Expected<CommandAllocator::Internal::CommandAllocator<Type>, HRESULT> CreateCommandAllocator()
+            Utils::Expected<CommandAllocator_t<Type>, HRESULT> CreateCommandAllocator()
             {
-                using allocator_type = CommandAllocator::Internal::CommandAllocator<Type>;
+                using allocator_type = CommandAllocator_t<Type>;
                 auto commandAllocator = Helpers::D3D12::CreateCommandAllocator(InternalGetDevice(), Type);
 
                 if(!commandAllocator)
@@ -105,7 +105,7 @@ namespace TypedD3D::D3D12
 
             template<D3D12_COMMAND_LIST_TYPE Type>
             Utils::Expected<CommandList::CommandList_t<Type, ID3D12GraphicsCommandList>, HRESULT> CreateCommandList(
-                CommandAllocator::CommandAllocator_t<Type> pCommandAllocator,
+                CommandAllocator_t<Type> pCommandAllocator,
                 UINT nodeMask = 0,
                 ID3D12PipelineState* optInitialState = nullptr)
             {

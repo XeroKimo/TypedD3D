@@ -7,14 +7,12 @@
 #include <wrl/client.h>
 #include <assert.h>
 
-namespace TypedD3D::D3D12::CommandAllocator
+namespace TypedD3D::Internal
 {
-    namespace Internal
+    namespace CommandAllocator
     {
-        using Microsoft::WRL::ComPtr;
-
         template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
-        class AllocatorInterface
+        class Interface
         {
             static constexpr D3D12_COMMAND_LIST_TYPE value = Type;
 
@@ -25,39 +23,48 @@ namespace TypedD3D::D3D12::CommandAllocator
         private:
             ID3D12CommandAllocator& InternalGet() { return *static_cast<WrapperTy&>(*this).Get(); }
         };
-
-        template<D3D12_COMMAND_LIST_TYPE Type>
-        class CommandAllocator : public ComWrapper<ID3D12CommandAllocator>, private AllocatorInterface<CommandAllocator<Type>, Type>
-        {
-            static constexpr D3D12_COMMAND_LIST_TYPE value = Type;
-
-            template<class WrapperTy2, D3D12_COMMAND_LIST_TYPE Type2>
-            friend class AllocatorInterface;
-
-        public:
-            using ComWrapper<ID3D12CommandAllocator>::ComWrapper;
-
-        public:
-            AllocatorInterface<CommandAllocator<Type>, Type>* GetInterface() { return this; }
-            AllocatorInterface<CommandAllocator<Type>, Type>* operator->() { return this; }
-        };
     }
 
-    template<D3D12_COMMAND_LIST_TYPE Type>
-    using CommandAllocator_t = Internal::CommandAllocator<Type>;
+    template<class DirectXClass, TypeTag Type>
+        requires std::is_base_of_v<ID3D12CommandAllocator, DirectXClass>
+    class InterfaceWrapper<DirectXClass, Type> : public ComWrapper<DirectXClass>, private CommandAllocator::Interface<InterfaceWrapper<DirectXClass, Type>, listType<Type>>
+    {
+    private:
+        using Interface = CommandAllocator::Interface<InterfaceWrapper<DirectXClass, Type>, listType<Type>>;
+        friend Interface;
 
-    using Direct = Internal::CommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>;
-    using Bundle = Internal::CommandAllocator<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-    using Compute = Internal::CommandAllocator<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-    using Copy = Internal::CommandAllocator<D3D12_COMMAND_LIST_TYPE_COPY>;
-};
+    public:
+        static constexpr D3D12_COMMAND_LIST_TYPE value = listType<Type>;
 
-namespace TypedD3D::Internal
-{
+    public:
+        using ComWrapper<DirectXClass>::ComWrapper;
+
+    public:
+        Interface* GetInterface() { return this; }
+        Interface* operator->() { return this; }
+    };
+
+    template<TypeTag Type>
+    using CommandAllocator_t = InterfaceWrapper<ID3D12CommandAllocator, Type>;
+
     template<class IUnknownTy, TypeTag Type>
         requires std::is_base_of_v<ID3D12CommandAllocator, IUnknownTy>
     struct InterfaceMapper<IUnknownTy, Type>
     {
-        using type = TypedD3D::D3D12::CommandAllocator::CommandAllocator_t<listType<Type>>;
+        using type = CommandAllocator_t<Type>;
     };
-};
+}
+
+namespace TypedD3D::D3D12
+{
+    template<D3D12_COMMAND_LIST_TYPE Type>
+    using CommandAllocator_t = TypedD3D::Internal::CommandAllocator_t<TypedD3D::Internal::tagValue<Type>>;
+
+    namespace CommandAllocator
+    {
+        using Direct = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
+        using Bundle = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+        using Compute = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+        using Copy = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_COPY>;
+    }
+}

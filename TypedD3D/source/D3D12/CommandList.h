@@ -42,7 +42,7 @@ namespace TypedD3D::D3D12::CommandList
             using trait_value_type = command_list_trait;
 
             using list_value_type = ListTy;
-            using allocator_value_type = CommandAllocator::CommandAllocator_t<Type>;
+            using allocator_value_type = CommandAllocator_t<Type>;
 
             template<class WrapperTy>
             using interface_type = PublicListInterface<WrapperTy, Type, ListTy>;
