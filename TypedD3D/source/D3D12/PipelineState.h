@@ -40,3 +40,13 @@ namespace TypedD3D::D3D12::PipelineState
     using Graphics = Internal::PipelineState<D3D12_GRAPHICS_PIPELINE_STATE_DESC>;
     using Compute = Internal::PipelineState<D3D12_COMPUTE_PIPELINE_STATE_DESC>;
 }
+
+namespace TypedD3D::Internal
+{
+    template<class IUnknownTy, TypeTag Type>
+        requires std::is_base_of_v<ID3D12PipelineState, IUnknownTy>
+    struct InterfaceMapper<IUnknownTy, Type>
+    {
+        using type = TypedD3D::D3D12::PipelineState::Internal::PipelineState<typename PipelineMapper<Type>::type>;
+    };
+};

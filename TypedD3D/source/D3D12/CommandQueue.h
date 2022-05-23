@@ -1,5 +1,6 @@
 #pragma once
 #include "CommandList.h"
+#include "../D3D12Wrappers.h"
 #include <memory>
 #include <array>
 
@@ -181,3 +182,13 @@ namespace TypedD3D::D3D12::CommandQueue
     using Compute = Internal::CommandQueue<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
     using Copy = Internal::CommandQueue<D3D12_COMMAND_LIST_TYPE_COPY>;
 }
+
+namespace TypedD3D::Internal
+{
+    template<class IUnknownTy, TypeTag Type>
+        requires std::is_base_of_v<ID3D12CommandQueue, IUnknownTy>
+    struct InterfaceMapper<IUnknownTy, Type>
+    {
+        using type = TypedD3D::D3D12::CommandQueue::CommandQueue_t<listType<Type>>;
+    };
+};

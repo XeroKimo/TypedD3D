@@ -1,6 +1,7 @@
 #pragma once
-#include <d3d12.h>
 #include "ComWrapper.h"
+#include "../D3D12Wrappers.h"
+#include <d3d12.h>
 
 namespace TypedD3D::D3D12::DescriptorHandle
 {
@@ -108,3 +109,13 @@ namespace TypedD3D::D3D12::DescriptorHeap
     using RTV = Internal::DescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV>;
     using DSV = Internal::DescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_DSV>;
 }
+
+namespace TypedD3D::Internal
+{
+    template<class IUnknownTy, TypeTag Type>
+        requires std::is_base_of_v<ID3D12DescriptorHeap, IUnknownTy>
+    struct InterfaceMapper<IUnknownTy, Type>
+    {
+        using type = TypedD3D::D3D12::DescriptorHeap::DescriptorHeap_t<descriptorHeapType<Type>>;
+    };
+};

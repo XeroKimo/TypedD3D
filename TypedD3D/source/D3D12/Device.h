@@ -861,3 +861,13 @@ namespace TypedD3D::D3D12
         }
     }
 }
+
+namespace TypedD3D::Internal
+{
+    template<class IUnknownTy>
+        requires std::is_base_of_v<ID3D12Device, IUnknownTy>
+    struct InterfaceMapper<IUnknownTy>
+    {
+        using type = TypedD3D::D3D12::Internal::Device<IUnknownTy>;
+    };
+};

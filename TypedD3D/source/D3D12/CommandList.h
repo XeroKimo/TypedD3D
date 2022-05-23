@@ -9,6 +9,7 @@
 #include "DescriptorHeap.h"
 #include "Meta.h"
 #include "../Helpers/COMHelpers.h"
+#include "../D3D12Wrappers.h"
 #include <memory>
 #include <d3d12.h>
 #include <array>
@@ -1467,6 +1468,16 @@ namespace TypedD3D::D3D12::CommandList
 
     using RenderPass = Internal::RenderPass<ID3D12GraphicsCommandList4>;
     using RenderPass1 = Internal::RenderPass<ID3D12GraphicsCommandList5>;
+};
+
+namespace TypedD3D::Internal
+{
+    template<class IUnknownTy, TypeTag Type>
+        requires std::is_base_of_v<ID3D12GraphicsCommandList, IUnknownTy>
+    struct InterfaceMapper<IUnknownTy, Type>
+    {
+        using type = TypedD3D::D3D12::CommandList::CommandList_t<listType<Type>, IUnknownTy>;
+    };
 };
 
 #pragma warning(pop)

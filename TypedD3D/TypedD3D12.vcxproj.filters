@@ -60,6 +60,12 @@
     <ClInclude Include="source\D3D12\CommandAllocator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\Wrappers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\D3D12Wrappers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp">

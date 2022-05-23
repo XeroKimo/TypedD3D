@@ -2,6 +2,7 @@
 
 #include "Meta.h"
 #include "ComWrapper.h"
+#include "../D3D12Wrappers.h"
 #include <d3d12.h>
 #include <wrl/client.h>
 #include <assert.h>
@@ -49,4 +50,14 @@ namespace TypedD3D::D3D12::CommandAllocator
     using Bundle = Internal::CommandAllocator<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
     using Compute = Internal::CommandAllocator<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
     using Copy = Internal::CommandAllocator<D3D12_COMMAND_LIST_TYPE_COPY>;
+};
+
+namespace TypedD3D::Internal
+{
+    template<class IUnknownTy, TypeTag Type>
+        requires std::is_base_of_v<ID3D12CommandAllocator, IUnknownTy>
+    struct InterfaceMapper<IUnknownTy, Type>
+    {
+        using type = TypedD3D::D3D12::CommandAllocator::CommandAllocator_t<listType<Type>>;
+    };
 };

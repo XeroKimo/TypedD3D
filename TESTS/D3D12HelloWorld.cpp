@@ -37,17 +37,17 @@ void D3D12HelloWorld()
     ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface().GetValue();
     debugLayer->EnableDebugLayer();
 
-    TypedD3D::D3D12::Device1 device = TypedD3D::D3D12::CreateDevice<TypedD3D::D3D12::Device1>(D3D_FEATURE_LEVEL_12_0).GetValue();
+    TypedD3D::Wrapper<ID3D12Device1> device = TypedD3D::D3D12::CreateDevice<TypedD3D::D3D12::Device1>(D3D_FEATURE_LEVEL_12_0).GetValue();
     ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Helpers::COM::Cast<ID3D12DebugDevice>(device.GetComPtr());
 
     constexpr UINT backBufferCount = 2;
 
-    TypedD3D::D3D12::CommandQueue::Direct commandQueue = device->CreateCommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>(D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE, 0).GetValue();
-    std::array<TypedD3D::D3D12::CommandAllocator::Direct, backBufferCount> commandAllocators;
+    TypedD3D::Direct<ID3D12CommandQueue> commandQueue = device->CreateCommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>(D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE, 0).GetValue();
+    std::array<TypedD3D::Direct<ID3D12CommandAllocator>, backBufferCount> commandAllocators;
     commandAllocators[0] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().GetValue();
     commandAllocators[1] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().GetValue();
-    TypedD3D::D3D12::CommandList::Direct temp = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0], 0, nullptr).GetValue();
-    TypedD3D::D3D12::CommandList::Direct1 commandList = temp.As<TypedD3D::D3D12::CommandList::Direct1>();
+    TypedD3D::Direct<ID3D12GraphicsCommandList> temp = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0], 0, nullptr).GetValue();
+    TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList = temp.As<TypedD3D::D3D12::CommandList::Direct1>();
 
     UINT64 fenceValue = 0;
     ComPtr<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE).GetValue();
@@ -62,7 +62,7 @@ void D3D12HelloWorld()
         DXGI_SWAP_CHAIN_FLAG{},
         false).GetValue();
 
-    TypedD3D::D3D12::DescriptorHeap::RTV swapChainBufferDescriptorHeap = device->CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV>(2, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 0).GetValue();
+    TypedD3D::RTV<ID3D12DescriptorHeap> swapChainBufferDescriptorHeap = device->CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV>(2, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 0).GetValue();
 
     UINT rtvOffset = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     TypedD3D::D3D12::DescriptorHandle::CPU_RTV descriptorHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
