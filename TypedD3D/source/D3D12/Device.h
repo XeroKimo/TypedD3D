@@ -2,13 +2,13 @@
 #include "../Helpers/D3D12Helpers.h"
 #include "../Helpers/COMHelpers.h"
 #include "../Utils.h"
-#include "ComWrapper.h"
+#include "../Internal/ComWrapper.h"
+#include "../Internal/D3D12/Meta.h"
 #include "CommandList.h"
 #include "CommandAllocator.h"
 #include "CommandQueue.h"
 #include "PipelineState.h"
 #include "DescriptorHeap.h"
-#include "Meta.h"
 
 #include <d3d12.h>
 #include <wrl/client.h>
@@ -50,12 +50,12 @@ namespace TypedD3D::Internal
                 }
 
                 template<D3D12_COMMAND_LIST_TYPE Type>
-                Utils::Expected<CommandQueue_t<tagValue<Type>>, HRESULT> CreateCommandQueue(
+                Utils::Expected<TypedD3D::D3D12::CommandQueue_t<Type>, HRESULT> CreateCommandQueue(
                     D3D12_COMMAND_QUEUE_PRIORITY priority,
                     D3D12_COMMAND_QUEUE_FLAGS flags,
                     UINT nodeMask)
                 {
-                    using queue_type = CommandQueue_t<tagValue<Type>>;
+                    using queue_type = TypedD3D::D3D12::CommandQueue_t<Type>;
 
                     D3D12_COMMAND_QUEUE_DESC desc
                     {
@@ -74,9 +74,9 @@ namespace TypedD3D::Internal
                 }
 
                 template<D3D12_COMMAND_LIST_TYPE Type>
-                Utils::Expected<CommandAllocator_t<tagValue<Type>>, HRESULT> CreateCommandAllocator()
+                Utils::Expected<TypedD3D::D3D12::CommandAllocator_t<Type>, HRESULT> CreateCommandAllocator()
                 {
-                    using allocator_type = CommandAllocator_t<tagValue<Type>>;
+                    using allocator_type = TypedD3D::D3D12::CommandAllocator_t<Type>;
                     auto commandAllocator = Helpers::D3D12::CreateCommandAllocator(InternalGetDevice(), Type);
 
                     if(!commandAllocator)
@@ -108,12 +108,12 @@ namespace TypedD3D::Internal
                 }
 
                 template<D3D12_COMMAND_LIST_TYPE Type>
-                Utils::Expected<CommandList_t<ID3D12GraphicsCommandList, tagValue<Type>>, HRESULT> CreateCommandList(
-                    CommandAllocator_t<tagValue<Type>> pCommandAllocator,
+                Utils::Expected<TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList(
+                    TypedD3D::D3D12::CommandAllocator_t<Type> pCommandAllocator,
                     UINT nodeMask = 0,
                     ID3D12PipelineState* optInitialState = nullptr)
                 {
-                    using command_list_type = CommandList_t<ID3D12GraphicsCommandList, tagValue<Type>>;
+                    using command_list_type = TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, Type>;
                     auto commandList = Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(InternalGetDevice(), command_list_type::value, *pCommandAllocator.Get(), nodeMask, optInitialState);
 
                     if(!commandList)
@@ -123,9 +123,9 @@ namespace TypedD3D::Internal
                 }
 
                 template<D3D12_FEATURE Feature>
-                Utils::Expected<typename TypedD3D::D3D12::Meta::DeviceFeatureToType<Feature>::type, HRESULT> CheckFeatureSupport()
+                Utils::Expected<typename Meta::DeviceFeatureToType<Feature>::type, HRESULT> CheckFeatureSupport()
                 {
-                    using feature_t = typename TypedD3D::D3D12::Meta::DeviceFeatureToType<Feature>::type;
+                    using feature_t = typename Meta::DeviceFeatureToType<Feature>::type;
                     feature_t feature{};
 
                     HRESULT hr = InternalGetDevice().CheckFeatureSupport(Feature, &feature, sizeof(feature_t));
@@ -599,17 +599,17 @@ namespace TypedD3D::Internal
                 using type = ID3D12Device4;
 
             public:
-                template<D3D12_COMMAND_LIST_TYPE type>
-                Utils::Expected<CommandList_t<ID3D12GraphicsCommandList, type>, HRESULT> CreateCommandList1(
+                template<D3D12_COMMAND_LIST_TYPE Type>
+                Utils::Expected<TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList1(
                     UINT nodeMask,
                     D3D12_COMMAND_LIST_FLAGS flags)
                 {
-                    Utils::Expected<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>, HRESULT> cl = Helpers::D3D12::CreateCommandList(InternalGetDevice(), type, flags, nodeMask);
+                    Utils::Expected<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>, HRESULT> cl = Helpers::D3D12::CreateCommandList(InternalGetDevice(), Type, flags, nodeMask);
 
                     if(!cl.HasValue())
                         return Utils::Unexpected(cl.GetError());
 
-                    return CommandList_t<ID3D12GraphicsCommandList, type>(cl.GetValue());
+                    return TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, Type>(cl.GetValue());
                 }
 
                 Utils::Expected<Microsoft::WRL::ComPtr<ID3D12ProtectedResourceSession>, HRESULT> CreateProtectedResourceSession(
@@ -827,6 +827,12 @@ namespace TypedD3D::Internal
     public:
         using ComWrapper<DirectXClass>::ComWrapper;
 
+        InterfaceWrapper(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr) :
+            ComWrapper<DirectXClass>::ComWrapper(Helpers::D3D12::CreateDevice<underlying_type>(minimumFeatureLevel, optAdapter).GetValue())
+        {
+
+        }
+
     public:
         Interface* GetInterface() { return this; }
         Interface* operator->() { return this; }
@@ -853,20 +859,25 @@ namespace TypedD3D::D3D12
     using Device5 = Device_t<ID3D12Device5>;
 
     template<class DeviceTy = Device>
-    Utils::Expected<DeviceTy, HRESULT> CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
+    auto CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
     {
-        Utils::Expected<ComPtr<ID3D12Device>, HRESULT> device = Helpers::D3D12::CreateDevice(minimumFeatureLevel, optAdapter);
+        if constexpr(std::is_base_of_v<ID3D12Device, DeviceTy>)
+        {
+            Utils::Expected<ComPtr<DeviceTy>, HRESULT> device = Helpers::D3D12::CreateDevice<DeviceTy>(minimumFeatureLevel, optAdapter);
 
-        if(!device)
-            return Utils::Unexpected(device.GetError());
+            if(!device)
+                return Utils::Expected<Device_t<DeviceTy>, HRESULT>(Utils::Unexpected(device.GetError()));
 
-        if constexpr(std::same_as<typename DeviceTy::underlying_type, ID3D12Device>)
-            return DeviceTy(device.GetValue());
+            return Utils::Expected<Device_t<DeviceTy>, HRESULT>(Device_t<DeviceTy>(device.GetValue()));
+        }
         else
         {
-            using DerivedDevice = typename DeviceTy::underlying_type;
-            ComPtr<DerivedDevice> derived = Helpers::COM::Cast<DerivedDevice>(device.GetValue());
-            return DeviceTy(derived);
+            Utils::Expected<ComPtr<typename DeviceTy::underlying_type>, HRESULT> device = Helpers::D3D12::CreateDevice<typename DeviceTy::underlying_type>(minimumFeatureLevel, optAdapter);
+
+            if(!device)
+                return Utils::Expected<DeviceTy, HRESULT>(Utils::Unexpected(device.GetError()));
+
+            return Utils::Expected<DeviceTy, HRESULT>(DeviceTy(device.GetValue()));
         }
     }
 }

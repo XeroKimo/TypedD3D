@@ -17,6 +17,7 @@ namespace TypedD3D
             RTV,
             DSV,
             Graphics,
+            RenderPass
         };
 
         template<TypeTag Type>
@@ -143,4 +144,7 @@ namespace TypedD3D
 
     template<class IUnknownTy>
     using Graphics = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Graphics>;
+
+    template<class IUnknownTy>
+    using RenderPass = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::RenderPass>;
 }
