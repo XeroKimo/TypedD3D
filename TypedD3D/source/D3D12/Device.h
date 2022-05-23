@@ -174,7 +174,7 @@ namespace TypedD3D::D3D12
                 const D3D12_CONSTANT_BUFFER_VIEW_DESC& pDesc,
                 DescriptorHandle::CPU_CBV_SRV_UAV DestDescriptor)
             {
-                InternalGetDevice().CreateConstantBufferView(pDesc, DestDescriptor.Data());
+                InternalGetDevice().CreateConstantBufferView(pDesc, DestDescriptor);
             }
 
 
@@ -183,14 +183,14 @@ namespace TypedD3D::D3D12
                 const D3D12_SHADER_RESOURCE_VIEW_DESC* optDesc,
                 DescriptorHandle::CPU_CBV_SRV_UAV DestDescriptor)
             {
-                InternalGetDevice().CreateShaderResourceView(&pResource, optDesc, DestDescriptor.Data());
+                InternalGetDevice().CreateShaderResourceView(&pResource, optDesc, DestDescriptor);
             }
 
             void CreateNullShaderResourceView(
                 const D3D12_SHADER_RESOURCE_VIEW_DESC& pDesc,
                 DescriptorHandle::CPU_CBV_SRV_UAV DestDescriptor)
             {
-                InternalGetDevice().CreateShaderResourceView(nullptr, &pDesc, DestDescriptor.Data());
+                InternalGetDevice().CreateShaderResourceView(nullptr, &pDesc, DestDescriptor);
             }
 
             void CreateUnorderedAccessView(
@@ -199,7 +199,7 @@ namespace TypedD3D::D3D12
                 const D3D12_UNORDERED_ACCESS_VIEW_DESC& pDesc,
                 DescriptorHandle::CPU_CBV_SRV_UAV DestDescriptor)
             {
-                InternalGetDevice().CreateUnorderedAccessView(&pResource, &pCounterResource, &pDesc, DestDescriptor.Data());
+                InternalGetDevice().CreateUnorderedAccessView(&pResource, &pCounterResource, &pDesc, DestDescriptor);
             }
 
             void CreateRenderTargetView(
@@ -207,14 +207,14 @@ namespace TypedD3D::D3D12
                 const D3D12_RENDER_TARGET_VIEW_DESC* optDesc,
                 DescriptorHandle::CPU_RTV DestDescriptor)
             {
-                InternalGetDevice().CreateRenderTargetView(&Resource, optDesc, DestDescriptor.Data());
+                InternalGetDevice().CreateRenderTargetView(&Resource, optDesc, DestDescriptor);
             }
 
             void CreateNullRenderTargetView(
                 const D3D12_RENDER_TARGET_VIEW_DESC& Desc,
                 DescriptorHandle::CPU_RTV DestDescriptor)
             {
-                InternalGetDevice().CreateRenderTargetView(nullptr, &Desc, DestDescriptor.Data());
+                InternalGetDevice().CreateRenderTargetView(nullptr, &Desc, DestDescriptor);
             }
 
             void CreateDepthStencilView(
@@ -222,21 +222,21 @@ namespace TypedD3D::D3D12
                 const D3D12_DEPTH_STENCIL_VIEW_DESC* optDesc,
                 DescriptorHandle::CPU_DSV DestDescriptor)
             {
-                InternalGetDevice().CreateDepthStencilView(&Resource, optDesc, DestDescriptor.Data());
+                InternalGetDevice().CreateDepthStencilView(&Resource, optDesc, DestDescriptor);
             }
 
             void CreateNullDepthStencilView(
                 const D3D12_DEPTH_STENCIL_VIEW_DESC& optDesc,
                 DescriptorHandle::CPU_DSV DestDescriptor)
             {
-                InternalGetDevice().CreateDepthStencilView(nullptr, optDesc, DestDescriptor.Data());
+                InternalGetDevice().CreateDepthStencilView(nullptr, optDesc, DestDescriptor);
             }
 
             void CreateSampler(
                 const D3D12_SAMPLER_DESC& pDesc,
                 DescriptorHandle::CPU_SAMPLER DestDescriptor)
             {
-                InternalGetDevice().CreateSampler(&pDesc, DestDescriptor.Data());
+                InternalGetDevice().CreateSampler(&pDesc, DestDescriptor);
             }
 
 

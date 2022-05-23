@@ -50,16 +50,16 @@ namespace TypedD3D
         constexpr D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType<TypeTag::DSV> = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 
         template<TypeTag Type>
-        struct PipelineMapper;
+        struct PipelineStateMapper;
 
         template<>
-        struct PipelineMapper<TypeTag::Compute>
+        struct PipelineStateMapper<TypeTag::Compute>
         {
             using type = D3D12_COMPUTE_PIPELINE_STATE_DESC;
         };
 
         template<>
-        struct PipelineMapper<TypeTag::Graphics>
+        struct PipelineStateMapper<TypeTag::Graphics>
         {
             using type = D3D12_GRAPHICS_PIPELINE_STATE_DESC;
         };

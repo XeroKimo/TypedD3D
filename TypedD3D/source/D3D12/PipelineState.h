@@ -47,6 +47,6 @@ namespace TypedD3D::Internal
         requires std::is_base_of_v<ID3D12PipelineState, IUnknownTy>
     struct InterfaceMapper<IUnknownTy, Type>
     {
-        using type = TypedD3D::D3D12::PipelineState::Internal::PipelineState<typename PipelineMapper<Type>::type>;
+        using type = TypedD3D::D3D12::PipelineState::Internal::PipelineState<typename PipelineStateMapper<Type>::type>;
     };
 };
