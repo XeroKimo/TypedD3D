@@ -118,8 +118,10 @@ namespace TypedD3D::Internal
     public:
         using CPU_DESCRIPTOR_HANDLE = Interface::CPU_DESCRIPTOR_HANDLE;
         using GPU_DESCRIPTOR_HANDLE = Interface::GPU_DESCRIPTOR_HANDLE;
-        
 
+        static constexpr TypeTag tag_value = Type;
+        using underlying_type = DirectXClass;
+        
     public:
         using ComWrapper<DirectXClass>::ComWrapper;
 

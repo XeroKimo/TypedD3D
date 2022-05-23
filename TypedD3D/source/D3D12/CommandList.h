@@ -1341,6 +1341,10 @@ namespace TypedD3D::Internal
         static constexpr D3D12_COMMAND_LIST_TYPE value = trait_value_type::value;
 
     public:
+        static constexpr TypeTag tag_value = Type;
+        using underlying_type = DirectXClass;
+
+    public:
         using ComWrapper<DirectXClass>::ComWrapper;
 
         template<class DerivedListTy>

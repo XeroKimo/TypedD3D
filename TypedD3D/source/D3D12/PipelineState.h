@@ -30,6 +30,8 @@ namespace TypedD3D::Internal
         friend Interface;
 
     public:
+        static constexpr TypeTag tag_value = Type;
+        using underlying_type = DirectXClass;
         using ComWrapper<DirectXClass>::ComWrapper;
 
     public:
