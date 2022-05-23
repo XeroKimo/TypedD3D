@@ -3,12 +3,12 @@
 #include "../Helpers/COMHelpers.h"
 #include <d3d12.h>
 
-namespace TypedD3D::D3D12::PipelineState
+namespace TypedD3D::Internal
 {
-    namespace Internal
+    namespace PipelineState
     {
         template<class WrapperTy>
-        class PipelineInterface
+        class Interface
         {
         public:
             Microsoft::WRL::ComPtr<ID3DBlob> GetCachedBlob()
@@ -19,34 +19,43 @@ namespace TypedD3D::D3D12::PipelineState
         private:
             ID3D12PipelineState& InternalGet() { return *static_cast<WrapperTy&>(*this).Get(); }
         };
-
-        template<class PipelineTy>
-        class PipelineState : public ComWrapper<ID3D12PipelineState>, private PipelineInterface<PipelineState<PipelineTy>>
-        {
-        private:
-            template<class WrapperTy>
-            friend class PipelineInterface;
-
-        public:
-            using ComWrapper<ID3D12PipelineState>::ComWrapper;
-
-        public:
-            PipelineInterface<PipelineState<PipelineTy>>* GetInterface() { return this; }
-            PipelineInterface<PipelineState<PipelineTy>>* operator->() { return this; }
-        };
-        
     }
 
-    using Graphics = Internal::PipelineState<D3D12_GRAPHICS_PIPELINE_STATE_DESC>;
-    using Compute = Internal::PipelineState<D3D12_COMPUTE_PIPELINE_STATE_DESC>;
-}
+    template<class DirectXClass, TypeTag Type>
+        requires std::is_base_of_v<ID3D12PipelineState, DirectXClass> && Is_Pipeline_Type<Type>
+    class InterfaceWrapper<DirectXClass, Type> : public ComWrapper<DirectXClass>, private PipelineState::Interface<InterfaceWrapper<DirectXClass, Type>>
+    {
+    private:
+        using Interface = PipelineState::Interface<InterfaceWrapper<DirectXClass, Type>>;
+        friend Interface;
 
-namespace TypedD3D::Internal
-{
+    public:
+        using ComWrapper<DirectXClass>::ComWrapper;
+
+    public:
+        Interface* GetInterface() { return this; }
+        Interface* operator->() { return this; }
+    };
+
+    template<TypeTag Type>
+    using PipelineState_t = InterfaceWrapper<ID3D12PipelineState, Type>;
+
     template<class IUnknownTy, TypeTag Type>
         requires std::is_base_of_v<ID3D12PipelineState, IUnknownTy>
     struct InterfaceMapper<IUnknownTy, Type>
     {
-        using type = TypedD3D::D3D12::PipelineState::Internal::PipelineState<typename PipelineStateMapper<Type>::type>;
+        using type = PipelineState_t<Type>;
     };
-};
+}
+
+namespace TypedD3D::D3D12
+{
+    template<class PipelineStateDesc>
+    using PipelineState_t = TypedD3D::Internal::PipelineState_t<TypedD3D::Internal::TypeTagMapper<PipelineStateDesc>::value>;
+
+    namespace PipelineState
+    {
+        using Graphics = PipelineState_t<D3D12_GRAPHICS_PIPELINE_STATE_DESC>;
+        using Compute = PipelineState_t<D3D12_COMPUTE_PIPELINE_STATE_DESC>;
+    }
+}

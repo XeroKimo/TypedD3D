@@ -24,6 +24,9 @@ namespace TypedD3D
 
         template<TypeTag Type>
         concept Is_Descriptor_Heap_Type = (Type == TypeTag::CBV_SRV_UAV || Type == TypeTag::Sampler || Type == TypeTag::RTV || Type == TypeTag::DSV);
+                
+        template<TypeTag Type>
+        concept Is_Pipeline_Type = (Type == TypeTag::Graphics || Type == TypeTag::Compute);
 
         template<TypeTag value>
         constexpr D3D12_COMMAND_LIST_TYPE listType;
@@ -96,6 +99,21 @@ namespace TypedD3D
 
         template<>
         constexpr TypeTag tagValue<D3D12_DESCRIPTOR_HEAP_TYPE_DSV> = TypeTag::DSV;
+
+        template<class Ty>
+        struct TypeTagMapper;
+
+        template<>
+        struct TypeTagMapper<D3D12_GRAPHICS_PIPELINE_STATE_DESC>
+        {
+            static constexpr TypeTag value = TypeTag::Graphics;
+        };
+
+        template<>
+        struct TypeTagMapper<D3D12_COMPUTE_PIPELINE_STATE_DESC>
+        {
+            static constexpr TypeTag value = TypeTag::Compute;
+        };
 
     }
 
