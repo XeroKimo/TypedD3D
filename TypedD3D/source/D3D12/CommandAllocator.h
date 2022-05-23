@@ -14,6 +14,7 @@ namespace TypedD3D::Internal
         template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
         class Interface
         {
+        public:
             static constexpr D3D12_COMMAND_LIST_TYPE value = Type;
 
         public:
@@ -32,9 +33,6 @@ namespace TypedD3D::Internal
     private:
         using Interface = CommandAllocator::Interface<InterfaceWrapper<DirectXClass, Type>, listType<Type>>;
         friend Interface;
-
-    public:
-        static constexpr D3D12_COMMAND_LIST_TYPE value = listType<Type>;
 
     public:
         using ComWrapper<DirectXClass>::ComWrapper;

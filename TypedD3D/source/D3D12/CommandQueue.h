@@ -4,30 +4,29 @@
 #include <memory>
 #include <array>
 
-namespace TypedD3D::D3D12::CommandQueue
+namespace TypedD3D::D3D12
 {
-    namespace Internal
+    struct GPU_TIMESTAMP
     {
-        struct GPU_TIMESTAMP
-        {
-            UINT64 value;
-        };
-        struct CPU_TIMESTAMP
-        {
-            UINT64 value;
-        };
+        UINT64 value;
+    };
+    struct CPU_TIMESTAMP
+    {
+        UINT64 value;
+    };
+}
 
-        template<D3D12_COMMAND_LIST_TYPE Type>
-        struct command_queue_tag : Meta::command_list_type_tag<Type>
-        {
-            using list_type = CommandList::Internal::CommandList<Type, ID3D12GraphicsCommandList>;
-        };
-
+namespace TypedD3D::Internal
+{
+    namespace CommandQueue
+    {
         template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
-        class QueueInterface
+        class Interface
         {
-            using tag = command_queue_tag<Type>;
-            using list_type = typename tag::list_type;
+        private:
+            using list_type = TypedD3D::D3D12::CommandList::Internal::CommandList<Type, ID3D12GraphicsCommandList>;
+
+        public:
             static constexpr D3D12_COMMAND_LIST_TYPE value = Type;
 
         public:
@@ -140,9 +139,9 @@ namespace TypedD3D::D3D12::CommandQueue
                 return frequency;
             }
 
-            std::pair<GPU_TIMESTAMP, CPU_TIMESTAMP> GetClockCalibration()
+            std::pair<TypedD3D::D3D12::GPU_TIMESTAMP, TypedD3D::D3D12::CPU_TIMESTAMP> GetClockCalibration()
             {
-                std::pair<GPU_TIMESTAMP, CPU_TIMESTAMP> timeStamps;
+                std::pair<TypedD3D::D3D12::GPU_TIMESTAMP, TypedD3D::D3D12::CPU_TIMESTAMP> timeStamps;
                 InternalGet()->GetClockCalibration(&timeStamps.first.value, &timeStamps.second.value);
                 return timeStamps;
             }
@@ -152,43 +151,45 @@ namespace TypedD3D::D3D12::CommandQueue
         private:
             ID3D12CommandQueue* InternalGet() { return static_cast<WrapperTy&>(*this).Get(); }
         };
-        
+    }
 
-        template<D3D12_COMMAND_LIST_TYPE Type>
-        class CommandQueue : public ComWrapper<ID3D12CommandQueue>, private QueueInterface<CommandQueue<Type>, Type>
-        {
-            template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type2>
-            friend class QueueInterface;
+    template<class DirectXClass, TypeTag Type>
+        requires std::is_base_of_v<ID3D12CommandQueue, DirectXClass>
+    class InterfaceWrapper<DirectXClass, Type> : public ComWrapper<DirectXClass>, private CommandQueue::Interface<InterfaceWrapper<DirectXClass, Type>, listType<Type>>
+    {
+    private:
+        using Interface = CommandQueue::Interface<InterfaceWrapper<DirectXClass, Type>, listType<Type>>;
+        friend Interface;
 
-        public:
-            using tag = command_queue_tag<Type>;
-            using list_type = typename tag::list_type;
-            static constexpr D3D12_COMMAND_LIST_TYPE value = Type;
+    public:
+        using ComWrapper<DirectXClass>::ComWrapper;
 
-        public:
-            using ComWrapper<ID3D12CommandQueue>::ComWrapper;
-
-        public:
-            QueueInterface<CommandQueue<Type>, Type>* GetInterface() { return this; }
-            QueueInterface<CommandQueue<Type>, Type>* operator->() { return this; }
-        };
+    public:
+        Interface* GetInterface() { return this; }
+        Interface* operator->() { return this; }
     };
 
-    template<D3D12_COMMAND_LIST_TYPE Type>
-    using CommandQueue_t = Internal::CommandQueue<Type>;
+    template<TypeTag Type>
+    using CommandQueue_t = InterfaceWrapper<ID3D12CommandQueue, Type>;
 
-    using Direct = Internal::CommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>;
-    using Bundle = Internal::CommandQueue<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-    using Compute = Internal::CommandQueue<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-    using Copy = Internal::CommandQueue<D3D12_COMMAND_LIST_TYPE_COPY>;
-}
-
-namespace TypedD3D::Internal
-{
     template<class IUnknownTy, TypeTag Type>
         requires std::is_base_of_v<ID3D12CommandQueue, IUnknownTy>
     struct InterfaceMapper<IUnknownTy, Type>
     {
-        using type = TypedD3D::D3D12::CommandQueue::CommandQueue_t<listType<Type>>;
+        using type = CommandQueue_t<Type>;
     };
-};
+}
+
+namespace TypedD3D::D3D12
+{
+    template<D3D12_COMMAND_LIST_TYPE Type>
+    using CommandQueue_t = TypedD3D::Internal::CommandQueue_t<TypedD3D::Internal::tagValue<Type>>;
+
+    namespace CommandQueue
+    {
+        using Direct = CommandQueue_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
+        using Bundle = CommandQueue_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+        using Compute = CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+        using Copy = CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COPY>;
+    }
+}

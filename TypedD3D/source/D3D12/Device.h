@@ -46,12 +46,12 @@ namespace TypedD3D::D3D12
             }
 
             template<D3D12_COMMAND_LIST_TYPE Type>
-            Utils::Expected<CommandQueue::Internal::CommandQueue<Type>, HRESULT> CreateCommandQueue(
+            Utils::Expected<CommandQueue_t<Type>, HRESULT> CreateCommandQueue(
                 D3D12_COMMAND_QUEUE_PRIORITY priority,
                 D3D12_COMMAND_QUEUE_FLAGS flags,
                 UINT nodeMask)
             {
-                using queue_type = CommandQueue::Internal::CommandQueue<Type>;
+                using queue_type = CommandQueue_t<Type>;
 
                 D3D12_COMMAND_QUEUE_DESC desc
                 {
