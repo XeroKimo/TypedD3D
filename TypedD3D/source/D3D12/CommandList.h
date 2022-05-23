@@ -8,6 +8,7 @@
 #include "CommandAllocator.h"
 #include "DescriptorHeap.h"
 #include "Meta.h"
+#include "../Internal/ComWrapper.h"
 #include "../Helpers/COMHelpers.h"
 #include "../D3D12Wrappers.h"
 #include <memory>

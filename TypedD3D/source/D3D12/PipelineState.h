@@ -1,5 +1,5 @@
 #pragma once
-#include "ComWrapper.h"
+#include "../Internal/ComWrapper.h"
 #include "../Helpers/COMHelpers.h"
 #include <d3d12.h>
 

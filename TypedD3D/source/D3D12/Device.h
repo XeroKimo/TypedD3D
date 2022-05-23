@@ -2,7 +2,7 @@
 #include "../Helpers/D3D12Helpers.h"
 #include "../Helpers/COMHelpers.h"
 #include "../Utils.h"
-#include "ComWrapper.h"
+#include "../Internal/ComWrapper.h"
 #include "CommandList.h"
 #include "CommandAllocator.h"
 #include "CommandQueue.h"
@@ -108,12 +108,12 @@ namespace TypedD3D::Internal
                 }
 
                 template<D3D12_COMMAND_LIST_TYPE Type>
-                Utils::Expected<CommandList_t<ID3D12GraphicsCommandList, tagValue<Type>>, HRESULT> CreateCommandList(
-                    CommandAllocator_t<tagValue<Type>> pCommandAllocator,
+                Utils::Expected<TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList(
+                    TypedD3D::D3D12::CommandAllocator_t<Type> pCommandAllocator,
                     UINT nodeMask = 0,
                     ID3D12PipelineState* optInitialState = nullptr)
                 {
-                    using command_list_type = CommandList_t<ID3D12GraphicsCommandList, tagValue<Type>>;
+                    using command_list_type = TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, Type>;
                     auto commandList = Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(InternalGetDevice(), command_list_type::value, *pCommandAllocator.Get(), nodeMask, optInitialState);
 
                     if(!commandList)
