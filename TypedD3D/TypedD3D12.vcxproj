@@ -19,11 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\D3D12Wrappers.h" />
     <ClInclude Include="source\D3D12\CommandAllocator.h" />
     <ClInclude Include="source\D3D12\CommandQueue.h" />
-    <ClInclude Include="source\D3D12\ComWrapper.h" />
+    <ClInclude Include="source\Internal\ComWrapper.h" />
     <ClInclude Include="source\D3D12\DescriptorHeap.h" />
-    <ClInclude Include="source\D3D12\Meta.h" />
+    <ClInclude Include="source\Internal\D3D12\Meta.h" />
     <ClInclude Include="source\D3D12\PipelineState.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="source\Helpers\COMHelpers.h" />
@@ -33,7 +34,8 @@
     <ClInclude Include="source\D3D12\Device.h" />
     <ClInclude Include="source\Helpers\DXGIHelpers.h" />
     <ClInclude Include="source\Utils.h" />
-    <ClInclude Include="TypedD3D.h" />
+    <ClInclude Include="source\Wrappers.h" />
+    <ClInclude Include="TypedD3D12.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp" />

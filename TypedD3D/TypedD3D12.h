@@ -7,11 +7,10 @@
 #pragma once
 
 #include "source/D3D12/CommandAllocator.h"
+#include "source/D3D12/DescriptorHeap.h"
+#include "source/D3D12/PipelineState.h"
 #include "source/D3D12/CommandList.h"
 #include "source/D3D12/CommandQueue.h"
 #include "source/D3D12/Device.h"
 
-#include "source/Helpers/COMHelpers.h"
-#include "source/Helpers/CommonHelpers.h"
-#include "source/Helpers/D3D12Helpers.h"
-#include "source/Helpers/DXGIHelpers.h"
+#include "source/D3D12Wrappers.h"

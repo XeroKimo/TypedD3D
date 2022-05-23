@@ -18,7 +18,7 @@
     <ClInclude Include="source\D3D12\CommandList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TypedD3D.h">
+    <ClInclude Include="TypedD3D12.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\Helpers\COMHelpers.h">
@@ -39,10 +39,10 @@
     <ClInclude Include="source\Helpers\DXGIHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\D3D12\Meta.h">
+    <ClInclude Include="source\Internal\D3D12\Meta.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\D3D12\ComWrapper.h">
+    <ClInclude Include="source\Internal\ComWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\D3D12\CommandQueue.h">
@@ -58,6 +58,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\D3D12\CommandAllocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Wrappers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\D3D12Wrappers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

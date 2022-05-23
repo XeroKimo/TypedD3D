@@ -2,11 +2,12 @@
 #include <wrl/client.h>
 #include <type_traits>
 
-namespace TypedD3D::D3D12
+namespace TypedD3D::Internal
 {
     template<class T>
     class ComWrapper
     {
+
     private:
         Microsoft::WRL::ComPtr<T> m_ptr;
 
@@ -37,6 +38,5 @@ namespace TypedD3D::D3D12
     public:
         T* Get() const { return m_ptr.Get(); }
         Microsoft::WRL::ComPtr<T> GetComPtr() const { return m_ptr; }
-
     };
 }
