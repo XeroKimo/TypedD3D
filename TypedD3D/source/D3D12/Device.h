@@ -827,6 +827,14 @@ namespace TypedD3D::Internal
     public:
         using ComWrapper<DirectXClass>::ComWrapper;
 
+        template<class DerivedDeviceTy>
+            requires std::is_convertible_v<DerivedDeviceTy*, DirectXClass*>
+        InterfaceWrapper(const InterfaceWrapper<DerivedDeviceTy>& other) :
+            ComWrapper<DirectXClass>::ComWrapper(other.GetComPtr())
+        {
+
+        }
+
         InterfaceWrapper(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr) :
             ComWrapper<DirectXClass>::ComWrapper(Helpers::D3D12::CreateDevice<underlying_type>(minimumFeatureLevel, optAdapter).GetValue())
         {
