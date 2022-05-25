@@ -22,7 +22,7 @@ namespace TypedD3D::Internal
 
     template<TypeTag Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
         requires Is_Descriptor_Heap_Type<Type> && Descriptor_Heap_Flag_Compatible<Type, HeapFlags>
-    class InterfaceWrapper<D3D12_CPU_DESCRIPTOR_HANDLE, Type, HeapFlags> : public D3D12_CPU_DESCRIPTOR_HANDLE
+    class InterfaceWrapper<D3D12_CPU_DESCRIPTOR_HANDLE, Type, HeapFlags> : private D3D12_CPU_DESCRIPTOR_HANDLE
     {
     private:
         using CPU_DESCRIPTOR_HANDLE = InterfaceWrapper<D3D12_CPU_DESCRIPTOR_HANDLE, Type, HeapFlags>;
@@ -30,6 +30,8 @@ namespace TypedD3D::Internal
     public:
         static constexpr TypeTag tag_value = Type;
         static constexpr D3D12_DESCRIPTOR_HEAP_TYPE value = descriptorHeapType<Type>;
+
+        using D3D12_CPU_DESCRIPTOR_HANDLE::ptr;
 
     public:
         InterfaceWrapper() = default;
@@ -40,6 +42,7 @@ namespace TypedD3D::Internal
         }
 
     public:
+
         CPU_DESCRIPTOR_HANDLE Offset(INT64 offsetInDescriptors, UINT64 incrementSize)
         {
             auto copy = *this;
@@ -52,11 +55,15 @@ namespace TypedD3D::Internal
             copy.ptr += offset;
             return copy;
         }
+
+        D3D12_CPU_DESCRIPTOR_HANDLE& Get() { return *this; }
+        const D3D12_CPU_DESCRIPTOR_HANDLE& Get() const { return *this; }
+        explicit operator D3D12_CPU_DESCRIPTOR_HANDLE() { return *this; }
     };
 
     template<TypeTag Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
         requires Is_Descriptor_Heap_Type<Type> && Descriptor_Heap_Flag_Compatible<Type, HeapFlags>
-    class InterfaceWrapper<D3D12_GPU_DESCRIPTOR_HANDLE, Type, HeapFlags> : public D3D12_GPU_DESCRIPTOR_HANDLE
+    class InterfaceWrapper<D3D12_GPU_DESCRIPTOR_HANDLE, Type, HeapFlags> : private D3D12_GPU_DESCRIPTOR_HANDLE
     {
     private:
         using GPU_DESCRIPTOR_HANDLE = InterfaceWrapper<D3D12_GPU_DESCRIPTOR_HANDLE, Type, HeapFlags>;
@@ -64,6 +71,8 @@ namespace TypedD3D::Internal
     public:
         static constexpr TypeTag tag_value = Type;
         static constexpr D3D12_DESCRIPTOR_HEAP_TYPE value = descriptorHeapType<Type>;
+
+        using D3D12_GPU_DESCRIPTOR_HANDLE::ptr;
 
     public:
         InterfaceWrapper() = default;
@@ -87,6 +96,10 @@ namespace TypedD3D::Internal
             copy.ptr += offset;
             return copy;
         }
+
+        D3D12_GPU_DESCRIPTOR_HANDLE& Get() { return *this; }
+        const D3D12_GPU_DESCRIPTOR_HANDLE& Get() const { return *this; }
+        explicit operator D3D12_GPU_DESCRIPTOR_HANDLE() { return *this; }
     };
 
     namespace D3D12

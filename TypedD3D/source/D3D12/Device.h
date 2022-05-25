@@ -179,7 +179,7 @@ namespace TypedD3D::Internal
                     const D3D12_CONSTANT_BUFFER_VIEW_DESC& pDesc,
                     CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE, HeapFlags> DestDescriptor)
                 {
-                    InternalGetDevice().CreateConstantBufferView(pDesc, DestDescriptor);
+                    InternalGetDevice().CreateConstantBufferView(pDesc, DestDescriptor.Get());
                 }
 
 
@@ -189,7 +189,7 @@ namespace TypedD3D::Internal
                     const D3D12_SHADER_RESOURCE_VIEW_DESC* optDesc,
                     CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE, HeapFlags> DestDescriptor)
                 {
-                    InternalGetDevice().CreateShaderResourceView(&pResource, optDesc, DestDescriptor);
+                    InternalGetDevice().CreateShaderResourceView(&pResource, optDesc, DestDescriptor.Get());
                 }
 
                 template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
@@ -197,7 +197,7 @@ namespace TypedD3D::Internal
                     const D3D12_SHADER_RESOURCE_VIEW_DESC& pDesc,
                     CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE, HeapFlags> DestDescriptor)
                 {
-                    InternalGetDevice().CreateShaderResourceView(nullptr, &pDesc, DestDescriptor);
+                    InternalGetDevice().CreateShaderResourceView(nullptr, &pDesc, DestDescriptor.Get());
                 }
 
                 template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
@@ -207,7 +207,7 @@ namespace TypedD3D::Internal
                     const D3D12_UNORDERED_ACCESS_VIEW_DESC& pDesc,
                     CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE, HeapFlags> DestDescriptor)
                 {
-                    InternalGetDevice().CreateUnorderedAccessView(&pResource, &pCounterResource, &pDesc, DestDescriptor);
+                    InternalGetDevice().CreateUnorderedAccessView(&pResource, &pCounterResource, &pDesc, DestDescriptor.Get());
                 }
 
                 void CreateRenderTargetView(
@@ -215,14 +215,14 @@ namespace TypedD3D::Internal
                     const D3D12_RENDER_TARGET_VIEW_DESC* optDesc,
                     RTV<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> DestDescriptor)
                 {
-                    InternalGetDevice().CreateRenderTargetView(&Resource, optDesc, DestDescriptor);
+                    InternalGetDevice().CreateRenderTargetView(&Resource, optDesc, DestDescriptor.Get());
                 }
 
                 void CreateNullRenderTargetView(
                     const D3D12_RENDER_TARGET_VIEW_DESC& Desc,
                     RTV<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> DestDescriptor)
                 {
-                    InternalGetDevice().CreateRenderTargetView(nullptr, &Desc, DestDescriptor);
+                    InternalGetDevice().CreateRenderTargetView(nullptr, &Desc, DestDescriptor.Get());
                 }
 
                 void CreateDepthStencilView(
@@ -230,14 +230,14 @@ namespace TypedD3D::Internal
                     const D3D12_DEPTH_STENCIL_VIEW_DESC* optDesc,
                     DSV<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> DestDescriptor)
                 {
-                    InternalGetDevice().CreateDepthStencilView(&Resource, optDesc, DestDescriptor);
+                    InternalGetDevice().CreateDepthStencilView(&Resource, optDesc, DestDescriptor.Get());
                 }
 
                 void CreateNullDepthStencilView(
                     const D3D12_DEPTH_STENCIL_VIEW_DESC& optDesc,
                     DSV<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> DestDescriptor)
                 {
-                    InternalGetDevice().CreateDepthStencilView(nullptr, optDesc, DestDescriptor);
+                    InternalGetDevice().CreateDepthStencilView(nullptr, optDesc, DestDescriptor.Get());
                 }
 
                 template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
@@ -245,7 +245,7 @@ namespace TypedD3D::Internal
                     const D3D12_SAMPLER_DESC& pDesc,
                     Sampler<D3D12_CPU_DESCRIPTOR_HANDLE, HeapFlags> DestDescriptor)
                 {
-                    InternalGetDevice().CreateSampler(&pDesc, DestDescriptor);
+                    InternalGetDevice().CreateSampler(&pDesc, DestDescriptor.Get());
                 }
 
 
@@ -274,7 +274,7 @@ namespace TypedD3D::Internal
                     DescriptorHeap_t<Type, DestinationFlag>::CPU_DESCRIPTOR_HANDLE DestDescriptorRangeStart,
                     DescriptorHeap_t<Type, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>::CPU_DESCRIPTOR_HANDLE SrcDescriptorRangeStart)
                 {
-                    InternalGetDevice().CopyDescriptorsSimple(NumDescriptors, DestDescriptorRangeStart.Data(), SrcDescriptorRangeStart.Data(), Type);
+                    InternalGetDevice().CopyDescriptorsSimple(NumDescriptors, DestDescriptorRangeStart.Get(), SrcDescriptorRangeStart.Get(), Type);
                 }
 
                 D3D12_RESOURCE_ALLOCATION_INFO GetResourceAllocationInfo(

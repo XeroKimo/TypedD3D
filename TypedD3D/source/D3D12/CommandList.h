@@ -362,10 +362,10 @@ namespace TypedD3D::Internal
 
                     for(size_t i = 0; i < pRenderTargetDescriptors.size(); i++)
                     {
-                        renderTargets[i] = pRenderTargetDescriptors[i];
+                        renderTargets[i] = pRenderTargetDescriptors[i].Get();
                     }
 
-                    const D3D12_CPU_DESCRIPTOR_HANDLE* depthStencil = (pDepthStencilDescriptor) ? pDepthStencilDescriptor : nullptr;
+                    const D3D12_CPU_DESCRIPTOR_HANDLE* depthStencil = (pDepthStencilDescriptor) ? &pDepthStencilDescriptor->Get() : nullptr;
 
                     InternalCommandList().OMSetRenderTargets(static_cast<UINT>(pRenderTargetDescriptors.size()), renderTargets.get(), RTsSingleHandleToDescriptorRange, depthStencil);
                 }
@@ -385,7 +385,7 @@ namespace TypedD3D::Internal
                     std::span<const float, 4> colorRGBA,
                     std::span<const D3D12_RECT> rects)
                 {
-                    InternalCommandList().ClearRenderTargetView(RenderTargetView, colorRGBA.data(), static_cast<UINT>(rects.size()), rects.data());
+                    InternalCommandList().ClearRenderTargetView(RenderTargetView.Get(), colorRGBA.data(), static_cast<UINT>(rects.size()), rects.data());
                 }
 
                 void ClearUnorderedAccessViewUint(
