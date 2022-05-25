@@ -225,19 +225,19 @@ namespace TypedD3D::Internal
 
                 void ExecuteBundle(InterfaceWrapper<ID3D12GraphicsCommandList, TypeTag::Bundle> pCommandList);
 
-                void SetDescriptorHeaps(CBV_SRV_UAV<ID3D12DescriptorHeap> descriptorHeap)
+                void SetDescriptorHeaps(CBV_SRV_UAV<ID3D12DescriptorHeap, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> descriptorHeap)
                 {
                     ID3D12DescriptorHeap* heaps[] = { descriptorHeap.Get() };
                     InternalCommandList().SetDescriptorHeaps(1, heaps);
                 }
 
-                void SetDescriptorHeaps(Sampler<ID3D12DescriptorHeap> descriptorHeap)
+                void SetDescriptorHeaps(Sampler<ID3D12DescriptorHeap, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> descriptorHeap)
                 {
                     ID3D12DescriptorHeap* heaps[] = { descriptorHeap.Get() };
                     InternalCommandList().SetDescriptorHeaps(1, heaps);
                 }
 
-                void SetDescriptorHeaps(CBV_SRV_UAV<ID3D12DescriptorHeap> cbv_srv_uavHeap, Sampler<ID3D12DescriptorHeap> samplerHeap)
+                void SetDescriptorHeaps(CBV_SRV_UAV<ID3D12DescriptorHeap, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> cbv_srv_uavHeap, Sampler<ID3D12DescriptorHeap, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> samplerHeap)
                 {
                     ID3D12DescriptorHeap* heaps[] = { cbv_srv_uavHeap.Get(), samplerHeap.Get() };
                     InternalCommandList().SetDescriptorHeaps(2, heaps);
@@ -354,24 +354,24 @@ namespace TypedD3D::Internal
                 }
 
                 void OMSetRenderTargets(
-                    std::span<const RTV<D3D12_CPU_DESCRIPTOR_HANDLE>> pRenderTargetDescriptors,
+                    std::span<const RTV<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>> pRenderTargetDescriptors,
                     BOOL RTsSingleHandleToDescriptorRange,
-                    const DSV<D3D12_CPU_DESCRIPTOR_HANDLE>* pDepthStencilDescriptor)
+                    const DSV<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>* pDepthStencilDescriptor)
                 {
                     std::unique_ptr<D3D12_CPU_DESCRIPTOR_HANDLE[]> renderTargets = std::make_unique<D3D12_CPU_DESCRIPTOR_HANDLE[]>(pRenderTargetDescriptors.size());
 
                     for(size_t i = 0; i < pRenderTargetDescriptors.size(); i++)
                     {
-                        renderTargets[i] = pRenderTargetDescriptors[i];
+                        renderTargets[i] = pRenderTargetDescriptors[i].Get();
                     }
 
-                    const D3D12_CPU_DESCRIPTOR_HANDLE* depthStencil = (pDepthStencilDescriptor) ? pDepthStencilDescriptor : nullptr;
+                    const D3D12_CPU_DESCRIPTOR_HANDLE* depthStencil = (pDepthStencilDescriptor) ? &pDepthStencilDescriptor->Get() : nullptr;
 
                     InternalCommandList().OMSetRenderTargets(static_cast<UINT>(pRenderTargetDescriptors.size()), renderTargets.get(), RTsSingleHandleToDescriptorRange, depthStencil);
                 }
 
                 void ClearDepthStencilView(
-                    DSV<D3D12_CPU_DESCRIPTOR_HANDLE> DepthStencilView,
+                    DSV<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> DepthStencilView,
                     D3D12_CLEAR_FLAGS ClearFlags,
                     FLOAT Depth,
                     UINT8 Stencil,
@@ -381,11 +381,11 @@ namespace TypedD3D::Internal
                 }
 
                 void ClearRenderTargetView(
-                    RTV<D3D12_CPU_DESCRIPTOR_HANDLE> RenderTargetView,
+                    RTV<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> RenderTargetView,
                     std::span<const float, 4> colorRGBA,
                     std::span<const D3D12_RECT> rects)
                 {
-                    InternalCommandList().ClearRenderTargetView(RenderTargetView, colorRGBA.data(), static_cast<UINT>(rects.size()), rects.data());
+                    InternalCommandList().ClearRenderTargetView(RenderTargetView.Get(), colorRGBA.data(), static_cast<UINT>(rects.size()), rects.data());
                 }
 
                 void ClearUnorderedAccessViewUint(
