@@ -66,6 +66,15 @@
     <ClInclude Include="source\D3D12Wrappers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\DXGI\Factory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\D3D12TypeTags.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\DXGI\SwapChain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp">

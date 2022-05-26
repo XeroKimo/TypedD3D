@@ -1,4 +1,6 @@
 #include "TypedD3D12.h"
+#include "source/DXGI/Factory.h"
+#include "source/DXGI/SwapChain.h"
 #include <d3dcompiler.h>
 #include <d3d12sdklayers.h>
 #include <assert.h>
@@ -32,7 +34,8 @@ void D3D12HelloWorld()
 {
     CreateWindow();
 
-    TypedD3D::Utils::Expected<ComPtr<IDXGIFactory2>, HRESULT> factory = TypedD3D::Helpers::COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory1);
+    //TypedD3D::Utils::Expected<ComPtr<IDXGIFactory2>, HRESULT> factory = TypedD3D::Helpers::COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory1);
+    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::DXGI::Factory::Create1<IDXGIFactory2>().GetValue();
 
     ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface().GetValue();
     debugLayer->EnableDebugLayer();
@@ -52,14 +55,23 @@ void D3D12HelloWorld()
     ComPtr<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE).GetValue();
     HANDLE syncEvent = CreateEventW(nullptr, false, false, nullptr);
 
-    ComPtr<IDXGISwapChain1> swapChain = TypedD3D::Helpers::DXGI::SwapChain::CreateFlipDiscard(
-        *factory.GetValue().Get(),
-        *commandQueue.Get(),
+    TypedD3D::Wrapper<IDXGISwapChain1> swapChain = factory->CreateSwapChainForHwnd<IDXGISwapChain1>(
+        commandQueue,
         handle,
-        DXGI_FORMAT_R8G8B8A8_UNORM,
-        backBufferCount,
-        DXGI_SWAP_CHAIN_FLAG{},
-        false).GetValue();
+        DXGI_SWAP_CHAIN_DESC1
+        {
+            .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
+            .SampleDesc 
+            {
+                .Count = 1
+            },
+            .BufferUsage = DXGI_USAGE_BACK_BUFFER | DXGI_USAGE_RENDER_TARGET_OUTPUT,
+            .BufferCount = backBufferCount,
+            .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
+            .Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
+        },
+        nullptr,
+        nullptr).GetValue();
 
     TypedD3D::RTV<ID3D12DescriptorHeap, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> swapChainBufferDescriptorHeap = device->CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>(2, 0).GetValue();
 
