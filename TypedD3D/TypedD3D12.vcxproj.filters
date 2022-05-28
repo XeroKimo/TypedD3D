@@ -78,6 +78,9 @@
     <ClInclude Include="source\Internal\d3dConcepts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\DXGI\Adapter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp">

@@ -108,6 +108,13 @@ namespace TypedD3D::Internal
                     return Compute<ID3D12PipelineState>(pipelineState.GetValue());
                 }
 
+
+                template<D3D12_COMMAND_LIST_TYPE Type>
+                void Test(TypedD3D::D3D12::CommandAllocator_t<Type> pCommandAllocator)
+                {
+
+                }
+
                 template<D3D12_COMMAND_LIST_TYPE Type>
                 Utils::Expected<TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList(
                     TypedD3D::D3D12::CommandAllocator_t<Type> pCommandAllocator,
@@ -835,7 +842,7 @@ namespace TypedD3D::Internal
         template<class DerivedDeviceTy>
             requires std::is_convertible_v<DerivedDeviceTy*, DirectXClass*>
         InterfaceWrapper(const InterfaceWrapper<DerivedDeviceTy>& other) :
-            ComWrapper<DirectXClass>::ComWrapper(other.GetComPtr())
+            ComWrapper<DirectXClass>::ComWrapper(other.AsComPtr())
         {
 
         }

@@ -1,6 +1,7 @@
 #include "TypedD3D12.h"
 #include "source/DXGI/Factory.h"
 #include "source/DXGI/SwapChain.h"
+#include "source/DXGI/Adapter.h"
 #include <d3dcompiler.h>
 #include <d3d12sdklayers.h>
 #include <assert.h>
@@ -36,11 +37,11 @@ void D3D12HelloWorld()
 
     //TypedD3D::Utils::Expected<ComPtr<IDXGIFactory2>, HRESULT> factory = TypedD3D::Helpers::COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory1);
     TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::DXGI::Factory::Create1<IDXGIFactory2>().GetValue();
-
+    TypedD3D::Wrapper<IDXGIAdapter> adapter = factory->EnumAdapters<IDXGIAdapter>(0);
     ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface().GetValue();
     debugLayer->EnableDebugLayer();
     TypedD3D::Wrapper<ID3D12Device1> device(D3D_FEATURE_LEVEL_12_0);
-    ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Helpers::COM::Cast<ID3D12DebugDevice>(device.GetComPtr());
+    ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Helpers::COM::Cast<ID3D12DebugDevice>(device.AsComPtr());
 
     constexpr UINT backBufferCount = 2;
 

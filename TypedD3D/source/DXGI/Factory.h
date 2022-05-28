@@ -11,308 +11,314 @@ struct ID3D12CommandQueue;
 
 namespace TypedD3D::Internal
 {
-    namespace DXGI::Factory
+    namespace DXGI
     {
-        template<class WrapperTy, class FactoryTy>
-        class Interface;
-
         template<class Ty>
-        using Direct = Wrapper<Ty, TypeTag::Direct>;
+        using Factory_t = InterfaceWrapper<Ty>;
 
-        template<class WrapperTy>
-        class Interface<WrapperTy, IDXGIFactory>
+        namespace Factory
         {
-            using factory_type = IDXGIFactory;
-            using wrapper_type = WrapperTy;
+            template<class WrapperTy, class FactoryTy>
+            class Interface;
 
-        public:
-            template<class AdapterTy>
-                requires std::derived_from<AdapterTy, IDXGIAdapter>
-            Wrapper<AdapterTy> EnumAdapters(UINT Adapter)
+            template<class Ty>
+            using Direct = Wrapper<Ty, TypeTag::Direct>;
+
+            template<class WrapperTy>
+            class Interface<WrapperTy, IDXGIFactory>
             {
-                auto adapter = Helpers::COM::IIDToObjectForwardFunction<IDXGIAdapter>(&IDXGIFactory::EnumAdapters, InternalGet(), Adapter);
-                if(!adapter.HasValue())
-                    return nullptr;
+                using factory_type = IDXGIFactory;
+                using wrapper_type = WrapperTy;
 
-                if constexpr(std::same_as<AdapterTy, IDXGIAdapter>)
-                    return Wrapper<AdapterTy>(adapter.GetValue());
-                else
-                    return Wrapper<AdapterTy>(Helpers::COM::Cast<AdapterTy>(adapter.GetValue()));
-            }
+            public:
+                template<class AdapterTy = IDXGIAdapter>
+                    requires std::derived_from<AdapterTy, IDXGIAdapter>
+                Wrapper<AdapterTy> EnumAdapters(UINT Adapter)
+                {
+                    auto adapter = Helpers::COM::UnknownObjectForwardFunction<IDXGIAdapter>(&IDXGIFactory::EnumAdapters, InternalGet(), Adapter);
+                    if(!adapter.HasValue())
+                        return nullptr;
 
-            HRESULT MakeWindowAssociation(HWND WindowHandle, UINT Flags)
+                    if constexpr(std::same_as<AdapterTy, IDXGIAdapter>)
+                        return Wrapper<AdapterTy>(adapter.GetValue());
+                    else
+                        return Wrapper<AdapterTy>(Helpers::COM::Cast<AdapterTy>(adapter.GetValue()));
+                }
+
+                HRESULT MakeWindowAssociation(HWND WindowHandle, UINT Flags)
+                {
+                    InternalGet().MakeWindowAssociation(Flags);
+                }
+
+                Utils::Expected<HWND, HRESULT> GetWindowAssociation()
+                {
+                    HWND hwnd;
+                    HRESULT result = InternalGet().GetWindowAssociation(&hwnd);
+                    if(FAILED(result))
+                        return Utils::Unexpected(result);
+                    return hwnd;
+                }
+
+                template<class SwapChain = IDXGISwapChain, class Device = ID3D11Device>
+                    requires std::derived_from<Device, ID3D11Device>&& std::derived_from<SwapChain, IDXGISwapChain>
+                Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChain(Wrapper<Device> pDevice, const DXGI_SWAP_CHAIN_DESC& pDesc)
+                {
+                    auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain>(&IDXGIFactory::CreateSwapChain, InternalGet(), pDevice.Get(), &pDesc);
+
+                    if(!swapChain.HasValue())
+                        return Utils::Unexpected(swapChain.GetError());
+
+                    if constexpr(std::same_as<SwapChain, IDXGISwapChain>)
+                        return Wrapper<SwapChain>(swapChain.GetValue());
+                    else
+                        return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
+                }
+
+                template<class SwapChain = IDXGISwapChain>
+                    requires std::derived_from<SwapChain, IDXGISwapChain>
+                Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChain(Direct<ID3D12CommandQueue> commandQueue, const DXGI_SWAP_CHAIN_DESC& pDesc)
+                {
+                    auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain>(&IDXGIFactory::CreateSwapChain, InternalGet(), commandQueue.Get(), &pDesc);
+
+                    if(!swapChain.HasValue())
+                        return Utils::Unexpected(swapChain.GetError());
+
+                    if constexpr(std::same_as<SwapChain, IDXGISwapChain>)
+                        return Wrapper<SwapChain>(swapChain.GetValue());
+                    else
+                        return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
+                }
+
+                template<class AdapterTy>
+                    requires std::derived_from<AdapterTy, IDXGIAdapter>
+                Utils::Expected<Wrapper<AdapterTy>, HRESULT> CreateSoftwareAdapter(HMODULE Module)
+                {
+                    auto adapter = Helpers::COM::UnknownObjectForwardFunction<IDXGIAdapter>(&IDXGIFactory::CreateSoftwareAdapter, InternalGet(), Module);
+                    if(!adapter.HasValue())
+                        return nullptr;
+
+                    if constexpr(std::same_as<AdapterTy, IDXGIAdapter>)
+                        return Wrapper<AdapterTy>(adapter.GetValue());
+                    else
+                        return Wrapper<AdapterTy>(Helpers::COM::Cast<AdapterTy>(adapter.GetValue()));
+                }
+
+            private:
+                wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
+                factory_type& InternalGet() { return *ToDerived().Get(); }
+            };
+
+            template<class WrapperTy>
+            class Interface<WrapperTy, IDXGIFactory1> : public Interface<WrapperTy, IDXGIFactory>
             {
-                InternalGet().MakeWindowAssociation(Flags);
-            }
+                using factory_type = IDXGIFactory1;
+                using wrapper_type = WrapperTy;
 
-            Utils::Expected<HWND, HRESULT> GetWindowAssociation()
+            public:
+                template<class AdapterTy>
+                    requires std::derived_from<AdapterTy, IDXGIAdapter>
+                Wrapper<AdapterTy> EnumAdapters1(UINT Adapter)
+                {
+                    auto adapter = Helpers::COM::UnknownObjectForwardFunction<IDXGIAdapter1>(&IDXGIFactory1::EnumAdapters1, InternalGet(), Adapter);
+                    if(!adapter.HasValue())
+                        return nullptr;
+
+                    if constexpr(std::same_as<AdapterTy, IDXGIAdapter>)
+                        return Wrapper<AdapterTy>(adapter.GetValue());
+                    else
+                        return Wrapper<AdapterTy>(Helpers::COM::Cast<AdapterTy>(adapter.GetValue()));
+                }
+
+                BOOL IsCurrent() { return InternalGet().IsCurrent(); }
+
+            private:
+                wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
+                factory_type& InternalGet() { return *ToDerived().Get(); }
+            };
+
+            template<class WrapperTy>
+            class Interface<WrapperTy, IDXGIFactory2> : public Interface<WrapperTy, IDXGIFactory1>
             {
-                HWND hwnd;
-                HRESULT result = InternalGet().GetWindowAssociation(&hwnd);
-                if(FAILED(result))
-                    return Utils::Unexpected(result);
-                return hwnd;
-            }
+                using factory_type = IDXGIFactory2;
+                using wrapper_type = WrapperTy;
 
-            template<class SwapChain = IDXGISwapChain, class Device = ID3D11Device>
-                requires std::derived_from<Device, ID3D11Device>&& std::derived_from<SwapChain, IDXGISwapChain>
-            Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChain(Wrapper<Device> pDevice, const DXGI_SWAP_CHAIN_DESC& pDesc)
-            {
-                auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain>(&IDXGIFactory::CreateSwapChain, InternalGet(), pDevice.Get(), &pDesc);
+            public:
+                BOOL IsWindowedStereoEnabled() { return InternalGet().IsWindowedStereoEnabled(); }
 
-                if(!swapChain.HasValue())
-                    return Utils::Unexpected(swapChain.GetError());
+                template<class SwapChain = IDXGISwapChain, class Device = ID3D11Device>
+                    requires std::derived_from<Device, ID3D11Device>&& std::derived_from<SwapChain, IDXGISwapChain>
+                Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForHwnd(
+                    Wrapper<Device> pDevice,
+                    HWND hWnd,
+                    const DXGI_SWAP_CHAIN_DESC1& pDesc,
+                    const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* optFullscreenDesc,
+                    IDXGIOutput* optRestrictToOutput)
+                {
+                    auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain1>(&IDXGIFactory2::CreateSwapChainForHwnd, InternalGet(), pDevice.Get(), hWnd, &pDesc, optFullscreenDesc, optRestrictToOutput);
 
-                if constexpr(std::same_as<SwapChain, IDXGISwapChain>)
-                    return Wrapper<SwapChain>(swapChain.GetValue());
-                else
-                    return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
-            }
+                    if(!swapChain.HasValue())
+                        return Utils::Unexpected(swapChain.GetError());
 
-            template<class SwapChain = IDXGISwapChain>
-                requires std::derived_from<SwapChain, IDXGISwapChain>
-            Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChain(Direct<ID3D12CommandQueue> commandQueue, const DXGI_SWAP_CHAIN_DESC& pDesc)
-            {
-                auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain>(&IDXGIFactory::CreateSwapChain, InternalGet(), commandQueue.Get(), &pDesc);
+                    if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
+                        return Wrapper<SwapChain>(swapChain.GetValue());
+                    else
+                        return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
+                }
 
-                if(!swapChain.HasValue())
-                    return Utils::Unexpected(swapChain.GetError());
+                template<class SwapChain = IDXGISwapChain>
+                    requires std::derived_from<SwapChain, IDXGISwapChain>
+                Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForHwnd(
+                    Direct<ID3D12CommandQueue> pDevice,
+                    HWND hWnd,
+                    const DXGI_SWAP_CHAIN_DESC1& pDesc,
+                    const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* optFullscreenDesc,
+                    IDXGIOutput* optRestrictToOutput)
+                {
+                    auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain1>(&IDXGIFactory2::CreateSwapChainForHwnd, &InternalGet(), pDevice.Get(), hWnd, &pDesc, optFullscreenDesc, optRestrictToOutput);
 
-                if constexpr(std::same_as<SwapChain, IDXGISwapChain>)
-                    return Wrapper<SwapChain>(swapChain.GetValue());
-                else
-                    return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
-            }
+                    if(!swapChain.HasValue())
+                        return Utils::Unexpected(swapChain.GetError());
 
-            template<class AdapterTy>
-                requires std::derived_from<AdapterTy, IDXGIAdapter>
-            Utils::Expected<Wrapper<AdapterTy>, HRESULT> CreateSoftwareAdapter(HMODULE Module)
-            {
-                auto adapter = Helpers::COM::UnknownObjectForwardFunction<IDXGIAdapter>(&IDXGIFactory::CreateSoftwareAdapter, InternalGet(), Module);
-                if(!adapter.HasValue())
-                    return nullptr;
+                    if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
+                        return Wrapper<SwapChain>(swapChain.GetValue());
+                    else
+                        return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
+                }
 
-                if constexpr(std::same_as<AdapterTy, IDXGIAdapter>)
-                    return Wrapper<AdapterTy>(adapter.GetValue());
-                else
-                    return Wrapper<AdapterTy>(Helpers::COM::Cast<AdapterTy>(adapter.GetValue()));
-            }
+                template<class SwapChain = IDXGISwapChain, class Device = ID3D11Device>
+                    requires std::derived_from<Device, ID3D11Device>&& std::derived_from<SwapChain, IDXGISwapChain>
+                Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForCoreWindow(
+                    Wrapper<Device> pDevice,
+                    IUnknown& pWindow,
+                    const DXGI_SWAP_CHAIN_DESC1& pDesc,
+                    IDXGIOutput* optRestrictToOutput)
+                {
+                    auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain1>(&IDXGIFactory2::CreateSwapChainForCoreWindow, InternalGet(), pDevice.Get(), &pWindow, &pDesc, optRestrictToOutput);
 
-        private:
-            wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
-            factory_type& InternalGet() { return *ToDerived().Get(); }
-        };
+                    if(!swapChain.HasValue())
+                        return Utils::Unexpected(swapChain.GetError());
 
-        template<class WrapperTy>
-        class Interface<WrapperTy, IDXGIFactory1> : public Interface<WrapperTy, IDXGIFactory>
-        {
-            using factory_type = IDXGIFactory1;
-            using wrapper_type = WrapperTy;
+                    if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
+                        return Wrapper<SwapChain>(swapChain.GetValue());
+                    else
+                        return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
+                }
 
-        public:
-            template<class AdapterTy>
-                requires std::derived_from<AdapterTy, IDXGIAdapter>
-            Wrapper<AdapterTy> EnumAdapters1(UINT Adapter)
-            {
-                auto adapter = Helpers::COM::IIDToObjectForwardFunction<IDXGIAdapter1>(&IDXGIFactory1::EnumAdapters1, InternalGet(), Adapter);
-                if(!adapter.HasValue())
-                    return nullptr;
+                template<class SwapChain = IDXGISwapChain, class Device = ID3D11Device>
+                    requires std::derived_from<SwapChain, IDXGISwapChain>
+                Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForCoreWindow(
+                    Direct<ID3D12CommandQueue> pDevice,
+                    IUnknown& pWindow,
+                    const DXGI_SWAP_CHAIN_DESC1& pDesc,
+                    IDXGIOutput* optRestrictToOutput)
+                {
+                    auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain1>(&IDXGIFactory2::CreateSwapChainForCoreWindow, InternalGet(), pDevice.Get(), &pWindow, &pDesc, optRestrictToOutput);
 
-                if constexpr(std::same_as<AdapterTy, IDXGIAdapter>)
-                    return Wrapper<AdapterTy>(adapter.GetValue());
-                else
-                    return Wrapper<AdapterTy>(Helpers::COM::Cast<AdapterTy>(adapter.GetValue()));
-            }
+                    if(!swapChain.HasValue())
+                        return Utils::Unexpected(swapChain.GetError());
 
-            BOOL IsCurrent() { return InternalGet().IsCurrent(); }
+                    if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
+                        return Wrapper<SwapChain>(swapChain.GetValue());
+                    else
+                        return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
+                }
 
-        private:
-            wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
-            factory_type& InternalGet() { return *ToDerived().Get(); }
-        };
+                Utils::Expected<LUID, HRESULT> GetSharedResourceAdapterLuid(HANDLE hResource)
+                {
+                    LUID luid;
+                    HRESULT result = InternalGet().GetSharedResourceAdapterLuid(hResource, &luid);
+                    if(FAILED(result))
+                        return Utils::Unexpected(result);
+                    return luid;
+                }
 
-        template<class WrapperTy>
-        class Interface<WrapperTy, IDXGIFactory2> : public Interface<WrapperTy, IDXGIFactory1>
-        {
-            using factory_type = IDXGIFactory2;
-            using wrapper_type = WrapperTy;
+                Utils::Expected<DWORD, HRESULT> RegisterStereoStatusWindow(HWND WindowHandle, UINT wMsg)
+                {
+                    DWORD pdwCookie;
+                    HRESULT result = InternalGet().RegisterStereoStatusWindow(WindowHandle, wMsg, &pdwCookie);
+                    if(FAILED(result))
+                        return Utils::Unexpected(result);
+                    return pdwCookie;
+                }
 
-        public:
-            BOOL IsWindowedStereoEnabled() { return InternalGet().IsWindowedStereoEnabled(); }
+                Utils::Expected<DWORD, HRESULT> RegisterStereoStatusEvent(HANDLE hEvent)
+                {
+                    DWORD pdwCookie;
+                    HRESULT result = InternalGet().RegisterStereoStatusEvent(hEvent, &pdwCookie);
+                    if(FAILED(result))
+                        return Utils::Unexpected(result);
+                    return pdwCookie;
+                }
 
-            template<class SwapChain = IDXGISwapChain, class Device = ID3D11Device>
-                requires std::derived_from<Device, ID3D11Device> && std::derived_from<SwapChain, IDXGISwapChain>
-            Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForHwnd(
-                Wrapper<Device> pDevice,
-                HWND hWnd,
-                const DXGI_SWAP_CHAIN_DESC1& pDesc,
-                const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* optFullscreenDesc,
-                IDXGIOutput* optRestrictToOutput)
-            {
-                auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain1>(&IDXGIFactory2::CreateSwapChainForHwnd, InternalGet(), pDevice.Get(), hWnd, &pDesc, optFullscreenDesc, optRestrictToOutput);
+                void UnregisterStereoStatus(DWORD dwCookie)
+                {
+                    InternalGet().UnregisterStereoStatus(dwCookie);
+                }
 
-                if(!swapChain.HasValue())
-                    return Utils::Unexpected(swapChain.GetError());
+                Utils::Expected<DWORD, HRESULT> RegisterOcclusionStatusWindow(HWND WindowHandle, UINT wMsg)
+                {
+                    DWORD pdwCookie;
+                    HRESULT result = InternalGet().RegisterOcclusionStatusWindow(WindowHandle, wMsg, &pdwCookie);
+                    if(FAILED(result))
+                        return Utils::Unexpected(result);
+                    return pdwCookie;
+                }
 
-                if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
-                    return Wrapper<SwapChain>(swapChain.GetValue());
-                else
-                    return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
-            }
+                Utils::Expected<DWORD, HRESULT> RegisterOcclusionStatusEvent(HANDLE hEvent)
+                {
+                    DWORD pdwCookie;
+                    HRESULT result = InternalGet().RegisterOcclusionStatusEvent(hEvent, &pdwCookie);
+                    if(FAILED(result))
+                        return Utils::Unexpected(result);
+                    return pdwCookie;
+                }
 
-            template<class SwapChain = IDXGISwapChain>
-                requires std::derived_from<SwapChain, IDXGISwapChain>
-            Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForHwnd(
-                Direct<ID3D12CommandQueue> pDevice,
-                HWND hWnd,
-                const DXGI_SWAP_CHAIN_DESC1& pDesc,
-                const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* optFullscreenDesc,
-                IDXGIOutput* optRestrictToOutput)
-            {
-                auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain1>(&IDXGIFactory2::CreateSwapChainForHwnd, &InternalGet(), pDevice.Get(), hWnd, &pDesc, optFullscreenDesc, optRestrictToOutput);
+                void UnregisterOcclusionStatus(DWORD dwCookie)
+                {
+                    InternalGet().UnregisterOcclusionStatus(dwCookie);
+                }
 
-                if(!swapChain.HasValue())
-                    return Utils::Unexpected(swapChain.GetError());
+                template<class SwapChain = IDXGISwapChain, class Device = ID3D11Device>
+                    requires std::derived_from<Device, ID3D11Device>&& std::derived_from<SwapChain, IDXGISwapChain>
+                Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForComposition(
+                    Wrapper<Device> pDevice,
+                    const DXGI_SWAP_CHAIN_DESC1& pDesc,
+                    IDXGIOutput* optRestrictToOutput)
+                {
+                    auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain1>(&IDXGIFactory2::CreateSwapChainForComposition, InternalGet(), pDevice.Get(), &pDesc, optRestrictToOutput);
 
-                if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
-                    return Wrapper<SwapChain>(swapChain.GetValue());
-                else
-                    return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
-            }
+                    if(!swapChain.HasValue())
+                        return Utils::Unexpected(swapChain.GetError());
 
-            template<class SwapChain = IDXGISwapChain, class Device = ID3D11Device>
-                requires std::derived_from<Device, ID3D11Device>&& std::derived_from<SwapChain, IDXGISwapChain>
-            Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForCoreWindow(
-                Wrapper<Device> pDevice,
-                IUnknown& pWindow,
-                const DXGI_SWAP_CHAIN_DESC1& pDesc,
-                IDXGIOutput* optRestrictToOutput)
-            {
-                auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain1>(&IDXGIFactory2::CreateSwapChainForCoreWindow, InternalGet(), pDevice.Get(), &pWindow, &pDesc, optRestrictToOutput);
+                    if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
+                        return Wrapper<SwapChain>(swapChain.GetValue());
+                    else
+                        return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
+                }
 
-                if(!swapChain.HasValue())
-                    return Utils::Unexpected(swapChain.GetError());
+                template<class SwapChain = IDXGISwapChain>
+                    requires std::derived_from<SwapChain, IDXGISwapChain>
+                Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForComposition(
+                    Direct<ID3D12CommandQueue> pDevice,
+                    const DXGI_SWAP_CHAIN_DESC1& pDesc,
+                    IDXGIOutput* optRestrictToOutput)
+                {
+                    auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain1>(&IDXGIFactory2::CreateSwapChainForComposition, InternalGet(), pDevice.Get(), &pDesc, optRestrictToOutput);
 
-                if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
-                    return Wrapper<SwapChain>(swapChain.GetValue());
-                else
-                    return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
-            }
+                    if(!swapChain.HasValue())
+                        return Utils::Unexpected(swapChain.GetError());
 
-            template<class SwapChain = IDXGISwapChain, class Device = ID3D11Device>
-                requires std::derived_from<SwapChain, IDXGISwapChain>
-            Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForCoreWindow(
-                Direct<ID3D12CommandQueue> pDevice,
-                IUnknown& pWindow,
-                const DXGI_SWAP_CHAIN_DESC1& pDesc,
-                IDXGIOutput* optRestrictToOutput)
-            {
-                auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain1>(&IDXGIFactory2::CreateSwapChainForCoreWindow, InternalGet(), pDevice.Get(), &pWindow, &pDesc, optRestrictToOutput);
+                    if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
+                        return Wrapper<SwapChain>(swapChain.GetValue());
+                    else
+                        return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
+                }
 
-                if(!swapChain.HasValue())
-                    return Utils::Unexpected(swapChain.GetError());
-
-                if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
-                    return Wrapper<SwapChain>(swapChain.GetValue());
-                else
-                    return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
-            }
-
-            Utils::Expected<LUID, HRESULT> GetSharedResourceAdapterLuid(HANDLE hResource)
-            {
-                LUID luid;
-                HRESULT result = InternalGet().GetSharedResourceAdapterLuid(hResource, &luid);
-                if(FAILED(result))
-                    return Utils::Unexpected(result);
-                return luid;
-            }
-
-            Utils::Expected<DWORD, HRESULT> RegisterStereoStatusWindow(HWND WindowHandle, UINT wMsg)
-            {
-                DWORD pdwCookie;
-                HRESULT result = InternalGet().RegisterStereoStatusWindow(WindowHandle, wMsg, &pdwCookie);
-                if(FAILED(result))
-                    return Utils::Unexpected(result);
-                return pdwCookie;
-            }
-
-            Utils::Expected<DWORD, HRESULT> RegisterStereoStatusEvent(HANDLE hEvent)
-            {
-                DWORD pdwCookie;
-                HRESULT result = InternalGet().RegisterStereoStatusEvent(hEvent, &pdwCookie);
-                if(FAILED(result))
-                    return Utils::Unexpected(result);
-                return pdwCookie;
-            }
-
-            void UnregisterStereoStatus(DWORD dwCookie)
-            {
-                InternalGet().UnregisterStereoStatus(dwCookie);
-            }
-
-            Utils::Expected<DWORD, HRESULT> RegisterOcclusionStatusWindow(HWND WindowHandle, UINT wMsg)
-            {
-                DWORD pdwCookie;
-                HRESULT result = InternalGet().RegisterOcclusionStatusWindow(WindowHandle, wMsg, &pdwCookie);
-                if(FAILED(result))
-                    return Utils::Unexpected(result);
-                return pdwCookie;
-            }
-
-            Utils::Expected<DWORD, HRESULT> RegisterOcclusionStatusEvent(HANDLE hEvent)
-            {
-                DWORD pdwCookie;
-                HRESULT result = InternalGet().RegisterOcclusionStatusEvent(hEvent, &pdwCookie);
-                if(FAILED(result))
-                    return Utils::Unexpected(result);
-                return pdwCookie;
-            }
-
-            void UnregisterOcclusionStatus(DWORD dwCookie)
-            {
-                InternalGet().UnregisterOcclusionStatus(dwCookie);
-            }
-
-            template<class SwapChain = IDXGISwapChain, class Device = ID3D11Device>
-                requires std::derived_from<Device, ID3D11Device>&& std::derived_from<SwapChain, IDXGISwapChain>
-            Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForComposition(
-                Wrapper<Device> pDevice,
-                const DXGI_SWAP_CHAIN_DESC1& pDesc,
-                IDXGIOutput* optRestrictToOutput)
-            {
-                auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain1>(&IDXGIFactory2::CreateSwapChainForComposition, InternalGet(), pDevice.Get(), &pDesc, optRestrictToOutput);
-
-                if(!swapChain.HasValue())
-                    return Utils::Unexpected(swapChain.GetError());
-
-                if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
-                    return Wrapper<SwapChain>(swapChain.GetValue());
-                else
-                    return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
-            }
-
-            template<class SwapChain = IDXGISwapChain>
-                requires std::derived_from<SwapChain, IDXGISwapChain>
-            Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForComposition(
-                Direct<ID3D12CommandQueue> pDevice,
-                const DXGI_SWAP_CHAIN_DESC1& pDesc,
-                IDXGIOutput* optRestrictToOutput)
-            {
-                auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain1>(&IDXGIFactory2::CreateSwapChainForComposition, InternalGet(), pDevice.Get(), &pDesc, optRestrictToOutput);
-
-                if(!swapChain.HasValue())
-                    return Utils::Unexpected(swapChain.GetError());
-
-                if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
-                    return Wrapper<SwapChain>(swapChain.GetValue());
-                else
-                    return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
-            }
-
-        private:
-            wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
-            factory_type& InternalGet() { return *ToDerived().Get(); }
-        };
+            private:
+                wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
+                factory_type& InternalGet() { return *ToDerived().Get(); }
+            };
+        }
     }
 
     template<class DirectXClass>
@@ -331,12 +337,12 @@ namespace TypedD3D::Internal
         using underlying_type = DirectXClass;
 
     public:
-        using ComWrapper<DirectXClass>::ComWrapper;       
-        
+        using ComWrapper<DirectXClass>::ComWrapper;
+
         template<class DerivedFactoryTy>
             requires std::convertible_to<DerivedFactoryTy*, DirectXClass*>
         InterfaceWrapper(const InterfaceWrapper<DerivedFactoryTy>& other) :
-            ComWrapper<DirectXClass>::ComWrapper(other.GetComPtr())
+            ComWrapper<DirectXClass>::ComWrapper(other.AsComPtr())
         {
 
         }
@@ -345,15 +351,12 @@ namespace TypedD3D::Internal
         Interface* GetInterface() { return this; }
         Interface* operator->() { return this; }
     };
-
-    template<class Ty>
-    using Factory_t = InterfaceWrapper<Ty>;
 }
 
 namespace TypedD3D::DXGI
 {
     template<class Ty>
-    using Factory_t = Internal::Factory_t<Ty>;
+    using Factory_t = Internal::DXGI::Factory_t<Ty>;
 
     namespace Factory
     {

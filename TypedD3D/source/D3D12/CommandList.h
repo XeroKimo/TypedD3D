@@ -1336,7 +1336,7 @@ namespace TypedD3D::Internal
         template<class DerivedListTy>
             requires std::is_base_of_v<ID3D12GraphicsCommandList, DerivedListTy>
         InterfaceWrapper(const InterfaceWrapper<DerivedListTy, Type>& other) :
-            ComWrapper<DirectXClass>::ComWrapper(other.GetComPtr())
+            ComWrapper<DirectXClass>::ComWrapper(other.AsComPtr())
         {
 
         }
@@ -1344,7 +1344,7 @@ namespace TypedD3D::Internal
         template<class OtherListTy>
             requires (tag_value == TypeTag::RenderPass) && std::is_base_of_v<ID3D12GraphicsCommandList4, OtherListTy>
         explicit InterfaceWrapper(const InterfaceWrapper<OtherListTy, TypeTag::RenderPass>& other) :
-            ComWrapper<DirectXClass>::ComWrapper(other.GetComPtr())
+            ComWrapper<DirectXClass>::ComWrapper(other.AsComPtr())
         {
 
         }
@@ -1412,7 +1412,7 @@ namespace TypedD3D::Internal
         template<class OtherListTy>
             requires std::is_base_of_v<ID3D12GraphicsCommandList4, OtherListTy>
         explicit InterfaceWrapper(const InterfaceWrapper<OtherListTy, TypeTag::Direct>& other) :
-            ComWrapper<DirectXClass>::ComWrapper(other.GetComPtr())
+            ComWrapper<DirectXClass>::ComWrapper(other.AsComPtr())
         {
 
         }
@@ -1420,7 +1420,7 @@ namespace TypedD3D::Internal
         template<class DerivedListTy>
             requires std::is_base_of_v<ID3D12GraphicsCommandList4, DerivedListTy>
         InterfaceWrapper(const InterfaceWrapper<DerivedListTy, TypeTag::RenderPass>& other) :
-            ComWrapper<DirectXClass>::ComWrapper(other.GetComPtr())
+            ComWrapper<DirectXClass>::ComWrapper(other.AsComPtr())
         {
 
         }
@@ -1481,7 +1481,7 @@ namespace TypedD3D::Internal
         template<class DerivedListTy>
             requires std::is_base_of_v<ID3D12CommandList, DirectXClass>
         InterfaceWrapper(const InterfaceWrapper<DerivedListTy, Type>& other) :
-            ComWrapper<DirectXClass>::ComWrapper(other.GetComPtr())
+            ComWrapper<DirectXClass>::ComWrapper(other.AsComPtr())
         {
 
         }
@@ -1502,7 +1502,7 @@ namespace TypedD3D::Internal
             RenderPass_t<ID3D12GraphicsCommandList4> PrivateInterface<WrapperTy, Type, ID3D12GraphicsCommandList4>::BeginRenderPass(std::span<const D3D12_RENDER_PASS_RENDER_TARGET_DESC> renderTargets, const D3D12_RENDER_PASS_DEPTH_STENCIL_DESC* pDepthStencil, D3D12_RENDER_PASS_FLAGS Flags)
             {
                 InternalCommandList().BeginRenderPass(static_cast<UINT>(renderTargets.size()), renderTargets.data(), pDepthStencil, Flags);
-                return RenderPass<ID3D12GraphicsCommandList4>(static_cast<wrapper_type&>(*this).GetComPtr());
+                return RenderPass<ID3D12GraphicsCommandList4>(static_cast<wrapper_type&>(*this).AsComPtr());
             }
         }
     }
