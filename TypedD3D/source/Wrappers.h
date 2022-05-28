@@ -19,7 +19,7 @@ namespace TypedD3D
     using Wrapper = Internal::InterfaceWrapper<IUnknownTy, ExtraTags...>;
 
     template<class DerivedTy, class DirectXClass, auto... Tags>
-        requires std::is_base_of_v<IUnknown, DerivedTy>
+        requires std::derived_from<DerivedTy, IUnknown>
     Internal::InterfaceWrapper<DerivedTy, Tags...> Cast(Internal::InterfaceWrapper<DirectXClass, Tags...> value)
     {
         return Internal::InterfaceWrapper<DerivedTy, Tags...>(Helpers::COM::Cast<DerivedTy>(value.GetComPtr()));
@@ -27,7 +27,7 @@ namespace TypedD3D
     
     template<class DerivedTy, class DirectXClass, auto... Tags>
         requires Internal::is_interface_wrapper<DerivedTy>::value &&
-            std::is_base_of_v<IUnknown, typename DerivedTy::underlying_type> &&
+            std::derived_from<typename DerivedTy::underlying_type, IUnknown> &&
             (Internal::InterfaceWrapper<DirectXClass, Tags...>::tag_value == DerivedTy::tag_value)
     DerivedTy Cast(Internal::InterfaceWrapper<DirectXClass, Tags...> value)
     {

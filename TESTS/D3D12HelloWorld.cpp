@@ -77,13 +77,13 @@ void D3D12HelloWorld()
 
     UINT rtvOffset = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> descriptorHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    DXGI_SWAP_CHAIN_DESC1 desc = TypedD3D::Helpers::Common::GetDescription(*swapChain.Get());
+    DXGI_SWAP_CHAIN_DESC1 desc = swapChain->GetDesc1();
 
     std::array<ComPtr<ID3D12Resource>, 2> swapChainBuffers;
 
     for(UINT i = 0; i < desc.BufferCount; i++)
     {
-        swapChainBuffers[i] = TypedD3D::Helpers::DXGI::SwapChain::GetBuffer(*swapChain.Get(), i).GetValue();
+        swapChainBuffers[i] = swapChain->GetBuffer<ID3D12Resource>(i).GetValue();
 
         device->CreateRenderTargetView(*swapChainBuffers[i].Get(), nullptr, descriptorHandle);
         descriptorHandle = descriptorHandle.Offset(1, rtvOffset);

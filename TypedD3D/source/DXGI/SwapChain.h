@@ -1,6 +1,7 @@
 #pragma once
 #include "../Wrappers.h"
 #include "../Internal/ComWrapper.h"
+#include "../Internal/d3dConcepts.h"
 #include "../Utils.h"
 #include "../Helpers/COMHelpers.h"
 #include <dxgi1_6.h>
@@ -25,19 +26,27 @@ namespace TypedD3D::Internal
                 return InternalGet().Present(SyncInterval, Flags);
             }
 
-            HRESULT GetBuffer(REFIID riid, void** ppSurface)
+            template<Resource Ty>
+            Utils::Expected<Microsoft::WRL::ComPtr<Ty>, HRESULT> GetBuffer(UINT buffer)
             {
-                return InternalGet().GetBuffer(riid, ppSurface);
+                Utils::Expected<Microsoft::WRL::ComPtr<Ty>, HRESULT> resource = Helpers::COM::IIDToObjectForwardFunction<Ty>(&swap_chain_type::GetBuffer, InternalGet(), buffer);
+
+                if(!resource.HasValue())
+                    return Utils::Unexpected(resource.GetError());
+
+                return resource.GetValue();
             }
 
-            HRESULT SetFullscreenState(BOOL Fullscreen, IDXGIOutput* pTarget)
+            HRESULT SetFullscreenState(BOOL Fullscreen, IDXGIOutput* optTarget)
             {
-                return InternalGet().SetFullscreenState(Fullscreen, pTarget);
+                return InternalGet().SetFullscreenState(Fullscreen, optTarget);
             }
 
-            HRESULT GetFullscreenState(BOOL* pFullscreen, IDXGIOutput** ppTarget)
+            std::pair<bool, Microsoft::WRL::ComPtr<IDXGIOutput>> GetFullscreenState()
             {
-                return InternalGet().GetFullscreenState(pFullscreen, ppTarget);
+                std::pair<bool, Microsoft::WRL::ComPtr<IDXGIOutput>> state;
+                InternalGet().GetFullscreenState(&state.first, &state.second);
+                return state;
             }
 
             DXGI_SWAP_CHAIN_DESC GetDesc()
@@ -57,24 +66,28 @@ namespace TypedD3D::Internal
                 return InternalGet().ResizeBuffers(BufferCount, Width, Height, NewFormat, SwapChainFlags);
             }
 
-            HRESULT ResizeTarget(const DXGI_MODE_DESC* pNewTargetParameters)
+            HRESULT ResizeTarget(const DXGI_MODE_DESC& pNewTargetParameters)
             {
-                return InternalGet().ResizeTarget(pNewTargetParameters);
+                return InternalGet().ResizeTarget(&pNewTargetParameters);
             }
 
-            HRESULT GetContainingOutput(IDXGIOutput** ppOutput)
+            Microsoft::WRL::ComPtr<IDXGIOutput> GetContainingOutput()
             {
-                return InternalGet().GetContainingOutput(ppOutput);
+                return Helpers::COM::UnknownObjectForwardFunction<IDXGIOutput>(&swap_chain_type::GetContainingOutput, InternalGet()).GetValue();
             }
 
-            HRESULT GetFrameStatistics(DXGI_FRAME_STATISTICS* pStats)
+            DXGI_FRAME_STATISTICS GetFrameStatistics()
             {
-                return InternalGet().GetFrameStatistics(pStats);
+                DXGI_FRAME_STATISTICS stats;
+                InternalGet().GetFrameStatistics(stats);
+                return stats;
             }
 
-            HRESULT GetLastPresentCount(UINT* pLastPresentCount)
+            UINT GetLastPresentCount()
             {
-                return InternalGet().GetLastPresentCount(pLastPresentCount);
+                UINT LastPresentCount;
+                InternalGet().GetLastPresentCount(&LastPresentCount);
+                return LastPresentCount;
             }
         private:
             wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
@@ -89,21 +102,25 @@ namespace TypedD3D::Internal
             using wrapper_type = WrapperTy;
 
         public:
-            DXGI_SWAP_CHAIN_DESC1 GetDesc()
+            DXGI_SWAP_CHAIN_DESC1 GetDesc1()
             {
                 DXGI_SWAP_CHAIN_DESC1 desc;
                 InternalGet().GetDesc1(&desc);
                 return desc;
             }
 
-            HRESULT GetFullscreenDesc(DXGI_SWAP_CHAIN_FULLSCREEN_DESC* pDesc)
+            DXGI_SWAP_CHAIN_FULLSCREEN_DESC GetFullscreenDesc()
             {
-                return InternalGet().GetFullscreenDesc(pDesc);
+                DXGI_SWAP_CHAIN_FULLSCREEN_DESC desc;
+                HRESULT result = InternalGet().GetFullscreenDesc(&desc);
+                return desc;
             }
 
-            HRESULT GetHwnd(HWND* pHwnd)
+            HWND GetHwnd()
             {
-                return InternalGet().GetHwnd(pHwnd);
+                HWND hwnd;
+                InternalGet().GetHwnd(&hwnd);
+                return hwnd;
             }
 
             HRESULT GetCoreWindow(REFIID refiid, void** ppUnk)
@@ -111,9 +128,9 @@ namespace TypedD3D::Internal
                 return InternalGet().GetCoreWindow(refiid, ppUnk);
             }
 
-            HRESULT Present1(UINT SyncInterval, UINT PresentFlags, const DXGI_PRESENT_PARAMETERS* pPresentParameters)
+            HRESULT Present1(UINT SyncInterval, UINT PresentFlags, const DXGI_PRESENT_PARAMETERS& pPresentParameters)
             {
-                return InternalGet().Present1(SyncInterval, PresentFlags, pPresentParameters);
+                return InternalGet().Present1(SyncInterval, PresentFlags, &pPresentParameters);
             }
 
             BOOL IsTemporaryMonoSupported()
@@ -121,18 +138,20 @@ namespace TypedD3D::Internal
                 return InternalGet().IsTemporaryMonoSupported();
             }
 
-            HRESULT GetRestrictToOutput(IDXGIOutput** ppRestrictToOutput)
+            Microsoft::WRL::ComPtr<IDXGIOutput> GetRestrictToOutput()
             {
-                return InternalGet().GetRestrictToOutput(ppRestrictToOutput);
+                return Helpers::COM::UnknownObjectForwardFunction<IDXGIOutput>(&swap_chain_type::GetRestrictToOutput, InternalGet()).GetValue();
             }
-            HRESULT SetBackgroundColor(const DXGI_RGBA* pColor)
+            HRESULT SetBackgroundColor(DXGI_RGBA pColor)
             {
-                return InternalGet().SetBackgroundColor(pColor);
+                return InternalGet().SetBackgroundColor(&pColor);
             }
 
-            HRESULT GetBackgroundColor(DXGI_RGBA* pColor)
+            DXGI_RGBA GetBackgroundColor(DXGI_RGBA* pColor)
             {
-                return InternalGet().GetBackgroundColor(pColor);
+                DXGI_RGBA color;
+                InternalGet().GetBackgroundColor(&color);
+                return color;
             }
 
             HRESULT SetRotation(DXGI_MODE_ROTATION Rotation)
@@ -140,9 +159,11 @@ namespace TypedD3D::Internal
                 return InternalGet().SetRotation(Rotation);
             }
 
-            HRESULT GetRotation(DXGI_MODE_ROTATION* pRotation)
+            DXGI_MODE_ROTATION GetRotation()
             {
-                return InternalGet().GetRotation(pRotation);
+                DXGI_MODE_ROTATION rotation;
+                InternalGet().GetRotation(rotation);
+                return rotation;
             }
         private:
             wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
@@ -180,4 +201,16 @@ namespace TypedD3D::Internal
         Interface* GetInterface() { return this; }
         Interface* operator->() { return this; }
     };
+
+    template<class Ty>
+    using SwapChain_t = InterfaceWrapper<Ty>;
+}
+
+
+namespace TypedD3D::DXGI
+{
+    template<class Ty>
+    using SwapChain_t = Internal::SwapChain_t<Ty>;
+    using SwapChain = SwapChain_t<IDXGISwapChain>;
+    using SwapChain1 = SwapChain_t<IDXGISwapChain1>;
 }

@@ -345,10 +345,16 @@ namespace TypedD3D::Internal
         Interface* GetInterface() { return this; }
         Interface* operator->() { return this; }
     };
+
+    template<class Ty>
+    using Factory_t = InterfaceWrapper<Ty>;
 }
 
 namespace TypedD3D::DXGI
 {
+    template<class Ty>
+    using Factory_t = Internal::Factory_t<Ty>;
+
     namespace Factory
     {
         template<class FactoryTy = IDXGIFactory>
