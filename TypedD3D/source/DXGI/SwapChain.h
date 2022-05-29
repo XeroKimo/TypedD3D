@@ -32,14 +32,14 @@ namespace TypedD3D::Internal
                 }
 
                 template<Resource Ty>
-                Utils::Expected<Microsoft::WRL::ComPtr<Ty>, HRESULT> GetBuffer(UINT buffer)
+                Utils::Expected<Wrapper<Ty>, HRESULT> GetBuffer(UINT buffer)
                 {
                     Utils::Expected<Microsoft::WRL::ComPtr<Ty>, HRESULT> resource = Helpers::COM::IIDToObjectForwardFunction<Ty>(&swap_chain_type::GetBuffer, InternalGet(), buffer);
 
                     if(!resource.HasValue())
                         return Utils::Unexpected(resource.GetError());
 
-                    return resource.GetValue();
+                    return Wrapper<Ty>(resource.GetValue());
                 }
 
                 HRESULT SetFullscreenState(BOOL Fullscreen, IDXGIOutput* optTarget)

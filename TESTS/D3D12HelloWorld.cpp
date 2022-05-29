@@ -80,7 +80,7 @@ void D3D12HelloWorld()
     TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> descriptorHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
     DXGI_SWAP_CHAIN_DESC1 desc = swapChain->GetDesc1();
 
-    std::array<ComPtr<ID3D12Resource>, 2> swapChainBuffers;
+    std::array<TypedD3D::Wrapper<ID3D12Resource>, 2> swapChainBuffers;
 
     for(UINT i = 0; i < desc.BufferCount; i++)
     {
