@@ -1,25 +1,12 @@
 #pragma once
 #include "Wrappers.h"
+#include "D3D12TypeTags.h"
 #include <d3d12.h>
 
 namespace TypedD3D
 {
     namespace Internal
     {
-        enum class TypeTag
-        {
-            Direct,
-            Compute,
-            Copy,
-            Bundle,
-            CBV_SRV_UAV,
-            Sampler,
-            RTV,
-            DSV,
-            Graphics,
-            RenderPass
-        };
-
         template<TypeTag Type>
         concept Is_Command_List_Type = (Type == TypeTag::Direct || Type == TypeTag::Compute || Type == TypeTag::Copy || Type == TypeTag::Bundle);
 
@@ -118,33 +105,33 @@ namespace TypedD3D
 
     }
 
-    template<class IUnknownTy>
-    using Direct = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Direct>;
+    template<class IUnknownTy, auto... ExtraTags>
+    using Direct = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Direct, ExtraTags...>;
 
-    template<class IUnknownTy>
-    using Compute = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Compute>;
+    template<class IUnknownTy, auto... ExtraTags>
+    using Compute = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Compute, ExtraTags...>;
 
-    template<class IUnknownTy>
-    using Copy = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Copy>;
+    template<class IUnknownTy, auto... ExtraTags>
+    using Copy = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Copy, ExtraTags...>;
 
-    template<class IUnknownTy>
-    using Bundle = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Bundle>;
+    template<class IUnknownTy, auto... ExtraTags>
+    using Bundle = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Bundle, ExtraTags...>;
 
-    template<class IUnknownTy>
-    using CBV_SRV_UAV = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::CBV_SRV_UAV>;
+    template<class IUnknownTy, auto... ExtraTags>
+    using CBV_SRV_UAV = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::CBV_SRV_UAV, ExtraTags...>;
 
-    template<class IUnknownTy>
-    using Sampler = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Sampler>;
+    template<class IUnknownTy, auto... ExtraTags>
+    using Sampler = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Sampler, ExtraTags...>;
 
-    template<class IUnknownTy>
-    using RTV = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::RTV>;
+    template<class IUnknownTy, auto... ExtraTags>
+    using RTV = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::RTV, ExtraTags...>;
 
-    template<class IUnknownTy>
-    using DSV = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::DSV>;
+    template<class IUnknownTy, auto... ExtraTags>
+    using DSV = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::DSV, ExtraTags...>;
 
-    template<class IUnknownTy>
-    using Graphics = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Graphics>;
+    template<class IUnknownTy, auto... ExtraTags>
+    using Graphics = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Graphics, ExtraTags...>;
 
-    template<class IUnknownTy>
-    using RenderPass = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::RenderPass>;
+    template<class IUnknownTy, auto... ExtraTags>
+    using RenderPass = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::RenderPass, ExtraTags...>;
 }

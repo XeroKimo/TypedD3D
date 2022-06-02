@@ -1,4 +1,7 @@
 #include "TypedD3D12.h"
+#include "source/DXGI/Factory.h"
+#include "source/DXGI/SwapChain.h"
+#include "source/DXGI/Adapter.h"
 #include <d3dcompiler.h>
 #include <d3d12sdklayers.h>
 #include <assert.h>
@@ -32,12 +35,13 @@ void D3D12HelloWorld()
 {
     CreateWindow();
 
-    TypedD3D::Utils::Expected<ComPtr<IDXGIFactory2>, HRESULT> factory = TypedD3D::Helpers::COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory1);
-
+    //TypedD3D::Utils::Expected<ComPtr<IDXGIFactory2>, HRESULT> factory = TypedD3D::Helpers::COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory1);
+    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::DXGI::Factory::Create1<IDXGIFactory2>().GetValue();
+    TypedD3D::Wrapper<IDXGIAdapter> adapter = factory->EnumAdapters<IDXGIAdapter>(0);
     ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface().GetValue();
     debugLayer->EnableDebugLayer();
     TypedD3D::Wrapper<ID3D12Device1> device(D3D_FEATURE_LEVEL_12_0);
-    ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Helpers::COM::Cast<ID3D12DebugDevice>(device.GetComPtr());
+    ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Helpers::COM::Cast<ID3D12DebugDevice>(device.AsComPtr());
 
     constexpr UINT backBufferCount = 2;
 
@@ -52,26 +56,35 @@ void D3D12HelloWorld()
     ComPtr<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE).GetValue();
     HANDLE syncEvent = CreateEventW(nullptr, false, false, nullptr);
 
-    ComPtr<IDXGISwapChain1> swapChain = TypedD3D::Helpers::DXGI::SwapChain::CreateFlipDiscard(
-        *factory.GetValue().Get(),
-        *commandQueue.Get(),
+    TypedD3D::Wrapper<IDXGISwapChain3> swapChain = factory->CreateSwapChainForHwnd<IDXGISwapChain3>(
+        commandQueue,
         handle,
-        DXGI_FORMAT_R8G8B8A8_UNORM,
-        backBufferCount,
-        DXGI_SWAP_CHAIN_FLAG{},
-        false).GetValue();
+        DXGI_SWAP_CHAIN_DESC1
+        {
+            .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
+            .SampleDesc 
+            {
+                .Count = 1
+            },
+            .BufferUsage = DXGI_USAGE_BACK_BUFFER | DXGI_USAGE_RENDER_TARGET_OUTPUT,
+            .BufferCount = backBufferCount,
+            .SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
+            .Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
+        },
+        nullptr,
+        nullptr).GetValue();
 
-    TypedD3D::RTV<ID3D12DescriptorHeap> swapChainBufferDescriptorHeap = device->CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV>(2, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, 0).GetValue();
+    TypedD3D::RTV<ID3D12DescriptorHeap, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> swapChainBufferDescriptorHeap = device->CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>(2, 0).GetValue();
 
     UINT rtvOffset = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> descriptorHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    DXGI_SWAP_CHAIN_DESC1 desc = TypedD3D::Helpers::Common::GetDescription(*swapChain.Get());
+    TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> descriptorHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    DXGI_SWAP_CHAIN_DESC1 desc = swapChain->GetDesc1();
 
-    std::array<ComPtr<ID3D12Resource>, 2> swapChainBuffers;
+    std::array<TypedD3D::Wrapper<ID3D12Resource>, 2> swapChainBuffers;
 
     for(UINT i = 0; i < desc.BufferCount; i++)
     {
-        swapChainBuffers[i] = TypedD3D::Helpers::DXGI::SwapChain::GetBuffer(*swapChain.Get(), i).GetValue();
+        swapChainBuffers[i] = swapChain->GetBuffer<ID3D12Resource>(i).GetValue();
 
         device->CreateRenderTargetView(*swapChainBuffers[i].Get(), nullptr, descriptorHandle);
         descriptorHandle = descriptorHandle.Offset(1, rtvOffset);
@@ -311,7 +324,7 @@ void D3D12HelloWorld()
 
             commandList->ResourceBarrier(std::span(&barrier, 1));
 
-            TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+            auto backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
             backBufferHandle.ptr += static_cast<SIZE_T>(rtvOffset) * backBuffer;
             commandList->ClearRenderTargetView(backBufferHandle, std::to_array({ 0.f, 0.3f, 0.7f, 1.f }), {});
             commandList->OMSetRenderTargets(std::span(&backBufferHandle, 1), true, nullptr);
