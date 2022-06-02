@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp" />
+    <ClCompile Include="TypedDXGI.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

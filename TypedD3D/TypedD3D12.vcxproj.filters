@@ -89,5 +89,8 @@
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TypedDXGI.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
