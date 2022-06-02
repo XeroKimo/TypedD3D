@@ -56,7 +56,7 @@ void D3D12HelloWorld()
     ComPtr<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE).GetValue();
     HANDLE syncEvent = CreateEventW(nullptr, false, false, nullptr);
 
-    TypedD3D::Wrapper<IDXGISwapChain1> swapChain = factory->CreateSwapChainForHwnd<IDXGISwapChain1>(
+    TypedD3D::Wrapper<IDXGISwapChain3> swapChain = factory->CreateSwapChainForHwnd<IDXGISwapChain3>(
         commandQueue,
         handle,
         DXGI_SWAP_CHAIN_DESC1

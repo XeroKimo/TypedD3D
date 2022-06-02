@@ -152,10 +152,12 @@ namespace TypedD3D::Internal
                     return InternalGet().SetBackgroundColor(&pColor);
                 }
 
-                DXGI_RGBA GetBackgroundColor(DXGI_RGBA* pColor)
+                Utils::Expected<DXGI_RGBA, HRESULT> GetBackgroundColor(DXGI_RGBA* pColor)
                 {
                     DXGI_RGBA color;
-                    InternalGet().GetBackgroundColor(&color);
+                    HRESULT result = InternalGet().GetBackgroundColor(&color);
+                    if(FAILED(result))
+                        return Utils::Unexpected(result);
                     return color;
                 }
 
@@ -164,12 +166,122 @@ namespace TypedD3D::Internal
                     return InternalGet().SetRotation(Rotation);
                 }
 
-                DXGI_MODE_ROTATION GetRotation()
+                Utils::Expected<DXGI_MODE_ROTATION, HRESULT> GetRotation()
                 {
                     DXGI_MODE_ROTATION rotation;
-                    InternalGet().GetRotation(rotation);
+                    HRESULT result = InternalGet().GetRotation(rotation);
+                    if(FAILED(result))
+                        return Utils::Unexpected(result);
                     return rotation;
                 }
+            private:
+                wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
+                swap_chain_type& InternalGet() { return *ToDerived().Get(); }
+            };
+
+            template<class WrapperTy>
+            class Interface<WrapperTy, IDXGISwapChain3> : public Interface<WrapperTy, IDXGISwapChain2>
+            {
+            private:
+                using swap_chain_type = IDXGISwapChain3;
+                using wrapper_type = WrapperTy;
+
+            public:
+                UINT GetCurrentBackBufferIndex()
+                {
+                    return InternalGet().GetCurrentBackBufferIndex();
+                }
+
+                DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG CheckColorSpaceSupport(DXGI_COLOR_SPACE_TYPE ColorSpace)
+                {
+                    UINT colorSupport;
+                    InternalGet().CheckColorSpaceSupport(ColorSpace, &colorSupport);
+                    return static_cast<DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG>(colorSupport);
+                }
+
+                HRESULT SetColorSpace1(DXGI_COLOR_SPACE_TYPE ColorSpace)
+                {
+                    return InternalGet().SetColorSpace1(ColorSpace);
+                }
+
+                HRESULT ResizeBuffers1(
+                    UINT BufferCount,
+                    UINT Width,
+                    UINT Height,
+                    DXGI_FORMAT Format,
+                    UINT SwapChainFlags,
+                    std::span<UINT> pCreationNodeMask,
+                    std::span<Direct<ID3D12CommandQueue>> ppPresentQueue)
+                {
+                    std::unique_ptr<IUnknown[]> queues = std::make_unique<IUnknown[]>(ppPresentQueue.size());
+
+                    for(size_t i = 0; i < ppPresentQueue.size(); i++)
+                    {
+                        queues[i] = ppPresentQueue[i].Get();
+                    }
+
+                    return InternalGet().ResizeBuffers1(BufferCount, Width, Height, Format, SwapChainFlags, pCreationNodeMask.data(), queues.get());
+                }
+            private:
+                wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
+                swap_chain_type& InternalGet() { return *ToDerived().Get(); }
+            };
+
+            template<class WrapperTy>
+            class Interface<WrapperTy, IDXGISwapChain2> : public Interface<WrapperTy, IDXGISwapChain1>
+            {
+            private:
+                using swap_chain_type = IDXGISwapChain2;
+                using wrapper_type = WrapperTy;
+
+            public:
+                HRESULT SetSourceSize(UINT Width, UINT Height)
+                {
+                    return InternalGet().SetSourceSize(Width, Height);
+                }
+
+                Utils::Expected<std::pair<UINT, UINT>, HRESULT> GetSourceSize()
+                {
+                    std::pair<UINT, UINT> size;
+                    HRESULT result = InternalGet().GetSourceSize(&size.first, &size.second);
+                    if(FAILED(result))
+                        return Utils::Unexpected(result);
+                    return size;
+                }
+
+                HRESULT SetMaximumFrameLatency(UINT MaxLatency)
+                {
+                    return InternalGet().SetMaximumFrameLatency(&MaxLatency);
+                }
+
+                Utils::Expected<UINT, HRESULT> STDMETHODCALLTYPE GetMaximumFrameLatency()
+                {
+                    UINT latency;
+                    HRESULT result = InternalGet().GetMaximumFrameLatency(&latency);
+                    if(FAILED(result))
+                        return Utils::Unexpected(result);
+                    return latency;
+                }
+
+                HANDLE GetFrameLatencyWaitableObject() 
+                { 
+                    return InternalGet().GetFrameLatencyWaitableObject(); 
+                }
+
+                HRESULT SetMatrixTransform(const DXGI_MATRIX_3X2_F& pMatrix)
+                {
+                    return InternalGet().SetMatrixTransform(&pMatrix);
+                }
+
+                Utils::Expected<DXGI_MATRIX_3X2_F, HRESULT> STDMETHODCALLTYPE GetMatrixTransform()
+                {
+                    DXGI_MATRIX_3X2_F matrix;
+                    HRESULT result = InternalGet().GetMatrixTransform(&matrix);
+                    if(FAILED(result))
+                        return Utils::Unexpected(result);
+                    return matrix;
+                }
+
             private:
                 wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
                 swap_chain_type& InternalGet() { return *ToDerived().Get(); }
