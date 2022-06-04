@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\D3D11\Device.h" />
     <ClInclude Include="source\D3D12TypeTags.h" />
     <ClInclude Include="source\D3D12Wrappers.h" />
     <ClInclude Include="source\D3D12\CommandAllocator.h" />
@@ -27,6 +28,7 @@
     <ClInclude Include="source\DXGI\Adapter.h" />
     <ClInclude Include="source\DXGI\Factory.h" />
     <ClInclude Include="source\DXGI\SwapChain.h" />
+    <ClInclude Include="source\expected.hpp" />
     <ClInclude Include="source\Internal\ComWrapper.h" />
     <ClInclude Include="source\D3D12\DescriptorHeap.h" />
     <ClInclude Include="source\Internal\D3D12\Meta.h" />
@@ -164,13 +166,13 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <WarningLevel>Level4</WarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -183,7 +185,6 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>

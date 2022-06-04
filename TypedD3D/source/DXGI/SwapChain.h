@@ -4,14 +4,21 @@
 #include "../Internal/d3dConcepts.h"
 #include "../Utils.h"
 #include "../Helpers/COMHelpers.h"
+#include "../D3D12TypeTags.h"
 #include <dxgi1_6.h>
+#include <span>
 
+struct ID3D12CommandQueue;
 namespace TypedD3D::Internal
 {
     namespace DXGI
     {
         template<class Ty>
         using SwapChain_t = InterfaceWrapper<Ty>;
+
+
+        template<class Ty>
+        using Direct = Wrapper<Ty, TypeTag::Direct>;
 
         namespace SwapChain
         {
@@ -204,6 +211,7 @@ namespace TypedD3D::Internal
                     return InternalGet().SetColorSpace1(ColorSpace);
                 }
 
+                template<std::derived_from<ID3D12CommandQueue> QueueTy>
                 HRESULT ResizeBuffers1(
                     UINT BufferCount,
                     UINT Width,
@@ -211,7 +219,7 @@ namespace TypedD3D::Internal
                     DXGI_FORMAT Format,
                     UINT SwapChainFlags,
                     std::span<UINT> pCreationNodeMask,
-                    std::span<Direct<ID3D12CommandQueue>> ppPresentQueue)
+                    std::span<Direct<QueueTy>> ppPresentQueue)
                 {
                     std::unique_ptr<IUnknown[]> queues = std::make_unique<IUnknown[]>(ppPresentQueue.size());
 

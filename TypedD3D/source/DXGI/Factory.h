@@ -74,19 +74,18 @@ namespace TypedD3D::Internal
                         return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
                 }
 
-                template<class SwapChain = IDXGISwapChain>
-                    requires std::derived_from<SwapChain, IDXGISwapChain>
-                Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChain(Direct<ID3D12CommandQueue> commandQueue, const DXGI_SWAP_CHAIN_DESC& pDesc)
+                template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, std::derived_from<ID3D12CommandQueue> QueueTy>
+                Utils::Expected<Wrapper<SwapChainTy>, HRESULT> CreateSwapChain(Direct<QueueTy> commandQueue, const DXGI_SWAP_CHAIN_DESC& pDesc)
                 {
                     auto swapChain = Helpers::COM::UnknownObjectForwardFunction<IDXGISwapChain>(&IDXGIFactory::CreateSwapChain, InternalGet(), commandQueue.Get(), &pDesc);
 
                     if(!swapChain.HasValue())
                         return Utils::Unexpected(swapChain.GetError());
 
-                    if constexpr(std::same_as<SwapChain, IDXGISwapChain>)
-                        return Wrapper<SwapChain>(swapChain.GetValue());
+                    if constexpr(std::same_as<SwapChainTy, IDXGISwapChain>)
+                        return Wrapper<SwapChainTy>(swapChain.GetValue());
                     else
-                        return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
+                        return Wrapper<SwapChainTy>(Helpers::COM::Cast<SwapChainTy>(swapChain.GetValue()));
                 }
 
                 template<class AdapterTy>
@@ -165,10 +164,9 @@ namespace TypedD3D::Internal
                         return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
                 }
 
-                template<class SwapChain = IDXGISwapChain>
-                    requires std::derived_from<SwapChain, IDXGISwapChain>
-                Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForHwnd(
-                    Direct<ID3D12CommandQueue> pDevice,
+                template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, std::derived_from<ID3D12CommandQueue> QueueTy>
+                Utils::Expected<Wrapper<SwapChainTy>, HRESULT> CreateSwapChainForHwnd(
+                    Direct<QueueTy> pDevice,
                     HWND hWnd,
                     const DXGI_SWAP_CHAIN_DESC1& pDesc,
                     const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* optFullscreenDesc,
@@ -179,10 +177,10 @@ namespace TypedD3D::Internal
                     if(!swapChain.HasValue())
                         return Utils::Unexpected(swapChain.GetError());
 
-                    if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
-                        return Wrapper<SwapChain>(swapChain.GetValue());
+                    if constexpr(std::same_as<SwapChainTy, IDXGISwapChain1>)
+                        return Wrapper<SwapChainTy>(swapChain.GetValue());
                     else
-                        return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
+                        return Wrapper<SwapChainTy>(Helpers::COM::Cast<SwapChainTy>(swapChain.GetValue()));
                 }
 
                 template<class SwapChain = IDXGISwapChain, class Device = ID3D11Device>
@@ -204,10 +202,9 @@ namespace TypedD3D::Internal
                         return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
                 }
 
-                template<class SwapChain = IDXGISwapChain, class Device = ID3D11Device>
-                    requires std::derived_from<SwapChain, IDXGISwapChain>
-                Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForCoreWindow(
-                    Direct<ID3D12CommandQueue> pDevice,
+                template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, std::derived_from<ID3D12CommandQueue> QueueTy>
+                Utils::Expected<Wrapper<SwapChainTy>, HRESULT> CreateSwapChainForCoreWindow(
+                    Direct<QueueTy> pDevice,
                     IUnknown& pWindow,
                     const DXGI_SWAP_CHAIN_DESC1& pDesc,
                     IDXGIOutput* optRestrictToOutput)
@@ -217,10 +214,10 @@ namespace TypedD3D::Internal
                     if(!swapChain.HasValue())
                         return Utils::Unexpected(swapChain.GetError());
 
-                    if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
-                        return Wrapper<SwapChain>(swapChain.GetValue());
+                    if constexpr(std::same_as<SwapChainTy, IDXGISwapChain1>)
+                        return Wrapper<SwapChainTy>(swapChain.GetValue());
                     else
-                        return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
+                        return Wrapper<SwapChainTy>(Helpers::COM::Cast<SwapChainTy>(swapChain.GetValue()));
                 }
 
                 Utils::Expected<LUID, HRESULT> GetSharedResourceAdapterLuid(HANDLE hResource)
@@ -296,10 +293,9 @@ namespace TypedD3D::Internal
                         return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
                 }
 
-                template<class SwapChain = IDXGISwapChain>
-                    requires std::derived_from<SwapChain, IDXGISwapChain>
-                Utils::Expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForComposition(
-                    Direct<ID3D12CommandQueue> pDevice,
+                template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, std::derived_from<ID3D12CommandQueue> QueueTy>
+                Utils::Expected<Wrapper<SwapChainTy>, HRESULT> CreateSwapChainForComposition(
+                    Direct<QueueTy> pDevice,
                     const DXGI_SWAP_CHAIN_DESC1& pDesc,
                     IDXGIOutput* optRestrictToOutput)
                 {
@@ -308,10 +304,10 @@ namespace TypedD3D::Internal
                     if(!swapChain.HasValue())
                         return Utils::Unexpected(swapChain.GetError());
 
-                    if constexpr(std::same_as<SwapChain, IDXGISwapChain1>)
-                        return Wrapper<SwapChain>(swapChain.GetValue());
+                    if constexpr(std::same_as<SwapChainTy, IDXGISwapChain1>)
+                        return Wrapper<SwapChainTy>(swapChain.GetValue());
                     else
-                        return Wrapper<SwapChain>(Helpers::COM::Cast<SwapChain>(swapChain.GetValue()));
+                        return Wrapper<SwapChainTy>(Helpers::COM::Cast<SwapChainTy>(swapChain.GetValue()));
                 }
 
             private:
