@@ -24,9 +24,6 @@
     <ClInclude Include="source\Helpers\COMHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\Helpers\CommonHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -87,7 +84,7 @@
     <ClInclude Include="source\D3D11\Device.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\expected.hpp">
+    <ClInclude Include="expected.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

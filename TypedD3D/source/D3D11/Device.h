@@ -24,70 +24,70 @@ namespace TypedD3D::Internal
                 using device_type = ID3D11Device;
                 using wrapper_type = WrapperTy;
             public:
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11Buffer>, HRESULT> CreateBuffer(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11Buffer>, HRESULT> CreateBuffer(
                     const D3D11_BUFFER_DESC& pDesc,
                     const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
                 {
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11Buffer>(&device_type::CreateBuffer, InternalGet(), &pDesc, optInitialData);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11Texture1D>, HRESULT>  CreateTexture1D(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11Texture1D>, HRESULT>  CreateTexture1D(
                     const D3D11_TEXTURE1D_DESC& pDesc,
                     const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
                 {
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11Texture1D>(&device_type::CreateTexture1D, InternalGet(), &pDesc, optInitialData);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11Texture2D>, HRESULT>  CreateTexture2D(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11Texture2D>, HRESULT>  CreateTexture2D(
                     const D3D11_TEXTURE2D_DESC& pDesc,
                     const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
                 {
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11Texture2D>(&device_type::CreateTexture2D, InternalGet(), &pDesc, optInitialData);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11Texture3D>, HRESULT>  CreateTexture3D(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11Texture3D>, HRESULT>  CreateTexture3D(
                     const D3D11_TEXTURE3D_DESC& pDesc,
                     const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
                 {
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11Texture1D>(&device_type::CreateTexture3D, InternalGet(), &pDesc, optInitialData);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>, HRESULT> CreateShaderResourceView(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>, HRESULT> CreateShaderResourceView(
                     ID3D11Resource& pResource,
                     const D3D11_SHADER_RESOURCE_VIEW_DESC* optDesc = nullptr)
                 {
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11ShaderResourceView>(&device_type::CreateShaderResourceView, InternalGet(), &pResource, optDesc);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>, HRESULT> CreateUnorderedAccessView(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>, HRESULT> CreateUnorderedAccessView(
                     ID3D11Resource& pResource,
                     const D3D11_UNORDERED_ACCESS_VIEW_DESC* optDesc = nullptr)
                 {
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11UnorderedAccessView>(&device_type::CreateUnorderedAccessView, InternalGet(), &pResource, optDesc);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11RenderTargetView>, HRESULT> CreateRenderTargetView(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11RenderTargetView>, HRESULT> CreateRenderTargetView(
                     ID3D11Resource& pResource,
                     const D3D11_RENDER_TARGET_VIEW_DESC* optDesc = nullptr)
                 {
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11RenderTargetView>(&device_type::CreateRenderTargetView, InternalGet(), &pResource, optDesc);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>, HRESULT> CreateDepthStencilView(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>, HRESULT> CreateDepthStencilView(
                     ID3D11Resource& pResource,
                     const D3D11_DEPTH_STENCIL_VIEW_DESC* optDesc = nullptr)
                 {
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11DepthStencilView>(&device_type::CreateDepthStencilView, InternalGet(), &pResource, optDesc);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11InputLayout>, HRESULT> CreateInputLayout(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11InputLayout>, HRESULT> CreateInputLayout(
                     std::span<D3D11_INPUT_ELEMENT_DESC> inputElementDescs,
                     ID3DBlob& pShaderBytecodeWithInputSignature)
                 {
                     return CreateInputLayout(inputElementDescs, pShaderBytecodeWithInputSignature.GetBufferPointer(), pShaderBytecodeWithInputSignature.GetBufferSize());
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11InputLayout>, HRESULT> CreateInputLayout(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11InputLayout>, HRESULT> CreateInputLayout(
                     std::span<D3D11_INPUT_ELEMENT_DESC> inputElementDescs,
                     const void* pShaderBytecodeWithInputSignature,
                     SIZE_T BytecodeLength)
@@ -95,14 +95,14 @@ namespace TypedD3D::Internal
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11InputLayout>(&device_type::CreateInputLayout, InternalGet(), inputElementDescs.data(), inputElementDescs.size(), pShaderBytecodeWithInputSignature, BytecodeLength);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11VertexShader>, HRESULT> CreateVertexShader(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11VertexShader>, HRESULT> CreateVertexShader(
                     ID3DBlob& pShaderBytecode,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     return CreateVertexShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11VertexShader>, HRESULT> CreateVertexShader(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11VertexShader>, HRESULT> CreateVertexShader(
                     const void* pShaderBytecode,
                     SIZE_T BytecodeLength,
                     ID3D11ClassLinkage* pClassLinkage)
@@ -110,14 +110,14 @@ namespace TypedD3D::Internal
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11VertexShader>(&device_type::CreateVertexShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11GeometryShader>, HRESULT> CreateGeometryShader(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11GeometryShader>, HRESULT> CreateGeometryShader(
                     ID3DBlob& pShaderBytecode,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     return CreateVertexShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11GeometryShader>, HRESULT> CreateGeometryShader(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11GeometryShader>, HRESULT> CreateGeometryShader(
                     const void* pShaderBytecode,
                     SIZE_T BytecodeLength,
                     ID3D11ClassLinkage* pClassLinkage)
@@ -145,14 +145,14 @@ namespace TypedD3D::Internal
                     /* [annotation] */
                     _COM_Outptr_opt_  ID3D11GeometryShader** ppGeometryShader) = 0;
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11PixelShader>, HRESULT> CreatePixelShader(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11PixelShader>, HRESULT> CreatePixelShader(
                     ID3DBlob& pShaderBytecode,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     return CreatePixelShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11PixelShader>, HRESULT> CreatePixelShader(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11PixelShader>, HRESULT> CreatePixelShader(
                     const void* pShaderBytecode,
                     SIZE_T BytecodeLength,
                     ID3D11ClassLinkage* pClassLinkage)
@@ -160,14 +160,14 @@ namespace TypedD3D::Internal
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11PixelShader>(&device_type::CreatePixelShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11HullShader>, HRESULT> CreateHullShader(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11HullShader>, HRESULT> CreateHullShader(
                     ID3DBlob& pShaderBytecode,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     return CreateHullShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11HullShader>, HRESULT> CreateHullShader(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11HullShader>, HRESULT> CreateHullShader(
                     const void* pShaderBytecode,
                     SIZE_T BytecodeLength,
                     ID3D11ClassLinkage* pClassLinkage)
@@ -175,14 +175,14 @@ namespace TypedD3D::Internal
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11HullShader>(&device_type::CreateHullShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11DomainShader>, HRESULT> CreateDomainShader(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11DomainShader>, HRESULT> CreateDomainShader(
                     ID3DBlob& pShaderBytecode,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     return CreateDomainShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11DomainShader>, HRESULT> CreateDomainShader(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11DomainShader>, HRESULT> CreateDomainShader(
                     const void* pShaderBytecode,
                     SIZE_T BytecodeLength,
                     ID3D11ClassLinkage* pClassLinkage)
@@ -190,14 +190,14 @@ namespace TypedD3D::Internal
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11DomainShader>(&device_type::CreateDomainShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11ComputeShader>, HRESULT> CreateComputeShader(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11ComputeShader>, HRESULT> CreateComputeShader(
                     ID3DBlob& pShaderBytecode,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     return CreateComputeShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11ComputeShader>, HRESULT> CreateComputeShader(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11ComputeShader>, HRESULT> CreateComputeShader(
                     const void* pShaderBytecode,
                     SIZE_T BytecodeLength,
                     ID3D11ClassLinkage* pClassLinkage)
@@ -205,18 +205,18 @@ namespace TypedD3D::Internal
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11ComputeShader>(&device_type::CreateComputeShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11ClassLinkage>, HRESULT> CreateClassLinkage()
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11ClassLinkage>, HRESULT> CreateClassLinkage()
                 {
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11ClassLinkage>(&device_type::CreateClassLinkage, InternalGet());
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11BlendState>, HRESULT> CreateBlendState(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11BlendState>, HRESULT> CreateBlendState(
                     const D3D11_BLEND_DESC& pBlendStateDesc)
                 {
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11BlendState>(&device_type::CreateBlendState, InternalGet(), &pBlendStateDesc);
                 }
 
-                Utils::Expected<Microsoft::WRL::ComPtr<ID3D11DepthStencilState>, HRESULT> CreateDepthStencilState(
+                tl::expected<Microsoft::WRL::ComPtr<ID3D11DepthStencilState>, HRESULT> CreateDepthStencilState(
                     const D3D11_DEPTH_STENCIL_DESC& pDepthStencilDesc)
                 {
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11DepthStencilState>(&device_type::CreateDepthStencilState, InternalGet(), &pDepthStencilDesc);

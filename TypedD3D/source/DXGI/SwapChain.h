@@ -2,7 +2,7 @@
 #include "../Wrappers.h"
 #include "../Internal/ComWrapper.h"
 #include "../Internal/d3dConcepts.h"
-#include "../Utils.h"
+#include "expected.hpp"
 #include "../Helpers/COMHelpers.h"
 #include "../D3D12TypeTags.h"
 #include <dxgi1_6.h>
@@ -39,14 +39,14 @@ namespace TypedD3D::Internal
                 }
 
                 template<Resource Ty>
-                Utils::Expected<Wrapper<Ty>, HRESULT> GetBuffer(UINT buffer)
+                tl::expected<Wrapper<Ty>, HRESULT> GetBuffer(UINT buffer)
                 {
-                    Utils::Expected<Microsoft::WRL::ComPtr<Ty>, HRESULT> resource = Helpers::COM::IIDToObjectForwardFunction<Ty>(&swap_chain_type::GetBuffer, InternalGet(), buffer);
+                    tl::expected<Microsoft::WRL::ComPtr<Ty>, HRESULT> resource = Helpers::COM::IIDToObjectForwardFunction<Ty>(&swap_chain_type::GetBuffer, InternalGet(), buffer);
 
-                    if(!resource.HasValue())
-                        return Utils::Unexpected(resource.GetError());
+                    if(!resource.has_value())
+                        return tl::unexpected(resource.error());
 
-                    return Wrapper<Ty>(resource.GetValue());
+                    return Wrapper<Ty>(resource.value());
                 }
 
                 HRESULT SetFullscreenState(BOOL Fullscreen, IDXGIOutput* optTarget)
@@ -85,7 +85,7 @@ namespace TypedD3D::Internal
 
                 Microsoft::WRL::ComPtr<IDXGIOutput> GetContainingOutput()
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<IDXGIOutput>(&swap_chain_type::GetContainingOutput, InternalGet()).GetValue();
+                    return Helpers::COM::UnknownObjectForwardFunction<IDXGIOutput>(&swap_chain_type::GetContainingOutput, InternalGet()).value();
                 }
 
                 DXGI_FRAME_STATISTICS GetFrameStatistics()
@@ -152,19 +152,19 @@ namespace TypedD3D::Internal
 
                 Microsoft::WRL::ComPtr<IDXGIOutput> GetRestrictToOutput()
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<IDXGIOutput>(&swap_chain_type::GetRestrictToOutput, InternalGet()).GetValue();
+                    return Helpers::COM::UnknownObjectForwardFunction<IDXGIOutput>(&swap_chain_type::GetRestrictToOutput, InternalGet()).value();
                 }
                 HRESULT SetBackgroundColor(DXGI_RGBA pColor)
                 {
                     return InternalGet().SetBackgroundColor(&pColor);
                 }
 
-                Utils::Expected<DXGI_RGBA, HRESULT> GetBackgroundColor(DXGI_RGBA* pColor)
+                tl::expected<DXGI_RGBA, HRESULT> GetBackgroundColor(DXGI_RGBA* pColor)
                 {
                     DXGI_RGBA color;
                     HRESULT result = InternalGet().GetBackgroundColor(&color);
                     if(FAILED(result))
-                        return Utils::Unexpected(result);
+                        return tl::unexpected(result);
                     return color;
                 }
 
@@ -173,12 +173,12 @@ namespace TypedD3D::Internal
                     return InternalGet().SetRotation(Rotation);
                 }
 
-                Utils::Expected<DXGI_MODE_ROTATION, HRESULT> GetRotation()
+                tl::expected<DXGI_MODE_ROTATION, HRESULT> GetRotation()
                 {
                     DXGI_MODE_ROTATION rotation;
                     HRESULT result = InternalGet().GetRotation(rotation);
                     if(FAILED(result))
-                        return Utils::Unexpected(result);
+                        return tl::unexpected(result);
                     return rotation;
                 }
             private:
@@ -248,12 +248,12 @@ namespace TypedD3D::Internal
                     return InternalGet().SetSourceSize(Width, Height);
                 }
 
-                Utils::Expected<std::pair<UINT, UINT>, HRESULT> GetSourceSize()
+                tl::expected<std::pair<UINT, UINT>, HRESULT> GetSourceSize()
                 {
                     std::pair<UINT, UINT> size;
                     HRESULT result = InternalGet().GetSourceSize(&size.first, &size.second);
                     if(FAILED(result))
-                        return Utils::Unexpected(result);
+                        return tl::unexpected(result);
                     return size;
                 }
 
@@ -262,12 +262,12 @@ namespace TypedD3D::Internal
                     return InternalGet().SetMaximumFrameLatency(&MaxLatency);
                 }
 
-                Utils::Expected<UINT, HRESULT> STDMETHODCALLTYPE GetMaximumFrameLatency()
+                tl::expected<UINT, HRESULT> STDMETHODCALLTYPE GetMaximumFrameLatency()
                 {
                     UINT latency;
                     HRESULT result = InternalGet().GetMaximumFrameLatency(&latency);
                     if(FAILED(result))
-                        return Utils::Unexpected(result);
+                        return tl::unexpected(result);
                     return latency;
                 }
 
@@ -281,12 +281,12 @@ namespace TypedD3D::Internal
                     return InternalGet().SetMatrixTransform(&pMatrix);
                 }
 
-                Utils::Expected<DXGI_MATRIX_3X2_F, HRESULT> STDMETHODCALLTYPE GetMatrixTransform()
+                tl::expected<DXGI_MATRIX_3X2_F, HRESULT> STDMETHODCALLTYPE GetMatrixTransform()
                 {
                     DXGI_MATRIX_3X2_F matrix;
                     HRESULT result = InternalGet().GetMatrixTransform(&matrix);
                     if(FAILED(result))
-                        return Utils::Unexpected(result);
+                        return tl::unexpected(result);
                     return matrix;
                 }
 

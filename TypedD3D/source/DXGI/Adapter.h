@@ -25,7 +25,7 @@ namespace TypedD3D::Internal
                 using wrapper_type = WrapperTy;
 
             public:
-                Utils::Expected<Microsoft::WRL::ComPtr<IDXGIOutput>, HRESULT> EnumOutputs(UINT Output)
+                tl::expected<Microsoft::WRL::ComPtr<IDXGIOutput>, HRESULT> EnumOutputs(UINT Output)
                 {
                     return Helpers::COM::UnknownObjectForwardFunction<IDXGIOutput>(&adapter_type::EnumOutputs, InternalGet(), Output);
                 }

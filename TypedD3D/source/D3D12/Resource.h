@@ -17,13 +17,13 @@ namespace TypedD3D::Internal
             class Interface
             {
             public:
-                Utils::Expected<std::byte*, HRESULT> Map(UINT Subresource, const D3D12_RANGE* optReadRange)
+                tl::expected<std::byte*, HRESULT> Map(UINT Subresource, const D3D12_RANGE* optReadRange)
                 {
                     void* dataPtr;
 
                     HRESULT result = InternalGet().Map(Subresource, optReadRange, &dataPtr);
                     if(FAILED(result))
-                        return Utils::Unexpected(result);
+                        return tl::unexpected(result);
 
                     return static_cast<std::byte*>(dataPtr);
                 }

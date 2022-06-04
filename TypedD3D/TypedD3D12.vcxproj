@@ -28,7 +28,7 @@
     <ClInclude Include="source\DXGI\Adapter.h" />
     <ClInclude Include="source\DXGI\Factory.h" />
     <ClInclude Include="source\DXGI\SwapChain.h" />
-    <ClInclude Include="source\expected.hpp" />
+    <ClInclude Include="expected.hpp" />
     <ClInclude Include="source\Internal\ComWrapper.h" />
     <ClInclude Include="source\D3D12\DescriptorHeap.h" />
     <ClInclude Include="source\Internal\D3D12\Meta.h" />
@@ -41,7 +41,6 @@
     <ClInclude Include="source\D3D12\Device.h" />
     <ClInclude Include="source\Helpers\DXGIHelpers.h" />
     <ClInclude Include="source\Internal\d3dConcepts.h" />
-    <ClInclude Include="source\Utils.h" />
     <ClInclude Include="source\Wrappers.h" />
     <ClInclude Include="TypedD3D12.h" />
   </ItemGroup>
@@ -131,6 +130,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -152,6 +152,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -173,6 +174,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <WarningLevel>Level4</WarningLevel>
+      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -193,6 +195,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
