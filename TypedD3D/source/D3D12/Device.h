@@ -344,6 +344,7 @@ namespace TypedD3D::Internal
                     return handle;
                 }
 
+                  //TODO: Figure out how this works to update to a more modern API
                 HRESULT OpenSharedHandle(
                     HANDLE NTHandle,
                     const IID& riid,
@@ -395,7 +396,7 @@ namespace TypedD3D::Internal
                     return Helpers::D3D12::CreateFence(InternalGetDevice(), Flags, InitialValue);
                 }
 
-                tl::expected<int, HRESULT> GetDeviceRemovedReason()
+                HRESULT GetDeviceRemovedReason()
                 {
                     return InternalGetDevice().GetDeviceRemovedReason();
                 }
@@ -665,7 +666,8 @@ namespace TypedD3D::Internal
             private:
                 using type = ID3D12Device5;
 
-            public:
+            public:  
+                //TODO: Figure out how this works to update to a more modern API
                 HRESULT CreateLifetimeTracker(
                     ID3D12LifetimeOwner& pOwner,
                     REFIID riid,
