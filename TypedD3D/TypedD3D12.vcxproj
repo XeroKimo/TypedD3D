@@ -45,6 +45,7 @@
     <ClInclude Include="source\Internal\d3dConcepts.h" />
     <ClInclude Include="source\Wrappers.h" />
     <ClInclude Include="TypedD3D12.h" />
+    <ClInclude Include="TypedD3D11.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp" />
@@ -184,7 +185,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib</AdditionalDependencies>
+      <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib;d3d11.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

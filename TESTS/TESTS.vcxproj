@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="D3D12HelloWorld.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="D3D11HelloWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TypedD3D\TypedD3D12.vcxproj">

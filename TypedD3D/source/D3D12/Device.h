@@ -843,7 +843,7 @@ namespace TypedD3D::D3D12
     using Device4 = Device_t<ID3D12Device4>;
     using Device5 = Device_t<ID3D12Device5>;
 
-    template<std::derived_from<ID3D12Device> DeviceTy = Device>
+    template<class DeviceTy = Device>
     auto CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
     {
         if constexpr(std::is_base_of_v<ID3D12Device, DeviceTy>)

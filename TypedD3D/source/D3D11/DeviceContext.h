@@ -302,7 +302,7 @@ namespace TypedD3D::Internal
                     std::span<ID3D11Buffer*> ppSOTargets,
                     const UINT* pOffsets)
                 {
-                    InternalGet().SOSetTargets(static_cast<UINT>(ppSOTargets.size()), ppSOTarget.data(), pOffsets);
+                    InternalGet().SOSetTargets(static_cast<UINT>(ppSOTargets.size()), ppSOTargets.data(), pOffsets);
                 }
 
                 void DrawAuto()
@@ -679,10 +679,8 @@ namespace TypedD3D::Internal
                     UINT NumBuffers)
                 {
                     std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
-                    TypedD3D::D3D11::IAGetVertexBufferData output
-                    {
-                        .buffers(NumBuffers)
-                    };
+                    TypedD3D::D3D11::IAGetVertexBufferData output;
+                    output.buffers.resize(NumBuffers);
                     InternalGet().IAGetVertexBuffers(StartSlot, NumBuffers, tempBuffers.get(), output.strides, output.offsets);
                     for(UINT i = 0; i < NumBuffers; i++)
                     {
@@ -736,7 +734,7 @@ namespace TypedD3D::Internal
                 {
                     D3D11_PRIMITIVE_TOPOLOGY topology;
                     InternalGet().IAGetPrimitiveTopology(&topology);
-                    return toplogy;
+                    return topology;
                 }
 
                 std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> VSGetShaderResources(
@@ -834,11 +832,10 @@ namespace TypedD3D::Internal
                     std::unique_ptr<ID3D11RenderTargetView*[]> tempRTVs = std::make_unique<ID3D11RenderTargetView*[]>(NumRTVs);
                     std::unique_ptr<ID3D11UnorderedAccessView*[]> tempUAVs = std::make_unique<ID3D11UnorderedAccessView*[]>(NumUAVs);
 
-                    TypedD3D::D3D11::OMGetRenderTargetsAndUnorderedAccessViewsData data
-                    {
-                        .renderTargetViews(NumRTVs),
-                        .unorderedAccessViews(NumUAVs)
-                    };
+                    TypedD3D::D3D11::OMGetRenderTargetsAndUnorderedAccessViewsData data;
+
+                    data.renderTargetViews.resize(NumRTVs);
+                    data.unorderedAccessViews.resize(NumUAVs);
 
                     InternalGet().OMGetRenderTargetsAndUnorderedAccessViews(NumRTVs, tempRTVs.get(), &data.depthStencilView, UAVStartSlot, NumUAVs, tempUAVs.get());
 
@@ -856,7 +853,7 @@ namespace TypedD3D::Internal
                 TypedD3D::D3D11::OMGetBlendStateData OMGetBlendState()
                 {
                     TypedD3D::D3D11::OMGetBlendStateData data;
-                    InternalGet().OMGetBlendState(&data.blendState, &data.blendFactor, &data.sampleMask);
+                    InternalGet().OMGetBlendState(&data.blendState, data.blendFactor.data(), &data.sampleMask);
                     return data;
                 }
 

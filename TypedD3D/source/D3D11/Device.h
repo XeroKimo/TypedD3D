@@ -509,7 +509,7 @@ namespace TypedD3D::Internal
                     else
                     {
                         return Helpers::COM::UnknownObjectForwardFunction<ID3D11DeviceContext>(&device_type::GetImmediateContext, InternalGet())
-                            .map([](auto deviceContext) {return Helpers::COM::Cast<DeviceContextTy>(deviceContext)});
+                            .map([](auto deviceContext) {return Helpers::COM::Cast<DeviceContextTy>(deviceContext); });
                     }
                 }
 
@@ -558,4 +558,70 @@ namespace TypedD3D::D3D11
     using Device_t = Internal::D3D11::Device_t<DeviceTy>;
 
     using Device = Device_t<ID3D11Device>;
+
+    template<class DeviceTy = ID3D11Device, class DeviceContextTy = ID3D11DeviceContext>
+    auto CreateDevice(
+        IDXGIAdapter* optAdapter,
+        D3D_DRIVER_TYPE DriverType,
+        HMODULE Software,
+        UINT Flags,
+        std::span<D3D_FEATURE_LEVEL> pFeatureLevels,
+        UINT SDKVersion)
+    {
+        if constexpr(!std::derived_from<DeviceTy, ID3D11Device> && !std::derived_from<DeviceContextTy, ID3D11DeviceContext>)
+        {
+            return CreateDevice<typename DeviceTy::underlying_type, typename DeviceContextTy::underlying_type>(
+                optAdapter,
+                DriverType,
+                Software,
+                Flags,
+                pFeatureLevels,
+                SDKVersion);
+        }
+        else if constexpr(!std::derived_from<DeviceTy, ID3D11Device>)
+        {
+            return CreateDevice<typename DeviceTy::underlying_type, DeviceContextTy>(
+                optAdapter,
+                DriverType,
+                Software,
+                Flags,
+                pFeatureLevels,
+                SDKVersion);
+        }
+        else if constexpr(!std::derived_from<DeviceContextTy, ID3D11DeviceContext>)
+        {
+            return CreateDevice<DeviceTy, typename DeviceContextTy::underlying_type>(
+                optAdapter,
+                DriverType,
+                Software,
+                Flags,
+                pFeatureLevels,
+                SDKVersion);
+        }
+        else
+        {
+            Microsoft::WRL::ComPtr<ID3D11Device> tempDevice;
+            Microsoft::WRL::ComPtr<ID3D11DeviceContext> tempDeviceContext;
+
+            if(HRESULT result = D3D11CreateDevice(
+                optAdapter,
+                DriverType,
+                Software,
+                Flags,
+                pFeatureLevels.data(),
+                static_cast<UINT>(pFeatureLevels.size()),
+                SDKVersion,
+                &tempDevice,
+                nullptr,
+                &tempDeviceContext);
+                FAILED(result))
+                return tl::expected<std::pair<Wrapper<DeviceTy>, Wrapper<DeviceContextTy>>, HRESULT>(tl::unexpected(result));
+
+            std::pair<Wrapper<DeviceTy>, Wrapper<DeviceContextTy>> device;
+            device.first = Helpers::COM::Cast<DeviceTy>(tempDevice);
+            device.second = Helpers::COM::Cast<DeviceContextTy>(tempDeviceContext);
+
+            return tl::expected<std::pair<Wrapper<DeviceTy>, Wrapper<DeviceContextTy>>, HRESULT>(device);
+        }
+    }
 }

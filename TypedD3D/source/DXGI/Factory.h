@@ -6,7 +6,7 @@
 #include "../D3D12TypeTags.h"
 #include <dxgi1_6.h>
 
-class ID3D11Device;
+struct ID3D11Device;
 struct ID3D12CommandQueue;
 
 namespace TypedD3D::Internal
