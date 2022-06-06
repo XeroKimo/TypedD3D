@@ -87,6 +87,12 @@
     <ClInclude Include="expected.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\D3D11\DeviceContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\D3D11\DeviceChild.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp">

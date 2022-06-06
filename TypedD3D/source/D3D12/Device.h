@@ -833,14 +833,7 @@ namespace TypedD3D::Internal
 
 namespace TypedD3D::D3D12
 {
-    using Microsoft::WRL::ComPtr;
-    namespace Internal
-    {
-        template<class Ty>
-        class Device;
-    }
-
-    template<class DeviceTy>
+    template<std::derived_from<ID3D12Device> DeviceTy>
     using Device_t = TypedD3D::Internal::D3D12::Device_t<DeviceTy>;
 
     using Device =  Device_t<ID3D12Device>;
@@ -850,7 +843,7 @@ namespace TypedD3D::D3D12
     using Device4 = Device_t<ID3D12Device4>;
     using Device5 = Device_t<ID3D12Device5>;
 
-    template<class DeviceTy = Device>
+    template<std::derived_from<ID3D12Device> DeviceTy = Device>
     auto CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
     {
         if constexpr(std::is_base_of_v<ID3D12Device, DeviceTy>)

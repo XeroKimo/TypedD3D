@@ -467,7 +467,7 @@ namespace TypedD3D::Internal
                     return InternalGet().GetPrivateData(guid, pDataSize, pData);
                 }
 
-                  //TODO: Figure out how this works to update to a more modern API
+                //TODO: Figure out how this works to update to a more modern API
                 HRESULT SetPrivateData(
                     REFGUID guid,
                     UINT DataSize,
@@ -550,4 +550,12 @@ namespace TypedD3D::Internal
         Interface* GetInterface() { return this; }
         Interface* operator->() { return this; }
     };
+}
+
+namespace TypedD3D::D3D11
+{
+    template<std::derived_from<ID3D11Device> DeviceTy>
+    using Device_t = Internal::D3D11::Device_t<DeviceTy>;
+
+    using Device = Device_t<ID3D11Device>;
 }

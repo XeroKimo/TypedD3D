@@ -1512,10 +1512,10 @@ namespace TypedD3D::D3D12
 {
     using Microsoft::WRL::ComPtr;
 
-    template<class ListTy, D3D12_COMMAND_LIST_TYPE Type>
+    template<std::derived_from<ID3D12CommandList> ListTy, D3D12_COMMAND_LIST_TYPE Type>
     using CommandList_t = TypedD3D::Internal::D3D12::CommandList_t<ListTy, TypedD3D::Internal::tagValue<Type>>;
 
-    template<class ListTy>
+    template<std::derived_from<ID3D12CommandList> ListTy>
     using RenderPass_t = TypedD3D::Internal::D3D12::RenderPass_t<ListTy>;
 
     using RenderPass4 = RenderPass_t<ID3D12GraphicsCommandList4>;

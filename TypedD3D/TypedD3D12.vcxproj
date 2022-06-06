@@ -20,6 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\D3D11\Device.h" />
+    <ClInclude Include="source\D3D11\DeviceChild.h" />
+    <ClInclude Include="source\D3D11\DeviceContext.h" />
     <ClInclude Include="source\D3D12TypeTags.h" />
     <ClInclude Include="source\D3D12Wrappers.h" />
     <ClInclude Include="source\D3D12\CommandAllocator.h" />
