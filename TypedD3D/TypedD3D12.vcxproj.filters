@@ -96,6 +96,9 @@
     <ClInclude Include="TypedD3D11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="span_tuple.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp">

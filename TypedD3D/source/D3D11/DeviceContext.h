@@ -1,8 +1,9 @@
 #pragma once
 #include "DeviceChild.h"
 #include "expected.hpp"
+#include "span_tuple.h"
 #include <d3d11_4.h>
-#include <span>
+#include <tuple>
 #include <optional>
 #include <array>
 #include <vector>
@@ -143,13 +144,14 @@ namespace TypedD3D::Internal
                     InternalGet().IASetInputLayout(pInputLayout);
                 }
 
+                using Strides = UINT;
+                using Offsets = UINT;
+
                 void IASetVertexBuffers(
                     UINT StartSlot,
-                    std::span<ID3D11Buffer*> vertexBuffers,
-                    const UINT* pStrides,
-                    const UINT* pOffsets)
+                    xk::span_tuple<ID3D11Buffer*, const Strides, const Offsets> vertexBuffers)
                 {
-                    InternalGet().IASetVertexBuffers(StartSlot, static_cast<UINT>(vertexBuffers.size()), vertexBuffers.data(), pStrides, pOffsets);
+                    InternalGet().IASetVertexBuffers(StartSlot, static_cast<UINT>(vertexBuffers.size()), vertexBuffers.data<0>(), vertexBuffers.data<1>(), vertexBuffers.data<2>());
                 }
 
                 void IASetIndexBuffer(
@@ -268,6 +270,7 @@ namespace TypedD3D::Internal
                 void OMSetRenderTargetsAndUnorderedAccessViews(
                     std::span<ID3D11RenderTargetView*> ppRenderTargetViews,
                     ID3D11DepthStencilView* optDepthStencilView,
+                    UINT UAVStartSlot,
                     std::span<ID3D11UnorderedAccessView*> ppUnorderedAccessViews,
                     const UINT* pUAVInitialCounts)
                 {
@@ -275,7 +278,8 @@ namespace TypedD3D::Internal
                         static_cast<UINT>(ppRenderTargetViews.size()),
                         ppRenderTargetViews.data(),
                         optDepthStencilView,
-                        static_cast<UINT>(ppUnorderedAccessViews),
+                        UAVStartSlot,
+                        static_cast<UINT>(ppUnorderedAccessViews.size()),
                         ppUnorderedAccessViews.data(),
                         pUAVInitialCounts);
                 }
@@ -286,7 +290,7 @@ namespace TypedD3D::Internal
                     UINT SampleMask)
                 {
                     if(BlendFactor.has_value())
-                        InternalGet().OMSetBlendState(optBlendState, BlendFactor.value(), SampleMask);
+                        InternalGet().OMSetBlendState(optBlendState, BlendFactor.value().data(), SampleMask);
                     else
                         InternalGet().OMSetBlendState(optBlendState, nullptr, SampleMask);
                 }
@@ -299,10 +303,9 @@ namespace TypedD3D::Internal
                 }
 
                 void SOSetTargets(
-                    std::span<ID3D11Buffer*> ppSOTargets,
-                    const UINT* pOffsets)
+                    xk::span_tuple<ID3D11Buffer*, const Offsets> ppSOTargets)
                 {
-                    InternalGet().SOSetTargets(static_cast<UINT>(ppSOTargets.size()), ppSOTargets.data(), pOffsets);
+                    InternalGet().SOSetTargets(static_cast<UINT>(ppSOTargets.size()), ppSOTargets.data<0>(), ppSOTargets.data<1>());
                 }
 
                 void DrawAuto()

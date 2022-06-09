@@ -44,6 +44,7 @@
     <ClInclude Include="source\Helpers\DXGIHelpers.h" />
     <ClInclude Include="source\Internal\d3dConcepts.h" />
     <ClInclude Include="source\Wrappers.h" />
+    <ClInclude Include="span_tuple.h" />
     <ClInclude Include="TypedD3D12.h" />
     <ClInclude Include="TypedD3D11.h" />
   </ItemGroup>
