@@ -2,6 +2,7 @@
 #include "../Wrappers.h"
 #include "../Internal/ComWrapper.h"
 #include "../Helpers/COMHelpers.h"
+#include "Shaders.h"
 #include <d3d11_4.h>
 #include <span>
 
@@ -220,37 +221,41 @@ namespace TypedD3D::Internal
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11InputLayout>(&device_type::CreateInputLayout, InternalGet(), inputElementDescs.data(), inputElementDescs.size(), pShaderBytecodeWithInputSignature, BytecodeLength);
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11VertexShader>, HRESULT> CreateVertexShader(
+                tl::expected<Wrapper<ID3D11VertexShader>, HRESULT> CreateVertexShader(
                     ID3DBlob& pShaderBytecode,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     return CreateVertexShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11VertexShader>, HRESULT> CreateVertexShader(
+                tl::expected<Wrapper<ID3D11VertexShader>, HRESULT> CreateVertexShader(
                     const void* pShaderBytecode,
                     SIZE_T BytecodeLength,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11VertexShader>(&device_type::CreateVertexShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage);
+                    using ShaderTy = Wrapper<ID3D11VertexShader>;
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11VertexShader>(&device_type::CreateVertexShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage)
+                        .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader)};;
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11GeometryShader>, HRESULT> CreateGeometryShader(
+                tl::expected<Wrapper<ID3D11GeometryShader>, HRESULT> CreateGeometryShader(
                     ID3DBlob& pShaderBytecode,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
-                    return CreateVertexShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
+                    return CreateGeometryShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11GeometryShader>, HRESULT> CreateGeometryShader(
+                tl::expected<Wrapper<ID3D11GeometryShader>, HRESULT> CreateGeometryShader(
                     const void* pShaderBytecode,
                     SIZE_T BytecodeLength,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11GeometryShader>(&device_type::CreateGeometryShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage);
+                    using ShaderTy = Wrapper<ID3D11GeometryShader>;
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11GeometryShader>(&device_type::CreateGeometryShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage)
+                        .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader)};;
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11GeometryShader>, HRESULT> CreateGeometryShaderWithStreamOutput(
+                tl::expected<Wrapper<ID3D11GeometryShader>, HRESULT> CreateGeometryShaderWithStreamOutput(
                     ID3DBlob& pShaderBytecode,
                     std::span<const D3D11_SO_DECLARATION_ENTRY> pSODeclaration,
                     std::span<const UINT> pBufferStrides,
@@ -266,7 +271,7 @@ namespace TypedD3D::Internal
                         optClassLinkage);
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11GeometryShader>, HRESULT> CreateGeometryShaderWithStreamOutput(
+                tl::expected<Wrapper<ID3D11GeometryShader>, HRESULT> CreateGeometryShaderWithStreamOutput(
                     const void* pShaderBytecode,
                     SIZE_T BytecodeLength,
                     std::span<const D3D11_SO_DECLARATION_ENTRY> pSODeclaration,
@@ -274,6 +279,7 @@ namespace TypedD3D::Internal
                     UINT RasterizedStream,
                     ID3D11ClassLinkage* optClassLinkage)
                 {
+                    using ShaderTy = Wrapper<ID3D11GeometryShader>;
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11GeometryShader>(
                         &device_type::CreateGeometryShaderWithStreamOutput, 
                         InternalGet(), 
@@ -284,67 +290,76 @@ namespace TypedD3D::Internal
                         pBufferStrides.data(),
                         pBufferStrides.size(),
                         RasterizedStream,
-                        optClassLinkage);
+                        optClassLinkage)
+                        .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader)};;;
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11PixelShader>, HRESULT> CreatePixelShader(
+                tl::expected<Wrapper<ID3D11PixelShader>, HRESULT> CreatePixelShader(
                     ID3DBlob& pShaderBytecode,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     return CreatePixelShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11PixelShader>, HRESULT> CreatePixelShader(
+                tl::expected<Wrapper<ID3D11PixelShader>, HRESULT> CreatePixelShader(
                     const void* pShaderBytecode,
                     SIZE_T BytecodeLength,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11PixelShader>(&device_type::CreatePixelShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage);
+                    using ShaderTy = Wrapper<ID3D11PixelShader>;
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11PixelShader>(&device_type::CreatePixelShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage)
+                        .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader)};;
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11HullShader>, HRESULT> CreateHullShader(
+                tl::expected<Wrapper<ID3D11HullShader>, HRESULT> CreateHullShader(
                     ID3DBlob& pShaderBytecode,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     return CreateHullShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11HullShader>, HRESULT> CreateHullShader(
+                tl::expected<Wrapper<ID3D11HullShader>, HRESULT> CreateHullShader(
                     const void* pShaderBytecode,
                     SIZE_T BytecodeLength,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11HullShader>(&device_type::CreateHullShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage);
+                    using ShaderTy = Wrapper<ID3D11HullShader>;
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11HullShader>(&device_type::CreateHullShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage)
+                        .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader)};;
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11DomainShader>, HRESULT> CreateDomainShader(
+                tl::expected<Wrapper<ID3D11DomainShader>, HRESULT> CreateDomainShader(
                     ID3DBlob& pShaderBytecode,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     return CreateDomainShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11DomainShader>, HRESULT> CreateDomainShader(
+                tl::expected<Wrapper<ID3D11DomainShader>, HRESULT> CreateDomainShader(
                     const void* pShaderBytecode,
                     SIZE_T BytecodeLength,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11DomainShader>(&device_type::CreateDomainShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage);
+                    using ShaderTy = Wrapper<ID3D11DomainShader>;
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11DomainShader>(&device_type::CreateDomainShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage)
+                        .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader)};;
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11ComputeShader>, HRESULT> CreateComputeShader(
+                tl::expected<Wrapper<ID3D11ComputeShader>, HRESULT> CreateComputeShader(
                     ID3DBlob& pShaderBytecode,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     return CreateComputeShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11ComputeShader>, HRESULT> CreateComputeShader(
+                tl::expected<Wrapper<ID3D11ComputeShader>, HRESULT> CreateComputeShader(
                     const void* pShaderBytecode,
                     SIZE_T BytecodeLength,
                     ID3D11ClassLinkage* pClassLinkage)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11ComputeShader>(&device_type::CreateComputeShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage);
+                    using ShaderTy = Wrapper<ID3D11ComputeShader>;
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11ComputeShader>(&device_type::CreateComputeShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage)
+                        .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader)};;
                 }
 
                 tl::expected<Microsoft::WRL::ComPtr<ID3D11ClassLinkage>, HRESULT> CreateClassLinkage()

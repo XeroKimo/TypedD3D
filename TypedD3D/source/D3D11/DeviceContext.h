@@ -74,10 +74,10 @@ namespace TypedD3D::Internal
                 }
 
                 void PSSetShader(
-                    ID3D11PixelShader* optPixelShader,
+                    Wrapper<ID3D11PixelShader> optPixelShader,
                     std::span<ID3D11ClassInstance*> optClassInstancess)
                 {
-                    InternalGet().PSSetShader(optPixelShader, static_cast<UINT>(optClassInstancess.size()), optClassInstancess.data());
+                    InternalGet().PSSetShader(optPixelShader.Get(), static_cast<UINT>(optClassInstancess.size()), optClassInstancess.data());
                 }
 
                 void PSSetSamplers(
@@ -88,10 +88,10 @@ namespace TypedD3D::Internal
                 }
 
                 void VSSetShader(
-                    ID3D11VertexShader* pVertexShader,
+                    Wrapper<ID3D11VertexShader> optVertexShader,
                     std::span<ID3D11ClassInstance*> optClassInstancess)
                 {
-                    InternalGet().VSSetShader(pVertexShader, static_cast<UINT>(optClassInstancess.size()), optClassInstancess.data());
+                    InternalGet().VSSetShader(optVertexShader.Get(), static_cast<UINT>(optClassInstancess.size()), optClassInstancess.data());
                 }
 
                 void DrawIndexed(
@@ -189,10 +189,10 @@ namespace TypedD3D::Internal
                 }
 
                 void GSSetShader(
-                    ID3D11GeometryShader* optGeometryShader,
+                    Wrapper<ID3D11GeometryShader> optGeometryShader,
                     std::span<ID3D11ClassInstance*> optClassInstancess)
                 {
-                    InternalGet().GSSetShader(optGeometryShader, static_cast<UINT>(optClassInstancess.size()), optClassInstancess.data());
+                    InternalGet().GSSetShader(optGeometryShader.Get(), static_cast<UINT>(optClassInstancess.size()), optClassInstancess.data());
                 }
 
                 void IASetPrimitiveTopology(
@@ -489,10 +489,10 @@ namespace TypedD3D::Internal
                 }
 
                 void HSSetShader(
-                    ID3D11HullShader* optHullShader,
+                    Wrapper<ID3D11HullShader> optHullShader,
                     std::span<ID3D11ClassInstance*> optClassInstancess)
                 {
-                    InternalGet().HSSetShader(optHullShader, static_cast<UINT>(optClassInstancess.size()), optClassInstancess.data());
+                    InternalGet().HSSetShader(optHullShader.Get(), static_cast<UINT>(optClassInstancess.size()), optClassInstancess.data());
                 }
 
                 void HSSetSamplers(
@@ -517,10 +517,10 @@ namespace TypedD3D::Internal
                 }
 
                 void DSSetShader(
-                    ID3D11DomainShader* optDomainShader,
+                    Wrapper<ID3D11DomainShader> optDomainShader,
                     std::span<ID3D11ClassInstance*> optClassInstancess)
                 {
-                    InternalGet().DSSetShader(optDomainShader, static_cast<UINT>(optClassInstancess.size()), optClassInstancess.data());
+                    InternalGet().DSSetShader(optDomainShader.Get(), static_cast<UINT>(optClassInstancess.size()), optClassInstancess.data());
                 }
 
                 void DSSetSamplers(
@@ -553,10 +553,10 @@ namespace TypedD3D::Internal
                 }
 
                 void CSSetShader(
-                    ID3D11ComputeShader* optComputeShader,
+                    Wrapper<ID3D11ComputeShader> optComputeShader,
                     std::span<ID3D11ClassInstance*> optClassInstancess)
                 {
-                    InternalGet().CSSetShader(optComputeShader, static_cast<UINT>(optClassInstancess.size()), optClassInstancess.data());
+                    InternalGet().CSSetShader(optComputeShader.Get(), static_cast<UINT>(optClassInstancess.size()), optClassInstancess.data());
                 }
 
                 void CSSetSamplers(
