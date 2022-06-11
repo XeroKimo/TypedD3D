@@ -2,6 +2,7 @@
 #include "DeviceChild.h"
 #include "expected.hpp"
 #include "span_tuple.h"
+#include "gsl/pointers"
 #include <d3d11_4.h>
 #include <tuple>
 #include <optional>
@@ -13,20 +14,20 @@ namespace TypedD3D::D3D11
 {
     struct IAGetVertexBufferData
     {
-        std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> buffers;
+        std::vector<Wrapper<ID3D11Buffer>> buffers;
         UINT* strides;
         UINT* offsets;
     };
 
     struct IAGetIndexBufferData
     {
-        Microsoft::WRL::ComPtr<ID3D11Buffer> buffer;
+        Wrapper<ID3D11Buffer> buffer;
         DXGI_FORMAT format;
         UINT offset;
     };
 
     struct OMGetRenderTargetsAndUnorderedAccessViewsData
-    {                    
+    {
         std::vector<Microsoft::WRL::ComPtr<ID3D11RenderTargetView>> renderTargetViews;
         Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
         std::vector<Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>> unorderedAccessViews;
@@ -61,9 +62,14 @@ namespace TypedD3D::Internal
             public:
                 void VSSetConstantBuffers(
                     UINT StartSlot,
-                    std::span<ID3D11Buffer*> ppConstantBuffers)
+                    std::span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
                 {
-                    InternalGet().VSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
+                    std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(ppConstantBuffers.size());
+                    for(size_t i = 0; i < ppConstantBuffers.size(); i++)
+                    {
+                        rawBuffers[i] = ppConstantBuffers[i].Get();
+                    }
+                    InternalGet().VSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), rawBuffers.get());
                 }
 
                 void PSSetShaderResources(
@@ -110,14 +116,14 @@ namespace TypedD3D::Internal
                 }
 
                 tl::expected<D3D11_MAPPED_SUBRESOURCE, HRESULT> Map(
-                    ID3D11Resource& pResource,
+                    gsl::not_null<Wrapper<ID3D11Resource>> pResource,
                     UINT Subresource,
                     D3D11_MAP MapType,
                     UINT MapFlags)
                 {
                     D3D11_MAPPED_SUBRESOURCE subresource;
 
-                    if(HRESULT result = InternalGet().Map(&pResource, Subresource, MapType, MapFlags, &subresource); FAILED(result))
+                    if(HRESULT result = InternalGet().Map(pResource.get().Get(), Subresource, MapType, MapFlags, &subresource); FAILED(result))
                     {
                         return tl::unexpected(result);
                     }
@@ -125,17 +131,22 @@ namespace TypedD3D::Internal
                 }
 
                 void Unmap(
-                    ID3D11Resource& pResource,
+                    gsl::not_null<Wrapper<ID3D11Resource>> pResource,
                     UINT Subresource)
                 {
-                    InternalGet().Unmap(&pResource, Subresource);
+                    InternalGet().Unmap(pResource.get().Get(), Subresource);
                 }
 
                 void PSSetConstantBuffers(
                     UINT StartSlot,
-                    std::span<ID3D11Buffer*> ppConstantBuffers)
+                    std::span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
                 {
-                    InternalGet().PSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
+                    std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(ppConstantBuffers.size());
+                    for(size_t i = 0; i < ppConstantBuffers.size(); i++)
+                    {
+                        rawBuffers[i] = ppConstantBuffers[i].Get();
+                    }
+                    InternalGet().PSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), rawBuffers.get());
                 }
 
                 void IASetInputLayout(
@@ -149,17 +160,22 @@ namespace TypedD3D::Internal
 
                 void IASetVertexBuffers(
                     UINT StartSlot,
-                    xk::span_tuple<ID3D11Buffer*, std::dynamic_extent, const Stride, const Offset> vertexBuffers)
+                    xk::span_tuple<Wrapper<ID3D11Buffer>, std::dynamic_extent, const Stride, const Offset> vertexBuffers)
                 {
-                    InternalGet().IASetVertexBuffers(StartSlot, static_cast<UINT>(vertexBuffers.size()), vertexBuffers.data<0>(), vertexBuffers.data<1>(), vertexBuffers.data<2>());
+                    std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(vertexBuffers.size());
+                    for(size_t i = 0; i < vertexBuffers.size(); i++)
+                    {
+                        rawBuffers[i] = get<0>(vertexBuffers)[i].Get();
+                    }
+                    InternalGet().IASetVertexBuffers(StartSlot, static_cast<UINT>(vertexBuffers.size()), rawBuffers.get(), vertexBuffers.data<1>(), vertexBuffers.data<2>());
                 }
 
                 void IASetIndexBuffer(
-                    ID3D11Buffer* pIndexBuffer,
+                    Wrapper<ID3D11Buffer> pIndexBuffer,
                     DXGI_FORMAT Format,
                     UINT Offset)
                 {
-                    InternalGet().IASetIndexBuffer(pIndexBuffer, Format, Offset);
+                    InternalGet().IASetIndexBuffer(pIndexBuffer.Get(), Format, Offset);
                 }
 
                 void DrawIndexedInstanced(
@@ -183,9 +199,14 @@ namespace TypedD3D::Internal
 
                 void GSSetConstantBuffers(
                     UINT StartSlot,
-                    std::span<ID3D11Buffer*> ppConstantBuffers)
+                    std::span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
                 {
-                    InternalGet().GSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
+                    std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(ppConstantBuffers.size());
+                    for(size_t i = 0; i < ppConstantBuffers.size(); i++)
+                    {
+                        rawBuffers[i] = ppConstantBuffers[i].Get();
+                    }
+                    InternalGet().GSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), rawBuffers.get());
                 }
 
                 void GSSetShader(
@@ -303,9 +324,14 @@ namespace TypedD3D::Internal
                 }
 
                 void SOSetTargets(
-                    xk::span_tuple<ID3D11Buffer*, std::dynamic_extent, const Offset> ppSOTargets)
+                    xk::span_tuple<Wrapper<ID3D11Buffer>, std::dynamic_extent, const Offset> ppSOTargets)
                 {
-                    InternalGet().SOSetTargets(static_cast<UINT>(ppSOTargets.size()), ppSOTargets.data<0>(), ppSOTargets.data<1>());
+                    std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(ppSOTargets.size());
+                    for(size_t i = 0; i < ppSOTargets.size(); i++)
+                    {
+                        rawBuffers[i] = get<0>(ppSOTargets)[i].Get();
+                    }
+                    InternalGet().SOSetTargets(static_cast<UINT>(ppSOTargets.size()), rawBuffers.get(), ppSOTargets.data<1>());
                 }
 
                 void DrawAuto()
@@ -314,17 +340,17 @@ namespace TypedD3D::Internal
                 }
 
                 void DrawIndexedInstancedIndirect(
-                    ID3D11Buffer& pBufferForArgs,
+                    gsl::not_null<Wrapper<ID3D11Buffer>> pBufferForArgs,
                     UINT AlignedByteOffsetForArgs)
                 {
-                    InternalGet().DrawIndexedInstancedIndirect(&pBufferForArgs, AlignedByteOffsetForArgs);
+                    InternalGet().DrawIndexedInstancedIndirect(pBufferForArgs.get().Get(), AlignedByteOffsetForArgs);
                 }
 
                 void DrawInstancedIndirect(
-                    ID3D11Buffer& pBufferForArgs,
+                    gsl::not_null<Wrapper<ID3D11Buffer>> pBufferForArgs,
                     UINT AlignedByteOffsetForArgs)
                 {
-                    InternalGet().DrawInstancedIndirect(&pBufferForArgs, AlignedByteOffsetForArgs);
+                    InternalGet().DrawInstancedIndirect(pBufferForArgs.get().Get(), AlignedByteOffsetForArgs);
                 }
 
                 void Dispatch(
@@ -336,10 +362,10 @@ namespace TypedD3D::Internal
                 }
 
                 void DispatchIndirect(
-                    ID3D11Buffer& pBufferForArgs,
+                    gsl::not_null<Wrapper<ID3D11Buffer>> pBufferForArgs,
                     UINT AlignedByteOffsetForArgs)
                 {
-                    InternalGet().DispatchIndirect(&pBufferForArgs, AlignedByteOffsetForArgs);
+                    InternalGet().DispatchIndirect(pBufferForArgs.get().Get(), AlignedByteOffsetForArgs);
                 }
 
                 void RSSetState(
@@ -361,37 +387,37 @@ namespace TypedD3D::Internal
                 }
 
                 void CopySubresourceRegion(
-                    ID3D11Resource& pDstResource,
+                    gsl::not_null<Wrapper<ID3D11Resource>> pDstResource,
                     UINT DstSubresource,
                     UINT DstX,
                     UINT DstY,
                     UINT DstZ,
-                    ID3D11Resource& pSrcResource,
+                    gsl::not_null<Wrapper<ID3D11Resource>>  pSrcResource,
                     UINT SrcSubresource,
                     const D3D11_BOX* pSrcBox)
                 {
                     InternalGet().CopySubresourceRegion(
-                        pDstResource,
+                        pDstResource.get().Get(),
                         DstSubresource,
                         DstX,
                         DstY,
                         DstZ,
-                        pSrcResource,
+                        pSrcResource.get().Get(),
                         SrcSubresource,
                         pSrcBox);
                 }
 
                 void CopyResource(
-                    ID3D11Resource& pDstResource,
-                    ID3D11Resource& pSrcResource)
+                    gsl::not_null<Wrapper<ID3D11Resource>>  pDstResource,
+                    gsl::not_null<Wrapper<ID3D11Resource>>  pSrcResource)
                 {
                     InternalGet().CopyResource(
-                        pDstResource,
-                        pSrcResource);
+                        pDstResource.get().Get(),
+                        pSrcResource.get().Get());
                 }
 
                 void UpdateSubresource(
-                    ID3D11Resource& pDstResource,
+                    gsl::not_null<Wrapper<ID3D11Resource>> pDstResource,
                     UINT DstSubresource,
                     const D3D11_BOX* pDstBox,
                     const void* pSrcData,
@@ -399,7 +425,7 @@ namespace TypedD3D::Internal
                     UINT SrcDepthPitch)
                 {
                     InternalGet().UpdateSubresource(
-                        pDstResource,
+                        pDstResource.get().Get(),
                         DstSubresource,
                         pDstBox,
                         pSrcData,
@@ -408,11 +434,11 @@ namespace TypedD3D::Internal
                 }
 
                 void CopyStructureCount(
-                    ID3D11Buffer& pDstBuffer,
+                    gsl::not_null<Wrapper<ID3D11Buffer>> pDstBuffer,
                     UINT DstAlignedByteOffset,
                     ID3D11UnorderedAccessView& pSrcView)
                 {
-                    InternalGet().CopyStructureCount(pDstBuffer, DstAlignedByteOffset, pSrcView);
+                    InternalGet().CopyStructureCount(pDstBuffer.get().Get(), DstAlignedByteOffset, pSrcView);
                 }
 
                 void ClearRenderTargetView(
@@ -452,26 +478,26 @@ namespace TypedD3D::Internal
                 }
 
                 void SetResourceMinLOD(
-                    ID3D11Resource& pResource,
+                    gsl::not_null<Wrapper<ID3D11Resource>> pResource,
                     FLOAT MinLOD)
                 {
-                    InternalGet().SetResourceMinLOD(&pResource, MinLOD);
+                    InternalGet().SetResourceMinLOD(pResource.get().Get(), MinLOD);
                 }
 
                 FLOAT GetResourceMinLOD(
-                    ID3D11Resource& pResource)
+                    gsl::not_null<Wrapper<ID3D11Resource>> pResource)
                 {
-                    return InternalGet().GetResourceMinLOD(&pResource);
+                    return InternalGet().GetResourceMinLOD(pResource.get().Get());
                 }
 
                 void ResolveSubresource(
-                    ID3D11Resource& pDstResource,
+                    gsl::not_null<Wrapper<ID3D11Resource>> pDstResource,
                     UINT DstSubresource,
-                    ID3D11Resource& pSrcResource,
+                    gsl::not_null<Wrapper<ID3D11Resource>> pSrcResource,
                     UINT SrcSubresource,
                     DXGI_FORMAT Format)
                 {
-                    InternalGet().ResolveSubresource(&pDstResource, DstSubresource, &pSrcResource, SrcSubresource, Format);
+                    InternalGet().ResolveSubresource(pDstResource.get().Get(), DstSubresource, pSrcResource.get().Get(), SrcSubresource, Format);
                 }
 
                 void ExecuteCommandList(
@@ -504,9 +530,14 @@ namespace TypedD3D::Internal
 
                 void HSSetConstantBuffers(
                     UINT StartSlot,
-                    std::span<ID3D11Buffer*> ppConstantBuffers)
+                    std::span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
                 {
-                    InternalGet().HSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
+                    std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(ppConstantBuffers.size());
+                    for(size_t i = 0; i < ppConstantBuffers.size(); i++)
+                    {
+                        rawBuffers[i] = ppConstantBuffers[i].Get();
+                    }
+                    InternalGet().HSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), rawBuffers.get());
                 }
 
                 void DSSetShaderResources(
@@ -532,9 +563,14 @@ namespace TypedD3D::Internal
 
                 void DSSetConstantBuffers(
                     UINT StartSlot,
-                    std::span<ID3D11Buffer*> ppConstantBuffers)
+                    std::span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
                 {
-                    InternalGet().DSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
+                    std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(ppConstantBuffers.size());
+                    for(size_t i = 0; i < ppConstantBuffers.size(); i++)
+                    {
+                        rawBuffers[i] = ppConstantBuffers[i].Get();
+                    }
+                    InternalGet().DSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), rawBuffers.get());
                 }
 
                 void CSSetShaderResources(
@@ -568,22 +604,29 @@ namespace TypedD3D::Internal
 
                 void CSSetConstantBuffers(
                     UINT StartSlot,
-                    std::span<ID3D11Buffer*> ppConstantBuffers)
+                    std::span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
                 {
-                    InternalGet().CSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
+                    std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(ppConstantBuffers.size());
+                    for(size_t i = 0; i < ppConstantBuffers.size(); i++)
+                    {
+                        rawBuffers[i] = ppConstantBuffers[i].Get();
+                    }
+                    InternalGet().CSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), rawBuffers.get());
                 }
 
-                std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> VSGetConstantBuffers(
+                std::vector<Wrapper<ID3D11Buffer>> VSGetConstantBuffers(
                     UINT StartSlot,
                     UINT NumBuffers)
                 {
                     std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
                     InternalGet().VSGetConstantBuffers(0, NumBuffers, tempBuffers.get());
 
-                    std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> buffers(NumBuffers);
+                    std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
                     for(UINT i = 0; i < NumBuffers; i++)
                     {
-                        buffers[i].Attach(tempBuffers[i]);
+                        Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
+                        temp.Attach(tempBuffers[i]);
+                        buffers[i] = std::move(temp);
                     }
 
                     return buffers;
@@ -654,17 +697,19 @@ namespace TypedD3D::Internal
                     return output;
                 }
 
-                std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> PSGetConstantBuffers(
+                std::vector<Wrapper<ID3D11Buffer>> PSGetConstantBuffers(
                     UINT StartSlot,
                     UINT NumBuffers)
                 {
                     std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
                     InternalGet().PSGetConstantBuffers(0, NumBuffers, tempBuffers.get());
 
-                    std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> buffers(NumBuffers);
+                    std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
                     for(UINT i = 0; i < NumBuffers; i++)
                     {
-                        buffers[i].Attach(tempBuffers[i]);
+                        Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
+                        temp.Attach(tempBuffers[i]);
+                        buffers[i] = std::move(temp);
                     }
 
                     return buffers;
@@ -687,7 +732,9 @@ namespace TypedD3D::Internal
                     InternalGet().IAGetVertexBuffers(StartSlot, NumBuffers, tempBuffers.get(), output.strides, output.offsets);
                     for(UINT i = 0; i < NumBuffers; i++)
                     {
-                        output.buffers[i].Attach(tempBuffers[i]);
+                        Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
+                        temp.Attach(tempBuffers[i]);
+                        output.buffers[i] = std::move(temp);
                     }
 
                     return output;
@@ -696,22 +743,25 @@ namespace TypedD3D::Internal
                 TypedD3D::D3D11::IAGetIndexBufferData IAGetIndexBuffer()
                 {
                     TypedD3D::D3D11::IAGetIndexBufferData output;
-
-                    InternalGet().IAGetIndexBuffer(&output.buffer, &output.format, &output.offset);
+                    Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
+                    InternalGet().IAGetIndexBuffer(&temp, &output.format, &output.offset);
+                    output.buffer = std::move(temp);
                     return output;
                 }
 
-                std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> GSGetConstantBuffers(
+                std::vector<Wrapper<ID3D11Buffer>> GSGetConstantBuffers(
                     UINT StartSlot,
                     UINT NumBuffers)
                 {
                     std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
                     InternalGet().GSGetConstantBuffers(0, NumBuffers, tempBuffers.get());
 
-                    std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> buffers(NumBuffers);
+                    std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
                     for(UINT i = 0; i < NumBuffers; i++)
                     {
-                        buffers[i].Attach(tempBuffers[i]);
+                        Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
+                        temp.Attach(tempBuffers[i]);
+                        buffers[i] = std::move(temp);
                     }
 
                     return buffers;
@@ -832,8 +882,8 @@ namespace TypedD3D::Internal
                     UINT UAVStartSlot,
                     UINT NumUAVs)
                 {
-                    std::unique_ptr<ID3D11RenderTargetView*[]> tempRTVs = std::make_unique<ID3D11RenderTargetView*[]>(NumRTVs);
-                    std::unique_ptr<ID3D11UnorderedAccessView*[]> tempUAVs = std::make_unique<ID3D11UnorderedAccessView*[]>(NumUAVs);
+                    std::unique_ptr<ID3D11RenderTargetView* []> tempRTVs = std::make_unique<ID3D11RenderTargetView* []>(NumRTVs);
+                    std::unique_ptr<ID3D11UnorderedAccessView* []> tempUAVs = std::make_unique<ID3D11UnorderedAccessView* []>(NumUAVs);
 
                     TypedD3D::D3D11::OMGetRenderTargetsAndUnorderedAccessViewsData data;
 
@@ -868,15 +918,17 @@ namespace TypedD3D::Internal
 
                 }
 
-                std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> SOGetTargets(UINT NumBuffers)
+                std::vector<Wrapper<ID3D11Buffer>> SOGetTargets(UINT NumBuffers)
                 {
                     std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
                     InternalGet().SOGetTargets(NumBuffers, tempBuffers.get());
 
-                    std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> buffers(NumBuffers);
+                    std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
                     for(UINT i = 0; i < NumBuffers; i++)
                     {
-                        buffers[i].Attach(tempBuffers[i]);
+                        Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
+                        temp.Attach(tempBuffers[i]);
+                        buffers[i] = std::move(temp);
                     }
 
                     return buffers;
@@ -967,17 +1019,19 @@ namespace TypedD3D::Internal
                     return samplers;
                 }
 
-                std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> HSGetConstantBuffers(
+                std::vector<Wrapper<ID3D11Buffer>> HSGetConstantBuffers(
                     UINT StartSlot,
                     UINT NumBuffers)
                 {
                     std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
                     InternalGet().HSGetConstantBuffers(0, NumBuffers, tempBuffers.get());
 
-                    std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> buffers(NumBuffers);
+                    std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
                     for(UINT i = 0; i < NumBuffers; i++)
                     {
-                        buffers[i].Attach(tempBuffers[i]);
+                        Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
+                        temp.Attach(tempBuffers[i]);
+                        buffers[i] = std::move(temp);
                     }
 
                     return buffers;
@@ -1031,17 +1085,19 @@ namespace TypedD3D::Internal
                     return samplers;
                 }
 
-                std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> DSGetConstantBuffers(
+                std::vector<Wrapper<ID3D11Buffer>> DSGetConstantBuffers(
                     UINT StartSlot,
                     UINT NumBuffers)
                 {
                     std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
                     InternalGet().DSGetConstantBuffers(0, NumBuffers, tempBuffers.get());
 
-                    std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> buffers(NumBuffers);
+                    std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
                     for(UINT i = 0; i < NumBuffers; i++)
                     {
-                        buffers[i].Attach(tempBuffers[i]);
+                        Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
+                        temp.Attach(tempBuffers[i]);
+                        buffers[i] = std::move(temp);
                     }
 
                     return buffers;
@@ -1111,17 +1167,19 @@ namespace TypedD3D::Internal
                     return samplers;
                 }
 
-                std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> CSGetConstantBuffers(
+                std::vector<Wrapper<ID3D11Buffer>> CSGetConstantBuffers(
                     UINT StartSlot,
                     UINT NumBuffers)
                 {
                     std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
                     InternalGet().CSGetConstantBuffers(0, NumBuffers, tempBuffers.get());
 
-                    std::vector<Microsoft::WRL::ComPtr<ID3D11Buffer>> buffers(NumBuffers);
+                    std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
                     for(UINT i = 0; i < NumBuffers; i++)
                     {
-                        buffers[i].Attach(tempBuffers[i]);
+                        Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
+                        temp.Attach(tempBuffers[i]);
+                        buffers[i] = std::move(temp);
                     }
 
                     return buffers;

@@ -102,6 +102,9 @@
     <ClInclude Include="source\D3D11\Shaders.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\D3D11\Resources.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp">
@@ -110,5 +113,22 @@
     <ClCompile Include="TypedDXGI.h">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="gsl\algorithm" />
+    <None Include="gsl\assert" />
+    <None Include="gsl\byte" />
+    <None Include="gsl\gsl" />
+    <None Include="gsl\gsl_algorithm" />
+    <None Include="gsl\gsl_assert" />
+    <None Include="gsl\gsl_byte" />
+    <None Include="gsl\gsl_narrow" />
+    <None Include="gsl\gsl_util" />
+    <None Include="gsl\narrow" />
+    <None Include="gsl\pointers" />
+    <None Include="gsl\span" />
+    <None Include="gsl\span_ext" />
+    <None Include="gsl\string_span" />
+    <None Include="gsl\util" />
   </ItemGroup>
 </Project>

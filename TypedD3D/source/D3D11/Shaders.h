@@ -6,7 +6,7 @@ namespace TypedD3D::Internal
     namespace D3D11
     {
         template<class Ty>
-        concept ShaderConcept = 
+        concept ShaderConcept =
             std::same_as<Ty, ID3D11VertexShader> ||
             std::same_as<Ty, ID3D11DomainShader> ||
             std::same_as<Ty, ID3D11HullShader> ||
@@ -43,4 +43,14 @@ namespace TypedD3D::Internal
         Interface* GetInterface() { return this; }
         Interface* operator->() { return this; }
     };
+}
+
+namespace TypedD3D::D3D11
+{
+    using VertexShader = Wrapper<ID3D11VertexShader>;
+    using DomainShader = Wrapper<ID3D11DomainShader>;
+    using HullShader = Wrapper<ID3D11HullShader>;
+    using GeometryShader = Wrapper<ID3D11GeometryShader>;
+    using PixelShader = Wrapper<ID3D11PixelShader>;
+    using ComputeShader = Wrapper<ID3D11ComputeShader>;
 }

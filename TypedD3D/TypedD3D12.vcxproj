@@ -22,6 +22,7 @@
     <ClInclude Include="source\D3D11\Device.h" />
     <ClInclude Include="source\D3D11\DeviceChild.h" />
     <ClInclude Include="source\D3D11\DeviceContext.h" />
+    <ClInclude Include="source\D3D11\Resources.h" />
     <ClInclude Include="source\D3D11\Shaders.h" />
     <ClInclude Include="source\D3D12TypeTags.h" />
     <ClInclude Include="source\D3D12Wrappers.h" />
@@ -52,6 +53,23 @@
   <ItemGroup>
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp" />
     <ClCompile Include="TypedDXGI.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="gsl\algorithm" />
+    <None Include="gsl\assert" />
+    <None Include="gsl\byte" />
+    <None Include="gsl\gsl" />
+    <None Include="gsl\gsl_algorithm" />
+    <None Include="gsl\gsl_assert" />
+    <None Include="gsl\gsl_byte" />
+    <None Include="gsl\gsl_narrow" />
+    <None Include="gsl\gsl_util" />
+    <None Include="gsl\narrow" />
+    <None Include="gsl\pointers" />
+    <None Include="gsl\span" />
+    <None Include="gsl\span_ext" />
+    <None Include="gsl\string_span" />
+    <None Include="gsl\util" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
