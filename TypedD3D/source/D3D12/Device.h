@@ -10,6 +10,7 @@
 #include "CommandQueue.h"
 #include "PipelineState.h"
 #include "DescriptorHeap.h"
+#include "span_tuple.h"
 
 #include <d3d12.h>
 #include <wrl/client.h>
@@ -485,17 +486,16 @@ namespace TypedD3D::Internal
                     return Helpers::COM::IIDToObjectForwardFunction<ID3D12PipelineLibrary>(ID3D12Device1::CreatePipelineLibrary, InternalGetDevice(), pLibraryBlob, BlobLength);
                 }
 
+                using FenceValue = UINT64;
+
                 HRESULT SetEventOnMultipleFenceCompletion(
-                    std::span<const ID3D12Fence*> fences,
-                    std::span<const UINT64> fenceValues,
+                    xk::span_tuple<const ID3D12Fence*, std::dynamic_extent, FenceValue> fences,
                     D3D12_MULTIPLE_FENCE_WAIT_FLAGS Flags,
                     HANDLE hEvent)
                 {
-                    assert(fences.size() == fenceValues.size());
-
                     return InternalGetDevice().SetEventOnMultipleFenceCompletion(
-                        fences.data(),
-                        fenceValues.data(),
+                        fences.data<0>(),
+                        fences.data<1>(),
                         static_cast<UINT>(fences.size()),
                         Flags,
                         hEvent);

@@ -11,6 +11,7 @@
 #include "../Internal/ComWrapper.h"
 #include "../Helpers/COMHelpers.h"
 #include "../D3D12Wrappers.h"
+#include "span_tuple.h"
 #include <memory>
 #include <d3d12.h>
 #include <array>
@@ -825,11 +826,9 @@ namespace TypedD3D::Internal
 
             public:
                 void WriteBufferImmediate(
-                    std::span<D3D12_WRITEBUFFERIMMEDIATE_PARAMETER> pParams,
-                    std::span<D3D12_WRITEBUFFERIMMEDIATE_MODE> pModes = {})
+                    xk::span_tuple<D3D12_WRITEBUFFERIMMEDIATE_PARAMETER, std::dynamic_extent, xk::optional<D3D12_WRITEBUFFERIMMEDIATE_MODE>> pParams)
                 {
-                    assert(pParams.size() == pModes.size() || pModes.size() == 0);
-                    InternalCommandList().WriteBufferImmediate(static_cast<UINT>(pParams.size()), pParams.data(), pModes.data());
+                    InternalCommandList().WriteBufferImmediate(static_cast<UINT>(pParams.size()), pParams.data<0>(), pParams.data<1>());
                 }
 
 

@@ -144,12 +144,12 @@ namespace TypedD3D::Internal
                     InternalGet().IASetInputLayout(pInputLayout);
                 }
 
-                using Strides = UINT;
-                using Offsets = UINT;
+                using Stride = UINT;
+                using Offset = UINT;
 
                 void IASetVertexBuffers(
                     UINT StartSlot,
-                    xk::span_tuple<ID3D11Buffer*, const Strides, const Offsets> vertexBuffers)
+                    xk::span_tuple<ID3D11Buffer*, std::dynamic_extent, const Stride, const Offset> vertexBuffers)
                 {
                     InternalGet().IASetVertexBuffers(StartSlot, static_cast<UINT>(vertexBuffers.size()), vertexBuffers.data<0>(), vertexBuffers.data<1>(), vertexBuffers.data<2>());
                 }
@@ -303,7 +303,7 @@ namespace TypedD3D::Internal
                 }
 
                 void SOSetTargets(
-                    xk::span_tuple<ID3D11Buffer*, const Offsets> ppSOTargets)
+                    xk::span_tuple<ID3D11Buffer*, std::dynamic_extent, const Offset> ppSOTargets)
                 {
                     InternalGet().SOSetTargets(static_cast<UINT>(ppSOTargets.size()), ppSOTargets.data<0>(), ppSOTargets.data<1>());
                 }
