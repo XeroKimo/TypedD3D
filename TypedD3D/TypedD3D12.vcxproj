@@ -24,6 +24,7 @@
     <ClInclude Include="source\D3D11\DeviceContext.h" />
     <ClInclude Include="source\D3D11\InputLayout.h" />
     <ClInclude Include="source\D3D11\Resources.h" />
+    <ClInclude Include="source\D3D11\ResourceViews.h" />
     <ClInclude Include="source\D3D11\Shaders.h" />
     <ClInclude Include="source\D3D12TypeTags.h" />
     <ClInclude Include="source\D3D12Wrappers.h" />
