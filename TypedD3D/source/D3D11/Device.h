@@ -4,6 +4,7 @@
 #include "../Helpers/COMHelpers.h"
 #include "Resources.h"
 #include "Shaders.h"
+#include "InputLayout.h"
 #include <d3d11_4.h>
 #include <span>
 
@@ -159,7 +160,7 @@ namespace TypedD3D::Internal
                         .and_then([](auto resource) -> tl::expected<Wrapper<ID3D11Buffer>, HRESULT> { return Wrapper<ID3D11Buffer>(resource); });
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11Texture1D>, HRESULT>  CreateTexture1D(
+                tl::expected<Wrapper<ID3D11Texture1D>, HRESULT> CreateTexture1D(
                     const D3D11_TEXTURE1D_DESC& pDesc,
                     const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
                 {
@@ -167,7 +168,7 @@ namespace TypedD3D::Internal
                     .and_then([](auto resource) -> tl::expected<Wrapper<ID3D11Texture1D>, HRESULT> { return Wrapper<ID3D11Texture1D>(resource); });
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11Texture2D>, HRESULT>  CreateTexture2D(
+                tl::expected<Wrapper<ID3D11Texture2D>, HRESULT> CreateTexture2D(
                     const D3D11_TEXTURE2D_DESC& pDesc,
                     const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
                 {
@@ -175,7 +176,7 @@ namespace TypedD3D::Internal
                         .and_then([](auto resource) -> tl::expected<Wrapper<ID3D11Texture2D>, HRESULT> { return Wrapper<ID3D11Texture2D>(resource); });
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11Texture3D>, HRESULT>  CreateTexture3D(
+                tl::expected<Wrapper<ID3D11Texture3D>, HRESULT> CreateTexture3D(
                     const D3D11_TEXTURE3D_DESC& pDesc,
                     const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
                 {
@@ -211,19 +212,20 @@ namespace TypedD3D::Internal
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11DepthStencilView>(&device_type::CreateDepthStencilView, InternalGet(), &pResource, optDesc);
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11InputLayout>, HRESULT> CreateInputLayout(
+                tl::expected<Wrapper<ID3D11InputLayout>, HRESULT> CreateInputLayout(
                     std::span<D3D11_INPUT_ELEMENT_DESC> inputElementDescs,
                     ID3DBlob& pShaderBytecodeWithInputSignature)
                 {
                     return CreateInputLayout(inputElementDescs, pShaderBytecodeWithInputSignature.GetBufferPointer(), pShaderBytecodeWithInputSignature.GetBufferSize());
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11InputLayout>, HRESULT> CreateInputLayout(
+                tl::expected<Wrapper<ID3D11InputLayout>, HRESULT> CreateInputLayout(
                     std::span<D3D11_INPUT_ELEMENT_DESC> inputElementDescs,
                     const void* pShaderBytecodeWithInputSignature,
                     SIZE_T BytecodeLength)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11InputLayout>(&device_type::CreateInputLayout, InternalGet(), inputElementDescs.data(), inputElementDescs.size(), pShaderBytecodeWithInputSignature, BytecodeLength);
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11InputLayout>(&device_type::CreateInputLayout, InternalGet(), inputElementDescs.data(), inputElementDescs.size(), pShaderBytecodeWithInputSignature, BytecodeLength)
+                        .and_then([](auto inputLayout) -> tl::expected<Wrapper<ID3D11InputLayout>, HRESULT> { return Wrapper<ID3D11InputLayout>(inputLayout); });
                 }
 
                 tl::expected<Wrapper<ID3D11VertexShader>, HRESULT> CreateVertexShader(
@@ -414,10 +416,12 @@ namespace TypedD3D::Internal
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11Counter>(&device_type::CreateCounter, InternalGet(), &pCounterDesc);
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11DeviceContext>, HRESULT> CreateDeferredContext(
+                template<std::derived_from<ID3D11DeviceContext> DeviceContextTy = ID3D11DeviceContext>
+                tl::expected<Wrapper<DeviceContextTy>, HRESULT> CreateDeferredContext(
                     UINT ContextFlags)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11DeviceContext>(&device_type::CreateDeferredContext, InternalGet(), &ContextFlags);
+                    return Helpers::COM::UnknownObjectForwardFunction<DeviceContextTy>(&device_type::CreateDeferredContext, InternalGet(), &ContextFlags)
+                        .and_then([](auto deviceContext) -> tl::expected<Wrapper<DeviceContextTy>, HRESULT> { return Wrapper<DeviceContextTy>(deviceContext); });
                 }
 
                   //TODO: Figure out how this works to update to a more modern API
@@ -429,7 +433,7 @@ namespace TypedD3D::Internal
                     return InternalGet().OpenSharedResource(hResource, ReturnedInterface, ppResource);
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<D3D11_FORMAT_SUPPORT>, HRESULT> CheckFormatSupport(
+                tl::expected<D3D11_FORMAT_SUPPORT, HRESULT> CheckFormatSupport(
                     DXGI_FORMAT Format)
                 {
                     UINT FormatSupport;
@@ -520,16 +524,17 @@ namespace TypedD3D::Internal
                 }
 
                 template<std::derived_from<ID3D11DeviceContext> DeviceContextTy = ID3D11DeviceContext>
-                Microsoft::WRL::ComPtr<DeviceContextTy> GetImmediateContext()
+                Wrapper<DeviceContextTy> GetImmediateContext()
                 {
                     if constexpr(std::same_as<DeviceContextTy, ID3D11DeviceContext>)
                     {
-                        return Helpers::COM::UnknownObjectForwardFunction<ID3D11DeviceContext>(&device_type::GetImmediateContext, InternalGet());
+                        return Helpers::COM::UnknownObjectForwardFunction<ID3D11DeviceContext>(&device_type::GetImmediateContext, InternalGet())
+                            .map([](auto deviceContext) { return Wrapper<DeviceContextTy>(deviceContext); });
                     }
                     else
                     {
                         return Helpers::COM::UnknownObjectForwardFunction<ID3D11DeviceContext>(&device_type::GetImmediateContext, InternalGet())
-                            .map([](auto deviceContext) {return Helpers::COM::Cast<DeviceContextTy>(deviceContext); });
+                            .map([](auto deviceContext) { return Wrapper<DeviceContextTy>(Helpers::COM::Cast<DeviceContextTy>(deviceContext)); });
                     }
                 }
 

@@ -105,6 +105,9 @@
     <ClInclude Include="source\D3D11\Resources.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\D3D11\InputLayout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp">

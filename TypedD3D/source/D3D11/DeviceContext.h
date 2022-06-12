@@ -150,9 +150,9 @@ namespace TypedD3D::Internal
                 }
 
                 void IASetInputLayout(
-                    ID3D11InputLayout* pInputLayout)
+                    Wrapper<ID3D11InputLayout> pInputLayout)
                 {
-                    InternalGet().IASetInputLayout(pInputLayout);
+                    InternalGet().IASetInputLayout(pInputLayout.Get());
                 }
 
                 using Stride = UINT;
@@ -715,11 +715,11 @@ namespace TypedD3D::Internal
                     return buffers;
                 }
 
-                Microsoft::WRL::ComPtr<ID3D11InputLayout> IAGetInputLayout()
+                Wrapper<ID3D11InputLayout> IAGetInputLayout()
                 {
                     Microsoft::WRL::ComPtr<ID3D11InputLayout> layout;
                     InternalGet().IAGetInputLayout(&layout);
-                    return layout;
+                    return Wrapper<ID3D11InputLayout>(std::move(layout));
                 }
 
                 TypedD3D::D3D11::IAGetVertexBufferData IAGetVertexBuffers(
