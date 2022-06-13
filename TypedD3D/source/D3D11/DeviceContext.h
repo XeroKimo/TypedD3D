@@ -16,8 +16,8 @@ namespace TypedD3D::D3D11
     struct IAGetVertexBufferData
     {
         std::vector<Wrapper<ID3D11Buffer>> buffers;
-        UINT* strides;
-        UINT* offsets;
+        std::vector<UINT> strides;
+        std::vector<UINT> offsets;
     };
 
     struct IAGetIndexBufferData
@@ -779,15 +779,22 @@ namespace TypedD3D::Internal
                     UINT NumBuffers)
                 {
                     std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
+                    std::unique_ptr<UINT[]> tempStrides = std::make_unique<UINT[]>(NumBuffers);
+                    std::unique_ptr<UINT[]> tempOffsets = std::make_unique<UINT[]>(NumBuffers);
+                    InternalGet().IAGetVertexBuffers(StartSlot, NumBuffers, tempBuffers.get(), tempStrides.get(), tempOffsets.get());
+
                     TypedD3D::D3D11::IAGetVertexBufferData output;
                     output.buffers.resize(NumBuffers);
-                    InternalGet().IAGetVertexBuffers(StartSlot, NumBuffers, tempBuffers.get(), output.strides, output.offsets);
+                    output.strides.resize(NumBuffers);
+                    output.offsets.resize(NumBuffers);
                     for(UINT i = 0; i < NumBuffers; i++)
                     {
                         Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
                         temp.Attach(tempBuffers[i]);
                         output.buffers[i] = std::move(temp);
                     }
+                    std::copy(&tempStrides[0], &tempStrides[NumBuffers], output.strides.begin());
+                    std::copy(&tempOffsets[0], &tempOffsets[NumBuffers], output.offsets.begin());
 
                     return output;
                 }
