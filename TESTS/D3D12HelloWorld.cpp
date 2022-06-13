@@ -17,14 +17,15 @@ namespace
     constexpr const wchar_t* windowName = L"Library Test";
     constexpr float windowWidth = 800;
     constexpr float windowHeight = 600;
+
+    struct Vertex
+    {
+        float x;
+        float y;
+        float z;
+    };
 }
 
-struct Vertex
-{
-    float x;
-    float y;
-    float z;
-};
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 static void CreateWindow();

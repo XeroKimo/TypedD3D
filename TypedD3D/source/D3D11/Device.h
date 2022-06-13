@@ -230,7 +230,7 @@ namespace TypedD3D::Internal
                     const void* pShaderBytecodeWithInputSignature,
                     SIZE_T BytecodeLength)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11InputLayout>(&device_type::CreateInputLayout, InternalGet(), inputElementDescs.data(), inputElementDescs.size(), pShaderBytecodeWithInputSignature, BytecodeLength)
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11InputLayout>(&device_type::CreateInputLayout, InternalGet(), inputElementDescs.data(), static_cast<UINT>(inputElementDescs.size()), pShaderBytecodeWithInputSignature, BytecodeLength)
                         .and_then([](auto inputLayout) -> tl::expected<Wrapper<ID3D11InputLayout>, HRESULT> { return Wrapper<ID3D11InputLayout>(inputLayout); });
                 }
 
@@ -247,7 +247,7 @@ namespace TypedD3D::Internal
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     using ShaderTy = Wrapper<ID3D11VertexShader>;
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11VertexShader>(&device_type::CreateVertexShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage)
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11VertexShader>(&device_type::CreateVertexShader, InternalGet(), pShaderBytecode, BytecodeLength, pClassLinkage)
                         .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
                 }
 
@@ -264,7 +264,7 @@ namespace TypedD3D::Internal
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     using ShaderTy = Wrapper<ID3D11GeometryShader>;
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11GeometryShader>(&device_type::CreateGeometryShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage)
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11GeometryShader>(&device_type::CreateGeometryShader, InternalGet(), pShaderBytecode, BytecodeLength, pClassLinkage)
                         .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
                 }
 
@@ -320,7 +320,7 @@ namespace TypedD3D::Internal
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     using ShaderTy = Wrapper<ID3D11PixelShader>;
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11PixelShader>(&device_type::CreatePixelShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage)
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11PixelShader>(&device_type::CreatePixelShader, InternalGet(), pShaderBytecode, BytecodeLength, pClassLinkage)
                         .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
                 }
 
@@ -337,7 +337,7 @@ namespace TypedD3D::Internal
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     using ShaderTy = Wrapper<ID3D11HullShader>;
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11HullShader>(&device_type::CreateHullShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage)
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11HullShader>(&device_type::CreateHullShader, InternalGet(), pShaderBytecode, BytecodeLength, pClassLinkage)
                         .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
                 }
 
@@ -354,7 +354,7 @@ namespace TypedD3D::Internal
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     using ShaderTy = Wrapper<ID3D11DomainShader>;
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11DomainShader>(&device_type::CreateDomainShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage)
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11DomainShader>(&device_type::CreateDomainShader, InternalGet(), pShaderBytecode, BytecodeLength, pClassLinkage)
                         .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
                 }
 
@@ -371,7 +371,7 @@ namespace TypedD3D::Internal
                     ID3D11ClassLinkage* pClassLinkage)
                 {
                     using ShaderTy = Wrapper<ID3D11ComputeShader>;
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11ComputeShader>(&device_type::CreateComputeShader, InternalGet(), pShaderBytecode.data(), BytecodeLength.size(), pClassLinkage)
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11ComputeShader>(&device_type::CreateComputeShader, InternalGet(), pShaderBytecode, BytecodeLength, pClassLinkage)
                         .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
                 }
 

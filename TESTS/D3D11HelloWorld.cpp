@@ -2,6 +2,7 @@
 #include "TypedDXGI.h"
 #include <Windows.h>
 #include <tuple>
+#include <d3dcompiler.h>
 
 #undef CreateWindow
 namespace
@@ -10,14 +11,14 @@ namespace
     constexpr const wchar_t* windowName = L"Library Test";
     constexpr float windowWidth = 800;
     constexpr float windowHeight = 600;
-}
 
-struct Vertex
-{
-    float x;
-    float y;
-    float z;
-};
+    struct Vertex
+    {
+        float x;
+        float y;
+        float z;
+    };
+}
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 static void CreateWindow();
@@ -53,8 +54,87 @@ void D3D11HelloWorld()
     UINT backBuffer = 0;
     MSG msg;
 
-    //std::array<UINT64, backBufferCount> frameWaitValues = {};
 
+    TypedD3D::Wrapper<ID3D11RenderTargetView> rtv;
+    rtv = device->CreateRenderTargetView(swapChain->GetBuffer<ID3D11Resource>(0).value(), nullptr).value();
+
+    ComPtr<ID3DBlob> vertexBlob;
+    ComPtr<ID3DBlob> errorBlob;
+    HRESULT hr = D3DCompileFromFile(L"VertexShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &vertexBlob, &errorBlob);
+    if(FAILED(hr))
+    {
+        char* message = static_cast<char*>(errorBlob->GetBufferPointer());
+        std::unique_ptr<wchar_t[]> messageT = std::make_unique<wchar_t[]>(errorBlob->GetBufferSize());
+        MultiByteToWideChar(CP_ACP, MB_COMPOSITE, message, static_cast<int>(errorBlob->GetBufferSize()), messageT.get(), static_cast<int>(errorBlob->GetBufferSize()));
+        MessageBox(handle, messageT.get(), L"Error", MB_OK);
+        return;
+    }
+
+    TypedD3D::Wrapper<ID3D11VertexShader> vs = device->CreateVertexShader(*vertexBlob.Get(), nullptr).value();
+
+    ComPtr<ID3DBlob> pixelBlob;
+    hr = D3DCompileFromFile(L"PixelShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pixelBlob, nullptr);
+    if(FAILED(hr))
+        return;
+
+    TypedD3D::Wrapper<ID3D11PixelShader> ps = device->CreatePixelShader(*pixelBlob.Get(), nullptr).value();
+
+    std::array<D3D11_INPUT_ELEMENT_DESC, 1> inputElements
+    {
+        D3D11_INPUT_ELEMENT_DESC
+        {
+            .SemanticName = "POSITION",
+            .SemanticIndex = 0,
+            .Format = DXGI_FORMAT_R32G32B32_FLOAT,
+            .InputSlot = 0,
+            .AlignedByteOffset = 0,
+            .InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
+            .InstanceDataStepRate = 0
+        }
+    };
+
+    TypedD3D::Wrapper<ID3D11InputLayout> inputLayout = device->CreateInputLayout(inputElements, *vertexBlob.Get()).value();
+
+    auto vertices = std::to_array<Vertex>(
+        {
+            { -0.5f, -0.5f, 0 },
+            {  0.0f,  0.5f, 0 },
+            {  0.5f, -0.5f, 0 },
+        });
+
+    D3D11_BUFFER_DESC desc
+    { 
+        .ByteWidth = vertices.size() * sizeof(Vertex),
+        .Usage = D3D11_USAGE_DEFAULT,
+        .BindFlags = D3D11_BIND_VERTEX_BUFFER,
+        .CPUAccessFlags = 0,
+        .MiscFlags = 0,
+        .StructureByteStride = sizeof(Vertex)
+    };
+    D3D11_SUBRESOURCE_DATA data
+    {
+        .pSysMem = vertices.data(),
+        .SysMemPitch = sizeof(Vertex),
+        .SysMemSlicePitch = sizeof(Vertex) * vertices.size()
+    };
+    TypedD3D::Wrapper<ID3D11Buffer> vertexBuffer = device->CreateBuffer(desc, &data).value();
+    D3D11_VIEWPORT viewport
+    {
+        .TopLeftX = 0,
+        .TopLeftY = 0,
+        .Width = windowWidth,
+        .Height = windowHeight,
+        .MinDepth = 0,
+        .MaxDepth = 1
+    };
+
+    D3D11_RECT rect
+    {
+        .left = 0,
+        .top = 0,
+        .right = static_cast<LONG>(windowWidth),
+        .bottom = static_cast<LONG>(windowHeight)
+    };
     while(true)
     {
         if(PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -67,40 +147,20 @@ void D3D11HelloWorld()
         }
         else
         {
-            //commandAllocators[backBuffer]->Reset();
-            //commandList->Reset(commandAllocators[backBuffer], nullptr);
+            deviceContext->ClearRenderTargetView(rtv, std::array{ 0.f, 0.3f, 0.7f, 1.f });
+            deviceContext->OMSetRenderTargets(std::span(&rtv, 1), nullptr);
 
-            //D3D12_RESOURCE_BARRIER barrier = TypedD3D::Helpers::D3D12::ResourceBarrier::Transition(
-            //    *swapChainBuffers[backBuffer].Get(),
-            //    D3D12_RESOURCE_STATE_PRESENT,
-            //    D3D12_RESOURCE_STATE_RENDER_TARGET);
+            deviceContext->IASetInputLayout(inputLayout);
+            deviceContext->RSSetViewports(std::span(&viewport, 1));
+            deviceContext->RSSetScissorRects(std::span(&rect, 1));
+            deviceContext->VSSetShader(vs, {});
+            deviceContext->PSSetShader(ps, {});
+            deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-            //commandList->ResourceBarrier(std::span(&barrier, 1));
-
-            //auto backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-            //backBufferHandle.ptr += static_cast<SIZE_T>(rtvOffset) * backBuffer;
-            //commandList->ClearRenderTargetView(backBufferHandle, std::to_array({ 0.f, 0.3f, 0.7f, 1.f }), {});
-            //commandList->OMSetRenderTargets(std::span(&backBufferHandle, 1), true, nullptr);
-
-            //commandList->SetPipelineState(pipelineState.value().Get());
-            //commandList->SetGraphicsRootSignature(rootSignature.Get());
-            //commandList->RSSetViewports(std::span(&viewport, 1));
-            //commandList->RSSetScissorRects(std::span(&rect, 1));
-            //commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            //commandList->IASetVertexBuffers(0, std::span(&vertexBufferView, 1));
-            //commandList->DrawInstanced(3, 1, 0, 0);
-
-
-            //barrier = TypedD3D::Helpers::D3D12::ResourceBarrier::Transition(
-            //    *swapChainBuffers[backBuffer].Get(),
-            //    D3D12_RESOURCE_STATE_RENDER_TARGET,
-            //    D3D12_RESOURCE_STATE_PRESENT);
-            //commandList->ResourceBarrier(std::span(&barrier, 1));
-
-            //commandList->Close();
-
-            //std::array submitList = std::to_array<TypedD3D::Direct<ID3D12CommandList>>({ commandList });
-            //commandQueue->ExecuteCommandLists(std::span(submitList));
+            UINT offset = 0;
+            UINT stride = sizeof(Vertex);
+            deviceContext->IASetVertexBuffers(0, xk::span_tuple<TypedD3D::Wrapper<ID3D11Buffer>, std::dynamic_extent, UINT, UINT>(&vertexBuffer, 1, &stride, &offset));
+            deviceContext->Draw(3, 0);
 
             swapChain->Present(1, 0);
         }
