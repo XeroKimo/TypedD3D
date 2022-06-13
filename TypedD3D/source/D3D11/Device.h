@@ -5,6 +5,8 @@
 #include "Resources.h"
 #include "Shaders.h"
 #include "InputLayout.h"
+#include "ResourceViews.h"
+#include "gsl/pointers"
 #include <d3d11_4.h>
 #include <span>
 
@@ -184,32 +186,36 @@ namespace TypedD3D::Internal
                         .and_then([](auto resource) -> tl::expected<Wrapper<ID3D11Texture3D>, HRESULT> { return Wrapper<ID3D11Texture3D>(resource); });
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>, HRESULT> CreateShaderResourceView(
-                    ID3D11Resource& pResource,
+                tl::expected<Wrapper<ID3D11ShaderResourceView>, HRESULT> CreateShaderResourceView(
+                    gsl::not_null<Wrapper<ID3D11Resource>> pResource,
                     const D3D11_SHADER_RESOURCE_VIEW_DESC* optDesc = nullptr)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11ShaderResourceView>(&device_type::CreateShaderResourceView, InternalGet(), &pResource, optDesc);
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11ShaderResourceView>(&device_type::CreateShaderResourceView, InternalGet(), pResource.get().Get(), optDesc)
+                        .and_then([](auto view) -> tl::expected<Wrapper<ID3D11ShaderResourceView>, HRESULT> { return Wrapper<ID3D11ShaderResourceView>(view); });
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView>, HRESULT> CreateUnorderedAccessView(
-                    ID3D11Resource& pResource,
+                tl::expected<Wrapper<ID3D11UnorderedAccessView>, HRESULT> CreateUnorderedAccessView(
+                    gsl::not_null<Wrapper<ID3D11Resource>> pResource,
                     const D3D11_UNORDERED_ACCESS_VIEW_DESC* optDesc = nullptr)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11UnorderedAccessView>(&device_type::CreateUnorderedAccessView, InternalGet(), &pResource, optDesc);
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11UnorderedAccessView>(&device_type::CreateUnorderedAccessView, InternalGet(), pResource.get().Get(), optDesc)
+                        .and_then([](auto view) -> tl::expected<Wrapper<ID3D11UnorderedAccessView>, HRESULT> { return Wrapper<ID3D11UnorderedAccessView>(view); });
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11RenderTargetView>, HRESULT> CreateRenderTargetView(
-                    ID3D11Resource& pResource,
+                tl::expected<Wrapper<ID3D11RenderTargetView>, HRESULT> CreateRenderTargetView(
+                    gsl::not_null<Wrapper<ID3D11Resource>> pResource,
                     const D3D11_RENDER_TARGET_VIEW_DESC* optDesc = nullptr)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11RenderTargetView>(&device_type::CreateRenderTargetView, InternalGet(), &pResource, optDesc);
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11RenderTargetView>(&device_type::CreateRenderTargetView, InternalGet(), pResource.get().Get(), optDesc)
+                        .and_then([](auto view) -> tl::expected<Wrapper<ID3D11RenderTargetView>, HRESULT> { return Wrapper<ID3D11RenderTargetView>(view); });
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11DepthStencilView>, HRESULT> CreateDepthStencilView(
-                    ID3D11Resource& pResource,
+                tl::expected<Wrapper<ID3D11DepthStencilView>, HRESULT> CreateDepthStencilView(
+                    gsl::not_null<Wrapper<ID3D11Resource>> pResource,
                     const D3D11_DEPTH_STENCIL_VIEW_DESC* optDesc = nullptr)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11DepthStencilView>(&device_type::CreateDepthStencilView, InternalGet(), &pResource, optDesc);
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11DepthStencilView>(&device_type::CreateDepthStencilView, InternalGet(), pResource.get().Get(), optDesc)
+                        .and_then([](auto view) -> tl::expected<Wrapper<ID3D11DepthStencilView>, HRESULT> { return Wrapper<ID3D11DepthStencilView>(view); });
                 }
 
                 tl::expected<Wrapper<ID3D11InputLayout>, HRESULT> CreateInputLayout(

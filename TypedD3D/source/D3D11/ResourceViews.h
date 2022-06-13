@@ -91,7 +91,7 @@ namespace TypedD3D::Internal
     class InterfaceWrapper<Ty> : public ComWrapper<Ty>, private D3D11::View::Interface<InterfaceWrapper<Ty>, Ty>
     {
     private:
-        using Interface = D3D11::View::Interface<InterfaceWrapper<Ty>>;
+        using Interface = D3D11::View::Interface<InterfaceWrapper<Ty>, Ty>;
         friend Interface;
 
     public:
