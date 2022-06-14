@@ -5,32 +5,22 @@ namespace TypedD3D
 {
     namespace Internal
     {
-        template<class DirectXClass, auto... Tags>
-        class InterfaceWrapper;
-
-        template<class>
-        struct is_interface_wrapper : std::false_type {};
-
-        template<class DirectXClass, auto... Tags>
-        struct is_interface_wrapper<InterfaceWrapper<DirectXClass, Tags...>> : std::true_type {};
+        template<class Ty>
+        struct WrapperMapper;
     }
 
-    template<class IUnknownTy, auto... ExtraTags>
-    using Wrapper = Internal::InterfaceWrapper<IUnknownTy, ExtraTags...>;
+    template<class Ty>
+    using Wrapper = Internal::WrapperMapper<Ty>::type;
 
-    template<class DerivedTy, class DirectXClass, auto... Tags>
-        requires std::derived_from<DerivedTy, IUnknown>
-    Internal::InterfaceWrapper<DerivedTy, Tags...> Cast(Internal::InterfaceWrapper<DirectXClass, Tags...> value)
+    template<std::derived_from<IUnknown> OtherTy, std::derived_from<IUnknown> Ty>
+    Wrapper<OtherTy> Cast(const Wrapper<Ty>& other) noexcept
     {
-        return Internal::InterfaceWrapper<DerivedTy, Tags...>(Helpers::COM::Cast<DerivedTy>(value.AsComPtr()));
-    }    
-    
-    template<class DerivedTy, class DirectXClass, auto... Tags>
-        requires Internal::is_interface_wrapper<DerivedTy>::value &&
-            std::derived_from<typename DerivedTy::underlying_type, IUnknown> &&
-            (Internal::InterfaceWrapper<DirectXClass, Tags...>::tag_value == DerivedTy::tag_value)
-    DerivedTy Cast(Internal::InterfaceWrapper<DirectXClass, Tags...> value)
+        return Internal::Cast<Wrapper<OtherTy>, typename Wrapper<OtherTy>::interface_type>(other);
+    }
+
+    template<std::derived_from<IUnknown> OtherTy, std::derived_from<IUnknown> Ty>
+    Wrapper<OtherTy> Cast(Wrapper<Ty>&& other) noexcept
     {
-        return DerivedTy(Helpers::COM::Cast<typename DerivedTy::underlying_type>(value.AsComPtr()));
+        return Internal::Cast<Wrapper<OtherTy>, typename Wrapper<OtherTy>::interface_type>(std::move(other));
     }
 }
