@@ -101,7 +101,7 @@ namespace TypedD3D::Internal
     public:
         using ComWrapper<Ty>::ComWrapper;
 
-        template<std::derived_from<ID3D11Resource> OtherTy>
+        template<std::convertible_to<Ty*> OtherTy>
         InterfaceWrapper(InterfaceWrapper<OtherTy> other) :
             ComWrapper<Ty>(other.Get())
         {

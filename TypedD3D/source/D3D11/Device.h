@@ -6,6 +6,7 @@
 #include "Shaders.h"
 #include "InputLayout.h"
 #include "ResourceViews.h"
+#include "States.h"
 #include "gsl/pointers"
 #include <d3d11_4.h>
 #include <span>
@@ -380,28 +381,32 @@ namespace TypedD3D::Internal
                     return Helpers::COM::UnknownObjectForwardFunction<ID3D11ClassLinkage>(&device_type::CreateClassLinkage, InternalGet());
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11BlendState>, HRESULT> CreateBlendState(
+                tl::expected<Wrapper<ID3D11BlendState>, HRESULT> CreateBlendState(
                     const D3D11_BLEND_DESC& pBlendStateDesc)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11BlendState>(&device_type::CreateBlendState, InternalGet(), &pBlendStateDesc);
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11BlendState>(&device_type::CreateBlendState, InternalGet(), &pBlendStateDesc)
+                        .and_then([](auto stateObj) -> tl::expected<ID3D11BlendState, HRESULT> { return Wrapper<ID3D11BlendState>(stateObj); });
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11DepthStencilState>, HRESULT> CreateDepthStencilState(
+                tl::expected<Wrapper<ID3D11DepthStencilState>, HRESULT> CreateDepthStencilState(
                     const D3D11_DEPTH_STENCIL_DESC& pDepthStencilDesc)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11DepthStencilState>(&device_type::CreateDepthStencilState, InternalGet(), &pDepthStencilDesc);
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11DepthStencilState>(&device_type::CreateDepthStencilState, InternalGet(), &pDepthStencilDesc)
+                        .and_then([](auto stateObj) -> tl::expected<ID3D11DepthStencilState, HRESULT> { return Wrapper<ID3D11DepthStencilState>(stateObj); });
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11RasterizerState>, HRESULT>  CreateRasterizerState(
+                tl::expected<Wrapper<ID3D11RasterizerState>, HRESULT>  CreateRasterizerState(
                     const D3D11_RASTERIZER_DESC& pRasterizerDesc)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11RasterizerState>(&device_type::CreateRasterizerState, InternalGet(), &pRasterizerDesc);
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11RasterizerState>(&device_type::CreateRasterizerState, InternalGet(), &pRasterizerDesc)
+                        .and_then([](auto stateObj) -> tl::expected<ID3D11RasterizerState, HRESULT> { return Wrapper<ID3D11RasterizerState>(stateObj); });
                 }
 
-                tl::expected<Microsoft::WRL::ComPtr<ID3D11SamplerState>, HRESULT> CreateSamplerState(
+                tl::expected<Wrapper<ID3D11SamplerState>, HRESULT> CreateSamplerState(
                     const D3D11_SAMPLER_DESC& pSamplerDesc)
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11SamplerState>(&device_type::CreateSamplerState, InternalGet(), &pSamplerDesc);
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3D11SamplerState>(&device_type::CreateSamplerState, InternalGet(), &pSamplerDesc)
+                        .and_then([](auto stateObj) -> tl::expected<ID3D11SamplerState, HRESULT> { return Wrapper<ID3D11SamplerState>(stateObj); });
                 }
 
                 tl::expected<Microsoft::WRL::ComPtr<ID3D11Query>, HRESULT> CreateQuery(

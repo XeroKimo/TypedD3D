@@ -4,6 +4,7 @@
 #include "span_tuple.h"
 #include "gsl/pointers"
 #include "ResourceViews.h"
+#include "States.h"
 #include <d3d11_4.h>
 #include <tuple>
 #include <optional>
@@ -36,7 +37,7 @@ namespace TypedD3D::D3D11
 
     struct OMGetBlendStateData
     {
-        Microsoft::WRL::ComPtr<ID3D11BlendState> blendState;
+        Wrapper<ID3D11BlendState> blendState;
         std::array<FLOAT, 4> blendFactor;
         UINT sampleMask;
     };
@@ -94,9 +95,14 @@ namespace TypedD3D::Internal
 
                 void PSSetSamplers(
                     UINT StartSlot,
-                    std::span<ID3D11SamplerState*> ppSamplers)
+                    std::span<Wrapper<ID3D11SamplerState>> ppSamplers)
                 {
-                    InternalGet().PSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
+                    std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState* []>(ppSamplers.size());
+                    for(size_t i = 0; i < ppSamplers.size(); i++)
+                    {
+                        rawSamplers[i] = ppSamplers[i].Get();
+                    }
+                    InternalGet().PSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), rawSamplers.get());
                 }
 
                 void VSSetShader(
@@ -242,9 +248,14 @@ namespace TypedD3D::Internal
 
                 void VSSetSamplers(
                     UINT StartSlot,
-                    std::span<ID3D11SamplerState*> ppSamplers)
+                    std::span<Wrapper<ID3D11SamplerState>> ppSamplers)
                 {
-                    InternalGet().VSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
+                    std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState* []>(ppSamplers.size());
+                    for(size_t i = 0; i < ppSamplers.size(); i++)
+                    {
+                        rawSamplers[i] = ppSamplers[i].Get();
+                    }
+                    InternalGet().VSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), rawSamplers.get());
                 }
 
                 void Begin(
@@ -292,9 +303,14 @@ namespace TypedD3D::Internal
 
                 void GSSetSamplers(
                     UINT StartSlot,
-                    std::span<ID3D11SamplerState*> ppSamplers)
+                    std::span<Wrapper<ID3D11SamplerState>> ppSamplers)
                 {
-                    InternalGet().GSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
+                    std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState* []>(ppSamplers.size());
+                    for(size_t i = 0; i < ppSamplers.size(); i++)
+                    {
+                        rawSamplers[i] = ppSamplers[i].Get();
+                    }
+                    InternalGet().GSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), rawSamplers.get());
                 }
 
                 void OMSetRenderTargets(
@@ -333,21 +349,21 @@ namespace TypedD3D::Internal
                 }
 
                 void OMSetBlendState(
-                    ID3D11BlendState* optBlendState,
+                    Wrapper<ID3D11BlendState> optBlendState,
                     std::optional<std::span<const FLOAT, 4>> BlendFactor,
                     UINT SampleMask)
                 {
                     if(BlendFactor.has_value())
-                        InternalGet().OMSetBlendState(optBlendState, BlendFactor.value().data(), SampleMask);
+                        InternalGet().OMSetBlendState(optBlendState.Get(), BlendFactor.value().data(), SampleMask);
                     else
-                        InternalGet().OMSetBlendState(optBlendState, nullptr, SampleMask);
+                        InternalGet().OMSetBlendState(optBlendState.Get(), nullptr, SampleMask);
                 }
 
                 void OMSetDepthStencilState(
-                    ID3D11DepthStencilState* optDepthStencilState,
+                    Wrapper<ID3D11DepthStencilState> optDepthStencilState,
                     UINT StencilRef)
                 {
-                    InternalGet().OMSetDepthStencilState(optDepthStencilState, StencilRef);
+                    InternalGet().OMSetDepthStencilState(optDepthStencilState.Get(), StencilRef);
                 }
 
                 void SOSetTargets(
@@ -396,9 +412,9 @@ namespace TypedD3D::Internal
                 }
 
                 void RSSetState(
-                    ID3D11RasterizerState* optRasterizerState)
+                    Wrapper<ID3D11RasterizerState> optRasterizerState)
                 {
-                    InternalGet().RSSetState(optRasterizerState);
+                    InternalGet().RSSetState(optRasterizerState.Get());
                 }
 
                 void RSSetViewports(
@@ -555,9 +571,14 @@ namespace TypedD3D::Internal
 
                 void HSSetSamplers(
                     UINT StartSlot,
-                    std::span<ID3D11SamplerState*> ppSamplers)
+                    std::span<Wrapper<ID3D11SamplerState>> ppSamplers)
                 {
-                    InternalGet().HSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
+                    std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState* []>(ppSamplers.size());
+                    for(size_t i = 0; i < ppSamplers.size(); i++)
+                    {
+                        rawSamplers[i] = ppSamplers[i].Get();
+                    }
+                    InternalGet().HSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), rawSamplers.get());
                 }
 
                 void HSSetConstantBuffers(
@@ -593,9 +614,14 @@ namespace TypedD3D::Internal
 
                 void DSSetSamplers(
                     UINT StartSlot,
-                    std::span<ID3D11SamplerState*> ppSamplers)
+                    std::span<Wrapper<ID3D11SamplerState>> ppSamplers)
                 {
-                    InternalGet().DSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
+                    std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState* []>(ppSamplers.size());
+                    for(size_t i = 0; i < ppSamplers.size(); i++)
+                    {
+                        rawSamplers[i] = ppSamplers[i].Get();
+                    }
+                    InternalGet().DSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), rawSamplers.get());
                 }
 
                 void DSSetConstantBuffers(
@@ -643,9 +669,14 @@ namespace TypedD3D::Internal
 
                 void CSSetSamplers(
                     UINT StartSlot,
-                    std::span<ID3D11SamplerState*> ppSamplers)
+                    std::span<Wrapper<ID3D11SamplerState>> ppSamplers)
                 {
-                    InternalGet().CSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
+                    std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState* []>(ppSamplers.size());
+                    for(size_t i = 0; i < ppSamplers.size(); i++)
+                    {
+                        rawSamplers[i] = ppSamplers[i].Get();
+                    }
+                    InternalGet().CSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), rawSamplers.get());
                 }
 
                 void CSSetConstantBuffers(
@@ -715,17 +746,19 @@ namespace TypedD3D::Internal
                     return output;
                 }
 
-                std::vector<Microsoft::WRL::ComPtr<ID3D11SamplerState>> PSGetSamplers(
+                std::vector<Wrapper<ID3D11SamplerState>> PSGetSamplers(
                     UINT StartSlot,
                     UINT NumSamplers)
                 {
                     std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState* []>(NumSamplers);
                     InternalGet().PSGetSamplers(0, NumSamplers, tempSamplers.get());
 
-                    std::vector<Microsoft::WRL::ComPtr<ID3D11SamplerState>> samplers(NumSamplers);
+                    std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers);
                     for(UINT i = 0; i < NumSamplers; i++)
                     {
-                        samplers[i].Attach(tempSamplers[i]);
+                        Microsoft::WRL::ComPtr<ID3D11SamplerState> temp;
+                        temp.Attach(tempSamplers[i]);
+                        samplers[i] = std::move(temp);
                     }
 
                     return samplers;
@@ -869,17 +902,19 @@ namespace TypedD3D::Internal
                     return views;
                 }
 
-                std::vector<Microsoft::WRL::ComPtr<ID3D11SamplerState>> VSGetSamplers(
+                std::vector<Wrapper<ID3D11SamplerState>> VSGetSamplers(
                     UINT StartSlot,
                     UINT NumSamplers)
                 {
                     std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState* []>(NumSamplers);
                     InternalGet().VSGetSamplers(0, NumSamplers, tempSamplers.get());
 
-                    std::vector<Microsoft::WRL::ComPtr<ID3D11SamplerState>> samplers(NumSamplers);
+                    std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers);
                     for(UINT i = 0; i < NumSamplers; i++)
                     {
-                        samplers[i].Attach(tempSamplers[i]);
+                        Microsoft::WRL::ComPtr<ID3D11SamplerState> temp;
+                        temp.Attach(tempSamplers[i]);
+                        samplers[i] = std::move(temp);
                     }
 
                     return samplers;
@@ -909,18 +944,20 @@ namespace TypedD3D::Internal
 
                     return views;
                 }
-
-                std::vector<Microsoft::WRL::ComPtr<ID3D11SamplerState>> GSGetSamplers(
+                
+                std::vector<Wrapper<ID3D11SamplerState>> GSGetSamplers(
                     UINT StartSlot,
                     UINT NumSamplers)
                 {
                     std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState* []>(NumSamplers);
                     InternalGet().GSGetSamplers(0, NumSamplers, tempSamplers.get());
 
-                    std::vector<Microsoft::WRL::ComPtr<ID3D11SamplerState>> samplers(NumSamplers);
+                    std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers);
                     for(UINT i = 0; i < NumSamplers; i++)
                     {
-                        samplers[i].Attach(tempSamplers[i]);
+                        Microsoft::WRL::ComPtr<ID3D11SamplerState> temp;
+                        temp.Attach(tempSamplers[i]);
+                        samplers[i] = std::move(temp);
                     }
 
                     return samplers;
@@ -980,7 +1017,9 @@ namespace TypedD3D::Internal
                 TypedD3D::D3D11::OMGetBlendStateData OMGetBlendState()
                 {
                     TypedD3D::D3D11::OMGetBlendStateData data;
-                    InternalGet().OMGetBlendState(&data.blendState, data.blendFactor.data(), &data.sampleMask);
+                    Microsoft::WRL::ComPtr<ID3D11BlendState> blendState;
+                    InternalGet().OMGetBlendState(&blendState, data.blendFactor.data(), &data.sampleMask);
+                    data.blendState = std::move(blendState);
                     return data;
                 }
 
@@ -1008,11 +1047,11 @@ namespace TypedD3D::Internal
                     return buffers;
                 }
 
-                Microsoft::WRL::ComPtr<ID3D11RasterizerState> RSGetState()
+                Wrapper<ID3D11RasterizerState> RSGetState()
                 {
                     Microsoft::WRL::ComPtr<ID3D11RasterizerState> state;
                     InternalGet().RSGetState(&state);
-                    return state;
+                    return Wrapper<ID3D11RasterizerState>(std::move(state));
                 }
 
                 std::vector<D3D11_VIEWPORT> RSGetViewports()
@@ -1081,17 +1120,19 @@ namespace TypedD3D::Internal
                     return output;
                 }
 
-                std::vector<Microsoft::WRL::ComPtr<ID3D11SamplerState>> HSGetSamplers(
+                std::vector<Wrapper<ID3D11SamplerState>> HSGetSamplers(
                     UINT StartSlot,
                     UINT NumSamplers)
                 {
                     std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState* []>(NumSamplers);
                     InternalGet().HSGetSamplers(0, NumSamplers, tempSamplers.get());
 
-                    std::vector<Microsoft::WRL::ComPtr<ID3D11SamplerState>> samplers(NumSamplers);
+                    std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers);
                     for(UINT i = 0; i < NumSamplers; i++)
                     {
-                        samplers[i].Attach(tempSamplers[i]);
+                        Microsoft::WRL::ComPtr<ID3D11SamplerState> temp;
+                        temp.Attach(tempSamplers[i]);
+                        samplers[i] = std::move(temp);
                     }
 
                     return samplers;
@@ -1151,17 +1192,19 @@ namespace TypedD3D::Internal
                     return output;
                 }
 
-                std::vector<Microsoft::WRL::ComPtr<ID3D11SamplerState>> DSGetSamplers(
+                std::vector<Wrapper<ID3D11SamplerState>> DSGetSamplers(
                     UINT StartSlot,
                     UINT NumSamplers)
                 {
                     std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState* []>(NumSamplers);
                     InternalGet().DSGetSamplers(0, NumSamplers, tempSamplers.get());
 
-                    std::vector<Microsoft::WRL::ComPtr<ID3D11SamplerState>> samplers(NumSamplers);
+                    std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers);
                     for(UINT i = 0; i < NumSamplers; i++)
                     {
-                        samplers[i].Attach(tempSamplers[i]);
+                        Microsoft::WRL::ComPtr<ID3D11SamplerState> temp;
+                        temp.Attach(tempSamplers[i]);
+                        samplers[i] = std::move(temp);
                     }
 
                     return samplers;
@@ -1239,17 +1282,19 @@ namespace TypedD3D::Internal
                     return output;
                 }
 
-                std::vector<Microsoft::WRL::ComPtr<ID3D11SamplerState>> CSGetSamplers(
+                std::vector<Wrapper<ID3D11SamplerState>> CSGetSamplers(
                     UINT StartSlot,
                     UINT NumSamplers)
                 {
                     std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState* []>(NumSamplers);
                     InternalGet().CSGetSamplers(0, NumSamplers, tempSamplers.get());
 
-                    std::vector<Microsoft::WRL::ComPtr<ID3D11SamplerState>> samplers(NumSamplers);
+                    std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers);
                     for(UINT i = 0; i < NumSamplers; i++)
                     {
-                        samplers[i].Attach(tempSamplers[i]);
+                        Microsoft::WRL::ComPtr<ID3D11SamplerState> temp;
+                        temp.Attach(tempSamplers[i]);
+                        samplers[i] = std::move(temp);
                     }
 
                     return samplers;
