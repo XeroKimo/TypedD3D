@@ -1,25 +1,12 @@
 #pragma once
 #include "Wrappers.h"
+#include "D3D12TypeTags.h"
 #include <d3d12.h>
 
 namespace TypedD3D
 {
     namespace Internal
     {
-        enum class TypeTag
-        {
-            Direct,
-            Compute,
-            Copy,
-            Bundle,
-            CBV_SRV_UAV,
-            Sampler,
-            RTV,
-            DSV,
-            Graphics,
-            RenderPass
-        };
-
         template<TypeTag Type>
         concept Is_Command_List_Type = (Type == TypeTag::Direct || Type == TypeTag::Compute || Type == TypeTag::Copy || Type == TypeTag::Bundle);
 

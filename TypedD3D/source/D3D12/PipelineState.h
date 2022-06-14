@@ -18,7 +18,7 @@ namespace TypedD3D::Internal
             public:
                 Microsoft::WRL::ComPtr<ID3DBlob> GetCachedBlob()
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3DBlob>(&ID3D12PipelineState::GetCachedBlob, InternalGet()).GetValue();
+                    return Helpers::COM::UnknownObjectForwardFunction<ID3DBlob>(&ID3D12PipelineState::GetCachedBlob, InternalGet()).value();
                 }
 
             private:

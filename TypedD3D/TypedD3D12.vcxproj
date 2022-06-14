@@ -19,9 +19,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\D3D11\Device.h" />
+    <ClInclude Include="source\D3D11\DeviceChild.h" />
+    <ClInclude Include="source\D3D11\DeviceContext.h" />
+    <ClInclude Include="source\D3D11\InputLayout.h" />
+    <ClInclude Include="source\D3D11\Resources.h" />
+    <ClInclude Include="source\D3D11\ResourceViews.h" />
+    <ClInclude Include="source\D3D11\Shaders.h" />
+    <ClInclude Include="source\D3D11\States.h" />
+    <ClInclude Include="source\D3D12TypeTags.h" />
     <ClInclude Include="source\D3D12Wrappers.h" />
     <ClInclude Include="source\D3D12\CommandAllocator.h" />
     <ClInclude Include="source\D3D12\CommandQueue.h" />
+    <ClInclude Include="source\D3D12\Resource.h" />
+    <ClInclude Include="source\DXGI\Adapter.h" />
+    <ClInclude Include="source\DXGI\Factory.h" />
+    <ClInclude Include="source\DXGI\SwapChain.h" />
+    <ClInclude Include="expected.hpp" />
     <ClInclude Include="source\Internal\ComWrapper.h" />
     <ClInclude Include="source\D3D12\DescriptorHeap.h" />
     <ClInclude Include="source\Internal\D3D12\Meta.h" />
@@ -33,12 +47,32 @@
     <ClInclude Include="source\D3D12\CommandList.h" />
     <ClInclude Include="source\D3D12\Device.h" />
     <ClInclude Include="source\Helpers\DXGIHelpers.h" />
-    <ClInclude Include="source\Utils.h" />
+    <ClInclude Include="source\Internal\d3dConcepts.h" />
     <ClInclude Include="source\Wrappers.h" />
+    <ClInclude Include="span_tuple.h" />
     <ClInclude Include="TypedD3D12.h" />
+    <ClInclude Include="TypedD3D11.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp" />
+    <ClCompile Include="TypedDXGI.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="gsl\algorithm" />
+    <None Include="gsl\assert" />
+    <None Include="gsl\byte" />
+    <None Include="gsl\gsl" />
+    <None Include="gsl\gsl_algorithm" />
+    <None Include="gsl\gsl_assert" />
+    <None Include="gsl\gsl_byte" />
+    <None Include="gsl\gsl_narrow" />
+    <None Include="gsl\gsl_util" />
+    <None Include="gsl\narrow" />
+    <None Include="gsl\pointers" />
+    <None Include="gsl\span" />
+    <None Include="gsl\span_ext" />
+    <None Include="gsl\string_span" />
+    <None Include="gsl\util" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -122,6 +156,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -143,6 +178,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -157,13 +193,14 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <WarningLevel>Level4</WarningLevel>
+      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -171,12 +208,11 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib</AdditionalDependencies>
+      <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib;d3d11.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -185,6 +221,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>

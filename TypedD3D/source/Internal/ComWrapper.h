@@ -37,6 +37,7 @@ namespace TypedD3D::Internal
 
     public:
         T* Get() const { return m_ptr.Get(); }
-        Microsoft::WRL::ComPtr<T> GetComPtr() const { return m_ptr; }
+        Microsoft::WRL::ComPtr<T>& AsComPtr() { return m_ptr; }
+        const Microsoft::WRL::ComPtr<T>& AsComPtr() const { return m_ptr; }
     };
 }
