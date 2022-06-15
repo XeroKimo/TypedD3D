@@ -6,27 +6,43 @@
 #include <wrl/client.h>
 #include <assert.h>
 
+namespace TypedD3D::D3D12
+{
+    template<D3D12_COMMAND_LIST_TYPE Type>
+    class CommandAllocator_t;
+}
+
+
 namespace TypedD3D::Internal
 {
     namespace D3D12
     {
-        template<TypeTag Type>
-        using CommandAllocator_t = InterfaceWrapper<ID3D12CommandAllocator, Type>;
+        template<D3D12_COMMAND_LIST_TYPE Type>
+        using CommandAllocator_t = ::TypedD3D::D3D12::CommandAllocator_t<Type>;
 
         namespace CommandAllocator
         {
-            template<class WrapperTy, D3D12_COMMAND_LIST_TYPE Type>
-            class Interface
+            struct TraitsImpl
             {
-            public:
-                static constexpr D3D12_COMMAND_LIST_TYPE value = Type;
+                using value_type = ID3D12CommandAllocator;
+                using pointer = ID3D12CommandAllocator*;
+                using const_pointer = const ID3D12CommandAllocator*;
+                using reference = ID3D12CommandAllocator&;
+                using const_reference = const ID3D12CommandAllocator&;
 
-            public:
+                template<class DerivedSelf>
+                class Interface
+                {
+                private:
+                    using derived_self = DerivedSelf;
 
-                HRESULT Reset() { return InternalGet().Reset(); }
+                public:
+                    HRESULT Reset() { return Get().Reset(); }
 
-            private:
-                ID3D12CommandAllocator& InternalGet() { return *static_cast<WrapperTy&>(*this).Get(); }
+                private:
+                    derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+                    reference Get() { return *ToDerived().derived_self::Get(); }
+                };
             };
 
             template<D3D12_COMMAND_LIST_TYPE Type>
@@ -41,22 +57,35 @@ namespace TypedD3D::Internal
                 using const_reference = const ID3D12CommandAllocator&;
 
                 template<class DerivedSelf>
-                class Interface
-                {
-                private:
-                    using derived_self = DerivedSelf;
-
-                public:
-                    HRESULT Reset() { Get().Reset(); }
-
-                private:
-                    derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-                    reference Get() { return *ToDerived().derived_self::Get(); }
-                };
+                using Interface = typename TraitsImpl::template Interface<DerivedSelf>;
             };
         }
 
     }
+
+    template<>
+    struct DirectMapper<ID3D12CommandAllocator>
+    {
+        using type = D3D12::CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
+    };
+
+    template<>
+    struct ComputeMapper<ID3D12CommandAllocator>
+    {
+        using type = D3D12::CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+    };
+
+    template<>
+    struct CopyMapper<ID3D12CommandAllocator>
+    {
+        using type = D3D12::CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_COPY>;
+    };
+
+    template<>
+    struct BundleMapper<ID3D12CommandAllocator>
+    {
+        using type = D3D12::CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+    };
 }
 
 namespace TypedD3D::D3D12

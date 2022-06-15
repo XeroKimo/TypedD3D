@@ -66,9 +66,6 @@
     <ClInclude Include="source\DXGI\Factory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\D3D12TypeTags.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\DXGI\SwapChain.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -1,137 +1,143 @@
 #pragma once
 #include "Wrappers.h"
-#include "D3D12TypeTags.h"
 #include <d3d12.h>
 
 namespace TypedD3D
 {
     namespace Internal
     {
-        template<TypeTag Type>
-        concept Is_Command_List_Type = (Type == TypeTag::Direct || Type == TypeTag::Compute || Type == TypeTag::Copy || Type == TypeTag::Bundle);
-
-        template<TypeTag Type>
-        concept Is_Descriptor_Heap_Type = (Type == TypeTag::CBV_SRV_UAV || Type == TypeTag::Sampler || Type == TypeTag::RTV || Type == TypeTag::DSV);
-                
-        template<TypeTag Type>
-        concept Is_Pipeline_Type = (Type == TypeTag::Graphics || Type == TypeTag::Compute);
-
-        template<TypeTag value>
-        constexpr D3D12_COMMAND_LIST_TYPE listType;
-
-        template<>
-        constexpr D3D12_COMMAND_LIST_TYPE listType<TypeTag::Direct> = D3D12_COMMAND_LIST_TYPE_DIRECT;
-
-        template<>
-        constexpr D3D12_COMMAND_LIST_TYPE listType<TypeTag::Compute> = D3D12_COMMAND_LIST_TYPE_COMPUTE;
-
-        template<>
-        constexpr D3D12_COMMAND_LIST_TYPE listType<TypeTag::Bundle> = D3D12_COMMAND_LIST_TYPE_BUNDLE;
-
-        template<>
-        constexpr D3D12_COMMAND_LIST_TYPE listType<TypeTag::Copy> = D3D12_COMMAND_LIST_TYPE_COPY;
-
-        template<TypeTag value>
-        constexpr D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType;
-
-        template<>
-        constexpr D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType<TypeTag::CBV_SRV_UAV> = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-
-        template<>
-        constexpr D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType<TypeTag::Sampler> = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-
-        template<>
-        constexpr D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType<TypeTag::RTV> = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-
-        template<>
-        constexpr D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType<TypeTag::DSV> = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-
-        template<TypeTag Type>
-        struct PipelineStateMapper;
-
-        template<>
-        struct PipelineStateMapper<TypeTag::Compute>
-        {
-            using type = D3D12_COMPUTE_PIPELINE_STATE_DESC;
-        };
-
-        template<>
-        struct PipelineStateMapper<TypeTag::Graphics>
-        {
-            using type = D3D12_GRAPHICS_PIPELINE_STATE_DESC;
-        };
-
-        template<auto Type>
-        constexpr TypeTag tagValue;
-
-        template<>
-        constexpr TypeTag tagValue<D3D12_COMMAND_LIST_TYPE_DIRECT> = TypeTag::Direct;
-
-        template<>
-        constexpr TypeTag tagValue<D3D12_COMMAND_LIST_TYPE_COMPUTE> = TypeTag::Compute;
-
-        template<>
-        constexpr TypeTag tagValue<D3D12_COMMAND_LIST_TYPE_BUNDLE> = TypeTag::Bundle;
-
-        template<>
-        constexpr TypeTag tagValue<D3D12_COMMAND_LIST_TYPE_COPY> = TypeTag::Copy;
-
-        template<>
-        constexpr TypeTag tagValue<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV> = TypeTag::CBV_SRV_UAV;
-
-        template<>
-        constexpr TypeTag tagValue<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER> = TypeTag::Sampler;
-
-        template<>
-        constexpr TypeTag tagValue<D3D12_DESCRIPTOR_HEAP_TYPE_RTV> = TypeTag::RTV;
-
-        template<>
-        constexpr TypeTag tagValue<D3D12_DESCRIPTOR_HEAP_TYPE_DSV> = TypeTag::DSV;
+        template<class Ty>
+        struct DirectMapper;
 
         template<class Ty>
-        struct TypeTagMapper;
+        struct ComputeMapper;
 
-        template<>
-        struct TypeTagMapper<D3D12_GRAPHICS_PIPELINE_STATE_DESC>
-        {
-            static constexpr TypeTag value = TypeTag::Graphics;
-        };
+        template<class Ty>
+        struct CopyMapper;
 
-        template<>
-        struct TypeTagMapper<D3D12_COMPUTE_PIPELINE_STATE_DESC>
-        {
-            static constexpr TypeTag value = TypeTag::Compute;
-        };
+        template<class Ty>
+        struct BundleMapper;
 
+        template<class Ty>
+        struct CBV_SRV_UAVMapper;
+
+        template<class Ty>
+        struct SamplerMapper;
+
+        template<class Ty>
+        struct RTVMapper;
+
+        template<class Ty>
+        struct DSVMapper;
+
+        template<class Ty>
+        struct GraphicsMapper;
+
+        template<class Ty>
+        struct ShaderVisibleMapper;
+
+        struct direct_cast_tag {};
+        struct compute_cast_tag {};
+        struct copy_cast_tag {};
+        struct bundle_cast_tag {};
     }
 
-    template<class IUnknownTy, auto... ExtraTags>
-    using Direct = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Direct, ExtraTags...>;
+    template<class Ty>
+    using Direct = Internal::DirectMapper<Ty>::type;
 
-    template<class IUnknownTy, auto... ExtraTags>
-    using Compute = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Compute, ExtraTags...>;
+    template<class Ty>
+    using Compute = Internal::ComputeMapper<Ty>::type;
 
-    template<class IUnknownTy, auto... ExtraTags>
-    using Copy = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Copy, ExtraTags...>;
+    template<class Ty>
+    using Copy = Internal::CopyMapper<Ty>::type;
 
-    template<class IUnknownTy, auto... ExtraTags>
-    using Bundle = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Bundle, ExtraTags...>;
+    template<class Ty>
+    using Bundle = Internal::BundleMapper<Ty>::type;
 
-    template<class IUnknownTy, auto... ExtraTags>
-    using CBV_SRV_UAV = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::CBV_SRV_UAV, ExtraTags...>;
+    template<class Ty>
+    using CBV_SRV_UAV = Internal::CBV_SRV_UAVMapper<Ty>::type;
 
-    template<class IUnknownTy, auto... ExtraTags>
-    using Sampler = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Sampler, ExtraTags...>;
+    template<class Ty>
+    using Sampler = Internal::SamplerMapper<Ty>::type;
 
-    template<class IUnknownTy, auto... ExtraTags>
-    using RTV = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::RTV, ExtraTags...>;
+    template<class Ty>
+    using RTV = Internal::RTVMapper<Ty>::type;
 
-    template<class IUnknownTy, auto... ExtraTags>
-    using DSV = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::DSV, ExtraTags...>;
+    template<class Ty>
+    using DSV = Internal::DSVMapper<Ty>::type;
 
-    template<class IUnknownTy, auto... ExtraTags>
-    using Graphics = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::Graphics, ExtraTags...>;
+    template<class Ty>
+    using Graphics = Internal::GraphicsMapper<Ty>::type;
 
-    template<class IUnknownTy, auto... ExtraTags>
-    using RenderPass = Internal::InterfaceWrapper<IUnknownTy, Internal::TypeTag::RenderPass, ExtraTags...>;
+    template<class Ty>
+    using ShaderVisible = Internal::ShaderVisibleMapper<Ty>::type;
+
+    template<std::derived_from<IUnknown> OtherTy, class Ty>
+        requires std::same_as<typename Ty::cast_tag, Internal::direct_cast_tag>
+    Direct<OtherTy> Cast(Ty& other) noexcept
+    {
+        return Direct<OtherTy>(Internal::Cast<OtherTy, typename Direct<OtherTy>::interface_type>(other));
+    }
+
+    template<std::derived_from<IUnknown> OtherTy, class Ty>
+        requires std::same_as<typename Ty::cast_tag, Internal::direct_cast_tag>
+    Direct<OtherTy> Cast(Ty && other) noexcept
+    {
+        return Direct<OtherTy>(Internal::Cast<OtherTy, typename Direct<OtherTy>::interface_type>(std::move(other)));
+    }
+
+    //template<class OtherTy, template<class, D3D12_COMMAND_LIST_TYPE> class Object, class Ty>
+    //Object<OtherTy, D3D12_COMMAND_LIST_TYPE_DIRECT> Cast(const Object<Ty, D3D12_COMMAND_LIST_TYPE_DIRECT>& other) noexcept
+    //{
+    //    return Object<OtherTy, D3D12_COMMAND_LIST_TYPE_DIRECT>(Internal::Cast<OtherTy, typename Object<OtherTy, D3D12_COMMAND_LIST_TYPE_DIRECT>::interface_type>(other));
+    //}
+
+    //template<class OtherTy, template<class, D3D12_COMMAND_LIST_TYPE> class Object, class Ty>
+    //Object<OtherTy, D3D12_COMMAND_LIST_TYPE_DIRECT> Cast(Object<Ty, D3D12_COMMAND_LIST_TYPE_DIRECT>&& other) noexcept
+    //{
+    //    return Object<OtherTy, D3D12_COMMAND_LIST_TYPE_DIRECT>(Internal::Cast<OtherTy, typename Object<OtherTy, D3D12_COMMAND_LIST_TYPE_DIRECT>::interface_type>(std::move(other)));
+    //}
+
+    template<std::derived_from<IUnknown> OtherTy, class Ty>
+        requires std::same_as<typename Ty::cast_tag, Internal::compute_cast_tag>
+    Compute<OtherTy> Cast(Ty& other) noexcept
+    {
+        return Compute<OtherTy>(Internal::Cast<OtherTy, typename Compute<OtherTy>::interface_type>(other));
+    }
+
+    template<std::derived_from<IUnknown> OtherTy, class Ty>
+        requires std::same_as<typename Ty::cast_tag, Internal::compute_cast_tag>
+    Compute<OtherTy> Cast(Ty&& other) noexcept
+    {
+        return Compute<OtherTy>(Internal::Cast<OtherTy, typename Compute<OtherTy>::interface_type>(std::move(other)));
+    }
+
+    template<std::derived_from<IUnknown> OtherTy, class Ty>
+        requires std::same_as<typename Ty::cast_tag, Internal::copy_cast_tag>
+    Copy<OtherTy> Cast(Ty& other) noexcept
+    {
+        return Copy<OtherTy>(Internal::Cast<OtherTy, typename Copy<OtherTy>::interface_type>(other));
+    }
+
+    template<std::derived_from<IUnknown> OtherTy, class Ty>
+        requires std::same_as<typename Ty::cast_tag, Internal::copy_cast_tag>
+    Copy<OtherTy> Cast(Ty&& other) noexcept
+    {
+        return Copy<OtherTy>(Internal::Cast<OtherTy, typename Copy<OtherTy>::interface_type>(std::move(other)));
+    }
+
+    template<std::derived_from<IUnknown> OtherTy, class Ty>
+        requires std::same_as<typename Ty::cast_tag, Internal::bundle_cast_tag>
+    Bundle<OtherTy> Cast(Ty& other) noexcept
+    {
+        return Bundle<OtherTy>(Internal::Cast<OtherTy, typename Bundle<OtherTy>::interface_type>(other));
+    }
+
+    template<std::derived_from<IUnknown> OtherTy, class Ty>
+        requires std::same_as<typename Ty::cast_tag, Internal::bundle_cast_tag>
+    Bundle<OtherTy> Cast(Ty&& other) noexcept
+    {
+        return Bundle<OtherTy>(Internal::Cast<OtherTy, typename Bundle<OtherTy>::interface_type>(std::move(other)));
+    }
+
 }

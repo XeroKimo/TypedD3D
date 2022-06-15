@@ -5,87 +5,94 @@
 #include "../Helpers/COMHelpers.h"
 #include <dxgi1_6.h>
 
+namespace TypedD3D::DXGI
+{
+    template<std::derived_from<IDXGIAdapter> Ty>
+    class Adapter_t;
+}
+
 namespace TypedD3D::Internal
 {
     namespace DXGI
     {
         template<class Ty>
-        using Adapter_t = InterfaceWrapper<Ty>;
+        using Adapter_t = ::TypedD3D::DXGI::Adapter_t<Ty>;
 
         namespace Adapter
         {
-            template<class WrapperTy, class AdapterTy>
-            class Interface;
+            template<class Ty>
+            struct TraitsImpl;
 
-            template<class WrapperTy>
-            class Interface<WrapperTy, IDXGIAdapter>
+            template<>
+            struct TraitsImpl<IDXGIAdapter>
             {
-            private:
-                using adapter_type = IDXGIAdapter;
-                using wrapper_type = WrapperTy;
+                using value_type = IDXGIAdapter;
+                using pointer = IDXGIAdapter*;
+                using const_pointer = const IDXGIAdapter*;
+                using reference = IDXGIAdapter&;
+                using cosnt_reference = const IDXGIAdapter&;
 
-            public:
-                tl::expected<Microsoft::WRL::ComPtr<IDXGIOutput>, HRESULT> EnumOutputs(UINT Output)
+                template<class DerivedSelf>
+                class Interface
                 {
-                    return Helpers::COM::UnknownObjectForwardFunction<IDXGIOutput>(&adapter_type::EnumOutputs, InternalGet(), Output);
-                }
+                    using derived_self = DerivedSelf;
 
-                DXGI_ADAPTER_DESC GetDesc()
-                {
-                    DXGI_ADAPTER_DESC desc;
-                    InternalGet().GetDesc(&desc);
-                    return desc;
-                }
+                public:
+                    tl::expected<Microsoft::WRL::ComPtr<IDXGIOutput>, HRESULT> EnumOutputs(UINT Output)
+                    {
+                        return Helpers::COM::UnknownObjectForwardFunction<IDXGIOutput>(&value_type::EnumOutputs, Get(), Output);
+                    }
 
-                std::pair<HRESULT, LARGE_INTEGER> CheckInterfaceSupport(REFGUID InterfaceName)
-                {
-                    std::pair<HRESULT, LARGE_INTEGER> result;
-                    result.first = InternalGet().CheckInterfaceSupport(InterfaceName, &result.second);
-                    return result;
-                }
+                    DXGI_ADAPTER_DESC GetDesc()
+                    {
+                        DXGI_ADAPTER_DESC desc;
+                        Get().GetDesc(&desc);
+                        return desc;
+                    }
 
-            private:
-                wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
-                adapter_type& InternalGet() { return *ToDerived().Get(); }
+                    std::pair<HRESULT, LARGE_INTEGER> CheckInterfaceSupport(REFGUID InterfaceName)
+                    {
+                        std::pair<HRESULT, LARGE_INTEGER> result;
+                        result.first = Get().CheckInterfaceSupport(InterfaceName, &result.second);
+                        return result;
+                    }
+
+                private:
+                    derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+                    reference Get() { return *ToDerived().derived_self::Get(); }
+                };
+            };
+
+            template<class Ty>
+            struct Traits
+            {
+                using value_type = Ty;
+                using pointer = Ty*;
+                using const_pointer = const Ty*;
+                using reference = Ty&;
+                using cosnt_reference = const Ty&;
+
+                template<class DerivedSelf>
+                using Interface = TraitsImpl<Ty>::template Interface<DerivedSelf>;
             };
         }
     }
 
-    template<class DirectXClass>
-        requires std::derived_from<DirectXClass, IDXGIAdapter>
-    class InterfaceWrapper<DirectXClass> : public ComWrapper<DirectXClass>, private DXGI::Adapter::Interface<InterfaceWrapper<DirectXClass>, DirectXClass>
+    template<std::derived_from<IDXGIAdapter> Ty>
+    struct WrapperMapper<Ty>
     {
-    private:
-        using Interface = DXGI::Adapter::Interface<InterfaceWrapper<DirectXClass>, DirectXClass>;
-
-        template<class WrapperTy, class SwapChainTy>
-        friend class DXGI::Adapter::Interface;
-
-    public:
-        static constexpr size_t tag_value = 0;
-        using underlying_type = DirectXClass;
-
-    public:
-        using ComWrapper<DirectXClass>::ComWrapper;
-
-        template<class DerivedAdapterTy>
-            requires std::convertible_to<DerivedAdapterTy*, DirectXClass*>
-        InterfaceWrapper(const InterfaceWrapper<DerivedAdapterTy>& other) :
-            ComWrapper<DirectXClass>::ComWrapper(other.AsComPtr())
-        {
-
-        }
-
-    public:
-        Interface* GetInterface() { return this; }
-        Interface* operator->() { return this; }
+        using type = DXGI::Adapter_t<Ty>;
     };
 }
 
 
 namespace TypedD3D::DXGI
 {
-    template<class Ty>
-    using Adapter_t = Internal::DXGI::Adapter_t<Ty>;
+    template<std::derived_from<IDXGIAdapter> Ty>
+    class Adapter_t : public Internal::InterfaceWrapper<Ty, typename Internal::DXGI::Adapter::Traits<Ty>::Interface>
+    {
+
+    };
+
     using Adapter = Adapter_t<IDXGIAdapter>;
 }

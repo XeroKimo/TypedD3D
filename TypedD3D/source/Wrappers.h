@@ -7,20 +7,21 @@ namespace TypedD3D
     {
         template<class Ty>
         struct WrapperMapper;
+
     }
 
     template<class Ty>
     using Wrapper = Internal::WrapperMapper<Ty>::type;
 
-    template<std::derived_from<IUnknown> OtherTy, std::derived_from<IUnknown> Ty>
-    Wrapper<OtherTy> Cast(const Wrapper<Ty>& other) noexcept
+    template<std::derived_from<IUnknown> OtherTy, class Ty>
+    Wrapper<OtherTy> Cast(Ty& other) noexcept
     {
-        return Internal::Cast<Wrapper<OtherTy>, typename Wrapper<OtherTy>::interface_type>(other);
+        return Wrapper<OtherTy>(Internal::Cast<OtherTy, typename Wrapper<OtherTy>::interface_type>(other));
     }
 
-    template<std::derived_from<IUnknown> OtherTy, std::derived_from<IUnknown> Ty>
-    Wrapper<OtherTy> Cast(Wrapper<Ty>&& other) noexcept
+    template<std::derived_from<IUnknown> OtherTy, class Ty>
+    Wrapper<OtherTy> Cast(Ty&& other) noexcept
     {
-        return Internal::Cast<Wrapper<OtherTy>, typename Wrapper<OtherTy>::interface_type>(std::move(other));
+        return Wrapper<OtherTy>(Internal::Cast<OtherTy, typename Wrapper<OtherTy>::interface_type>(std::move(other)));
     }
 }

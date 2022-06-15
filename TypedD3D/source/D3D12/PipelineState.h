@@ -3,53 +3,72 @@
 #include "../Helpers/COMHelpers.h"
 #include <d3d12.h>
 
+namespace TypedD3D::D3D12
+{
+    template<class Ty>
+    concept PipelineTypeTag = std::same_as<Ty, D3D12_GRAPHICS_PIPELINE_STATE_DESC> || std::same_as<Ty, D3D12_COMPUTE_PIPELINE_STATE_DESC>;
+
+    template<PipelineTypeTag Ty>
+    class PipelineState_t;
+}
+
 namespace TypedD3D::Internal
 {
     namespace D3D12
     {
-        template<TypeTag Type>
-        using PipelineState_t = InterfaceWrapper<ID3D12PipelineState, Type>;
+        template<class Ty>
+        using PipelineState_t = TypedD3D::D3D12::PipelineState_t<Ty>;
 
         namespace PipelineState
         {
-            template<class WrapperTy>
-            class Interface
+            struct Traits
             {
-            public:
-                Microsoft::WRL::ComPtr<ID3DBlob> GetCachedBlob()
-                {
-                    return Helpers::COM::UnknownObjectForwardFunction<ID3DBlob>(&ID3D12PipelineState::GetCachedBlob, InternalGet()).value();
-                }
+                using value_type = ID3D12PipelineState;
+                using pointer = ID3D12PipelineState*;
+                using const_pointer = const ID3D12PipelineState*;
+                using reference = ID3D12PipelineState&;
+                using const_reference = const ID3D12PipelineState&;
 
-            private:
-                ID3D12PipelineState& InternalGet() { return *static_cast<WrapperTy&>(*this).Get(); }
+                template<class DerivedSelf>
+                class Interface
+                {
+                private:
+                    using derived_self = DerivedSelf;
+
+                public:
+                    Microsoft::WRL::ComPtr<ID3DBlob> GetCachedBlob()
+                    {
+                        return Helpers::COM::UnknownObjectForwardFunction<ID3DBlob>(&value_type::GetCachedBlob, Get()).value();
+                    }
+
+                private:
+                    derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+                    reference Get() { return *ToDerived().derived_self::Get(); }
+                };
             };
         }
     }
 
-    template<class DirectXClass, TypeTag Type>
-        requires std::is_base_of_v<ID3D12PipelineState, DirectXClass> && Is_Pipeline_Type<Type>
-    class InterfaceWrapper<DirectXClass, Type> : public ComWrapper<DirectXClass>, private D3D12::PipelineState::Interface<InterfaceWrapper<DirectXClass, Type>>
+    template<>
+    struct GraphicsMapper<ID3D12PipelineState>
     {
-    private:
-        using Interface = D3D12::PipelineState::Interface<InterfaceWrapper<DirectXClass, Type>>;
-        friend Interface;
+        using type = D3D12::PipelineState_t<D3D12_GRAPHICS_PIPELINE_STATE_DESC>;
+    };
 
-    public:
-        static constexpr TypeTag tag_value = Type;
-        using underlying_type = DirectXClass;
-        using ComWrapper<DirectXClass>::ComWrapper;
-
-    public:
-        Interface* GetInterface() { return this; }
-        Interface* operator->() { return this; }
+    template<>
+    struct ComputeMapper<ID3D12PipelineState>
+    {
+        using type = D3D12::PipelineState_t<D3D12_COMPUTE_PIPELINE_STATE_DESC>;
     };
 }
 
 namespace TypedD3D::D3D12
 {
-    template<class PipelineStateDesc>
-    using PipelineState_t = TypedD3D::Internal::D3D12::PipelineState_t<TypedD3D::Internal::TypeTagMapper<PipelineStateDesc>::value>;
+    template<PipelineTypeTag Ty>
+    class PipelineState_t : public Internal::InterfaceWrapper<ID3D12PipelineState, typename Internal::D3D12::PipelineState::Traits::Interface>
+    {
+
+    };
 
     namespace PipelineState
     {
