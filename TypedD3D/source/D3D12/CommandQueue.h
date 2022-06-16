@@ -12,9 +12,6 @@ namespace TypedD3D::D3D12
         UINT64 gpuTimestamp;
         UINT64 cpuTimestamp;
     };
-
-    template<D3D12_COMMAND_LIST_TYPE Type>
-    class CommandQueue_t;
 }
 
 namespace TypedD3D::Internal
@@ -22,7 +19,7 @@ namespace TypedD3D::Internal
     namespace D3D12
     {
         template<D3D12_COMMAND_LIST_TYPE Type>
-        using CommandQueue_t = ::TypedD3D::D3D12::CommandQueue_t<Type>;
+        using CommandQueue_t = Internal::Wrapper<ID3D12CommandQueue, Type>;
 
         namespace CommandQueue
         {
@@ -137,66 +134,65 @@ namespace TypedD3D::Internal
                     derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
                     reference Get() { return *ToDerived().derived_self::Get(); }
                 };
-
-            };
-
-            template<D3D12_COMMAND_LIST_TYPE Type>
-            struct Traits
-            {
-                static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-
-                using value_type = ID3D12CommandQueue;
-                using pointer = ID3D12CommandQueue*;
-                using const_pointer = const ID3D12CommandQueue*;
-                using reference = ID3D12CommandQueue&;
-                using const_reference = const ID3D12CommandQueue&;
-
-                using list_value_type = CommandList_t<ID3D12CommandList, command_list_value>;
-                using allocator_value_type = CommandAllocator_t<command_list_value>;
-
-                template<class DerivedSelf>
-                class Interface : public TraitsImpl::Interface<DerivedSelf>
-                {
-                private:
-                    using derived_self = DerivedSelf;
-
-                public:
-                    template<size_t Extents>
-                    void ExecuteCommandLists(
-                        std::span<list_value_type, Extents> commandLists)
-                    {
-                        if constexpr(Extents == std::dynamic_extent)
-                        {
-                            std::unique_ptr<ID3D12CommandList* []> submitList = std::make_unique<ID3D12CommandList* []>(commandLists.size());
-
-                            for(size_t i = 0; i < commandLists.size(); i++)
-                            {
-                                submitList[i] = commandLists[i].Get();
-                            }
-
-                            Get().ExecuteCommandLists(static_cast<UINT>(commandLists.size()), submitList.get());
-                        }
-                        else
-                        {
-                            std::array<ID3D12CommandList*, Extents> submitList;
-
-                            for(size_t i = 0; i < commandLists.size(); i++)
-                            {
-                                submitList[i] = commandLists[i].Get();
-                            }
-
-                            Get().ExecuteCommandLists(static_cast<UINT>(commandLists.size()), submitList.data());
-                        }
-                    }
-
-                private:
-                    derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-                    reference Get() { return *ToDerived().derived_self::Get(); }
-                };
             };
         }
     }
 
+
+    template<D3D12_COMMAND_LIST_TYPE Type>
+    struct Traits<ID3D12CommandQueue, Type>
+    {
+        static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
+
+        using value_type = ID3D12CommandQueue;
+        using pointer = ID3D12CommandQueue*;
+        using const_pointer = const ID3D12CommandQueue*;
+        using reference = ID3D12CommandQueue&;
+        using const_reference = const ID3D12CommandQueue&;
+
+        using list_value_type = D3D12::CommandList_t<ID3D12CommandList, command_list_value>;
+        using allocator_value_type = D3D12::CommandAllocator_t<command_list_value>;
+
+        template<class DerivedSelf>
+        class Interface : public D3D12::CommandQueue::TraitsImpl::Interface<DerivedSelf>
+        {
+        private:
+            using derived_self = DerivedSelf;
+
+        public:
+            template<size_t Extents>
+            void ExecuteCommandLists(
+                std::span<list_value_type, Extents> commandLists)
+            {
+                if constexpr(Extents == std::dynamic_extent)
+                {
+                    std::unique_ptr<ID3D12CommandList* []> submitList = std::make_unique<ID3D12CommandList* []>(commandLists.size());
+
+                    for(size_t i = 0; i < commandLists.size(); i++)
+                    {
+                        submitList[i] = commandLists[i].Get();
+                    }
+
+                    Get().ExecuteCommandLists(static_cast<UINT>(commandLists.size()), submitList.get());
+                }
+                else
+                {
+                    std::array<ID3D12CommandList*, Extents> submitList;
+
+                    for(size_t i = 0; i < commandLists.size(); i++)
+                    {
+                        submitList[i] = commandLists[i].Get();
+                    }
+
+                    Get().ExecuteCommandLists(static_cast<UINT>(commandLists.size()), submitList.data());
+                }
+            }
+
+        private:
+            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+            reference Get() { return *ToDerived().derived_self::Get(); }
+        };
+    };
 
     template<>
     struct DirectMapper<ID3D12CommandQueue>
@@ -226,16 +222,7 @@ namespace TypedD3D::Internal
 namespace TypedD3D::D3D12
 {
     template<D3D12_COMMAND_LIST_TYPE Type>
-    class CommandQueue_t : public Internal::InterfaceWrapper<ID3D12CommandQueue, typename Internal::D3D12::CommandQueue::Traits<Type>::Interface>
-    {
-    private:
-        using Traits = Internal::D3D12::CommandQueue::Traits<Type>;
-
-    public:
-        static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-        using list_value_type = Traits::list_value_type;
-        using allocator_value_type = Traits::allocator_value_type;
-    };
+    using CommandQueue_t = Internal::D3D12::CommandQueue_t<Type>;
 
     namespace CommandQueue
     {

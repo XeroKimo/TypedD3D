@@ -23,17 +23,14 @@ namespace TypedD3D::D3D12
         UINT parameterCount;
         std::vector<D3D12_META_COMMAND_PARAMETER_DESC> parameterDescs;
     };
-
-    template<std::derived_from<ID3D12Device> Ty>
-    class Device_t;
 }
 
 namespace TypedD3D::Internal
 {
     namespace D3D12
     {
-        template<class DeviceTy>
-        using Device_t = ::TypedD3D::D3D12::Device_t<DeviceTy>;
+        template<std::derived_from<ID3D12Device> DeviceTy>
+        using Device_t = Internal::Wrapper<DeviceTy>;
 
         namespace Device
         {
@@ -848,36 +845,28 @@ namespace TypedD3D::Internal
                     reference Get() { return *ToDerived().derived_self::Get(); }
                 };
             };
-
-            template<class Ty>
-            struct Traits
-            {
-                using value_type = Ty;
-                using pointer = Ty*;
-                using const_pointer = const Ty*;
-                using reference = Ty&;
-                using const_reference = const Ty&;
-
-                template<class DerivedSelf>
-                using Interface = typename TraitsImpl<Ty>::template Interface<DerivedSelf>;
-            };
         }
     }
 
+
     template<std::derived_from<ID3D12Device> Ty>
-    struct WrapperMapper<Ty>
+    struct Traits<Ty>
     {
-        using type = D3D12::Device_t<Ty>;
+        using value_type = Ty;
+        using pointer = Ty*;
+        using const_pointer = const Ty*;
+        using reference = Ty&;
+        using const_reference = const Ty&;
+
+        template<class DerivedSelf>
+        using Interface = typename D3D12::Device::TraitsImpl<Ty>::template Interface<DerivedSelf>;
     };
 }
 
 namespace TypedD3D::D3D12
 {
     template<std::derived_from<ID3D12Device> Ty>
-    class Device_t : public Internal::InterfaceWrapper<Ty, typename Internal::D3D12::Device::Traits<Ty>::Interface>
-    {
-
-    };
+    using Device_t = Internal::D3D12::Device_t<Ty>;
 
     using Device = Device_t<ID3D12Device>;
     using Device1 = Device_t<ID3D12Device1>;

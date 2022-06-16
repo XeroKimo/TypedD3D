@@ -35,11 +35,6 @@ namespace TypedD3D
 
         template<class Ty>
         struct ShaderVisibleMapper;
-
-        struct direct_cast_tag {};
-        struct compute_cast_tag {};
-        struct copy_cast_tag {};
-        struct bundle_cast_tag {};
     }
 
     template<class Ty>
@@ -71,73 +66,4 @@ namespace TypedD3D
 
     template<class Ty>
     using ShaderVisible = Internal::ShaderVisibleMapper<Ty>::type;
-
-    template<std::derived_from<IUnknown> OtherTy, class Ty>
-        requires std::same_as<typename Ty::cast_tag, Internal::direct_cast_tag>
-    Direct<OtherTy> Cast(Ty& other) noexcept
-    {
-        return Direct<OtherTy>(Internal::Cast<OtherTy, typename Direct<OtherTy>::interface_type>(other));
-    }
-
-    template<std::derived_from<IUnknown> OtherTy, class Ty>
-        requires std::same_as<typename Ty::cast_tag, Internal::direct_cast_tag>
-    Direct<OtherTy> Cast(Ty && other) noexcept
-    {
-        return Direct<OtherTy>(Internal::Cast<OtherTy, typename Direct<OtherTy>::interface_type>(std::move(other)));
-    }
-
-    //template<class OtherTy, template<class, D3D12_COMMAND_LIST_TYPE> class Object, class Ty>
-    //Object<OtherTy, D3D12_COMMAND_LIST_TYPE_DIRECT> Cast(const Object<Ty, D3D12_COMMAND_LIST_TYPE_DIRECT>& other) noexcept
-    //{
-    //    return Object<OtherTy, D3D12_COMMAND_LIST_TYPE_DIRECT>(Internal::Cast<OtherTy, typename Object<OtherTy, D3D12_COMMAND_LIST_TYPE_DIRECT>::interface_type>(other));
-    //}
-
-    //template<class OtherTy, template<class, D3D12_COMMAND_LIST_TYPE> class Object, class Ty>
-    //Object<OtherTy, D3D12_COMMAND_LIST_TYPE_DIRECT> Cast(Object<Ty, D3D12_COMMAND_LIST_TYPE_DIRECT>&& other) noexcept
-    //{
-    //    return Object<OtherTy, D3D12_COMMAND_LIST_TYPE_DIRECT>(Internal::Cast<OtherTy, typename Object<OtherTy, D3D12_COMMAND_LIST_TYPE_DIRECT>::interface_type>(std::move(other)));
-    //}
-
-    template<std::derived_from<IUnknown> OtherTy, class Ty>
-        requires std::same_as<typename Ty::cast_tag, Internal::compute_cast_tag>
-    Compute<OtherTy> Cast(Ty& other) noexcept
-    {
-        return Compute<OtherTy>(Internal::Cast<OtherTy, typename Compute<OtherTy>::interface_type>(other));
-    }
-
-    template<std::derived_from<IUnknown> OtherTy, class Ty>
-        requires std::same_as<typename Ty::cast_tag, Internal::compute_cast_tag>
-    Compute<OtherTy> Cast(Ty&& other) noexcept
-    {
-        return Compute<OtherTy>(Internal::Cast<OtherTy, typename Compute<OtherTy>::interface_type>(std::move(other)));
-    }
-
-    template<std::derived_from<IUnknown> OtherTy, class Ty>
-        requires std::same_as<typename Ty::cast_tag, Internal::copy_cast_tag>
-    Copy<OtherTy> Cast(Ty& other) noexcept
-    {
-        return Copy<OtherTy>(Internal::Cast<OtherTy, typename Copy<OtherTy>::interface_type>(other));
-    }
-
-    template<std::derived_from<IUnknown> OtherTy, class Ty>
-        requires std::same_as<typename Ty::cast_tag, Internal::copy_cast_tag>
-    Copy<OtherTy> Cast(Ty&& other) noexcept
-    {
-        return Copy<OtherTy>(Internal::Cast<OtherTy, typename Copy<OtherTy>::interface_type>(std::move(other)));
-    }
-
-    template<std::derived_from<IUnknown> OtherTy, class Ty>
-        requires std::same_as<typename Ty::cast_tag, Internal::bundle_cast_tag>
-    Bundle<OtherTy> Cast(Ty& other) noexcept
-    {
-        return Bundle<OtherTy>(Internal::Cast<OtherTy, typename Bundle<OtherTy>::interface_type>(other));
-    }
-
-    template<std::derived_from<IUnknown> OtherTy, class Ty>
-        requires std::same_as<typename Ty::cast_tag, Internal::bundle_cast_tag>
-    Bundle<OtherTy> Cast(Ty&& other) noexcept
-    {
-        return Bundle<OtherTy>(Internal::Cast<OtherTy, typename Bundle<OtherTy>::interface_type>(std::move(other)));
-    }
-
 }

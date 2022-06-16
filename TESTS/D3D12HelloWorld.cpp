@@ -35,7 +35,7 @@ using Microsoft::WRL::ComPtr;
 void D3D12HelloWorld()
 {
     CreateWindow();
-
+    TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> b;
     //TypedD3D::tl::expected<ComPtr<IDXGIFactory2>, HRESULT> factory = TypedD3D::Helpers::COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory1);
     //TypedD3D::Wrapper<IDXGIAdapter> adapter = factory->EnumAdapters<IDXGIAdapter>(0);
     ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface().value();

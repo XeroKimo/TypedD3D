@@ -7,16 +7,14 @@
 
 namespace TypedD3D::DXGI
 {
-    template<std::derived_from<IDXGIAdapter> Ty>
-    class Adapter_t;
 }
 
 namespace TypedD3D::Internal
 {
     namespace DXGI
     {
-        template<class Ty>
-        using Adapter_t = ::TypedD3D::DXGI::Adapter_t<Ty>;
+        template<std::derived_from<IDXGIAdapter> Ty>
+        using Adapter_t = Internal::Wrapper<Ty>;
 
         namespace Adapter
         {
@@ -62,26 +60,21 @@ namespace TypedD3D::Internal
                     reference Get() { return *ToDerived().derived_self::Get(); }
                 };
             };
-
-            template<class Ty>
-            struct Traits
-            {
-                using value_type = Ty;
-                using pointer = Ty*;
-                using const_pointer = const Ty*;
-                using reference = Ty&;
-                using cosnt_reference = const Ty&;
-
-                template<class DerivedSelf>
-                using Interface = TraitsImpl<Ty>::template Interface<DerivedSelf>;
-            };
         }
     }
 
+
     template<std::derived_from<IDXGIAdapter> Ty>
-    struct WrapperMapper<Ty>
+    struct Traits<Ty>
     {
-        using type = DXGI::Adapter_t<Ty>;
+        using value_type = Ty;
+        using pointer = Ty*;
+        using const_pointer = const Ty*;
+        using reference = Ty&;
+        using cosnt_reference = const Ty&;
+
+        template<class DerivedSelf>
+        using Interface = DXGI::Adapter::TraitsImpl<Ty>::template Interface<DerivedSelf>;
     };
 }
 
@@ -89,10 +82,7 @@ namespace TypedD3D::Internal
 namespace TypedD3D::DXGI
 {
     template<std::derived_from<IDXGIAdapter> Ty>
-    class Adapter_t : public Internal::InterfaceWrapper<Ty, typename Internal::DXGI::Adapter::Traits<Ty>::Interface>
-    {
-
-    };
+    using Adapter_t = Internal::DXGI::Adapter_t<Ty>;
 
     using Adapter = Adapter_t<IDXGIAdapter>;
 }

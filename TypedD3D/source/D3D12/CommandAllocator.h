@@ -6,19 +6,12 @@
 #include <wrl/client.h>
 #include <assert.h>
 
-namespace TypedD3D::D3D12
-{
-    template<D3D12_COMMAND_LIST_TYPE Type>
-    class CommandAllocator_t;
-}
-
-
 namespace TypedD3D::Internal
 {
     namespace D3D12
     {
         template<D3D12_COMMAND_LIST_TYPE Type>
-        using CommandAllocator_t = ::TypedD3D::D3D12::CommandAllocator_t<Type>;
+        using CommandAllocator_t = Internal::Wrapper<ID3D12CommandAllocator, Type>;
 
         namespace CommandAllocator
         {
@@ -44,24 +37,23 @@ namespace TypedD3D::Internal
                     reference Get() { return *ToDerived().derived_self::Get(); }
                 };
             };
-
-            template<D3D12_COMMAND_LIST_TYPE Type>
-            struct Traits
-            {
-                static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-
-                using value_type = ID3D12CommandAllocator;
-                using pointer = ID3D12CommandAllocator*;
-                using const_pointer = const ID3D12CommandAllocator*;
-                using reference = ID3D12CommandAllocator&;
-                using const_reference = const ID3D12CommandAllocator&;
-
-                template<class DerivedSelf>
-                using Interface = typename TraitsImpl::template Interface<DerivedSelf>;
-            };
         }
-
     }
+
+    template<D3D12_COMMAND_LIST_TYPE Type>
+    struct Traits<ID3D12CommandAllocator, Type>
+    {
+        static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
+
+        using value_type = ID3D12CommandAllocator;
+        using pointer = ID3D12CommandAllocator*;
+        using const_pointer = const ID3D12CommandAllocator*;
+        using reference = ID3D12CommandAllocator&;
+        using const_reference = const ID3D12CommandAllocator&;
+
+        template<class DerivedSelf>
+        using Interface = typename D3D12::CommandAllocator::TraitsImpl::template Interface<DerivedSelf>;
+    };
 
     template<>
     struct DirectMapper<ID3D12CommandAllocator>
@@ -91,14 +83,7 @@ namespace TypedD3D::Internal
 namespace TypedD3D::D3D12
 {
     template<D3D12_COMMAND_LIST_TYPE Type>
-    class CommandAllocator_t : public Internal::InterfaceWrapper<ID3D12CommandAllocator, Internal::D3D12::CommandAllocator::Traits<Type>::Interface>
-    {
-    private:
-        using Trait = Internal::D3D12::CommandAllocator::Traits<Type>;
-
-    public:
-        static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-    };
+    using CommandAllocator_t = TypedD3D::Internal::D3D12::CommandAllocator_t<Type>;
 
     namespace CommandAllocator
     {

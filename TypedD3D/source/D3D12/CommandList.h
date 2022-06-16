@@ -23,24 +23,57 @@
 #pragma warning (push)
 #pragma warning (disable : 4584)
 
-namespace TypedD3D::D3D12
-{
-    template<std::derived_from<ID3D12CommandList> Ty, D3D12_COMMAND_LIST_TYPE Type>
-    class CommandList_t;
-
-    template<std::derived_from<ID3D12CommandList> Ty>
-    class RenderPass_t;
-}
-
 namespace TypedD3D::Internal
 {
     namespace D3D12
     {
-        template<class CommandListTy, D3D12_COMMAND_LIST_TYPE Type>
-        using CommandList_t = ::TypedD3D::D3D12::CommandList_t<CommandListTy, Type>;
+        namespace CommandList
+        {
+            enum class TypeEnum
+            {
+                Direct,
+                Compute,
+                Copy,
+                Bundle,
+                RenderPass
+            };
 
-        template<class CommandListTy>
-        using RenderPass_t = ::TypedD3D::D3D12::RenderPass_t<CommandListTy>;
+            template<D3D12_COMMAND_LIST_TYPE>
+            constexpr TypeEnum ToInternalType;
+
+            template<>
+            constexpr TypeEnum ToInternalType<D3D12_COMMAND_LIST_TYPE_DIRECT> = TypeEnum::Direct;
+
+            template<>
+            constexpr TypeEnum ToInternalType<D3D12_COMMAND_LIST_TYPE_COMPUTE> = TypeEnum::Compute;
+
+            template<>
+            constexpr TypeEnum ToInternalType<D3D12_COMMAND_LIST_TYPE_COPY> = TypeEnum::Copy;
+
+            template<>
+            constexpr TypeEnum ToInternalType<D3D12_COMMAND_LIST_TYPE_BUNDLE> = TypeEnum::Bundle;
+
+            template<TypeEnum>
+            constexpr D3D12_COMMAND_LIST_TYPE ToStandardType;
+
+            template<>
+            constexpr D3D12_COMMAND_LIST_TYPE ToStandardType<TypeEnum::Direct> = D3D12_COMMAND_LIST_TYPE_DIRECT;
+
+            template<>
+            constexpr D3D12_COMMAND_LIST_TYPE ToStandardType<TypeEnum::Compute> = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+
+            template<>
+            constexpr D3D12_COMMAND_LIST_TYPE ToStandardType<TypeEnum::Copy> = D3D12_COMMAND_LIST_TYPE_COPY;
+
+            template<>
+            constexpr D3D12_COMMAND_LIST_TYPE ToStandardType<TypeEnum::Bundle> = D3D12_COMMAND_LIST_TYPE_BUNDLE;
+        }
+
+        template<std::derived_from<ID3D12CommandList> Ty, D3D12_COMMAND_LIST_TYPE Type>
+        using CommandList_t = Internal::Wrapper<Ty, CommandList::ToInternalType<Type>>;
+
+        template<std::derived_from<ID3D12CommandList> Ty>
+        using RenderPass_t = Internal::Wrapper<Ty, CommandList::TypeEnum::RenderPass>;
 
         namespace CommandList
         {
@@ -1027,7 +1060,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12CommandList*;
                 using reference = ID3D12CommandList&;
                 using const_reference = const ID3D12CommandList&;
-                using cast_tag = direct_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImpl<ID3D12CommandList>::InterfaceTagged<DerivedSelf, Type>
@@ -1044,7 +1077,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList*;
                 using reference = ID3D12GraphicsCommandList&;
                 using const_reference = const ID3D12GraphicsCommandList&;
-                using cast_tag = direct_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12CommandList, D3D12_COMMAND_LIST_TYPE_DIRECT>::Interface<DerivedSelf>,
@@ -1062,7 +1095,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList1*;
                 using reference = ID3D12GraphicsCommandList1&;
                 using const_reference = const ID3D12GraphicsCommandList1&;
-                using cast_tag = direct_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_DIRECT>::Interface<DerivedSelf>,
@@ -1080,7 +1113,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList2*;
                 using reference = ID3D12GraphicsCommandList2&;
                 using const_reference = const ID3D12GraphicsCommandList2&;
-                using cast_tag = direct_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList1, D3D12_COMMAND_LIST_TYPE_DIRECT>::Interface<DerivedSelf>,
@@ -1098,7 +1131,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList3*;
                 using reference = ID3D12GraphicsCommandList3&;
                 using const_reference = const ID3D12GraphicsCommandList3&;
-                using cast_tag = direct_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList2, D3D12_COMMAND_LIST_TYPE_DIRECT>::Interface<DerivedSelf>,
@@ -1116,7 +1149,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList4*;
                 using reference = ID3D12GraphicsCommandList4&;
                 using const_reference = const ID3D12GraphicsCommandList4&;
-                using cast_tag = direct_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList3, D3D12_COMMAND_LIST_TYPE_DIRECT>::Interface<DerivedSelf>,
@@ -1134,7 +1167,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList5*;
                 using reference = ID3D12GraphicsCommandList5&;
                 using const_reference = const ID3D12GraphicsCommandList5&;
-                using cast_tag = direct_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList4, D3D12_COMMAND_LIST_TYPE_DIRECT>::Interface<DerivedSelf>,
@@ -1152,7 +1185,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList*;
                 using reference = ID3D12GraphicsCommandList&;
                 using const_reference = const ID3D12GraphicsCommandList&;
-                using cast_tag = compute_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12CommandList, D3D12_COMMAND_LIST_TYPE_COMPUTE>::Interface<DerivedSelf>,
@@ -1222,7 +1255,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList1*;
                 using reference = ID3D12GraphicsCommandList1&;
                 using const_reference = const ID3D12GraphicsCommandList1&;
-                using cast_tag = compute_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_COMPUTE>::Interface<DerivedSelf>,
@@ -1248,7 +1281,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList2*;
                 using reference = ID3D12GraphicsCommandList2&;
                 using const_reference = const ID3D12GraphicsCommandList2&;
-                using cast_tag = compute_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList1, D3D12_COMMAND_LIST_TYPE_COMPUTE>::Interface<DerivedSelf>,
@@ -1269,7 +1302,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList3*;
                 using reference = ID3D12GraphicsCommandList3&;
                 using const_reference = const ID3D12GraphicsCommandList3&;
-                using cast_tag = compute_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList2, D3D12_COMMAND_LIST_TYPE_COMPUTE>::Interface<DerivedSelf>,
@@ -1290,7 +1323,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList4*;
                 using reference = ID3D12GraphicsCommandList4&;
                 using const_reference = const ID3D12GraphicsCommandList4&;
-                using cast_tag = compute_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList3, D3D12_COMMAND_LIST_TYPE_COMPUTE>::Interface<DerivedSelf>,
@@ -1318,7 +1351,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList5*;
                 using reference = ID3D12GraphicsCommandList5&;
                 using const_reference = const ID3D12GraphicsCommandList5&;
-                using cast_tag = compute_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList4, D3D12_COMMAND_LIST_TYPE_COMPUTE>::Interface<DerivedSelf>,
@@ -1339,7 +1372,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList*;
                 using reference = ID3D12GraphicsCommandList&;
                 using const_reference = const ID3D12GraphicsCommandList&;
-                using cast_tag = copy_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12CommandList, D3D12_COMMAND_LIST_TYPE_COPY>::Interface<DerivedSelf>,
@@ -1410,7 +1443,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList1*;
                 using reference = ID3D12GraphicsCommandList1&;
                 using const_reference = const ID3D12GraphicsCommandList1&;
-                using cast_tag = copy_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_COPY>::Interface<DerivedSelf>,
@@ -1436,7 +1469,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList2*;
                 using reference = ID3D12GraphicsCommandList2&;
                 using const_reference = const ID3D12GraphicsCommandList2&;
-                using cast_tag = copy_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList1, D3D12_COMMAND_LIST_TYPE_COPY>::Interface<DerivedSelf>,
@@ -1457,7 +1490,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList3*;
                 using reference = ID3D12GraphicsCommandList3&;
                 using const_reference = const ID3D12GraphicsCommandList3&;
-                using cast_tag = copy_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList2, D3D12_COMMAND_LIST_TYPE_COPY>::Interface<DerivedSelf>,
@@ -1478,7 +1511,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList4*;
                 using reference = ID3D12GraphicsCommandList4&;
                 using const_reference = const ID3D12GraphicsCommandList4&;
-                using cast_tag = copy_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList3, D3D12_COMMAND_LIST_TYPE_COPY>::Interface<DerivedSelf>,
@@ -1507,7 +1540,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList5*;
                 using reference = ID3D12GraphicsCommandList5&;
                 using const_reference = const ID3D12GraphicsCommandList5&;
-                using cast_tag = copy_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList4, D3D12_COMMAND_LIST_TYPE_COPY>::Interface<DerivedSelf>,
@@ -1528,7 +1561,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList*;
                 using reference = ID3D12GraphicsCommandList&;
                 using const_reference = const ID3D12GraphicsCommandList&;
-                using cast_tag = bundle_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12CommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE>::Interface<DerivedSelf>,
@@ -1599,7 +1632,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList1*;
                 using reference = ID3D12GraphicsCommandList1&;
                 using const_reference = const ID3D12GraphicsCommandList1&;
-                using cast_tag = bundle_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE>::Interface<DerivedSelf>,
@@ -1625,7 +1658,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList2*;
                 using reference = ID3D12GraphicsCommandList2&;
                 using const_reference = const ID3D12GraphicsCommandList2&;
-                using cast_tag = bundle_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList1, D3D12_COMMAND_LIST_TYPE_BUNDLE>::Interface<DerivedSelf>,
@@ -1646,7 +1679,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList3*;
                 using reference = ID3D12GraphicsCommandList3&;
                 using const_reference = const ID3D12GraphicsCommandList3&;
-                using cast_tag = bundle_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList2, D3D12_COMMAND_LIST_TYPE_BUNDLE>::Interface<DerivedSelf>,
@@ -1667,7 +1700,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList4*;
                 using reference = ID3D12GraphicsCommandList4&;
                 using const_reference = const ID3D12GraphicsCommandList4&;
-                using cast_tag = bundle_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList3, D3D12_COMMAND_LIST_TYPE_BUNDLE>::Interface<DerivedSelf>,
@@ -1696,7 +1729,7 @@ namespace TypedD3D::Internal
                 using const_pointer = const ID3D12GraphicsCommandList5*;
                 using reference = ID3D12GraphicsCommandList5&;
                 using const_reference = const ID3D12GraphicsCommandList5&;
-                using cast_tag = bundle_cast_tag;
+
 
                 template<class DerivedSelf>
                 class Interface : public TraitsImplTagged<ID3D12GraphicsCommandList4, D3D12_COMMAND_LIST_TYPE_BUNDLE>::Interface<DerivedSelf>,
@@ -1708,24 +1741,8 @@ namespace TypedD3D::Internal
                     //using Base::RSSetShadingRateImage;
                 };
             };
-
-            template<class Ty, D3D12_COMMAND_LIST_TYPE Type>
-            struct Traits
-            {
-                static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-
-                using value_type = Ty;
-                using pointer = Ty*;
-                using const_pointer = const Ty*;
-                using reference = Ty&;
-                using const_reference = const Ty&;
-
-                using cast_tag = TraitsImplTagged<Ty, Type>::cast_tag;
-
-                template<class DerivedSelf>
-                using Interface = typename TraitsImplTagged<Ty, Type>::template Interface<DerivedSelf>;
-            };
         }
+
 
         namespace RenderPass
         {
@@ -1929,23 +1946,38 @@ namespace TypedD3D::Internal
                     //using Base::RSSetShadingRateImage;
                 };
             };
-
-            template<class Ty>
-            struct Traits
-            {
-                static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = D3D12_COMMAND_LIST_TYPE_DIRECT;
-
-                using value_type = Ty;
-                using pointer = Ty*;
-                using const_pointer = const Ty*;
-                using reference = Ty&;
-                using const_reference = const Ty&;
-
-                template<class DerivedSelf>
-                using Interface = typename TraitsImpl<Ty>::template Interface<DerivedSelf>;
-            };
         }
     }
+
+    template<std::derived_from<ID3D12CommandList> Ty, D3D12::CommandList::TypeEnum Type>
+    struct Traits<Ty, Type>
+    {
+        static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = D3D12::CommandList::ToStandardType<Type>;
+
+        using value_type = Ty;
+        using pointer = Ty*;
+        using const_pointer = const Ty*;
+        using reference = Ty&;
+        using const_reference = const Ty&;
+
+        template<class DerivedSelf>
+        using Interface = typename D3D12::CommandList::TraitsImplTagged<Ty, command_list_value>::template Interface<DerivedSelf>;
+    };
+
+    template<std::derived_from<ID3D12CommandList> Ty>
+    struct Traits<Ty, D3D12::CommandList::TypeEnum::RenderPass>
+    {
+        static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = D3D12_COMMAND_LIST_TYPE_DIRECT;
+
+        using value_type = Ty;
+        using pointer = Ty*;
+        using const_pointer = const Ty*;
+        using reference = Ty&;
+        using const_reference = const Ty&;
+
+        template<class DerivedSelf>
+        using Interface = typename D3D12::RenderPass::TraitsImpl<Ty>::template Interface<DerivedSelf>;
+    };
 
     template<std::derived_from<ID3D12CommandList> Ty>
     struct DirectMapper<Ty>
@@ -1978,30 +2010,10 @@ namespace TypedD3D::D3D12
     using Microsoft::WRL::ComPtr;
 
     template<std::derived_from<ID3D12CommandList> Ty, D3D12_COMMAND_LIST_TYPE Type>
-    class CommandList_t : public Internal::InterfaceWrapper<Ty, typename Internal::D3D12::CommandList::Traits<Ty, Type>::Interface>
-    {
-        using Traits = Internal::D3D12::CommandList::Traits<Ty, Type>;
-
-    private:
-        using Base = Internal::InterfaceWrapper<Ty, typename Internal::D3D12::CommandList::Traits<Ty, Type>::Interface>;
-
-    public:
-        static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-        using allocator_value_type = CommandAllocator_t<Type>;
-        using cast_tag = Traits::cast_tag;
-
-    public:
-        using Base::Base;
-        using Base::operator=;
-    };
+    using CommandList_t = Internal::D3D12::CommandList_t<Ty, Type>;
 
     template<std::derived_from<ID3D12CommandList> Ty>
-    class RenderPass_t : public Internal::InterfaceWrapper<Ty, typename Internal::D3D12::RenderPass::Traits<Ty>::Interface>
-    {
-    public:
-        static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = D3D12_COMMAND_LIST_TYPE_DIRECT;
-        using allocator_value_type = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
-    };
+    using RenderPass_t = Internal::D3D12::RenderPass_t<Ty>;
 
     using RenderPass4 = RenderPass_t<ID3D12GraphicsCommandList4>;
     using RenderPass5 = RenderPass_t<ID3D12GraphicsCommandList5>;
@@ -2060,7 +2072,7 @@ namespace TypedD3D::D3D12
 namespace TypedD3D::Internal::D3D12::CommandList
 {
     template<class DerivedSelf>
-    void TraitsImpl<ID3D12GraphicsCommandList>::Interface<DerivedSelf>::ExecuteBundle(D3D12::CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> pCommandList)
+    void TraitsImpl<ID3D12GraphicsCommandList>::Interface<DerivedSelf>::ExecuteBundle(CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> pCommandList)
     {
         Get().ExecuteBundle(pCommandList.Get());
     }

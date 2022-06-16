@@ -1,4 +1,5 @@
 #pragma once
+#include "source/Helpers/COMHelpers.h"
 #include <wrl/client.h>
 #include <type_traits>
 #include <utility>
@@ -42,11 +43,6 @@ namespace TypedD3D::Internal
         InterfaceWrapper() = default;
         InterfaceWrapper(std::nullptr_t) {};
 
-        /// <summary>
-        /// Takes ownership of pointer, does not increase ref
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="obj"></param>
         template<class U>
         InterfaceWrapper(U* obj) : m_pair{ .m_second = obj } 
         {
@@ -140,39 +136,33 @@ namespace TypedD3D::Internal
         }
 
     public:
-        /// <summary>
-        /// Releases ownership of the pointer giving someone else responsibility for calling    
-        /// </summary>
-        /// <returns></returns>
         pointer Detach() { return m_pair.Second().Detach(); }
 
-        /// <summary>
-        /// Takes ownership of a new pointer, does not increase ref of the newly owned pointer
-        /// </summary>
-        /// <param name="p"></param>
         void Attach(pointer p)
         {
             m_pair.Second().Attach(p);
         }
         pointer Get() { return m_pair.Second().Get(); }
         CompressedPair::interface_pointer operator->() { return m_pair.First(); }
+
+        template<class OtherTy, template<class OtherDerivedSelf> class OtherInterfaceTy, class Ty, template<class DerivedSelf> class InterfaceTy>
+        friend InterfaceWrapper<OtherTy, OtherInterfaceTy> Cast(InterfaceWrapper<Ty, InterfaceTy>& other) noexcept;
+
+        template<class OtherTy, template<class OtherDerivedSelf> class OtherInterfaceTy, class Ty, template<class DerivedSelf> class InterfaceTy>
+        friend InterfaceWrapper<OtherTy, OtherInterfaceTy> Cast(InterfaceWrapper<Ty, InterfaceTy>&& other) noexcept;
     };
 
 
     template<class OtherTy, template<class OtherDerivedSelf> class OtherInterfaceTy, class Ty, template<class DerivedSelf> class InterfaceTy>
     InterfaceWrapper<OtherTy, OtherInterfaceTy> Cast(InterfaceWrapper<Ty, InterfaceTy>& other) noexcept
     {
-        OtherTy* temp;
-        other.Get()->QueryInterface(&temp);
-        return InterfaceWrapper<OtherTy, OtherInterfaceTy>(temp);
+        return InterfaceWrapper<OtherTy, OtherInterfaceTy>(Helpers::COM::Cast<OtherTy>(other.m_pair.Second()));
     }
 
 
     template<class OtherTy, template<class OtherDerivedSelf> class OtherInterfaceTy, class Ty, template<class DerivedSelf> class InterfaceTy>
     InterfaceWrapper<OtherTy, OtherInterfaceTy> Cast(InterfaceWrapper<Ty, InterfaceTy>&& other) noexcept 
     {
-        OtherTy* temp;
-        other.Get()->QueryInterface(&temp);
-        return InterfaceWrapper<OtherTy, OtherInterfaceTy>(temp);
+        return InterfaceWrapper<OtherTy, OtherInterfaceTy>(Helpers::COM::Cast<OtherTy>(std::move(other.m_pair.Second())));
     }
 }

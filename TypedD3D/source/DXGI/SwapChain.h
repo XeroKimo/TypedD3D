@@ -11,18 +11,12 @@
 
 struct ID3D12CommandQueue;
 
-namespace TypedD3D::DXGI
-{
-    template<std::derived_from<IDXGISwapChain> Ty>
-    class SwapChain_t;
-}
-
 namespace TypedD3D::Internal
 {
     namespace DXGI
     {
         template<class Ty>
-        using SwapChain_t = ::TypedD3D::DXGI::SwapChain_t<Ty>;
+        using SwapChain_t = Internal::Wrapper<Ty>;
 
         namespace SwapChain
         {
@@ -333,38 +327,30 @@ namespace TypedD3D::Internal
                     reference Get() { return *ToDerived().derived_self::Get(); }
                 };
             };
-
-            template<class Ty>
-            struct Traits
-            {
-                using value_type = Ty;
-                using pointer = Ty*;
-                using const_pointer = const Ty*;
-                using reference = Ty&;
-                using cosnt_reference = const Ty&;
-
-                template<class DerivedSelf>
-                using Interface = TraitsImpl<Ty>::template Interface<DerivedSelf>;
-            };
         }
-
     }
 
     template<std::derived_from<IDXGISwapChain> Ty>
-    struct WrapperMapper<Ty>
+    struct Traits<Ty>
     {
-        using type = DXGI::SwapChain_t<Ty>;
+        using value_type = Ty;
+        using pointer = Ty*;
+        using const_pointer = const Ty*;
+        using reference = Ty&;
+        using cosnt_reference = const Ty&;
+
+        template<class DerivedSelf>
+        using Interface = DXGI::SwapChain::TraitsImpl<Ty>::template Interface<DerivedSelf>;
     };
+
 }
 
 
 namespace TypedD3D::DXGI
 {
     template<std::derived_from<IDXGISwapChain> Ty>
-    class SwapChain_t : public Internal::InterfaceWrapper<Ty, typename Internal::DXGI::SwapChain::Traits<Ty>::Interface>
-    {
+    using SwapChain_t = Internal::DXGI::SwapChain_t<Ty>;
 
-    };
     using SwapChain = SwapChain_t<IDXGISwapChain>;
     using SwapChain1 = SwapChain_t<IDXGISwapChain1>;
 }

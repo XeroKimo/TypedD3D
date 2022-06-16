@@ -8,23 +8,15 @@
 struct ID3D11Device;
 struct ID3D12CommandQueue;
 
-namespace TypedD3D::DXGI
-{
-    template<class Ty>
-    class Factory_t;
-}
-
 namespace TypedD3D::Internal
 {
-
     namespace DXGI
     {
         template<class Ty>
-        using Factory_t = ::TypedD3D::DXGI::Factory_t<Ty>;
+        using Factory_t = Internal::Wrapper<Ty>;
 
         namespace Factory
         {
-
             template<class Ty>
             struct TraitsImpl;
 
@@ -328,36 +320,27 @@ namespace TypedD3D::Internal
                     reference Get() { return *ToDerived().derived_self::Get(); }
                 };
             };
-
-            template<class Ty>
-            struct Traits
-            {
-                using value_type = Ty;
-                using pointer = Ty*;
-                using const_pointer = const Ty*;
-                using reference = Ty&;
-                using cosnt_reference = const Ty&;
-
-                template<class DerivedSelf>
-                using Interface = TraitsImpl<Ty>::template Interface<DerivedSelf>;
-            };
         }
     }
 
     template<std::derived_from<IDXGIFactory> Ty>
-    struct WrapperMapper<Ty>
+    struct Traits<Ty>
     {
-        using type = DXGI::Factory_t<Ty>;
+        using value_type = Ty;
+        using pointer = Ty*;
+        using const_pointer = const Ty*;
+        using reference = Ty&;
+        using cosnt_reference = const Ty&;
+
+        template<class DerivedSelf>
+        using Interface = DXGI::Factory::TraitsImpl<Ty>::template Interface<DerivedSelf>;
     };
 }
 
 namespace TypedD3D::DXGI
 {
-    template<class Ty>
-    class Factory_t : public Internal::InterfaceWrapper<Ty, typename Internal::DXGI::Factory::Traits<Ty>::Interface>
-    {
-
-    };
+    template<std::derived_from<IDXGIFactory> Ty>
+    using Factory_t = Internal::DXGI::Factory_t<Ty>;
 
     namespace Factory
     {

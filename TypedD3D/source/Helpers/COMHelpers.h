@@ -17,6 +17,13 @@ namespace TypedD3D::Helpers::COM
         from.As(&to);
         return to;
     }
+    template<class To, class From>
+    Microsoft::WRL::ComPtr<To> Cast(Microsoft::WRL::ComPtr<From>&& from)
+    {
+        Microsoft::WRL::ComPtr<To> to;
+        from.As(&to);
+        return to;
+    }
 
     template<class To, class From>
     To* Cast(From* from)
