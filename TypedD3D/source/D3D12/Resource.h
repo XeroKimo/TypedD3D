@@ -11,7 +11,7 @@ namespace TypedD3D::Internal
 {
     namespace D3D12
     {
-        using Resource_t = Internal::Wrapper<ID3D12Resource>;
+        using Resource_t = IUnknownWrapper<ID3D12Resource>;
         namespace Resource
         {
         }

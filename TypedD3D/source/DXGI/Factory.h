@@ -13,7 +13,7 @@ namespace TypedD3D::Internal
     namespace DXGI
     {
         template<class Ty>
-        using Factory_t = Internal::Wrapper<Ty>;
+        using Factory_t = IUnknownWrapper<Ty>;
 
         namespace Factory
         {

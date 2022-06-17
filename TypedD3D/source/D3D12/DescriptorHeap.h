@@ -101,7 +101,7 @@ namespace TypedD3D::Internal
     namespace D3D12
     {
         template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-        using DescriptorHeap_t = Internal::Wrapper<ID3D12DescriptorHeap, Type, HeapFlags>;
+        using DescriptorHeap_t = IUnknownWrapper<ID3D12DescriptorHeap, Type, HeapFlags>;
 
         template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
         using CPU_DESCRIPTOR_HANDLE = ::TypedD3D::D3D12::CPU_DESCRIPTOR_HANDLE<Type, HeapFlags>;

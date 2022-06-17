@@ -32,7 +32,7 @@ namespace TypedD3D::Internal
         }
 
         template<class Ty>
-        using PipelineState_t = Internal::Wrapper<ID3D12PipelineState, PipelineState::ToEnum<Ty>>;
+        using PipelineState_t = IUnknownWrapper<ID3D12PipelineState, PipelineState::ToEnum<Ty>>;
 
     }
 

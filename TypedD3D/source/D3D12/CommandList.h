@@ -70,10 +70,10 @@ namespace TypedD3D::Internal
         }
 
         template<std::derived_from<ID3D12CommandList> Ty, D3D12_COMMAND_LIST_TYPE Type>
-        using CommandList_t = Internal::Wrapper<Ty, CommandList::ToInternalType<Type>>;
+        using CommandList_t = IUnknownWrapper<Ty, CommandList::ToInternalType<Type>>;
 
         template<std::derived_from<ID3D12CommandList> Ty>
-        using RenderPass_t = Internal::Wrapper<Ty, CommandList::TypeEnum::RenderPass>;
+        using RenderPass_t = IUnknownWrapper<Ty, CommandList::TypeEnum::RenderPass>;
 
         namespace CommandList
         {

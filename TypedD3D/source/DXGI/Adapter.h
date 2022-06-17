@@ -14,7 +14,7 @@ namespace TypedD3D::Internal
     namespace DXGI
     {
         template<std::derived_from<IDXGIAdapter> Ty>
-        using Adapter_t = Internal::Wrapper<Ty>;
+        using Adapter_t = IUnknownWrapper<Ty>;
 
         namespace Adapter
         {

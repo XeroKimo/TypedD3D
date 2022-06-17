@@ -9,7 +9,7 @@ namespace TypedD3D
         struct Traits;
 
         template<class Ty, auto... Tags>
-        class Wrapper : public Internal::InterfaceWrapper<Ty, typename Internal::Traits<Ty, Tags...>::Interface>
+        class IUnknownWrapper : public Internal::InterfaceWrapper<Ty, typename Internal::Traits<Ty, Tags...>::Interface>
         {
         private:
             using Base = Internal::InterfaceWrapper<Ty, typename Internal::Traits<Ty, Tags...>::Interface>;
@@ -22,25 +22,28 @@ namespace TypedD3D
             using Base::operator=;
         };
 
-        template<class Ty, auto... Tags>
-        struct WrapperMapper
+        template<class Ty>
+        struct WrapperMapper;
+
+        template<std::derived_from<IUnknown> Ty>
+        struct WrapperMapper<Ty>
         {
-            using type = Wrapper<Ty, Tags...>;
+            using type = IUnknownWrapper<Ty>;
         };
     }
 
-    template<class Ty, auto... Tags>
-    using Wrapper = Internal::WrapperMapper<Ty, Tags...>::type;
+    template<class Ty>
+    using Wrapper = Internal::WrapperMapper<Ty>::type;
 
     template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, auto... Tags>
-    Wrapper<DerivedTy, Tags...> Cast(Internal::Wrapper<Ty, Tags...>& other) noexcept
+    Internal::IUnknownWrapper<DerivedTy, Tags...> Cast(Internal::IUnknownWrapper<Ty, Tags...>& other) noexcept
     {
-        return Wrapper<DerivedTy, Tags...>(Internal::Cast<DerivedTy, typename Wrapper<DerivedTy, Tags...>::interface_type>(other));
+        return Internal::IUnknownWrapper<DerivedTy, Tags...>(Internal::Cast<DerivedTy, typename Internal::IUnknownWrapper<DerivedTy, Tags...>::interface_type>(other));
     }
 
     template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, auto... Tags>
-    Wrapper<DerivedTy, Tags...> Cast(Internal::Wrapper<Ty, Tags...>&& other) noexcept
+    Internal::IUnknownWrapper<DerivedTy, Tags...> Cast(Internal::IUnknownWrapper<Ty, Tags...>&& other) noexcept
     {
-        return Wrapper<DerivedTy, Tags...>(Internal::Cast<DerivedTy, typename Wrapper<DerivedTy, Tags...>::interface_type>(std::move(other)));
+        return Internal::IUnknownWrapper<DerivedTy, Tags...>(Internal::Cast<DerivedTy, typename Internal::IUnknownWrapper<DerivedTy, Tags...>::interface_type>(std::move(other)));
     }
 }

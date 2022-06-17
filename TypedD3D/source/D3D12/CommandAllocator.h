@@ -11,7 +11,7 @@ namespace TypedD3D::Internal
     namespace D3D12
     {
         template<D3D12_COMMAND_LIST_TYPE Type>
-        using CommandAllocator_t = Internal::Wrapper<ID3D12CommandAllocator, Type>;
+        using CommandAllocator_t = IUnknownWrapper<ID3D12CommandAllocator, Type>;
 
         namespace CommandAllocator
         {

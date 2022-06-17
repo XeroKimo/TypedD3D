@@ -16,7 +16,7 @@ namespace TypedD3D::Internal
     namespace DXGI
     {
         template<class Ty>
-        using SwapChain_t = Internal::Wrapper<Ty>;
+        using SwapChain_t = IUnknownWrapper<Ty>;
 
         namespace SwapChain
         {

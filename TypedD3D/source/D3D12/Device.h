@@ -30,7 +30,7 @@ namespace TypedD3D::Internal
     namespace D3D12
     {
         template<std::derived_from<ID3D12Device> DeviceTy>
-        using Device_t = Internal::Wrapper<DeviceTy>;
+        using Device_t = IUnknownWrapper<DeviceTy>;
 
         namespace Device
         {
