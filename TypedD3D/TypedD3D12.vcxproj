@@ -35,7 +35,7 @@
     <ClInclude Include="source\DXGI\Factory.h" />
     <ClInclude Include="source\DXGI\SwapChain.h" />
     <ClInclude Include="expected.hpp" />
-    <ClInclude Include="source\Internal\ComWrapper.h" />
+    <ClInclude Include="source\Internal\IUnknownWrapper.h" />
     <ClInclude Include="source\D3D12\DescriptorHeap.h" />
     <ClInclude Include="source\Internal\D3D12\Meta.h" />
     <ClInclude Include="source\D3D12\PipelineState.h" />

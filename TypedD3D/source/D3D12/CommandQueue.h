@@ -1,7 +1,7 @@
 #pragma once
 #include "CommandList.h"
-#include "../Internal/ComWrapper.h"
-#include "../D3D12Wrappers.h"
+#include "source/Internal/IUnknownWrapper.h"
+#include "source/D3D12Wrappers.h"
 #include <memory>
 #include <array>
 

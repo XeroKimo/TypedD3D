@@ -1,28 +1,10 @@
 #pragma once
-#include "Internal/ComWrapper.h"
-#include "Helpers/COMHelpers.h"
+#include "Internal/IUnknownWrapper.h"
 
 namespace TypedD3D
 {
     namespace Internal
     {
-        template<class Ty, auto... Tags>
-        struct Traits;
-
-        template<class Ty, auto... Tags>
-        class IUnknownWrapper : public InterfaceWrapper<Ty, typename Traits<Ty, Tags...>::Interface>
-        {
-        private:
-            using Base = InterfaceWrapper<Ty, typename Traits<Ty, Tags...>::Interface>;
-
-        public:
-            using traits_type = Traits<Ty, Tags...>;
-
-        public:
-            using Base::Base;
-            using Base::operator=;
-        };
-
         template<class Ty>
         struct WrapperMapper;
 
@@ -35,16 +17,4 @@ namespace TypedD3D
 
     template<class Ty>
     using Wrapper = Internal::WrapperMapper<Ty>::type;
-
-    template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, auto... Tags>
-    Internal::IUnknownWrapper<DerivedTy, Tags...> Cast(Internal::IUnknownWrapper<Ty, Tags...>& other) noexcept
-    {
-        return Internal::IUnknownWrapper<DerivedTy, Tags...>(Internal::Cast<DerivedTy, typename Internal::IUnknownWrapper<DerivedTy, Tags...>::interface_type>(other));
-    }
-
-    template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, auto... Tags>
-    Internal::IUnknownWrapper<DerivedTy, Tags...> Cast(Internal::IUnknownWrapper<Ty, Tags...>&& other) noexcept
-    {
-        return Internal::IUnknownWrapper<DerivedTy, Tags...>(Internal::Cast<DerivedTy, typename Internal::IUnknownWrapper<DerivedTy, Tags...>::interface_type>(std::move(other)));
-    }
 }

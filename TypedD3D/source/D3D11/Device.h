@@ -1,7 +1,7 @@
 #pragma once
-#include "../Wrappers.h"
-#include "../Internal/ComWrapper.h"
-#include "../Helpers/COMHelpers.h"
+#include "source/Wrappers.h"
+#include "source/Internal/IUnknownWrapper.h"
+#include "source/Helpers/COMHelpers.h"
 #include "Resources.h"
 #include "Shaders.h"
 #include "InputLayout.h"

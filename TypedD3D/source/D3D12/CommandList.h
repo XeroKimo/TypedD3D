@@ -7,10 +7,10 @@
 #pragma once
 #include "CommandAllocator.h"
 #include "DescriptorHeap.h"
-#include "../Internal/D3D12/Meta.h"
-#include "../Internal/ComWrapper.h"
-#include "../Helpers/COMHelpers.h"
-#include "../D3D12Wrappers.h"
+#include "source/Internal/D3D12/Meta.h"
+#include "source/Internal/IUnknownWrapper.h"
+#include "source/Helpers/COMHelpers.h"
+#include "source/D3D12Wrappers.h"
 #include "span_tuple.h"
 #include <memory>
 #include <d3d12.h>

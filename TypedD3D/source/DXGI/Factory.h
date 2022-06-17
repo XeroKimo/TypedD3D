@@ -1,9 +1,9 @@
 #pragma once
-#include "../Wrappers.h"
-#include "../D3D12Wrappers.h"
-#include "../Internal/ComWrapper.h"
+#include "source/Wrappers.h"
+#include "source/D3D12Wrappers.h"
+#include "source/Internal/IUnknownWrapper.h"
+#include "source/Helpers/COMHelpers.h"
 #include "expected.hpp"
-#include "../Helpers/COMHelpers.h"
 
 struct ID3D11Device;
 struct ID3D12CommandQueue;

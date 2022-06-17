@@ -1,10 +1,10 @@
 #pragma once
-#include "../Wrappers.h"
+#include "source/Wrappers.h"
 #include "source/D3D12Wrappers.h"
-#include "../Internal/ComWrapper.h"
-#include "../Internal/d3dConcepts.h"
+#include "source/Internal/IUnknownWrapper.h"
+#include "source/Internal/d3dConcepts.h"
+#include "source/Helpers/COMHelpers.h"
 #include "expected.hpp"
-#include "../Helpers/COMHelpers.h"
 #include <dxgi1_6.h>
 #include <span>
 #include <d3d12.h>
