@@ -1,6 +1,6 @@
 #pragma once
-#include "../Internal/ComWrapper.h"
-#include "../Helpers/COMHelpers.h"
+#include "source/Internal/IUnknownWrapper.h"
+#include "source/Helpers/COMHelpers.h"
 #include <d3d12.h>
 
 namespace TypedD3D::D3D12

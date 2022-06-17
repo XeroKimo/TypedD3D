@@ -51,8 +51,10 @@ void D3D12HelloWorld()
     commandAllocators[0] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().value();
     commandAllocators[1] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().value();
     TypedD3D::Direct<ID3D12GraphicsCommandList> temp = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0]).value();
-    TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList = TypedD3D::Cast<ID3D12GraphicsCommandList1>(temp);
+    TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList = TypedD3D::Cast<TypedD3D::Direct<ID3D12GraphicsCommandList1>>(temp);
+    TypedD3D::Compute<ID3D12GraphicsCommandList1> commandList54;
 
+    //TypedD3D::Compute<ID3D12GraphicsCommandList1> cltest = commandList;
     UINT64 fenceValue = 0;
     ComPtr<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE).value();
     HANDLE syncEvent = CreateEventW(nullptr, false, false, nullptr);

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../Internal/ComWrapper.h"
-#include "../Wrappers.h"
-#include "../Helpers/COMHelpers.h"
+#include "source/Internal/IUnknownWrapper.h"
+#include "source/Wrappers.h"
+#include "source/Helpers/COMHelpers.h"
 #include <dxgi1_6.h>
 
 namespace TypedD3D::DXGI

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Internal/ComWrapper.h"
-#include "../D3D12Wrappers.h"
+#include "source/Internal/IUnknownWrapper.h"
+#include "source/D3D12Wrappers.h"
 #include <d3d12.h>
 #include <wrl/client.h>
 #include <assert.h>

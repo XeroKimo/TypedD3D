@@ -1,10 +1,9 @@
 #pragma once
-#include "../Helpers/D3D12Helpers.h"
-#include "../Helpers/COMHelpers.h"
-#include "expected.hpp"
-#include "../Internal/ComWrapper.h"
-#include "../Internal/D3D12/Meta.h"
-#include "../D3D12Wrappers.h"
+#include "source/Helpers/D3D12Helpers.h"
+#include "source/Helpers/COMHelpers.h"
+#include "source/Internal/IUnknownWrapper.h"
+#include "source/Internal/D3D12/Meta.h"
+#include "source/D3D12Wrappers.h"
 #include "CommandList.h"
 #include "CommandAllocator.h"
 #include "CommandQueue.h"
@@ -12,6 +11,7 @@
 #include "DescriptorHeap.h"
 #include "span_tuple.h"
 
+#include "expected.hpp"
 #include <d3d12.h>
 #include <wrl/client.h>
 
