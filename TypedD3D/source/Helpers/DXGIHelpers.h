@@ -7,7 +7,7 @@
 
 #pragma once
 #include "COMHelpers.h"
-#include "../Utils.h"
+#include "expected.hpp"
 #include <dxgi1_6.h>
 #include <type_traits>
 
@@ -24,7 +24,7 @@ namespace TypedD3D::Helpers::DXGI
         DEFINE_ENUM_FLAG_OPERATORS(CreationFlags);
 
         template<class Factory = IDXGIFactory>
-        Utils::Expected<Microsoft::WRL::ComPtr<Factory>, HRESULT> Create(CreationFlags flags)
+        tl::expected<Microsoft::WRL::ComPtr<Factory>, HRESULT> Create(CreationFlags flags)
         {
             using Microsoft::WRL::ComPtr;
 
@@ -44,12 +44,12 @@ namespace TypedD3D::Helpers::DXGI
                 }
                 else
                 {
-                    Utils::Expected<ComPtr<IDXGIFactory2>, HRESULT> factory = COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory2, static_cast<UINT>(flags));
+                    tl::expected<ComPtr<IDXGIFactory2>, HRESULT> factory = COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory2, static_cast<UINT>(flags));
 
                     if(!factory)
-                        return Utils::Unexpected(factory.GetError());
+                        return tl::unexpected(factory.error());
 
-                    return COM::Cast<Factory>(factory.GetValue());
+                    return COM::Cast<Factory>(factory.value());
                 }
             }
         }
@@ -58,7 +58,7 @@ namespace TypedD3D::Helpers::DXGI
     namespace SwapChain
     {
         template<class SwapChain = IDXGISwapChain1>
-        Utils::Expected<Microsoft::WRL::ComPtr<SwapChain>, HRESULT> Create(IDXGIFactory2& factory, IUnknown& device, HWND hWnd, const DXGI_SWAP_CHAIN_DESC1& desc, const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* optFullscreenDesc = nullptr, IDXGIOutput* optRestrictToOutput = nullptr)
+        tl::expected<Microsoft::WRL::ComPtr<SwapChain>, HRESULT> Create(IDXGIFactory2& factory, IUnknown& device, HWND hWnd, const DXGI_SWAP_CHAIN_DESC1& desc, const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* optFullscreenDesc = nullptr, IDXGIOutput* optRestrictToOutput = nullptr)
         {
             using Microsoft::WRL::ComPtr;
 
@@ -66,7 +66,7 @@ namespace TypedD3D::Helpers::DXGI
             HRESULT hr = factory.CreateSwapChainForHwnd(&device, hWnd, &desc, optFullscreenDesc, optRestrictToOutput, &swapChain);
 
             if(FAILED(hr))
-                return Utils::Unexpected(hr);
+                return tl::unexpected(hr);
 
             if constexpr(std::is_same_v<SwapChain, IDXGISwapChain1>)
                 return swapChain;
@@ -75,7 +75,7 @@ namespace TypedD3D::Helpers::DXGI
         }
 
         template<class SwapChain = IDXGISwapChain1>
-        Utils::Expected<Microsoft::WRL::ComPtr<SwapChain>, HRESULT> CreateFlipDiscard(IDXGIFactory2& factory, IUnknown& device, HWND hWnd, DXGI_FORMAT format, UINT bufferCount, DXGI_SWAP_CHAIN_FLAG flags, bool fullScreen, IDXGIOutput* optRestrictToOutput = nullptr)
+        tl::expected<Microsoft::WRL::ComPtr<SwapChain>, HRESULT> CreateFlipDiscard(IDXGIFactory2& factory, IUnknown& device, HWND hWnd, DXGI_FORMAT format, UINT bufferCount, DXGI_SWAP_CHAIN_FLAG flags, bool fullScreen, IDXGIOutput* optRestrictToOutput = nullptr)
         {
             DXGI_SWAP_CHAIN_DESC1 desc{};
             desc.Width = 0;
@@ -103,7 +103,7 @@ namespace TypedD3D::Helpers::DXGI
         }
 
         template<class Resource = ID3D12Resource>
-        inline Utils::Expected<Microsoft::WRL::ComPtr<Resource>, HRESULT> GetBuffer(IDXGISwapChain& swapChain, UINT index)
+        inline tl::expected<Microsoft::WRL::ComPtr<Resource>, HRESULT> GetBuffer(IDXGISwapChain& swapChain, UINT index)
         {
             return COM::IIDToObjectForwardFunction<Resource>(&IDXGISwapChain::GetBuffer, swapChain, index);
         }

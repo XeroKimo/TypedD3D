@@ -1,36 +1,50 @@
 #pragma once
+#include "Internal/ComWrapper.h"
 #include "Helpers/COMHelpers.h"
 
 namespace TypedD3D
 {
     namespace Internal
     {
-        template<class DirectXClass, auto... Tags>
-        class InterfaceWrapper;
+        template<class Ty, auto... Tags>
+        struct Traits;
 
-        template<class>
-        struct is_interface_wrapper : std::false_type {};
+        template<class Ty, auto... Tags>
+        class IUnknownWrapper : public InterfaceWrapper<Ty, typename Traits<Ty, Tags...>::Interface>
+        {
+        private:
+            using Base = InterfaceWrapper<Ty, typename Traits<Ty, Tags...>::Interface>;
 
-        template<class DirectXClass, auto... Tags>
-        struct is_interface_wrapper<InterfaceWrapper<DirectXClass, Tags...>> : std::true_type {};
+        public:
+            using traits_type = Traits<Ty, Tags...>;
+
+        public:
+            using Base::Base;
+            using Base::operator=;
+        };
+
+        template<class Ty>
+        struct WrapperMapper;
+
+        template<std::derived_from<IUnknown> Ty>
+        struct WrapperMapper<Ty>
+        {
+            using type = IUnknownWrapper<Ty>;
+        };
     }
 
-    template<class IUnknownTy, auto... ExtraTags>
-    using Wrapper = Internal::InterfaceWrapper<IUnknownTy, ExtraTags...>;
+    template<class Ty>
+    using Wrapper = Internal::WrapperMapper<Ty>::type;
 
-    template<class DerivedTy, class DirectXClass, auto... Tags>
-        requires std::is_base_of_v<IUnknown, DerivedTy>
-    Internal::InterfaceWrapper<DerivedTy, Tags...> Cast(Internal::InterfaceWrapper<DirectXClass, Tags...> value)
+    template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, auto... Tags>
+    Internal::IUnknownWrapper<DerivedTy, Tags...> Cast(Internal::IUnknownWrapper<Ty, Tags...>& other) noexcept
     {
-        return Internal::InterfaceWrapper<DerivedTy, Tags...>(Helpers::COM::Cast<DerivedTy>(value.GetComPtr()));
-    }    
-    
-    template<class DerivedTy, class DirectXClass, auto... Tags>
-        requires Internal::is_interface_wrapper<DerivedTy>::value &&
-            std::is_base_of_v<IUnknown, typename DerivedTy::underlying_type> &&
-            (Internal::InterfaceWrapper<DirectXClass, Tags...>::tag_value == DerivedTy::tag_value)
-    DerivedTy Cast(Internal::InterfaceWrapper<DirectXClass, Tags...> value)
+        return Internal::IUnknownWrapper<DerivedTy, Tags...>(Internal::Cast<DerivedTy, typename Internal::IUnknownWrapper<DerivedTy, Tags...>::interface_type>(other));
+    }
+
+    template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, auto... Tags>
+    Internal::IUnknownWrapper<DerivedTy, Tags...> Cast(Internal::IUnknownWrapper<Ty, Tags...>&& other) noexcept
     {
-        return DerivedTy(Helpers::COM::Cast<typename DerivedTy::underlying_type>(value.GetComPtr()));
+        return Internal::IUnknownWrapper<DerivedTy, Tags...>(Internal::Cast<DerivedTy, typename Internal::IUnknownWrapper<DerivedTy, Tags...>::interface_type>(std::move(other)));
     }
 }
