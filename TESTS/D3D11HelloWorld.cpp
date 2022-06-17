@@ -166,8 +166,8 @@ void D3D11HelloWorld()
         }
     }
 
-    //assert(swapChain.has_value());
-    //assert(factory.has_value());
+    assert(swapChain != nullptr);
+    assert(factory != nullptr);
 
 
     UnregisterClassW(windowName, nullptr);

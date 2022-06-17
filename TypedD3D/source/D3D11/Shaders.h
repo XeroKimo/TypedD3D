@@ -13,35 +13,22 @@ namespace TypedD3D::Internal
             std::same_as<Ty, ID3D11GeometryShader> ||
             std::same_as<Ty, ID3D11PixelShader> ||
             std::same_as<Ty, ID3D11ComputeShader>;
-
-        namespace Shader
-        {
-            template<class WrapperTy>
-            class Interface : public DeviceChild::Interface<WrapperTy>
-            {
-
-            };
-        }
-
     }
 
-    template<D3D11::ShaderConcept ShaderTy>
-    class InterfaceWrapper<ShaderTy> : public ComWrapper<ShaderTy>, private D3D11::Shader::Interface<InterfaceWrapper<ShaderTy>>
+    template<D3D11::ShaderConcept Ty>
+    struct Traits<Ty>
     {
-    private:
-        using Interface = D3D11::Shader::Interface<InterfaceWrapper<ShaderTy>>;
-        friend Interface;
+        using value_type = Ty;
+        using pointer = Ty*;
+        using const_pointer = const Ty*;
+        using reference = Ty&;
+        using const_reference = const Ty&;
 
-    public:
-        static constexpr size_t tag_value = 0;
-        using underlying_type = ShaderTy;
+        template<class DerivedSelf>
+        class Interface : public D3D11::DeviceChild::Interface<DerivedSelf>
+        {
 
-    public:
-        using ComWrapper<ShaderTy>::ComWrapper;
-
-    public:
-        Interface* GetInterface() { return this; }
-        Interface* operator->() { return this; }
+        };
     };
 }
 

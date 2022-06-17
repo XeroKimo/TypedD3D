@@ -35,14 +35,14 @@ using Microsoft::WRL::ComPtr;
 void D3D12HelloWorld()
 {
     CreateWindow();
-
+    TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> b;
     //TypedD3D::tl::expected<ComPtr<IDXGIFactory2>, HRESULT> factory = TypedD3D::Helpers::COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory1);
-    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::DXGI::Factory::Create1<IDXGIFactory2>().value();
-    TypedD3D::Wrapper<IDXGIAdapter> adapter = factory->EnumAdapters<IDXGIAdapter>(0);
+    //TypedD3D::Wrapper<IDXGIAdapter> adapter = factory->EnumAdapters<IDXGIAdapter>(0);
     ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface().value();
     debugLayer->EnableDebugLayer();
-    TypedD3D::Wrapper<ID3D12Device1> device(D3D_FEATURE_LEVEL_12_0);
-    ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Helpers::COM::Cast<ID3D12DebugDevice>(device.AsComPtr());
+    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::DXGI::Factory::Create1<IDXGIFactory2>().value();
+    TypedD3D::Wrapper<ID3D12Device1> device = TypedD3D::D3D12::CreateDevice<ID3D12Device1>(D3D_FEATURE_LEVEL_12_0).value();
+    ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Helpers::COM::Cast<ID3D12DebugDevice>(device.Get());
 
     constexpr UINT backBufferCount = 2;
 
@@ -51,7 +51,7 @@ void D3D12HelloWorld()
     commandAllocators[0] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().value();
     commandAllocators[1] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().value();
     TypedD3D::Direct<ID3D12GraphicsCommandList> temp = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0]).value();
-    TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList = TypedD3D::Cast<TypedD3D::Direct<ID3D12GraphicsCommandList1>>(temp);
+    TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList = TypedD3D::Cast<ID3D12GraphicsCommandList1>(temp);
 
     UINT64 fenceValue = 0;
     ComPtr<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE).value();
@@ -75,10 +75,10 @@ void D3D12HelloWorld()
         nullptr,
         nullptr).value();
 
-    TypedD3D::RTV<ID3D12DescriptorHeap, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> swapChainBufferDescriptorHeap = device->CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>(2, 0).value();
+    TypedD3D::RTV<ID3D12DescriptorHeap> swapChainBufferDescriptorHeap = device->CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>(2, 0).value();
 
     UINT rtvOffset = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> descriptorHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> descriptorHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
     DXGI_SWAP_CHAIN_DESC1 desc = swapChain->GetDesc1();
 
     std::array<TypedD3D::Wrapper<ID3D12Resource>, 2> swapChainBuffers;
