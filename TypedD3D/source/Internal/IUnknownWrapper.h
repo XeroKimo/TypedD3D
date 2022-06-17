@@ -151,6 +151,7 @@ namespace TypedD3D::Internal
         }
         pointer Get() { return m_pair.Second().Get(); }
         pointer Get() const { return m_pair.Second().Get(); }
+        Microsoft::WRL::ComPtr<value_type> AsComPtr() const { return m_pair.Second(); }
         CompressedPair::interface_pointer operator->() { return m_pair.First(); }
 
         template<class OtherTy, template<class OtherDerivedSelf> class OtherInterfaceTy, class Ty, template<class DerivedSelf> class InterfaceTy>
