@@ -35,10 +35,10 @@ namespace TypedD3D::Internal
         namespace Device
         {
             template<class Ty>
-            struct TraitsImpl;
+            struct Traits;
 
             template<>
-            struct TraitsImpl<ID3D12Device>
+            struct Traits<ID3D12Device>
             {
                 using value_type = ID3D12Device;
                 using pointer = ID3D12Device*;
@@ -480,7 +480,7 @@ namespace TypedD3D::Internal
             };
 
             template<>
-            struct TraitsImpl<ID3D12Device1>
+            struct Traits<ID3D12Device1>
             {
                 using value_type = ID3D12Device1;
                 using pointer = ID3D12Device1*;
@@ -489,7 +489,7 @@ namespace TypedD3D::Internal
                 using const_reference = const ID3D12Device1&;
 
                 template<class DerivedSelf>
-                class Interface : public TraitsImpl<ID3D12Device>::Interface<DerivedSelf>
+                class Interface : public Traits<ID3D12Device>::Interface<DerivedSelf>
                 {
                 private:
                     using derived_self = DerivedSelf;
@@ -536,7 +536,7 @@ namespace TypedD3D::Internal
             };
 
             template<>
-            struct TraitsImpl<ID3D12Device2>
+            struct Traits<ID3D12Device2>
             {
                 using value_type = ID3D12Device2;
                 using pointer = ID3D12Device2*;
@@ -545,7 +545,7 @@ namespace TypedD3D::Internal
                 using const_reference = const ID3D12Device2&;
 
                 template<class DerivedSelf>
-                class Interface : public TraitsImpl<ID3D12Device1>::Interface<DerivedSelf>
+                class Interface : public Traits<ID3D12Device1>::Interface<DerivedSelf>
                 {
                 private:
                     using derived_self = DerivedSelf;
@@ -564,7 +564,7 @@ namespace TypedD3D::Internal
             };
 
             template<>
-            struct TraitsImpl<ID3D12Device3>
+            struct Traits<ID3D12Device3>
             {
                 using value_type = ID3D12Device3;
                 using pointer = ID3D12Device3*;
@@ -573,7 +573,7 @@ namespace TypedD3D::Internal
                 using const_reference = const ID3D12Device3&;
 
                 template<class DerivedSelf>
-                class Interface : public TraitsImpl<ID3D12Device2>::Interface<DerivedSelf>
+                class Interface : public Traits<ID3D12Device2>::Interface<DerivedSelf>
                 {
                 private:
                     using derived_self = DerivedSelf;
@@ -611,7 +611,7 @@ namespace TypedD3D::Internal
             };
 
             template<>
-            struct TraitsImpl<ID3D12Device4>
+            struct Traits<ID3D12Device4>
             {
                 using value_type = ID3D12Device4;
                 using pointer = ID3D12Device4*;
@@ -620,7 +620,7 @@ namespace TypedD3D::Internal
                 using const_reference = const ID3D12Device4&;
 
                 template<class DerivedSelf>
-                class Interface : public TraitsImpl<ID3D12Device3>::Interface<DerivedSelf>
+                class Interface : public Traits<ID3D12Device3>::Interface<DerivedSelf>
                 {
                 private:
                     using derived_self = DerivedSelf;
@@ -706,7 +706,7 @@ namespace TypedD3D::Internal
             };
 
             template<>
-            struct TraitsImpl<ID3D12Device5>
+            struct Traits<ID3D12Device5>
             {
                 using value_type = ID3D12Device5;
                 using pointer = ID3D12Device5*;
@@ -715,7 +715,7 @@ namespace TypedD3D::Internal
                 using const_reference = const ID3D12Device5&;
 
                 template<class DerivedSelf>
-                class Interface : public TraitsImpl<ID3D12Device4>::Interface<DerivedSelf>
+                class Interface : public Traits<ID3D12Device4>::Interface<DerivedSelf>
                 {
                 private:
                     using derived_self = DerivedSelf;
@@ -859,7 +859,7 @@ namespace TypedD3D::Internal
         using const_reference = const Ty&;
 
         template<class DerivedSelf>
-        using Interface = typename D3D12::Device::TraitsImpl<Ty>::template Interface<DerivedSelf>;
+        using Interface = typename D3D12::Device::Traits<Ty>::template Interface<DerivedSelf>;
     };
 }
 

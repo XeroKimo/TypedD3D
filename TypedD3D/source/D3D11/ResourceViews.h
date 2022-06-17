@@ -38,77 +38,66 @@ namespace TypedD3D::Internal
             {
                 using type = D3D11_SHADER_RESOURCE_VIEW_DESC;
             };
-
-            template<class WrapperTy, class ViewClassTag>
-            class Interface;
-
-            template<class WrapperTy>
-            class Interface<WrapperTy, ID3D11View> : public DeviceChild::Interface<WrapperTy>
-            {
-            private:
-                using type = ID3D11View;
-                using wrapper_type = WrapperTy;
-
-            public:
-                Wrapper<ID3D11Resource> GetResource()
-                {
-                    Microsoft::WRL::ComPtr<ID3D11Resource> resource;
-                    InternalGet().GetResource(&resource);
-                    return Wrapper<ID3D11Resource>(resource);
-                }
-
-
-            private:
-                wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
-                type& InternalGet() { return *ToDerived().Get(); }
-            };
-
-            template<class WrapperTy, class ViewClassTag>
-                requires std::derived_from<ViewClassTag, ID3D11View> && (!std::same_as<ID3D11View, ViewClassTag>)
-            class Interface<WrapperTy, ViewClassTag> : public Interface<WrapperTy, ID3D11View>
-            {
-            private:
-                using type = ViewClassTag;
-                using wrapper_type = WrapperTy;
-
-            public:
-                typename ViewToResourceDesc<type>::type GetDesc()
-                {
-                    typename ViewToResourceDesc<type>::type description;
-                    InternalGet().GetDesc(&description);
-                    return description;
-                }
-
-
-            private:
-                wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
-                type& InternalGet() { return *ToDerived().Get(); }
-            };
         }
     }
 
-    template<std::derived_from<ID3D11View> Ty>
-    class InterfaceWrapper<Ty> : public ComWrapper<Ty>, private D3D11::View::Interface<InterfaceWrapper<Ty>, Ty>
+    template<>
+    struct Traits<ID3D11View>
     {
-    private:
-        using Interface = D3D11::View::Interface<InterfaceWrapper<Ty>, Ty>;
-        friend Interface;
+        using value_type = ID3D11View;
+        using pointer = ID3D11View*;
+        using const_pointer = const ID3D11View*;
+        using reference = ID3D11View&;
+        using const_reference = const ID3D11View&;
 
-    public:
-        static constexpr size_t tag_value = 0;
-        using underlying_type = Ty;
-
-    public:
-        using ComWrapper<Ty>::ComWrapper;
-
-        template<std::convertible_to<Ty*> OtherTy>
-        InterfaceWrapper(InterfaceWrapper<OtherTy> other) :
-            ComWrapper<Ty>(other.Get())
+        template<class DerivedSelf>
+        class Interface : public D3D11::DeviceChild::Interface<DerivedSelf>
         {
-        }
+        private:
+            using derived_self = DerivedSelf;
 
-    public:
-        Interface* GetInterface() { return this; }
-        Interface* operator->() { return this; }
+        public:
+            Wrapper<ID3D11Resource> GetResource()
+            {
+                Microsoft::WRL::ComPtr<ID3D11Resource> resource;
+                Get().GetResource(&resource);
+                return Wrapper<ID3D11Resource>(resource);
+            }
+
+        private:
+            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+            reference Get() { return *ToDerived().derived_self::Get(); }
+        };
     };
+
+    template<class Ty>
+        requires std::derived_from<Ty, ID3D11View> && (!std::same_as<ID3D11View, Ty>)
+    struct Traits<Ty>
+    {
+        using value_type = Ty;
+        using pointer = Ty*;
+        using const_pointer = const Ty*;
+        using reference = Ty&;
+        using const_reference = const Ty&;
+
+        template<class DerivedSelf>
+        class Interface : public Traits<ID3D11View>::Interface<DerivedSelf>
+        {
+        private:
+            using derived_self = DerivedSelf;
+
+        public:
+            typename D3D11::View::ViewToResourceDesc<value_type>::type GetDesc()
+            {
+                typename D3D11::View::ViewToResourceDesc<value_type>::type description;
+                Get().GetDesc(&description);
+                return description;
+            }
+
+        private:
+            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+            reference Get() { return *ToDerived().derived_self::Get(); }
+        };
+    };
+
 }

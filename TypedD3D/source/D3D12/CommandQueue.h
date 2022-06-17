@@ -23,7 +23,7 @@ namespace TypedD3D::Internal
 
         namespace CommandQueue
         {
-            struct TraitsImpl
+            struct Traits
             {
                 using value_type = ID3D12CommandQueue;
                 using pointer = ID3D12CommandQueue*;
@@ -154,7 +154,7 @@ namespace TypedD3D::Internal
         using allocator_value_type = D3D12::CommandAllocator_t<command_list_value>;
 
         template<class DerivedSelf>
-        class Interface : public D3D12::CommandQueue::TraitsImpl::Interface<DerivedSelf>
+        class Interface : public D3D12::CommandQueue::Traits::Interface<DerivedSelf>
         {
         private:
             using derived_self = DerivedSelf;

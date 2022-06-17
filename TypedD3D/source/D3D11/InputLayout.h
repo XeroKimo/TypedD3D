@@ -8,29 +8,22 @@ namespace TypedD3D::Internal
     {
         namespace InputLayout
         {
-            template<class WrapperTy>
-            class Interface : public DeviceChild::Interface<WrapperTy>
-            {
-            };
         }
     }
 
-    template<std::derived_from<ID3D11InputLayout> Ty>
-    class InterfaceWrapper<Ty> : public ComWrapper<Ty>, private D3D11::InputLayout::Interface<InterfaceWrapper<Ty>>
+    template<>
+    struct Traits<ID3D11InputLayout>
     {
-    private:
-        using Interface = D3D11::InputLayout::Interface<InterfaceWrapper<Ty>>;
-        friend Interface;
+        using value_type = ID3D11InputLayout;
+        using pointer = ID3D11InputLayout*;
+        using const_pointer = const ID3D11InputLayout*;
+        using reference = ID3D11InputLayout&;
+        using const_reference = const ID3D11InputLayout&;
 
-    public:
-        static constexpr size_t tag_value = 0;
-        using underlying_type = Ty;
+        template<class DerivedSelf>
+        class Interface : public D3D11::DeviceChild::Interface<DerivedSelf>
+        {
 
-    public:
-        using ComWrapper<Ty>::ComWrapper;
-
-    public:
-        Interface* GetInterface() { return this; }
-        Interface* operator->() { return this; }
+        };
     };
 }

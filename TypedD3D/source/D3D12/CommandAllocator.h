@@ -15,7 +15,7 @@ namespace TypedD3D::Internal
 
         namespace CommandAllocator
         {
-            struct TraitsImpl
+            struct Traits
             {
                 using value_type = ID3D12CommandAllocator;
                 using pointer = ID3D12CommandAllocator*;
@@ -52,7 +52,7 @@ namespace TypedD3D::Internal
         using const_reference = const ID3D12CommandAllocator&;
 
         template<class DerivedSelf>
-        using Interface = typename D3D12::CommandAllocator::TraitsImpl::template Interface<DerivedSelf>;
+        using Interface = typename D3D12::CommandAllocator::Traits::template Interface<DerivedSelf>;
     };
 
     template<>

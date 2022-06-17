@@ -1,4 +1,5 @@
 #pragma once
+#include "Internal/ComWrapper.h"
 #include "Helpers/COMHelpers.h"
 
 namespace TypedD3D
@@ -9,13 +10,13 @@ namespace TypedD3D
         struct Traits;
 
         template<class Ty, auto... Tags>
-        class IUnknownWrapper : public Internal::InterfaceWrapper<Ty, typename Internal::Traits<Ty, Tags...>::Interface>
+        class IUnknownWrapper : public InterfaceWrapper<Ty, typename Traits<Ty, Tags...>::Interface>
         {
         private:
-            using Base = Internal::InterfaceWrapper<Ty, typename Internal::Traits<Ty, Tags...>::Interface>;
+            using Base = InterfaceWrapper<Ty, typename Traits<Ty, Tags...>::Interface>;
 
         public:
-            using traits_type = Internal::Traits<Ty, Tags...>;
+            using traits_type = Traits<Ty, Tags...>;
 
         public:
             using Base::Base;

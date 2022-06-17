@@ -11,223 +11,177 @@ namespace TypedD3D::Internal
     {
         namespace Resource
         {
-            template<class WrapperTy>
-            class Interface : public DeviceChild::Interface<WrapperTy>
-            {
-            private:
-                using resource_type = ID3D11Resource;
-                using wrapper_type = WrapperTy;
-            public:
-                D3D11_RESOURCE_DIMENSION GetType()
-                {
-                    D3D11_RESOURCE_DIMENSION pResourceDimension;
-                    InternalGet().GetType(&pResourceDimension);
-                    return pResourceDimension;
-                }
-
-                void SetEvictionPriority(UINT EvictionPriority)
-                {
-                    InternalGet().SetEvictionPriority(EvictionPriority);
-                }
-
-                UINT GetEvictionPriority()
-                {
-                    return InternalGet().GetEvictionPriority();
-                }
-
-            private:
-                wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
-                resource_type& InternalGet() { return *ToDerived().Get(); }
-            };
         }
 
         namespace Buffer
         {
-            template<class WrapperTy>
-            class Interface : public Resource::Interface<WrapperTy>
-            {
-            private:
-                using resource_type = ID3D11Buffer;
-                using wrapper_type = WrapperTy;
-            public:
-                D3D11_BUFFER_DESC GetDesc()
-                {
-                    D3D11_BUFFER_DESC pDesc;
-                    InternalGet().GetDesc(&pDesc);
-                    return pDesc;
-                }
-
-            private:
-                wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
-                resource_type& InternalGet() { return *ToDerived().Get(); }
-            };
         }
 
         namespace Texture1D
         {
-            template<class WrapperTy>
-            class Interface : public Resource::Interface<WrapperTy>
-            {
-            private:
-                using resource_type = ID3D11Texture1D;
-                using wrapper_type = WrapperTy;
-            public:
-                D3D11_TEXTURE1D_DESC GetDesc()
-                {
-                    D3D11_TEXTURE1D_DESC pDesc;
-                    InternalGet().GetDesc(&pDesc);
-                    return pDesc;
-                }
-
-            private:
-                wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
-                resource_type& InternalGet() { return *ToDerived().Get(); }
-            };
         }
 
         namespace Texture2D
         {
-            template<class WrapperTy>
-            class Interface : public Resource::Interface<WrapperTy>
-            {
-            private:
-                using resource_type = ID3D11Texture2D;
-                using wrapper_type = WrapperTy;
-            public:
-                D3D11_TEXTURE2D_DESC GetDesc()
-                {
-                    D3D11_TEXTURE2D_DESC pDesc;
-                    InternalGet().GetDesc(&pDesc);
-                    return pDesc;
-                }
-
-            private:
-                wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
-                resource_type& InternalGet() { return *ToDerived().Get(); }
-            };
         }
 
         namespace Texture3D
         {
-            template<class WrapperTy>
-            class Interface : public Resource::Interface<WrapperTy>
-            {
-            private:
-                using resource_type = ID3D11Texture3D;
-                using wrapper_type = WrapperTy;
-            public:
-                D3D11_TEXTURE3D_DESC GetDesc()
-                {
-                    D3D11_TEXTURE3D_DESC pDesc;
-                    InternalGet().GetDesc(&pDesc);
-                    return pDesc;
-                }
-
-            private:
-                wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
-                resource_type& InternalGet() { return *ToDerived().Get(); }
-            };
         }
     }
 
-    template<std::same_as<ID3D11Resource> ResourceTy>
-    class InterfaceWrapper<ResourceTy> : public ComWrapper<ResourceTy>, private D3D11::Resource::Interface<InterfaceWrapper<ResourceTy>>
+    template<>
+    struct Traits<ID3D11Resource>
     {
-    private:
-        using Interface = D3D11::Resource::Interface<InterfaceWrapper<ResourceTy>>;
-        friend Interface;
+        using value_type = ID3D11Resource;
+        using pointer = ID3D11Resource*;
+        using const_pointer = const ID3D11Resource*;
+        using reference = ID3D11Resource&;
+        using const_reference = const ID3D11Resource&;
 
-    public:
-        static constexpr size_t tag_value = 0;
-        using underlying_type = ResourceTy;
-
-    public:
-        using ComWrapper<ResourceTy>::ComWrapper;
-
-        template<std::derived_from<ID3D11Resource> OtherTy>
-        InterfaceWrapper(InterfaceWrapper<OtherTy> other) : 
-            ComWrapper<ResourceTy>(other.Get())
+        template<class DerivedSelf>
+        class Interface : public D3D11::DeviceChild::Interface<DerivedSelf>
         {
-        }
+        private:
+            using derived_self = DerivedSelf;
 
-    public:
-        Interface* GetInterface() { return this; }
-        Interface* operator->() { return this; }
+        public:
+            D3D11_RESOURCE_DIMENSION GetType()
+            {
+                D3D11_RESOURCE_DIMENSION pResourceDimension;
+                Get().GetType(&pResourceDimension);
+                return pResourceDimension;
+            }
+
+            void SetEvictionPriority(UINT EvictionPriority)
+            {
+                Get().SetEvictionPriority(EvictionPriority);
+            }
+
+            UINT GetEvictionPriority()
+            {
+                return Get().GetEvictionPriority();
+            }
+
+        private:
+            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+            reference Get() { return *ToDerived().derived_self::Get(); }
+        };
     };
 
-    template<std::same_as<ID3D11Buffer> ResourceTy>
-    class InterfaceWrapper<ResourceTy> : public ComWrapper<ResourceTy>, private D3D11::Buffer::Interface<InterfaceWrapper<ResourceTy>>
+    template<>
+    struct Traits<ID3D11Buffer>
     {
-    private:
-        using Interface = D3D11::Buffer::Interface<InterfaceWrapper<ResourceTy>>;
-        friend Interface;
+        using value_type = ID3D11Buffer;
+        using pointer = ID3D11Buffer*;
+        using const_pointer = const ID3D11Buffer*;
+        using reference = ID3D11Buffer&;
+        using const_reference = const ID3D11Buffer&;
 
-    public:
-        static constexpr size_t tag_value = 0;
-        using underlying_type = ResourceTy;
+        template<class DerivedSelf>
+        class Interface : public Traits<ID3D11Resource>::Interface<DerivedSelf>
+        {
+        private:
+            using derived_self = DerivedSelf;
 
-    public:
-        using ComWrapper<ResourceTy>::ComWrapper;
+        public:
+            D3D11_BUFFER_DESC GetDesc()
+            {
+                D3D11_BUFFER_DESC pDesc;
+                Get().GetDesc(&pDesc);
+                return pDesc;
+            }
 
-    public:
-        Interface* GetInterface() { return this; }
-        Interface* operator->() { return this; }
+        private:
+            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+            reference Get() { return *ToDerived().derived_self::Get(); }
+        };
     };
 
-    template<std::same_as<ID3D11Texture1D> ResourceTy>
-    class InterfaceWrapper<ResourceTy> : public ComWrapper<ResourceTy>, private D3D11::Texture1D::Interface<InterfaceWrapper<ResourceTy>>
+    template<>
+    struct Traits<ID3D11Texture1D>
     {
-    private:
-        using Interface = D3D11::Texture1D::Interface<InterfaceWrapper<ResourceTy>>;
-        friend Interface;
+        using value_type = ID3D11Texture1D;
+        using pointer = ID3D11Texture1D*;
+        using const_pointer = const ID3D11Texture1D*;
+        using reference = ID3D11Texture1D&;
+        using const_reference = const ID3D11Texture1D&;
 
-    public:
-        static constexpr size_t tag_value = 0;
-        using underlying_type = ResourceTy;
+        template<class DerivedSelf>
+        class Interface : public Traits<ID3D11Resource>::Interface<DerivedSelf>
+        {
+        private:
+            using derived_self = DerivedSelf;
 
-    public:
-        using ComWrapper<ResourceTy>::ComWrapper;
+        public:
+            D3D11_TEXTURE1D_DESC GetDesc()
+            {
+                D3D11_TEXTURE1D_DESC pDesc;
+                Get().GetDesc(&pDesc);
+                return pDesc;
+            }
 
-    public:
-        Interface* GetInterface() { return this; }
-        Interface* operator->() { return this; }
+        private:
+            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+            reference Get() { return *ToDerived().derived_self::Get(); }
+        };
     };
 
-    template<std::same_as<ID3D11Texture2D> ResourceTy>
-    class InterfaceWrapper<ResourceTy> : public ComWrapper<ResourceTy>, private D3D11::Texture2D::Interface<InterfaceWrapper<ResourceTy>>
+    template<>
+    struct Traits<ID3D11Texture2D>
     {
-    private:
-        using Interface = D3D11::Texture2D::Interface<InterfaceWrapper<ResourceTy>>;
-        friend Interface;
+        using value_type = ID3D11Texture2D;
+        using pointer = ID3D11Texture2D*;
+        using const_pointer = const ID3D11Texture2D*;
+        using reference = ID3D11Texture2D&;
+        using const_reference = const ID3D11Texture2D&;
 
-    public:
-        static constexpr size_t tag_value = 0;
-        using underlying_type = ResourceTy;
+        template<class DerivedSelf>
+        class Interface : public Traits<ID3D11Resource>::Interface<DerivedSelf>
+        {
+        private:
+            using derived_self = DerivedSelf;
 
-    public:
-        using ComWrapper<ResourceTy>::ComWrapper;
+        public:
+            D3D11_TEXTURE2D_DESC GetDesc()
+            {
+                D3D11_TEXTURE2D_DESC pDesc;
+                Get().GetDesc(&pDesc);
+                return pDesc;
+            }
 
-    public:
-        Interface* GetInterface() { return this; }
-        Interface* operator->() { return this; }
+        private:
+            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+            reference Get() { return *ToDerived().derived_self::Get(); }
+        };
     };
 
-    template<std::same_as<ID3D11Texture3D> ResourceTy>
-    class InterfaceWrapper<ResourceTy> : public ComWrapper<ResourceTy>, private D3D11::Texture3D::Interface<InterfaceWrapper<ResourceTy>>
+    template<>
+    struct Traits<ID3D11Texture3D>
     {
-    private:
-        using Interface = D3D11::Texture3D::Interface<InterfaceWrapper<ResourceTy>>;
-        friend Interface;
+        using value_type = ID3D11Texture3D;
+        using pointer = ID3D11Texture3D*;
+        using const_pointer = const ID3D11Texture3D*;
+        using reference = ID3D11Texture3D&;
+        using const_reference = const ID3D11Texture3D&;
 
-    public:
-        static constexpr size_t tag_value = 0;
-        using underlying_type = ResourceTy;
+        template<class DerivedSelf>
+        class Interface : public Traits<ID3D11Resource>::Interface<DerivedSelf>
+        {
+        private:
+            using derived_self = DerivedSelf;
 
-    public:
-        using ComWrapper<ResourceTy>::ComWrapper;
+        public:
+            D3D11_TEXTURE3D_DESC GetDesc()
+            {
+                D3D11_TEXTURE3D_DESC pDesc;
+                Get().GetDesc(&pDesc);
+                return pDesc;
+            }
 
-    public:
-        Interface* GetInterface() { return this; }
-        Interface* operator->() { return this; }
+        private:
+            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+            reference Get() { return *ToDerived().derived_self::Get(); }
+        };
     };
 }

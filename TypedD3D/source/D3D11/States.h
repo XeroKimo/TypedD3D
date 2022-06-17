@@ -38,54 +38,40 @@ namespace TypedD3D::Internal
                 using type = D3D11_SHADER_RESOURCE_VIEW_DESC;
             };
 
-            template<class WrapperTy, class ViewClassTag>
-            class Interface;
-
             template<class Ty>
             concept StateObject = std::same_as<Ty, ID3D11DepthStencilState> ||
                 std::same_as<Ty, ID3D11SamplerState> ||
                 std::same_as<Ty, ID3D11BlendState> ||
                 std::same_as<Ty, ID3D11RasterizerState>;
-
-            template<class WrapperTy, StateObject StateTag>
-            class Interface<WrapperTy, StateTag> : public DeviceChild::Interface<WrapperTy>
-            {
-            private:
-                using type = StateTag;
-                using wrapper_type = WrapperTy;
-
-            public:
-                typename ViewToStateDesc<type>::type GetDesc()
-                {
-                    typename ViewToStateDesc<type>::type description;
-                    InternalGet().GetDesc(&description);
-                    return description;
-                }
-
-
-            private:
-                wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
-                type& InternalGet() { return *ToDerived().Get(); }
-            };
         }
     }
 
     template<D3D11::State::StateObject Ty>
-    class InterfaceWrapper<Ty> : public ComWrapper<Ty>, private D3D11::State::Interface<InterfaceWrapper<Ty>, Ty>
+    struct Traits<Ty>
     {
-    private:
-        using Interface = D3D11::State::Interface<InterfaceWrapper<Ty>, Ty>;
-        friend Interface;
+        using value_type = Ty;
+        using pointer = Ty*;
+        using const_pointer = const Ty*;
+        using reference = Ty&;
+        using const_reference = const Ty&;
 
-    public:
-        static constexpr size_t tag_value = 0;
-        using underlying_type = Ty;
+        template<class DerivedSelf>
+        class Interface : public D3D11::DeviceChild::Interface<DerivedSelf>
+        {
+        private:
+            using derived_self = DerivedSelf;
 
-    public:
-        using ComWrapper<Ty>::ComWrapper;
+        public:
+            typename D3D11::State::ViewToStateDesc<value_type>::type GetDesc()
+            {
+                typename D3D11::State::ViewToStateDesc<value_type>::type description;
+                Get().GetDesc(&description);
+                return description;
+            }
 
-    public:
-        Interface* GetInterface() { return this; }
-        Interface* operator->() { return this; }
+        private:
+            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+            reference Get() { return *ToDerived().derived_self::Get(); }
+        };
     };
 }

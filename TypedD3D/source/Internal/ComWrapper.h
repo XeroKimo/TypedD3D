@@ -32,8 +32,10 @@ namespace TypedD3D::Internal
             
             interface_pointer First() { return static_cast<interface_pointer>(this); }
             Microsoft::WRL::ComPtr<value_type>& Second() { return m_second; }
+            const Microsoft::WRL::ComPtr<value_type>& Second() const { return m_second; }
 
             pointer Get() { return m_second.Get(); }
+            pointer Get() const { return m_second.Get(); }
         };
 
     private:
@@ -114,12 +116,12 @@ namespace TypedD3D::Internal
             return *this;
         }
 
-        friend bool operator==(const InterfaceWrapper& lh, const std::nullptr_t) noexcept
+        friend bool operator==(const InterfaceWrapper& lh, std::nullptr_t) noexcept
         {
             return lh.Get() == nullptr;
         }
 
-        friend bool operator!=(const InterfaceWrapper& lh, const std::nullptr_t) noexcept
+        friend bool operator!=(const InterfaceWrapper& lh, std::nullptr_t) noexcept
         {
             return lh.Get() != nullptr;
         }
@@ -143,6 +145,7 @@ namespace TypedD3D::Internal
             m_pair.Second().Attach(p);
         }
         pointer Get() { return m_pair.Second().Get(); }
+        pointer Get() const { return m_pair.Second().Get(); }
         CompressedPair::interface_pointer operator->() { return m_pair.First(); }
 
         template<class OtherTy, template<class OtherDerivedSelf> class OtherInterfaceTy, class Ty, template<class DerivedSelf> class InterfaceTy>
