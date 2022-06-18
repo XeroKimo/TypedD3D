@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\D3D11\Constants.h" />
     <ClInclude Include="source\D3D11\Device.h" />
     <ClInclude Include="source\D3D11\DeviceChild.h" />
     <ClInclude Include="source\D3D11\DeviceContext.h" />

@@ -707,15 +707,13 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
-                        Get().VSGetConstantBuffers(0, NumBuffers, tempBuffers.get());
+                        std::unique_ptr<ID3D11Buffer*[]> tempBuffers = std::make_unique<ID3D11Buffer*[]>(NumBuffers);
+                        Get().VSGetConstantBuffers(StartSlot, NumBuffers, tempBuffers.get());
 
                         std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
                         for(UINT i = 0; i < NumBuffers; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
-                            temp.Attach(tempBuffers[i]);
-                            buffers[i] = std::move(temp);
+                            buffers[i].Attach(tempBuffers[i]);
                         }
 
                         return buffers;
@@ -725,34 +723,30 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView* []> tempViews = std::make_unique<ID3D11ShaderResourceView* []>(NumViews);
-                        Get().PSGetShaderResources(0, NumViews, tempViews.get());
+                        std::unique_ptr<ID3D11ShaderResourceView*[]> tempViews = std::make_unique<ID3D11ShaderResourceView*[]>(NumViews);
+                        Get().PSGetShaderResources(StartSlot, NumViews, tempViews.get());
 
                         std::vector<Wrapper<ID3D11ShaderResourceView>> views(NumViews);
                         for(UINT i = 0; i < NumViews; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> temp;
-                            temp.Attach(tempViews[i]);
-                            views[i] = std::move(temp);
+                            views[i].Attach(tempViews[i]);
                         }
 
                         return views;
                     }
 
-                    std::pair<Wrapper<ID3D11PixelShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> PSGetShader()
+                    std::pair<Wrapper<ID3D11PixelShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> PSGetShader(UINT numInstances = 0)
                     {
                         std::pair<Wrapper<ID3D11PixelShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> output;
-                        ID3D11ClassInstance* instances;
-                        UINT numInstances;
+                        std::array<ID3D11ClassInstance*, TypedD3D::D3D11::Constants::Shader::g_maxClassInstances> tempInstances;
                         Microsoft::WRL::ComPtr<ID3D11PixelShader> shader;
 
-                        Get().PSGetShader(&shader, &instances, &numInstances);
-                        output.first = std::move(shader);
-
+                        Get().PSGetShader(&shader, tempInstances.data(), &numInstances);
+                        output.first.Attach(shader.Detach());
+                        output.second.resize(numInstances);
                         for(UINT i = 0; i < numInstances; i++)
                         {
-                            output.second.push_back();
-                            output.second.back().Attach(instances[i]);
+                            output.second[i].Attach(tempInstances[i]);
                         }
 
                         return output;
@@ -762,33 +756,30 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState* []>(NumSamplers);
-                        Get().PSGetSamplers(0, NumSamplers, tempSamplers.get());
+                        std::unique_ptr<ID3D11SamplerState*[]> tempSamplers = std::make_unique<ID3D11SamplerState*[]>(NumSamplers - StartSlot);
+                        Get().PSGetSamplers(StartSlot, NumSamplers, tempSamplers.get());
 
-                        std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers);
+                        std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers - StartSlot);
                         for(UINT i = 0; i < NumSamplers; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11SamplerState> temp;
-                            temp.Attach(tempSamplers[i]);
-                            samplers[i] = std::move(temp);
+                            samplers[i].Attach(tempSamplers[i]);
                         }
 
                         return samplers;
                     }
 
-                    std::pair<Wrapper<ID3D11VertexShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> VSGetShader()
+                    std::pair<Wrapper<ID3D11VertexShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> VSGetShader(UINT numInstances = 0)
                     {
                         std::pair<Wrapper<ID3D11VertexShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> output;
-                        ID3D11ClassInstance* instances;
-                        UINT numInstances;
+                        std::array<ID3D11ClassInstance*, TypedD3D::D3D11::Constants::Shader::g_maxClassInstances> tempInstances;
                         Microsoft::WRL::ComPtr<ID3D11VertexShader> shader;
 
-                        Get().VSGetShader(&shader, &instances, &numInstances);
-                        output.first = std::move(shader);
+                        Get().VSGetShader(&shader, tempInstances.data(), &numInstances);
+                        output.first.Attach(shader.Detach());
+                        output.second.resize(numInstances);
                         for(UINT i = 0; i < numInstances; i++)
                         {
-                            output.second.push_back();
-                            output.second.back().Attach(instances[i]);
+                            output.second[i].Attach(tempInstances[i]);
                         }
 
                         return output;
@@ -798,15 +789,13 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
-                        Get().PSGetConstantBuffers(0, NumBuffers, tempBuffers.get());
+                        std::unique_ptr<ID3D11Buffer*[]> tempBuffers = std::make_unique<ID3D11Buffer*[]>(NumBuffers);
+                        Get().PSGetConstantBuffers(StartSlot, NumBuffers, tempBuffers.get());
 
                         std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
                         for(UINT i = 0; i < NumBuffers; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
-                            temp.Attach(tempBuffers[i]);
-                            buffers[i] = std::move(temp);
+                            buffers[i].Attach(tempBuffers[i]);
                         }
 
                         return buffers;
@@ -834,9 +823,7 @@ namespace TypedD3D::Internal
                         output.offsets.resize(NumBuffers);
                         for(UINT i = 0; i < NumBuffers; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
-                            temp.Attach(tempBuffers[i]);
-                            output.buffers[i] = std::move(temp);
+                            output.buffers[i].Attach(tempBuffers[i]);
                         }
                         std::copy(&tempStrides[0], &tempStrides[NumBuffers], output.strides.begin());
                         std::copy(&tempOffsets[0], &tempOffsets[NumBuffers], output.offsets.begin());
@@ -849,7 +836,7 @@ namespace TypedD3D::Internal
                         TypedD3D::D3D11::IAGetIndexBufferData output;
                         Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
                         Get().IAGetIndexBuffer(&temp, &output.format, &output.offset);
-                        output.buffer = std::move(temp);
+                        output.buffer.Attach(temp.Detach());
                         return output;
                     }
 
@@ -857,33 +844,30 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
-                        Get().GSGetConstantBuffers(0, NumBuffers, tempBuffers.get());
+                        std::unique_ptr<ID3D11Buffer*[]> tempBuffers = std::make_unique<ID3D11Buffer*[]>(NumBuffers);
+                        Get().GSGetConstantBuffers(StartSlot, NumBuffers, tempBuffers.get());
 
                         std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
                         for(UINT i = 0; i < NumBuffers; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
-                            temp.Attach(tempBuffers[i]);
-                            buffers[i] = std::move(temp);
+                            buffers[i].Attach(tempBuffers[i]);
                         }
 
                         return buffers;
                     }
 
-                    std::pair<Wrapper<ID3D11GeometryShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> GSGetShader()
+                    std::pair<Wrapper<ID3D11GeometryShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> GSGetShader(UINT numInstances = 0)
                     {
                         std::pair<Wrapper<ID3D11GeometryShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> output;
-                        ID3D11ClassInstance* instances;
-                        UINT numInstances;
+                        std::array<ID3D11ClassInstance*, TypedD3D::D3D11::Constants::Shader::g_maxClassInstances> tempInstances;
                         Microsoft::WRL::ComPtr<ID3D11GeometryShader> shader;
 
-                        Get().GSGetShader(&shader, &instances, &numInstances);
-                        output.first = std::move(shader);
+                        Get().GSGetShader(&shader, tempInstances.data(), &numInstances);
+                        output.first.Attach(shader.Detach());
+                        output.second.resize(numInstances);
                         for(UINT i = 0; i < numInstances; i++)
                         {
-                            output.second.push_back();
-                            output.second.back().Attach(instances[i]);
+                            output.second[i].Attach(tempInstances[i]);
                         }
 
                         return output;
@@ -900,15 +884,13 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView* []> tempViews = std::make_unique<ID3D11ShaderResourceView* []>(NumViews);
-                        Get().VSGetShaderResources(0, NumViews, tempViews.get());
+                        std::unique_ptr<ID3D11ShaderResourceView*[]> tempViews = std::make_unique<ID3D11ShaderResourceView*[]>(NumViews);
+                        Get().VSGetShaderResources(StartSlot, NumViews, tempViews.get());
 
                         std::vector<Wrapper<ID3D11ShaderResourceView>> views(NumViews);
                         for(UINT i = 0; i < NumViews; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> temp;
-                            temp.Attach(tempViews[i]);
-                            views[i] = std::move(temp);
+                            views[i].Attach(tempViews[i]);
                         }
 
                         return views;
@@ -918,15 +900,13 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState* []>(NumSamplers);
-                        Get().VSGetSamplers(0, NumSamplers, tempSamplers.get());
+                        std::unique_ptr<ID3D11SamplerState*[]> tempSamplers = std::make_unique<ID3D11SamplerState*[]>(NumSamplers - StartSlot);
+                        Get().VSGetSamplers(StartSlot, NumSamplers, tempSamplers.get());
 
-                        std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers);
+                        std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers - StartSlot);
                         for(UINT i = 0; i < NumSamplers; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11SamplerState> temp;
-                            temp.Attach(tempSamplers[i]);
-                            samplers[i] = std::move(temp);
+                            samplers[i].Attach(tempSamplers[i]);
                         }
 
                         return samplers;
@@ -943,15 +923,13 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView* []> tempViews = std::make_unique<ID3D11ShaderResourceView* []>(NumViews);
-                        Get().GSGetShaderResources(0, NumViews, tempViews.get());
+                        std::unique_ptr<ID3D11ShaderResourceView*[]> tempViews = std::make_unique<ID3D11ShaderResourceView*[]>(NumViews);
+                        Get().GSGetShaderResources(StartSlot, NumViews, tempViews.get());
 
                         std::vector<Wrapper<ID3D11ShaderResourceView>> views(NumViews);
                         for(UINT i = 0; i < NumViews; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> temp;
-                            temp.Attach(tempViews[i]);
-                            views[i] = std::move(temp);
+                            views[i].Attach(tempViews[i]);
                         }
 
                         return views;
@@ -961,15 +939,13 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState* []>(NumSamplers);
-                        Get().GSGetSamplers(0, NumSamplers, tempSamplers.get());
+                        std::unique_ptr<ID3D11SamplerState*[]> tempSamplers = std::make_unique<ID3D11SamplerState*[]>(NumSamplers - StartSlot);
+                        Get().GSGetSamplers(StartSlot, NumSamplers, tempSamplers.get());
 
-                        std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers);
+                        std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers - StartSlot);
                         for(UINT i = 0; i < NumSamplers; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11SamplerState> temp;
-                            temp.Attach(tempSamplers[i]);
-                            samplers[i] = std::move(temp);
+                            samplers[i].Attach(tempSamplers[i]);
                         }
 
                         return samplers;
@@ -1013,15 +989,11 @@ namespace TypedD3D::Internal
 
                         for(UINT i = 0; i < NumRTVs; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11RenderTargetView> rtv;
-                            rtv.Attach(tempRTVs[i]);
-                            data.renderTargetViews[i] = std::move(rtv);
+                            data.renderTargetViews[i].Attach(tempRTVs[i]);
                         }
                         for(UINT i = 0; i < NumUAVs; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11RenderTargetView> uav;
-                            uav.Attach(tempUAVs[i]);
-                            data.unorderedAccessViews[i] = std::move(uav);
+                            data.unorderedAccessViews[i].Attach(tempUAVs[i]);
                         }
                         return data;
                     }
@@ -1031,14 +1003,16 @@ namespace TypedD3D::Internal
                         TypedD3D::D3D11::OMGetBlendStateData data;
                         Microsoft::WRL::ComPtr<ID3D11BlendState> blendState;
                         Get().OMGetBlendState(&blendState, data.blendFactor.data(), &data.sampleMask);
-                        data.blendState = std::move(blendState);
+                        data.blendState.Attach(blendState.Detach());
                         return data;
                     }
 
-                    std::pair<Microsoft::WRL::ComPtr<ID3D11DepthStencilState>, UINT> OMGetDepthStencilState()
+                    std::pair<Wrapper<ID3D11DepthStencilState>, UINT> OMGetDepthStencilState()
                     {
-                        std::pair<Microsoft::WRL::ComPtr<ID3D11DepthStencilState>, UINT> state;
-                        Get().OMGetDepthStencilState(&state.first, &state.second);
+                        std::pair<Wrapper<ID3D11DepthStencilState>, UINT> state;
+                        ID3D11DepthStencilState* temp;
+                        Get().OMGetDepthStencilState(&temp, &state.second);
+                        state.first.Attach(temp);
                         return state;
 
                     }
@@ -1051,9 +1025,7 @@ namespace TypedD3D::Internal
                         std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
                         for(UINT i = 0; i < NumBuffers; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
-                            temp.Attach(tempBuffers[i]);
-                            buffers[i] = std::move(temp);
+                            buffers[i].Attach(tempBuffers[i]);
                         }
 
                         return buffers;
@@ -1068,30 +1040,22 @@ namespace TypedD3D::Internal
 
                     std::vector<D3D11_VIEWPORT> RSGetViewports()
                     {
-                        D3D11_VIEWPORT* viewports;
                         UINT numViewports;
-                        Get().RSGetViewports(&numViewports, viewports);
+                        Get().RSGetViewports(&numViewports, nullptr);
 
                         std::vector<D3D11_VIEWPORT> output(numViewports);
-                        for(UINT i = 0; i < numViewports; i++)
-                        {
-                            output[i] = viewports[i];
-                        }
+                        Get().RSGetViewports(&numViewports, output.data());
 
                         return output;
                     }
 
                     std::vector<D3D11_RECT> RSGetScissorRects()
                     {
-                        D3D11_RECT* rects;
                         UINT numRects;
-                        Get().RSGetScissorRects(&numRects, rects);
+                        Get().RSGetScissorRects(&numRects, nullptr);
 
                         std::vector<D3D11_RECT> output(numRects);
-                        for(UINT i = 0; i < numRects; i++)
-                        {
-                            output[i] = rects[i];
-                        }
+                        Get().RSGetScissorRects(&numRects, output.data());
 
                         return output;
                     }
@@ -1100,33 +1064,30 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView* []> tempViews = std::make_unique<ID3D11ShaderResourceView* []>(NumViews);
-                        Get().HSGetShaderResources(0, NumViews, tempViews.get());
+                        std::unique_ptr<ID3D11ShaderResourceView*[]> tempViews = std::make_unique<ID3D11ShaderResourceView*[]>(NumViews);
+                        Get().HSGetShaderResources(StartSlot, NumViews, tempViews.get());
 
                         std::vector<Wrapper<ID3D11ShaderResourceView>> views(NumViews);
                         for(UINT i = 0; i < NumViews; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> temp;
-                            temp.Attach(tempViews[i]);
-                            views[i] = std::move(temp);
+                            views[i].Attach(tempViews[i]);
                         }
 
                         return views;
                     }
 
-                    std::pair<Wrapper<ID3D11HullShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> HSGetShader()
+                    std::pair<Wrapper<ID3D11HullShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> HSGetShader(UINT numInstances = 0)
                     {
                         std::pair<Wrapper<ID3D11HullShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> output;
-                        ID3D11ClassInstance* instances;
-                        UINT numInstances;
+                        std::array<ID3D11ClassInstance*, TypedD3D::D3D11::Constants::Shader::g_maxClassInstances> tempInstances;
                         Microsoft::WRL::ComPtr<ID3D11HullShader> shader;
 
-                        Get().HSGetShader(&shader, &instances, &numInstances);
-                        output.first = std::move(shader);
+                        Get().HSGetShader(&shader, tempInstances.data(), &numInstances);
+                        output.first.Attach(shader.Detach());
+                        output.second.resize(numInstances);
                         for(UINT i = 0; i < numInstances; i++)
                         {
-                            output.second.push_back();
-                            output.second.back().Attach(instances[i]);
+                            output.second[i].Attach(tempInstances[i]);
                         }
 
                         return output;
@@ -1136,15 +1097,13 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState* []>(NumSamplers);
-                        Get().HSGetSamplers(0, NumSamplers, tempSamplers.get());
+                        std::unique_ptr<ID3D11SamplerState*[]> tempSamplers = std::make_unique<ID3D11SamplerState*[]>(NumSamplers - StartSlot);
+                        Get().HSGetSamplers(StartSlot, NumSamplers, tempSamplers.get());
 
-                        std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers);
+                        std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers - StartSlot);
                         for(UINT i = 0; i < NumSamplers; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11SamplerState> temp;
-                            temp.Attach(tempSamplers[i]);
-                            samplers[i] = std::move(temp);
+                            samplers[i].Attach(tempSamplers[i]);
                         }
 
                         return samplers;
@@ -1154,15 +1113,13 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
-                        Get().HSGetConstantBuffers(0, NumBuffers, tempBuffers.get());
+                        std::unique_ptr<ID3D11Buffer*[]> tempBuffers = std::make_unique<ID3D11Buffer*[]>(NumBuffers);
+                        Get().HSGetConstantBuffers(StartSlot, NumBuffers, tempBuffers.get());
 
                         std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
                         for(UINT i = 0; i < NumBuffers; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
-                            temp.Attach(tempBuffers[i]);
-                            buffers[i] = std::move(temp);
+                            buffers[i].Attach(tempBuffers[i]);
                         }
 
                         return buffers;
@@ -1172,33 +1129,30 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView* []> tempViews = std::make_unique<ID3D11ShaderResourceView* []>(NumViews);
-                        Get().DSGetShaderResources(0, NumViews, tempViews.get());
+                        std::unique_ptr<ID3D11ShaderResourceView*[]> tempViews = std::make_unique<ID3D11ShaderResourceView*[]>(NumViews);
+                        Get().DSGetShaderResources(StartSlot, NumViews, tempViews.get());
 
                         std::vector<Wrapper<ID3D11ShaderResourceView>> views(NumViews);
                         for(UINT i = 0; i < NumViews; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> temp;
-                            temp.Attach(tempViews[i]);
-                            views[i] = std::move(temp);
+                            views[i].Attach(tempViews[i]);
                         }
 
                         return views;
                     }
 
-                    std::pair<Wrapper<ID3D11DomainShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> DSGetShader()
+                    std::pair<Wrapper<ID3D11DomainShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> DSGetShader(UINT numInstances = 0)
                     {
                         std::pair<Wrapper<ID3D11DomainShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> output;
-                        ID3D11ClassInstance* instances;
-                        UINT numInstances;
+                        std::array<ID3D11ClassInstance*, TypedD3D::D3D11::Constants::Shader::g_maxClassInstances> tempInstances;
                         Microsoft::WRL::ComPtr<ID3D11DomainShader> shader;
 
-                        Get().DSGetShader(&shader, &instances, &numInstances);
-                        output.first = std::move(shader);
+                        Get().DSGetShader(&shader, tempInstances.data(), &numInstances);
+                        output.first.Attach(shader.Detach());
+                        output.second.resize(numInstances);
                         for(UINT i = 0; i < numInstances; i++)
                         {
-                            output.second.push_back();
-                            output.second.back().Attach(instances[i]);
+                            output.second[i].Attach(tempInstances[i]);
                         }
 
                         return output;
@@ -1208,15 +1162,13 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState* []>(NumSamplers);
-                        Get().DSGetSamplers(0, NumSamplers, tempSamplers.get());
+                        std::unique_ptr<ID3D11SamplerState*[]> tempSamplers = std::make_unique<ID3D11SamplerState*[]>(NumSamplers - StartSlot);
+                        Get().DSGetSamplers(StartSlot, NumSamplers, tempSamplers.get());
 
-                        std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers);
+                        std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers - StartSlot);
                         for(UINT i = 0; i < NumSamplers; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11SamplerState> temp;
-                            temp.Attach(tempSamplers[i]);
-                            samplers[i] = std::move(temp);
+                            samplers[i].Attach(tempSamplers[i]);
                         }
 
                         return samplers;
@@ -1226,15 +1178,13 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
-                        Get().DSGetConstantBuffers(0, NumBuffers, tempBuffers.get());
+                        std::unique_ptr<ID3D11Buffer*[]> tempBuffers = std::make_unique<ID3D11Buffer*[]>(NumBuffers);
+                        Get().DSGetConstantBuffers(StartSlot, NumBuffers, tempBuffers.get());
 
                         std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
                         for(UINT i = 0; i < NumBuffers; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
-                            temp.Attach(tempBuffers[i]);
-                            buffers[i] = std::move(temp);
+                            buffers[i].Attach(tempBuffers[i]);
                         }
 
                         return buffers;
@@ -1244,15 +1194,13 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView* []> tempViews = std::make_unique<ID3D11ShaderResourceView* []>(NumViews);
-                        Get().CSGetShaderResources(0, NumViews, tempViews.get());
+                        std::unique_ptr<ID3D11ShaderResourceView*[]> tempViews = std::make_unique<ID3D11ShaderResourceView*[]>(NumViews);
+                        Get().CSGetShaderResources(StartSlot, NumViews, tempViews.get());
 
                         std::vector<Wrapper<ID3D11ShaderResourceView>> views(NumViews);
                         for(UINT i = 0; i < NumViews; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> temp;
-                            temp.Attach(tempViews[i]);
-                            views[i] = std::move(temp);
+                            views[i].Attach(tempViews[i]);
                         }
 
                         return views;
@@ -1263,32 +1211,29 @@ namespace TypedD3D::Internal
                         UINT NumViews)
                     {
                         std::unique_ptr<ID3D11UnorderedAccessView* []> tempViews = std::make_unique<ID3D11UnorderedAccessView* []>(NumViews);
-                        Get().CSGetUnorderedAccessViews(0, NumViews, tempViews.get());
+                        Get().CSGetUnorderedAccessViews(StartSlot, NumViews, tempViews.get());
 
                         std::vector<Wrapper<ID3D11UnorderedAccessView>> views(NumViews);
                         for(UINT i = 0; i < NumViews; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> temp;
-                            temp.Attach(tempViews[i]);
-                            views[i] = std::move(temp);
+                            views[i].Attach(tempViews[i]);
                         }
 
                         return views;
                     }
 
-                    std::pair<Wrapper<ID3D11ComputeShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> CSGetShader()
+                    std::pair<Wrapper<ID3D11ComputeShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> CSGetShader(UINT numInstances = 0)
                     {
                         std::pair<Wrapper<ID3D11ComputeShader>, std::vector<Microsoft::WRL::ComPtr<ID3D11ClassInstance>>> output;
-                        ID3D11ClassInstance* instances;
-                        UINT numInstances;
+                        std::array<ID3D11ClassInstance*, TypedD3D::D3D11::Constants::Shader::g_maxClassInstances> tempInstances;
                         Microsoft::WRL::ComPtr<ID3D11ComputeShader> shader;
 
-                        Get().CSGetShader(&shader, &instances, &numInstances);
-                        output.first = std::move(shader);
+                        Get().CSGetShader(&shader, tempInstances.data(), &numInstances);
+                        output.first.Attach(shader.Detach());
+                        output.second.resize(numInstances);
                         for(UINT i = 0; i < numInstances; i++)
                         {
-                            output.second.push_back();
-                            output.second.back().Attach(instances[i]);
+                            output.second[i].Attach(tempInstances[i]);
                         }
 
                         return output;
@@ -1298,15 +1243,13 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState* []>(NumSamplers);
-                        Get().CSGetSamplers(0, NumSamplers, tempSamplers.get());
+                        std::unique_ptr<ID3D11SamplerState*[]> tempSamplers = std::make_unique<ID3D11SamplerState*[]>(NumSamplers - StartSlot);
+                        Get().CSGetSamplers(StartSlot, NumSamplers, tempSamplers.get());
 
-                        std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers);
+                        std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers - StartSlot);
                         for(UINT i = 0; i < NumSamplers; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11SamplerState> temp;
-                            temp.Attach(tempSamplers[i]);
-                            samplers[i] = std::move(temp);
+                            samplers[i].Attach(tempSamplers[i]);
                         }
 
                         return samplers;
@@ -1316,15 +1259,13 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
-                        Get().CSGetConstantBuffers(0, NumBuffers, tempBuffers.get());
+                        std::unique_ptr<ID3D11Buffer*[]> tempBuffers = std::make_unique<ID3D11Buffer*[]>(NumBuffers);
+                        Get().CSGetConstantBuffers(StartSlot, NumBuffers, tempBuffers.get());
 
                         std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
                         for(UINT i = 0; i < NumBuffers; i++)
                         {
-                            Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
-                            temp.Attach(tempBuffers[i]);
-                            buffers[i] = std::move(temp);
+                            buffers[i].Attach(tempBuffers[i]);
                         }
 
                         return buffers;
