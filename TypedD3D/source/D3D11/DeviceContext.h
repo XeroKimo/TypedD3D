@@ -5,6 +5,7 @@
 #include "gsl/pointers"
 #include "ResourceViews.h"
 #include "States.h"
+#include "Constants.h"
 #include <d3d11_4.h>
 #include <tuple>
 #include <optional>

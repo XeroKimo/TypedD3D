@@ -3,7 +3,7 @@
 
 namespace TypedD3D::D3D11::Constants
 {
-    namespace Shaders
+    namespace Shader
     {
         constexpr UINT g_maxClassInstances = 256;
     }
