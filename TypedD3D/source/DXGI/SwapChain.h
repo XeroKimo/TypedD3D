@@ -60,9 +60,9 @@ namespace TypedD3D::Internal
                         return Get().SetFullscreenState(Fullscreen, optTarget);
                     }
 
-                    std::pair<bool, Microsoft::WRL::ComPtr<IDXGIOutput>> GetFullscreenState()
+                    std::pair<BOOL, Microsoft::WRL::ComPtr<IDXGIOutput>> GetFullscreenState()
                     {
-                        std::pair<bool, Microsoft::WRL::ComPtr<IDXGIOutput>> state;
+                        std::pair<BOOL, Microsoft::WRL::ComPtr<IDXGIOutput>> state;
                         Get().GetFullscreenState(&state.first, &state.second);
                         return state;
                     }

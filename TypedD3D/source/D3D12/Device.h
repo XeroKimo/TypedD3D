@@ -885,7 +885,7 @@ namespace TypedD3D::D3D12
         }
         else
         {
-            return Helpers::D3D12::CreateDevice<typename DeviceTy::underlying_type>(minimumFeatureLevel, optAdapter)
+            return Helpers::D3D12::CreateDevice<typename DeviceTy::value_type>(minimumFeatureLevel, optAdapter)
                 .and_then([](auto device) -> tl::expected<DeviceTy, HRESULT> { return DeviceTy(device); });
         }
     }

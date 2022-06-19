@@ -228,14 +228,14 @@ namespace TypedD3D::Internal
                     }
 
                     tl::expected<Wrapper<ID3D11InputLayout>, HRESULT> CreateInputLayout(
-                        std::span<D3D11_INPUT_ELEMENT_DESC> inputElementDescs,
+                        std::span<const D3D11_INPUT_ELEMENT_DESC> inputElementDescs,
                         ID3DBlob& pShaderBytecodeWithInputSignature)
                     {
                         return CreateInputLayout(inputElementDescs, pShaderBytecodeWithInputSignature.GetBufferPointer(), pShaderBytecodeWithInputSignature.GetBufferSize());
                     }
 
                     tl::expected<Wrapper<ID3D11InputLayout>, HRESULT> CreateInputLayout(
-                        std::span<D3D11_INPUT_ELEMENT_DESC> inputElementDescs,
+                        std::span<const D3D11_INPUT_ELEMENT_DESC> inputElementDescs,
                         const void* pShaderBytecodeWithInputSignature,
                         SIZE_T BytecodeLength)
                     {
@@ -604,7 +604,7 @@ namespace TypedD3D::D3D11
         D3D_DRIVER_TYPE DriverType,
         HMODULE Software,
         UINT Flags,
-        std::span<D3D_FEATURE_LEVEL> pFeatureLevels,
+        std::span<const D3D_FEATURE_LEVEL> pFeatureLevels,
         UINT SDKVersion)
     {
         if constexpr(!std::derived_from<DeviceTy, ID3D11Device> && !std::derived_from<DeviceContextTy, ID3D11DeviceContext>)

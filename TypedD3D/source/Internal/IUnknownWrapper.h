@@ -28,10 +28,12 @@ namespace TypedD3D::Internal
         public:
             using interface_value_type = InterfaceTy<CompressedPair>;
             using interface_pointer = InterfaceTy<CompressedPair>*;
+            using const_interface_pointer = const InterfaceTy<CompressedPair>*;
 
             Microsoft::WRL::ComPtr<value_type> m_second = nullptr;
-            
+
             interface_pointer First() { return static_cast<interface_pointer>(this); }
+            const_interface_pointer First() const { return static_cast<const_interface_pointer>(this); }
             Microsoft::WRL::ComPtr<value_type>& Second() { return m_second; }
             const Microsoft::WRL::ComPtr<value_type>& Second() const { return m_second; }
 
@@ -153,6 +155,7 @@ namespace TypedD3D::Internal
         pointer Get() const { return m_pair.Second().Get(); }
         Microsoft::WRL::ComPtr<value_type> AsComPtr() const { return m_pair.Second(); }
         CompressedPair::interface_pointer operator->() { return m_pair.First(); }
+        CompressedPair::const_interface_pointer operator->() const { return m_pair.First(); }
 
         template<class OtherTy, template<class OtherDerivedSelf> class OtherInterfaceTy, class Ty, template<class DerivedSelf> class InterfaceTy>
         friend IUnknownWrapperImpl<OtherTy, OtherInterfaceTy> Cast(IUnknownWrapperImpl<Ty, InterfaceTy>& other) noexcept;
@@ -241,6 +244,12 @@ namespace TypedD3D::Internal
         IUnknownWrapper& operator=(const IUnknownWrapper& other) = default;
         IUnknownWrapper& operator=(IUnknownWrapper&& other) noexcept = default;
 
+        IUnknownWrapper& operator=(std::nullptr_t)
+        {
+            Base::operator=(nullptr);
+            return *this;
+        }
+
         IUnknownWrapper& operator=(const Base& other)
         {
             Base::operator=(other);
@@ -251,6 +260,7 @@ namespace TypedD3D::Internal
             Base::operator=(std::move(other));
             return *this;
         }
+
 
         template<class OtherTy, auto... OtherTags>
             requires ((OtherTags == Tags) && ...)
