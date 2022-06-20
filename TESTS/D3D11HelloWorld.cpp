@@ -157,9 +157,9 @@ void D3D11HelloWorld()
             deviceContext->PSSetShader(ps, {});
             deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-            UINT offset = 0;
-            UINT stride = sizeof(Vertex);
-            deviceContext->IASetVertexBuffers(0, xk::span_tuple<TypedD3D::Wrapper<ID3D11Buffer>, std::dynamic_extent, UINT, UINT>(&vertexBuffer, 1, &stride, &offset));
+            TypedD3D::Offset offset{ 0 };
+            TypedD3D::Stride stride{ sizeof(Vertex) };
+            deviceContext->IASetVertexBuffers(0, xk::span_tuple<TypedD3D::Wrapper<ID3D11Buffer>, std::dynamic_extent, const TypedD3D::Stride, const TypedD3D::Offset>(&vertexBuffer, 1, &stride, &offset));
             deviceContext->Draw(3, 0);
 
             swapChain->Present(1, 0);

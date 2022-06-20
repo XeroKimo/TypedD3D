@@ -6,6 +6,7 @@
 #include "ResourceViews.h"
 #include "States.h"
 #include "Constants.h"
+#include "source/Types.h"
 #include <d3d11_4.h>
 #include <tuple>
 #include <optional>
@@ -180,9 +181,6 @@ namespace TypedD3D::Internal
                         Get().IASetInputLayout(pInputLayout.Get());
                     }
 
-                    using Stride = UINT;
-                    using Offset = UINT;
-
                     void IASetVertexBuffers(
                         UINT StartSlot,
                         xk::span_tuple<Wrapper<ID3D11Buffer>, std::dynamic_extent, const Stride, const Offset> vertexBuffers)
@@ -192,7 +190,18 @@ namespace TypedD3D::Internal
                         {
                             rawBuffers[i] = get<0>(vertexBuffers)[i].Get();
                         }
-                        Get().IASetVertexBuffers(StartSlot, static_cast<UINT>(vertexBuffers.size()), rawBuffers.get(), vertexBuffers.data<1>(), vertexBuffers.data<2>());
+
+                        std::unique_ptr<std::underlying_type_t<Stride>[]> strides = std::make_unique< std::underlying_type_t<Stride>[]>(vertexBuffers.size());
+                        std::memcpy(strides.get(), vertexBuffers.data<1>(), vertexBuffers.size_bytes<1>());
+
+                        std::unique_ptr<std::underlying_type_t<Offset>[]> offsets = std::make_unique< std::underlying_type_t<Offset>[]>(vertexBuffers.size());
+                        std::memcpy(offsets.get(), vertexBuffers.data<2>(), vertexBuffers.size_bytes<2>());
+                        Get().IASetVertexBuffers(
+                            StartSlot, 
+                            static_cast<UINT>(vertexBuffers.size()), 
+                            rawBuffers.get(),
+                            strides.get(),
+                            offsets.get());
                     }
 
                     void IASetIndexBuffer(

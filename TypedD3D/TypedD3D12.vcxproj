@@ -48,6 +48,7 @@
     <ClInclude Include="source\D3D12\Device.h" />
     <ClInclude Include="source\Helpers\DXGIHelpers.h" />
     <ClInclude Include="source\Internal\d3dConcepts.h" />
+    <ClInclude Include="source\Types.h" />
     <ClInclude Include="source\Wrappers.h" />
     <ClInclude Include="span_tuple.h" />
     <ClInclude Include="TypedD3D12.h" />

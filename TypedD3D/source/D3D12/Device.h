@@ -10,6 +10,7 @@
 #include "PipelineState.h"
 #include "DescriptorHeap.h"
 #include "span_tuple.h"
+#include "source/Types.h"
 
 #include "expected.hpp"
 #include <d3d12.h>
@@ -502,16 +503,19 @@ namespace TypedD3D::Internal
                         return Helpers::COM::IIDToObjectForwardFunction<ID3D12PipelineLibrary>(ID3D12Device1::CreatePipelineLibrary, Get(), pLibraryBlob, BlobLength);
                     }
 
-                    using FenceValue = UINT64;
-
                     HRESULT SetEventOnMultipleFenceCompletion(
-                        xk::span_tuple<const ID3D12Fence*, std::dynamic_extent, FenceValue> fences,
+                        xk::span_tuple<const ID3D12Fence*, std::dynamic_extent, const FenceValue> fences,
                         D3D12_MULTIPLE_FENCE_WAIT_FLAGS Flags,
                         HANDLE hEvent)
                     {
+
+
+                        std::unique_ptr<std::underlying_type_t<FenceValue>[]> fenceValues = std::make_unique< std::underlying_type_t<FenceValue>[]>(fences.size());
+                        std::memcpy(fenceValues.get(), fences.data<1>(), fences.size_bytes<1>());
+
                         return Get().SetEventOnMultipleFenceCompletion(
                             fences.data<0>(),
-                            fences.data<1>(),
+                            fenceValues.get(),
                             static_cast<UINT>(fences.size()),
                             Flags,
                             hEvent);
