@@ -65,7 +65,7 @@ void D3D12HelloWorld()
         DXGI_SWAP_CHAIN_DESC1
         {
             .Format = DXGI_FORMAT_R8G8B8A8_UNORM,
-            .SampleDesc 
+            .SampleDesc
             {
                 .Count = 1
             },
@@ -317,46 +317,41 @@ void D3D12HelloWorld()
         }
         else
         {
-            commandAllocators[backBuffer]->Reset();
-            commandList->Reset(commandAllocators[backBuffer], nullptr);
+            TypedD3D::Helpers::D3D12::Frame(*swapChain.Get(), *fence.Get(), frameWaitValues, fenceValue, backBuffer, [&](ID3D12Fence* fence, UINT64& frameWaitValue, UINT& backBufferIndex)
+            {
+                TypedD3D::Helpers::D3D12::GPUWork(*commandQueue.Get(), *fence, frameWaitValue, [&](TypedD3D::Direct<ID3D12CommandQueue> queue)
+                {
+                    TypedD3D::Helpers::D3D12::RecordAndExecute(*commandList.Get(), *commandAllocators[backBufferIndex].Get(), *queue.Get(),
+                    [&](TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList)
+                    {
+                        D3D12_RESOURCE_BARRIER barrier = TypedD3D::Helpers::D3D12::ResourceBarrier::Transition(
+                            *swapChainBuffers[backBufferIndex].Get(),
+                            D3D12_RESOURCE_STATE_PRESENT,
+                            D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-            D3D12_RESOURCE_BARRIER barrier = TypedD3D::Helpers::D3D12::ResourceBarrier::Transition(
-                *swapChainBuffers[backBuffer].Get(),
-                D3D12_RESOURCE_STATE_PRESENT,
-                D3D12_RESOURCE_STATE_RENDER_TARGET);
+                        commandList->ResourceBarrier(std::span(&barrier, 1));
 
-            commandList->ResourceBarrier(std::span(&barrier, 1));
+                        auto backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+                        backBufferHandle.ptr += static_cast<SIZE_T>(rtvOffset) * backBufferIndex;
+                        commandList->ClearRenderTargetView(backBufferHandle, std::to_array({ 0.f, 0.3f, 0.7f, 1.f }), {});
+                        commandList->OMSetRenderTargets(std::span(&backBufferHandle, 1), true, nullptr);
 
-            auto backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-            backBufferHandle.ptr += static_cast<SIZE_T>(rtvOffset) * backBuffer;
-            commandList->ClearRenderTargetView(backBufferHandle, std::to_array({ 0.f, 0.3f, 0.7f, 1.f }), {});
-            commandList->OMSetRenderTargets(std::span(&backBufferHandle, 1), true, nullptr);
+                        commandList->SetPipelineState(pipelineState.value().Get());
+                        commandList->SetGraphicsRootSignature(rootSignature.Get());
+                        commandList->RSSetViewports(std::span(&viewport, 1));
+                        commandList->RSSetScissorRects(std::span(&rect, 1));
+                        commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                        commandList->IASetVertexBuffers(0, std::span(&vertexBufferView, 1));
+                        commandList->DrawInstanced(3, 1, 0, 0);
 
-            commandList->SetPipelineState(pipelineState.value().Get());
-            commandList->SetGraphicsRootSignature(rootSignature.Get());
-            commandList->RSSetViewports(std::span(&viewport, 1));
-            commandList->RSSetScissorRects(std::span(&rect, 1));
-            commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-            commandList->IASetVertexBuffers(0, std::span(&vertexBufferView, 1));
-            commandList->DrawInstanced(3, 1, 0, 0);
-
-
-            barrier = TypedD3D::Helpers::D3D12::ResourceBarrier::Transition(
-                *swapChainBuffers[backBuffer].Get(),
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_STATE_PRESENT);
-            commandList->ResourceBarrier(std::span(&barrier, 1));
-
-            commandList->Close();
-
-            std::array submitList = std::to_array<TypedD3D::Direct<ID3D12CommandList>>({ commandList });
-            commandQueue->ExecuteCommandLists(std::span(submitList));
-
-            swapChain->Present(1, 0);
-
-            frameWaitValues[backBuffer] = fenceValue = TypedD3D::Helpers::D3D12::SignalFenceGPU(*commandQueue.Get(), *fence.Get(), fenceValue);
-            backBuffer = (backBuffer + 1) % backBufferCount;
-            TypedD3D::Helpers::D3D12::StallCPUThread(*fence.Get(), frameWaitValues[backBuffer], syncEvent);
+                        barrier = TypedD3D::Helpers::D3D12::ResourceBarrier::Transition(
+                            *swapChainBuffers[backBufferIndex].Get(),
+                            D3D12_RESOURCE_STATE_RENDER_TARGET,
+                            D3D12_RESOURCE_STATE_PRESENT);
+                        commandList->ResourceBarrier(std::span(&barrier, 1));
+                    });
+                });
+            }, 1);
         }
     }
     TypedD3D::Helpers::D3D12::FlushCommandQueue(*commandQueue.Get(), *fence.Get(), fenceValue, syncEvent);

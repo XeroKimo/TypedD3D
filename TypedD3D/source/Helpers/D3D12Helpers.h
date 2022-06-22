@@ -188,6 +188,134 @@ namespace TypedD3D::Helpers::D3D12
     /// <param name="fence"> The fence that will be signaled </param>
     /// <param name="fenceValue"> The value we're waiting for before </param>
     void StallCommandQueue(ID3D12CommandQueue& commandQueue, ID3D12Fence& fence, UINT64 fenceValue);
+
+    /// <summary>
+    /// Resets the passed in command list and allocator before sending it to the invocable followed by closing the command list and returning it
+    /// </summary>
+    /// <param name="commandList">A closed command list to reset</param>
+    /// <param name="commandAllocator">A command allocator that requires resetting</param>
+    /// <param name="func">An invocable that takes in a command list pointer to do work with it</param>
+    /// <param name="pipeline">An optional pipeline to start the command list with</param>
+    /// <returns>The passed in command list in a closed state</returns>
+    template<std::derived_from<ID3D12GraphicsCommandList> ListTy, std::invocable<ListTy*> Func>
+    ID3D12CommandList* Record(ListTy& commandList, ID3D12CommandAllocator& commandAllocator, Func&& func, ID3D12PipelineState* pipeline = nullptr)
+    {
+        commandAllocator.Reset();
+        commandList.Reset(&commandAllocator, pipeline);
+        func(&commandList);
+        commandList.Close();
+        return static_cast<ID3D12CommandList*>(&commandList);
+    }
+
+    /// <summary>
+    /// Resets the passed in command list and allocator before sending it to the invocable followed by closing the command list and executing it
+    /// </summary>
+    /// <param name="commandQueue">A command queue which will execute the command list</param>
+    /// <param name="commandList">A closed command list to reset</param>
+    /// <param name="commandAllocator">A command allocator that requires resetting</param>
+    /// <param name="func">An invocable that takes in a command list pointer to do work with it</param>
+    /// <param name="pipeline">An optional pipeline to start the command list with</param>
+    template<std::derived_from<ID3D12GraphicsCommandList> ListTy, std::invocable<ListTy*> Func>
+    void RecordAndExecute(ListTy& commandList, ID3D12CommandAllocator& commandAllocator, ID3D12CommandQueue& commandQueue, Func&& func, ID3D12PipelineState* pipeline = nullptr)
+    {
+        std::array<ID3D12CommandList*, 1> lists{ Record(commandList, commandAllocator, std::forward<Func>(func), pipeline) };
+        commandQueue.ExecuteCommandLists(static_cast<UINT>(lists.size()), lists.data());
+    }
+
+    /// <summary>
+    /// Calls the invocable and then have the command queue signal the fence when work is done
+    /// </summary>
+    /// <param name="commandQueue"></param>
+    /// <param name="fence"></param>
+    /// <param name="fenceValue"></param>
+    /// <param name="f"></param>
+    template<std::invocable<ID3D12CommandQueue*> Func>
+    void GPUWork(ID3D12CommandQueue& commandQueue, ID3D12Fence& fence, UINT64& fenceValue, Func&& func)
+    {
+        func(&commandQueue);
+        fenceValue = SignalFenceGPU(commandQueue, fence, fenceValue);
+    }
+
+    /// <summary>
+    /// Calls the invocable and then have the CPU signal the fence
+    /// </summary>
+    /// <param name="fence"></param>
+    /// <param name="fenceValue"></param>
+    /// <param name="f"></param>
+    template<std::invocable Func>
+    void CPUWork(ID3D12Fence& fence, UINT64 fenceValue, Func&& func)
+    {
+        func();
+        SignalFenceCPU(fence, fenceValue);
+    }
+
+    /// <summary>
+    /// Has a CPU thread wait for a fence to reach a fence value before doing some work
+    /// </summary>
+    /// <param name="fence"></param>
+    /// <param name="fenceValue"></param>
+    /// <param name="f"></param>
+    /// <param name="waitEvent"></param>
+    /// <param name="waitInterval"></param>
+    template<std::invocable Func>
+    void CPUWaitAndThen(ID3D12Fence& fence, UINT64 fenceValue, Func&& func, HANDLE waitEvent = nullptr, std::chrono::milliseconds waitInterval = waitForCompletion)
+    {
+        StallCPUThread(fence, fenceValue, waitEvent, waitInterval);
+        func();
+    }
+
+    /// <summary>
+    /// Has a GPU queue wait for a fence value before executing the next work
+    /// </summary>
+    /// <param name="commandQueue"></param>
+    /// <param name="fence"></param>
+    /// <param name="fenceValue"></param>
+    /// <param name="f"></param>
+    template<std::invocable<ID3D12CommandQueue*> Func>
+    void GPUWaitAndThen(ID3D12CommandQueue& commandQueue, ID3D12Fence& fence, UINT64 fenceValue, Func&& func)
+    {
+        commandQueue.Wait(&fence, fenceValue);
+        func(&commandQueue);
+    }
+
+    struct FrameData
+    {
+        ID3D12Fence* fence;
+        UINT64* currentFenceValue;
+        UINT backBufferIndex;
+        ID3D12Resource* backBufferResource;
+        D3D12_CPU_DESCRIPTOR_HANDLE backBufferDescriptorHandle;
+    };
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="swapChain"></param>
+    /// <param name="fence">The fence the swap chain waits on in order to know whether a new frame can be made</param>
+    /// <param name="frameWaitValues"> An array of fence values with the same length as the swapchain's buffer count</param>
+    /// <param name="largestFrameWaitValue"> The largest fence value value inside the frameWaitValues array, extra performance if this is a separate non-temporary object that can persist between Frame() calls</param>
+    /// <param name="backBufferIndex">The current back buffer</param>
+    /// <param name="func"></param>
+    /// <param name="syncInterval"></param>
+    /// <param name="presentFlags"></param>
+    /// <param name="waitEvent"></param>
+    /// <param name="waitInterval"></param>
+    template<std::integral BufferIndexTy, std::invocable<ID3D12Fence*, UINT64& /*frameWaitValue*/, BufferIndexTy& /*backBufferIndex*/> Func>
+    void Frame(IDXGISwapChain& swapChain, ID3D12Fence& fence, std::span<UINT64> frameWaitValues, UINT64& largestFrameWaitValue, BufferIndexTy& backBufferIndex, Func&& func, UINT syncInterval = 0, UINT presentFlags = 0, HANDLE waitEvent = nullptr, std::chrono::milliseconds waitInterval = waitForCompletion)
+    {
+        assert(frameWaitValues.size() == TypedD3D::Helpers::Common::GetDescription(swapChain).BufferCount);
+
+        CPUWaitAndThen(fence, frameWaitValues[backBufferIndex], [&]()
+        {
+            frameWaitValues[backBufferIndex] = largestFrameWaitValue;
+
+            func(&fence, frameWaitValues[backBufferIndex], backBufferIndex);
+            swapChain.Present(syncInterval, presentFlags);
+            largestFrameWaitValue = frameWaitValues[backBufferIndex];
+            backBufferIndex = (backBufferIndex + 1) % frameWaitValues.size();
+        }, waitEvent, waitInterval);
+    }
+
 #pragma pop_macro("max")
 
     namespace ResourceBarrier
