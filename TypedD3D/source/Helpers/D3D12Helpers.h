@@ -10,6 +10,7 @@
 #include "DXGIHelpers.h"
 #include "CommonHelpers.h"
 #include "expected.hpp"
+#include "span_tuple.h"
 #include <functional>
 #include <type_traits>
 #include <d3d12.h>
@@ -207,6 +208,16 @@ namespace TypedD3D::Helpers::D3D12
         return static_cast<ID3D12CommandList*>(&commandList);
     }
 
+    template<std::derived_from<ID3D12GraphicsCommandList> ListTy, std::invocable<ListTy*> Func>
+    void ResourceBarrier(ListTy& commandList, std::span<D3D12_RESOURCE_BARRIER> beginBarriers, std::span<D3D12_RESOURCE_BARRIER> endBarriers, Func&& func)
+    {
+        commandList.ResourceBarrier(static_cast<UINT>(beginBarriers.size()), beginBarriers.data());
+
+        func(&commandList);
+
+        commandList.ResourceBarrier(static_cast<UINT>(endBarriers.size()), endBarriers.data());
+    }
+
     /// <summary>
     /// Resets the passed in command list and allocator before sending it to the invocable followed by closing the command list and executing it
     /// </summary>
@@ -280,50 +291,156 @@ namespace TypedD3D::Helpers::D3D12
 
     struct FrameData
     {
-        ID3D12Fence* fence;
-        UINT64* currentFenceValue;
-        UINT backBufferIndex;
-        ID3D12Resource* backBufferResource;
-        D3D12_CPU_DESCRIPTOR_HANDLE backBufferDescriptorHandle;
+        //The swapchain to call present on
+        IDXGISwapChain& swapChain;
+
+        //The command queue associated with the current frame's swap chain
+        ID3D12CommandQueue& commandQueue;
+
+        //The fence the command queue will use to signal
+        ID3D12Fence& fence;
+        
+        //The resources that will be used as frame buffers
+        std::span<ID3D12Resource*> frameBuffers;
+
+        //The fence values that individual frames wait for for completion
+        std::span<UINT64> frameFenceValues;
+
+        //Equivalent to the frame with the highest fence value
+        //Suggested to use a seperate UINT64 object that can persist between Frame() calls
+        UINT64& largestFrameWaitValue;
+
+        //The current back buffer index
+        UINT& backBufferIndex;
+
+        UINT syncInterval = 0; 
+        UINT presentFlags = 0; 
+        HANDLE waitEvent = nullptr;
+        std::chrono::milliseconds waitInterval = waitForCompletion;
     };
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="swapChain"></param>
-    /// <param name="fence">The fence the swap chain waits on in order to know whether a new frame can be made</param>
-    /// <param name="frameWaitValues"> An array of fence values with the same length as the swapchain's buffer count</param>
-    /// <param name="largestFrameWaitValue"> The largest fence value value inside the frameWaitValues array, extra performance if this is a separate non-temporary object that can persist between Frame() calls</param>
-    /// <param name="backBufferIndex">The current back buffer</param>
-    /// <param name="func"></param>
-    /// <param name="syncInterval"></param>
-    /// <param name="presentFlags"></param>
-    /// <param name="waitEvent"></param>
-    /// <param name="waitInterval"></param>
-    template<std::integral BufferIndexTy, std::invocable<ID3D12Fence*, UINT64& /*frameWaitValue*/, BufferIndexTy& /*backBufferIndex*/> Func>
-    void Frame(IDXGISwapChain& swapChain, ID3D12Fence& fence, std::span<UINT64> frameWaitValues, UINT64& largestFrameWaitValue, BufferIndexTy& backBufferIndex, Func&& func, UINT syncInterval = 0, UINT presentFlags = 0, HANDLE waitEvent = nullptr, std::chrono::milliseconds waitInterval = waitForCompletion)
+    struct PrivateCurrentFrameData
     {
-        assert(frameWaitValues.size() == TypedD3D::Helpers::Common::GetDescription(swapChain).BufferCount);
+        IDXGISwapChain& swapChain;
+        ID3D12CommandQueue& commandQueue;
+        ID3D12Fence& fence;
+        UINT64& frameFenceValue;
+        UINT64& largestFrameWaitValue;
+        ID3D12Resource& frameBuffer;
+        UINT& backBufferIndex;
+        UINT bufferCount;
+        D3D12_CPU_DESCRIPTOR_HANDLE frameBufferRTVHandle;
+        UINT syncInterval = 0; 
+        UINT presentFlags = 0; 
+        HANDLE waitEvent = nullptr;
+        std::chrono::milliseconds waitInterval = waitForCompletion;
+    };
 
-        CPUWaitAndThen(fence, frameWaitValues[backBufferIndex], [&]()
+    struct CurrentFrameData
+    {
+        ID3D12CommandQueue& commandQueue;
+        ID3D12Fence& fence;
+        UINT64& fenceValue;
+        UINT backBufferIndex;
+        ID3D12Resource& backBufferResource;
+        D3D12_CPU_DESCRIPTOR_HANDLE backBufferRTVHandle;
+    };
+
+    template<std::invocable<const CurrentFrameData&> Func>
+    void PrivateFrame(PrivateCurrentFrameData frameData, Func&& func)
+    {
+        CPUWaitAndThen(frameData.fence, frameData.frameFenceValue, [&]()
         {
-            frameWaitValues[backBufferIndex] = largestFrameWaitValue;
+            frameData.frameFenceValue = frameData.largestFrameWaitValue;
 
-            func(&fence, frameWaitValues[backBufferIndex], backBufferIndex);
-            swapChain.Present(syncInterval, presentFlags);
-            largestFrameWaitValue = frameWaitValues[backBufferIndex];
-            backBufferIndex = (backBufferIndex + 1) % frameWaitValues.size();
-        }, waitEvent, waitInterval);
+            func(CurrentFrameData{
+                .commandQueue = frameData.commandQueue,
+                .fence = frameData.fence,
+                .fenceValue = frameData.frameFenceValue,
+                .backBufferIndex = frameData.backBufferIndex,
+                .backBufferResource = frameData.frameBuffer,
+                .backBufferRTVHandle = frameData.frameBufferRTVHandle
+                });
+
+
+            frameData.frameFenceValue = frameData.largestFrameWaitValue = SignalFenceGPU(frameData.commandQueue, frameData.fence, frameData.frameFenceValue);
+            frameData.swapChain.Present(frameData.syncInterval, frameData.presentFlags);
+            frameData.backBufferIndex = (frameData.backBufferIndex + 1) % frameData.bufferCount;
+        }, frameData.waitEvent, frameData.waitInterval);
+    }
+
+
+    /// <summary>
+    /// Does some work and calls present on the swapchain where it's guarenteed to present even when no work is being done
+    /// </summary>
+    /// <param name="frameData">The objects that are requires in order to be able to call</param>
+    /// <param name="frameBufferRTVStartHandle">A CPU_DESCRIPTOR_HANDLE to an RTV Descriptor Heap where all frame buffers are sequentially placed</param>
+    /// <param name="rtvOffset"></param>
+    /// <param name="func"></param>
+    template<std::invocable<const CurrentFrameData&> Func>
+    void Frame(const FrameData& frameData, std::span<D3D12_CPU_DESCRIPTOR_HANDLE> frameBufferRTVHandles, Func&& func)
+    {
+        assert(frameData.frameFenceValues.size() == TypedD3D::Helpers::Common::GetDescription(frameData.swapChain).BufferCount);
+        assert(frameData.frameFenceValues.size() == frameData.frameBuffers.size());
+        assert(frameData.frameFenceValues.size() == frameBufferRTVHandles.size());
+
+        PrivateFrame(PrivateCurrentFrameData
+            {
+                .swapChain = frameData.swapChain,
+                .commandQueue = frameData.commandQueue,
+                .fence = frameData.fence,
+                .frameFenceValue = frameData.frameFenceValues[frameData.backBufferIndex],
+                .largestFrameWaitValue = frameData.largestFrameWaitValue,
+                .frameBuffer = *frameData.frameBuffers[frameData.backBufferIndex],
+                .backBufferIndex = frameData.backBufferIndex,
+                .bufferCount = static_cast<UINT>(frameData.frameFenceValues.size()),
+                .frameBufferRTVHandle = frameBufferRTVHandles[frameData.backBufferIndex],
+                .syncInterval = frameData.syncInterval,
+                .presentFlags = frameData.presentFlags,
+                .waitEvent = frameData.waitEvent,
+                .waitInterval = frameData.waitInterval
+            },
+            std::forward<Func>(func));
+    }
+
+    /// <summary>
+    /// Does some work and calls present on the swapchain where it's guarenteed to work even when no work is being done
+    /// </summary>
+    /// <param name="frameData">The objects that are requires in order to be able to call</param>
+    /// <param name="frameBufferRTVStartHandle">A CPU_DESCRIPTOR_HANDLE to an RTV Descriptor Heap where all frame buffers are sequentially placed</param>
+    /// <param name="rtvOffset"></param>
+    /// <param name="func"></param>
+    template<std::invocable<const CurrentFrameData&> Func>
+    void Frame(const FrameData& frameData, D3D12_CPU_DESCRIPTOR_HANDLE frameBufferRTVStartHandle, UINT64 rtvOffset, Func&& func)
+    {
+        assert(frameData.frameFenceValues.size() == TypedD3D::Helpers::Common::GetDescription(frameData.swapChain).BufferCount);
+        assert(frameData.frameFenceValues.size() == frameData.frameBuffers.size());
+
+        frameBufferRTVStartHandle.ptr += rtvOffset * frameData.backBufferIndex;
+        PrivateFrame(PrivateCurrentFrameData
+            {
+                .swapChain = frameData.swapChain,
+                .commandQueue = frameData.commandQueue,
+                .fence = frameData.fence,
+                .frameFenceValue = frameData.frameFenceValues[frameData.backBufferIndex],
+                .largestFrameWaitValue = frameData.largestFrameWaitValue,
+                .frameBuffer = *frameData.frameBuffers[frameData.backBufferIndex],
+                .backBufferIndex = frameData.backBufferIndex,
+                .bufferCount = static_cast<UINT>(frameData.frameFenceValues.size()),
+                .frameBufferRTVHandle = frameBufferRTVStartHandle,
+                .syncInterval = frameData.syncInterval,
+                .presentFlags = frameData.presentFlags,
+                .waitEvent = frameData.waitEvent,
+                .waitInterval = frameData.waitInterval
+            },
+            std::forward<Func>(func));
     }
 
 #pragma pop_macro("max")
 
-    namespace ResourceBarrier
-    {
-        D3D12_RESOURCE_BARRIER Transition(ID3D12Resource& resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after, D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE, UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
-        D3D12_RESOURCE_BARRIER Aliasing(ID3D12Resource* optResourceBefore, ID3D12Resource* optResourceAfter, D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE);
-        D3D12_RESOURCE_BARRIER UAV(ID3D12Resource& resource, D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE);
-    }
+        D3D12_RESOURCE_BARRIER TransitionBarrier(ID3D12Resource& resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after, D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE, UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+        D3D12_RESOURCE_BARRIER AliasingBarrier(ID3D12Resource* optResourceBefore, ID3D12Resource* optResourceAfter, D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE);
+        D3D12_RESOURCE_BARRIER UAVBarrier(ID3D12Resource& resource, D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE);
 
     template<class DebugTy = ID3D12Debug>
     tl::expected<Microsoft::WRL::ComPtr<DebugTy>, HRESULT> GetDebugInterface()

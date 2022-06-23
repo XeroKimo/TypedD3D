@@ -51,9 +51,7 @@ namespace TypedD3D::Helpers::D3D12
         commandQueue.Wait(&fence, fenceValue);
     }
 
-    namespace ResourceBarrier
-    {
-        D3D12_RESOURCE_BARRIER Transition(ID3D12Resource& resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after, D3D12_RESOURCE_BARRIER_FLAGS flags, UINT subresource)
+        D3D12_RESOURCE_BARRIER TransitionBarrier(ID3D12Resource& resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after, D3D12_RESOURCE_BARRIER_FLAGS flags, UINT subresource)
         {
             return D3D12_RESOURCE_BARRIER
             {
@@ -68,7 +66,7 @@ namespace TypedD3D::Helpers::D3D12
                 }
             };
         }
-        D3D12_RESOURCE_BARRIER Aliasing(ID3D12Resource* optResourceBefore, ID3D12Resource* optResourceAfter, D3D12_RESOURCE_BARRIER_FLAGS flags)
+        D3D12_RESOURCE_BARRIER AliasingBarrier(ID3D12Resource* optResourceBefore, ID3D12Resource* optResourceAfter, D3D12_RESOURCE_BARRIER_FLAGS flags)
         {
             return D3D12_RESOURCE_BARRIER
             {
@@ -81,7 +79,7 @@ namespace TypedD3D::Helpers::D3D12
                 }
             };
         }
-        D3D12_RESOURCE_BARRIER UAV(ID3D12Resource& resource, D3D12_RESOURCE_BARRIER_FLAGS flags)
+        D3D12_RESOURCE_BARRIER UAVBarrier(ID3D12Resource& resource, D3D12_RESOURCE_BARRIER_FLAGS flags)
         {
             return D3D12_RESOURCE_BARRIER
             {
@@ -93,6 +91,5 @@ namespace TypedD3D::Helpers::D3D12
                 }
             };
         }
-    }
 }
 
