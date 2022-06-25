@@ -325,37 +325,35 @@ void D3D12HelloWorld()
         else
         {
             TypedD3D::Helpers::D3D12::Frame(
-                *swapChain.Get(),
+                { *swapChain.Get() },
+                { *fence.Get() },
                 *commandQueue.Get(),
-                *fence.Get(),
-                xk::span_tuple<ID3D12Resource*, std::dynamic_extent, UINT64>{ resources.begin(), resources.end(), frameWaitValues.begin() },
-                swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart().Get(),
-                rtvOffset,
+                frameWaitValues[backBuffer],
                 fenceValue,
                 backBuffer,
+                frameWaitValues.size(),
                 [&](const TypedD3D::Helpers::D3D12::FrameData& frameData)
                 {
                     TypedD3D::Helpers::D3D12::RecordAndExecute(
                         *commandList.Get(), 
-                        *commandAllocators[frameData.GetCurrentFrameIndex()].Get(), 
-                        frameData.GetCommandQueue(),
+                        *commandAllocators[frameData.backBufferIndex].Get(), 
+                        frameData.commandQueue,
                         [&](TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList)
                         {
-
                             D3D12_RESOURCE_BARRIER beginBarrier = TypedD3D::Helpers::D3D12::TransitionBarrier(
-                                frameData.GetCurrentFrameBuffer(),
+                                *swapChainBuffers[frameData.backBufferIndex].Get(),
                                 D3D12_RESOURCE_STATE_PRESENT,
                                 D3D12_RESOURCE_STATE_RENDER_TARGET);
 
                             D3D12_RESOURCE_BARRIER endBarrier = TypedD3D::Helpers::D3D12::TransitionBarrier(
-                                frameData.GetCurrentFrameBuffer(),
+                                *swapChainBuffers[frameData.backBufferIndex].Get(),
                                 D3D12_RESOURCE_STATE_RENDER_TARGET,
                                 D3D12_RESOURCE_STATE_PRESENT);
 
                             TypedD3D::Helpers::D3D12::ResourceBarrier(*commandList.Get(), std::span(&beginBarrier, 1), std::span(&endBarrier, 1),
                                 [&](TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList)
                             {
-                                TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> backBufferHandle = frameData.GetCurrentFrameBufferHandle();
+                                TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart().Offset(frameData.backBufferIndex, rtvOffset);
                                 commandList->ClearRenderTargetView(backBufferHandle, std::to_array({ 0.f, 0.3f, 0.7f, 1.f }), {});
                                 commandList->OMSetRenderTargets(std::span(&backBufferHandle, 1), true, nullptr);
 

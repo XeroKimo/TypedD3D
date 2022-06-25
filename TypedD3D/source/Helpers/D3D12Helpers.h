@@ -284,6 +284,14 @@ namespace TypedD3D::Helpers::D3D12
         SignalFenceCPU(fence, fenceValue);
     }
 
+
+    struct FenceCPUSyncParams
+    {
+        ID3D12Fence& fence;
+        HANDLE syncPrimitive = nullptr;
+        std::chrono::milliseconds waitInterval = waitForCompletion;
+    };
+
     /// <summary>
     /// Has a CPU thread wait for a fence to reach a fence value before doing some work
     /// </summary>
@@ -293,9 +301,9 @@ namespace TypedD3D::Helpers::D3D12
     /// <param name="waitEvent"></param>
     /// <param name="waitInterval"></param>
     template<std::invocable Func>
-    void CPUWaitAndThen(ID3D12Fence& fence, UINT64 fenceValue, Func&& func, HANDLE waitEvent = nullptr, std::chrono::milliseconds waitInterval = waitForCompletion)
+    void CPUWaitAndThen(const FenceCPUSyncParams& fenceSyncParams, UINT64 fenceValue, Func&& func)
     {
-        StallCPUThread(fence, fenceValue, waitEvent, waitInterval);
+        StallCPUThread(fenceSyncParams.fence, fenceValue, fenceSyncParams.syncPrimitive, fenceSyncParams.waitInterval);
         func();
     }
 
@@ -313,153 +321,39 @@ namespace TypedD3D::Helpers::D3D12
         func(&commandQueue);
     }
 
-    class FrameData
+    struct FrameData
     {
-    private:
-        //The command queue associated with the current frame's swap chain
-        ID3D12CommandQueue& m_commandQueue;
-
-        //The fence the command queue will use to signal
-        ID3D12Fence& m_fence;
-
-        using FenceValue_t = UINT64;
-        //The resources that will be used as frame buffers and the fence values
-        xk::span_tuple<ID3D12Resource*, std::dynamic_extent, FenceValue_t> m_frameBuffers;
-
-        //Equivalent to the frame with the highest fence value
-        //Suggested to use a seperate UINT64 object that can persist between Frame() calls
-        FenceValue_t& m_highestFenceValue;
-
-        //The current back buffer index
-        UINT& m_backBufferIndex;
-
-        D3D12_CPU_DESCRIPTOR_HANDLE m_backBufferRTVHandle;
-
-    public:
-        template<std::derived_from<IDXGISwapChain> SwapChainTy, std::invocable<FrameData&> Func>
-        FrameData(ID3D12CommandQueue& commandQueue,
-            ID3D12Fence& fence,
-            xk::span_tuple<ID3D12Resource*, std::dynamic_extent, FenceValue_t> frameBuffers,
-            UINT64& highestFenceValue,
-            UINT& backBufferIndex,
-            D3D12_CPU_DESCRIPTOR_HANDLE backBufferRTVHandle,
-            SwapChainTy& swapChain,
-            UINT syncInterval,
-            UINT presentFlags,
-            HANDLE waitEvent,
-            std::chrono::milliseconds waitInterval,
-            Func&& func) :
-            m_commandQueue(commandQueue),
-            m_fence(fence),
-            m_frameBuffers(frameBuffers),
-            m_highestFenceValue(highestFenceValue),
-            m_backBufferIndex(backBufferIndex),
-            m_backBufferRTVHandle(backBufferRTVHandle)
-        {
-            CPUWaitAndThen(fence, GetCurrentFrameFenceValue(), [&, this]()
-            {
-                GetCurrentFrameFenceValue() = highestFenceValue;
-
-                func(*this);
-
-                GetCurrentFrameFenceValue() = highestFenceValue = SignalFenceGPU(commandQueue, fence, GetCurrentFrameFenceValue());
-                swapChain.Present(syncInterval, presentFlags);
-                backBufferIndex = (backBufferIndex + 1) % frameBuffers.size();
-
-            }, waitEvent, waitInterval);
-        }
-
-    public:
-        ID3D12CommandQueue& GetCommandQueue() const { return m_commandQueue; }
-        ID3D12Fence& GetFence() const { return m_fence; }
-
-        ID3D12Resource& GetCurrentFrameBuffer() const { return *get<ID3D12Resource*>(m_frameBuffers)[GetCurrentFrameIndex()]; }
-        ID3D12Resource& GetPreviousFrameBuffer()const { return *get<ID3D12Resource*>(m_frameBuffers)[GetPreviousFrameIndex()]; }
-
-        FenceValue_t& GetCurrentFrameFenceValue() const { return get<FenceValue_t>(m_frameBuffers)[GetCurrentFrameIndex()]; }
-        FenceValue_t& GetPreviousFrameFenceValue() const { return get<FenceValue_t>(m_frameBuffers)[GetPreviousFrameIndex()]; }
-
-        size_t GetBufferCount() const { return m_frameBuffers.size(); }
-
-        UINT GetCurrentFrameIndex() const { return m_backBufferIndex; }
-        UINT GetPreviousFrameIndex() const { return (std::min)(m_backBufferIndex - 1, static_cast<UINT>(m_frameBuffers.size() - 1)); }
-
-        D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentFrameBufferHandle() const { return m_backBufferRTVHandle; }
+        ID3D12CommandQueue& commandQueue;
+        ID3D12Fence& fence;
+        UINT64& currentFrameFenceValue;
+        UINT backBufferIndex;
     };
 
-    template<std::derived_from<IDXGISwapChain> SwapChainTy, std::invocable<FrameData&> Func>
-    void Frame(SwapChainTy& swapChain,
-        ID3D12CommandQueue& commandQueue,
-        ID3D12Fence& fence,
-        xk::span_tuple<ID3D12Resource*, std::dynamic_extent, UINT64, D3D12_CPU_DESCRIPTOR_HANDLE> frameBuffers,
-        UINT64& highestFenceValue,
-        UINT& backBufferIndex,
-        Func&& func,
-        UINT syncInterval = 0,
-        UINT presentFlags = 0,
-        HANDLE waitEvent = nullptr,
-        std::chrono::milliseconds waitInterval = waitForCompletion)
+    struct PresentFrameParams
     {
-        FrameData(commandQueue, 
-            fence,
-            xk::span_tuple<ID3D12Resource*, std::dynamic_extent, UINT64>(get<0>(frameBuffers).begin(), get<0>(frameBuffers).end(), get<1>(frameBuffers).begin()),
-            highestFenceValue, 
-            backBufferIndex, 
-            get<2>(frameBuffers)[backBufferIndex],
-            swapChain, 
-            syncInterval, 
-            presentFlags, 
-            waitEvent, 
-            waitInterval, 
-            std::forward<Func>(func));
-    }
+        IDXGISwapChain& swapChain;
+        UINT syncInterval = 0;
+        UINT presentFlags = 0;
+    };
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="SwapChainTy"></typeparam>
-    /// <typeparam name="Func"></typeparam>
-    /// <param name="swapChain">The swap chain we will call Present with</param>
-    /// <param name="commandQueue">The command queue associated with the swap chain</param>
-    /// <param name="fence">The fence the associated command queue will signal</param>
-    /// <param name="frameBuffers">The buffers of the swap chain and the fence values associated to a frame</param>
-    /// <param name="frameBufferRTVStartHandle">A RTV Descriptor Heap handle to the first buffer, assumes other buffers are layed out sequentially in the heap</param>
-    /// <param name="rtvOffset">ID3D12Device.GetDescriptorHandleIncrementSize() of type RTV</param>
-    /// <param name="highestFenceValue">A external fence value that will always have the same value as the frame that currently has the highest fence value</param>
-    /// <param name="backBufferIndex">The current back buffer</param>
-    /// <param name="func"></param>
-    /// <param name="syncInterval"></param>
-    /// <param name="presentFlags"></param>
-    /// <param name="waitEvent">The syncronization primitive for the fence</param>
-    /// <param name="waitInterval"></param>
-    template<std::derived_from<IDXGISwapChain> SwapChainTy, std::invocable<FrameData&> Func>
-    void Frame(SwapChainTy& swapChain,
-        ID3D12CommandQueue& commandQueue,
-        ID3D12Fence& fence,
-        xk::span_tuple<ID3D12Resource*, std::dynamic_extent, UINT64> frameBuffers,
-        D3D12_CPU_DESCRIPTOR_HANDLE frameBufferRTVStartHandle, 
-        UINT64 rtvOffset,
-        UINT64& highestFenceValue,
-        UINT& backBufferIndex,
-        Func&& func,
-        UINT syncInterval = 0,
-        UINT presentFlags = 0,
-        HANDLE waitEvent = nullptr,
-        std::chrono::milliseconds waitInterval = waitForCompletion)
+    template<std::invocable<const FrameData&> Func>
+    void Frame(const PresentFrameParams& presentFrameParams, const FenceCPUSyncParams& fenceSyncParams, ID3D12CommandQueue& commandQueue, UINT64& currentFrameFenceValue, UINT64& highestFrameFenceValue, UINT& backBufferIndex, UINT bufferCount, Func&& func)
     {
-        frameBufferRTVStartHandle.ptr += rtvOffset * backBufferIndex;
-        FrameData(commandQueue,
-            fence,
-            xk::span_tuple<ID3D12Resource*, std::dynamic_extent, UINT64>(get<0>(frameBuffers).begin(), get<0>(frameBuffers).end(), get<1>(frameBuffers).begin()),
-            highestFenceValue,
-            backBufferIndex,
-            frameBufferRTVStartHandle,
-            swapChain,
-            syncInterval,
-            presentFlags,
-            waitEvent,
-            waitInterval,
-            std::forward<Func>(func));
+        CPUWaitAndThen(fenceSyncParams, currentFrameFenceValue, [&]()
+        {
+            currentFrameFenceValue = highestFrameFenceValue;
+            func(FrameData
+                {
+                    .commandQueue = commandQueue,
+                    .fence = fenceSyncParams.fence,
+                    .currentFrameFenceValue = currentFrameFenceValue,
+                    .backBufferIndex = backBufferIndex
+                });
+
+            currentFrameFenceValue = highestFrameFenceValue = SignalFenceGPU(commandQueue, fenceSyncParams.fence, currentFrameFenceValue);
+            presentFrameParams.swapChain.Present(presentFrameParams.syncInterval, presentFrameParams.presentFlags);
+            backBufferIndex = (backBufferIndex + 1) % bufferCount;
+        });
     }
 
     D3D12_RESOURCE_BARRIER TransitionBarrier(ID3D12Resource& resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after, D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE, UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
