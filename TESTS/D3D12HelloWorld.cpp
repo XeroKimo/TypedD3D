@@ -352,19 +352,19 @@ void D3D12HelloWorld()
 
                             TypedD3D::Helpers::D3D12::ResourceBarrier(*commandList.Get(), std::span(&beginBarrier, 1), std::span(&endBarrier, 1),
                                 [&](TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList)
-                            {
-                                TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart().Offset(frameData.backBufferIndex, rtvOffset);
-                                commandList->ClearRenderTargetView(backBufferHandle, std::to_array({ 0.f, 0.3f, 0.7f, 1.f }), {});
-                                commandList->OMSetRenderTargets(std::span(&backBufferHandle, 1), true, nullptr);
+                                {
+                                    TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart().Offset(frameData.backBufferIndex, rtvOffset);
+                                    commandList->ClearRenderTargetView(backBufferHandle, std::to_array({ 0.f, 0.3f, 0.7f, 1.f }), {});
+                                    commandList->OMSetRenderTargets(std::span(&backBufferHandle, 1), true, nullptr);
 
-                                commandList->SetPipelineState(pipelineState.value().Get());
-                                commandList->SetGraphicsRootSignature(rootSignature.Get());
-                                commandList->RSSetViewports(std::span(&viewport, 1));
-                                commandList->RSSetScissorRects(std::span(&rect, 1));
-                                commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-                                commandList->IASetVertexBuffers(0, std::span(&vertexBufferView, 1));
-                                commandList->DrawInstanced(3, 1, 0, 0);
-                            });
+                                    commandList->SetPipelineState(pipelineState.value().Get());
+                                    commandList->SetGraphicsRootSignature(rootSignature.Get());
+                                    commandList->RSSetViewports(std::span(&viewport, 1));
+                                    commandList->RSSetScissorRects(std::span(&rect, 1));
+                                    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                                    commandList->IASetVertexBuffers(0, std::span(&vertexBufferView, 1));
+                                    commandList->DrawInstanced(3, 1, 0, 0);
+                                });
                         });
                 });
         }

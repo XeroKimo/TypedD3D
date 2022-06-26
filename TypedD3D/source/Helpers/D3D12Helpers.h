@@ -265,7 +265,7 @@ namespace TypedD3D::Helpers::D3D12
     /// <param name="fenceValue"></param>
     /// <param name="f"></param>
     template<std::invocable<ID3D12CommandQueue*> Func>
-    void GPUWork(ID3D12CommandQueue& commandQueue, ID3D12Fence& fence, UINT64& fenceValue, Func&& func)
+    void AppendSignalFenceGPU(ID3D12CommandQueue& commandQueue, ID3D12Fence& fence, UINT64& fenceValue, Func&& func)
     {
         func(&commandQueue);
         fenceValue = SignalFenceGPU(commandQueue, fence, fenceValue);
@@ -278,7 +278,7 @@ namespace TypedD3D::Helpers::D3D12
     /// <param name="fenceValue"></param>
     /// <param name="f"></param>
     template<std::invocable Func>
-    void CPUWork(ID3D12Fence& fence, UINT64 fenceValue, Func&& func)
+    void AppendSignalFenceCPU(ID3D12Fence& fence, UINT64 fenceValue, Func&& func)
     {
         func();
         SignalFenceCPU(fence, fenceValue);
@@ -301,10 +301,17 @@ namespace TypedD3D::Helpers::D3D12
     /// <param name="waitEvent"></param>
     /// <param name="waitInterval"></param>
     template<std::invocable Func>
-    void CPUWaitAndThen(const FenceCPUSyncParams& fenceSyncParams, UINT64 fenceValue, Func&& func)
+    void PrependCPUWait(const FenceCPUSyncParams& fenceSyncParams, UINT64 fenceValue, Func&& func)
     {
         StallCPUThread(fenceSyncParams.fence, fenceValue, fenceSyncParams.syncPrimitive, fenceSyncParams.waitInterval);
         func();
+    }
+
+    template<std::invocable Func>
+    void AppendCPUWait(const FenceCPUSyncParams& fenceSyncParams, UINT64 fenceValue, Func&& func)
+    {
+        func();
+        StallCPUThread(fenceSyncParams.fence, fenceValue, fenceSyncParams.syncPrimitive, fenceSyncParams.waitInterval);
     }
 
     /// <summary>
@@ -315,10 +322,17 @@ namespace TypedD3D::Helpers::D3D12
     /// <param name="fenceValue"></param>
     /// <param name="f"></param>
     template<std::invocable<ID3D12CommandQueue*> Func>
-    void GPUWaitAndThen(ID3D12CommandQueue& commandQueue, ID3D12Fence& fence, UINT64 fenceValue, Func&& func)
+    void PrependGPUWait(ID3D12CommandQueue& commandQueue, ID3D12Fence& fence, UINT64 fenceValue, Func&& func)
     {
         commandQueue.Wait(&fence, fenceValue);
         func(&commandQueue);
+    }
+
+    template<std::invocable<ID3D12CommandQueue*> Func>
+    void AppendGPUWait(ID3D12CommandQueue& commandQueue, ID3D12Fence& fence, UINT64 fenceValue, Func&& func)
+    {
+        func(&commandQueue);
+        commandQueue.Wait(&fence, fenceValue);
     }
 
     struct FrameData
@@ -339,7 +353,7 @@ namespace TypedD3D::Helpers::D3D12
     template<std::invocable<const FrameData&> Func>
     void Frame(const PresentFrameParams& presentFrameParams, const FenceCPUSyncParams& fenceSyncParams, ID3D12CommandQueue& commandQueue, UINT64& currentFrameFenceValue, UINT64& highestFrameFenceValue, UINT& backBufferIndex, UINT bufferCount, Func&& func)
     {
-        CPUWaitAndThen(fenceSyncParams, currentFrameFenceValue, [&]()
+        PrependCPUWait(fenceSyncParams, currentFrameFenceValue, [&]()
         {
             currentFrameFenceValue = highestFrameFenceValue;
             func(FrameData
