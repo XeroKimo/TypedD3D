@@ -81,9 +81,6 @@
     <ClInclude Include="source\D3D11\Device.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="expected.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\D3D11\DeviceContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -117,12 +114,18 @@
     <ClInclude Include="source\Types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\Exceptions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TypedDXGI.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Exceptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

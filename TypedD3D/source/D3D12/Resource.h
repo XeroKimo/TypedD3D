@@ -33,13 +33,11 @@ namespace TypedD3D::Internal
             using derived_self = DerivedSelf;
 
         public:
-            tl::expected<std::byte*, HRESULT> Map(UINT Subresource, const D3D12_RANGE* optReadRange)
+            std::byte* Map(UINT Subresource, const D3D12_RANGE* optReadRange)
             {
                 void* dataPtr;
 
-                HRESULT result = Get().Map(Subresource, optReadRange, &dataPtr);
-                if(FAILED(result))
-                    return tl::unexpected(result);
+                ThrowIfFailed(Get().Map(Subresource, optReadRange, &dataPtr));
 
                 return static_cast<std::byte*>(dataPtr);
             }
@@ -53,24 +51,24 @@ namespace TypedD3D::Internal
 
             D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress() { return Get().GetGPUVirtualAddress(); }
 
-            HRESULT WriteToSubresource(
+            void WriteToSubresource(
                 UINT DstSubresource,
                 const D3D12_BOX* optDstBox,
                 const void* pSrcData,
                 UINT SrcRowPitch,
                 UINT SrcDepthPitch)
             {
-                return Get().WriteToSubresource(DstSubresource, optDstBox, &pSrcData, SrcRowPitch, SrcDepthPitch);
+                ThrowIfFailed(Get().WriteToSubresource(DstSubresource, optDstBox, &pSrcData, SrcRowPitch, SrcDepthPitch));
             }
 
-            HRESULT STDMETHODCALLTYPE ReadFromSubresource(
+            void ReadFromSubresource(
                 void* pDstData,
                 UINT DstRowPitch,
                 UINT DstDepthPitch,
                 UINT SrcSubresource,
                 const D3D12_BOX* optSrcBox)
             {
-                return Get().ReadFromSubresource(pDstData, DstRowPitch, DstDepthPitch, SrcSubresource, optSrcBox);
+                ThrowIfFailed(Get().ReadFromSubresource(pDstData, DstRowPitch, DstDepthPitch, SrcSubresource, optSrcBox));
             }
 
             std::pair<D3D12_HEAP_PROPERTIES, D3D12_HEAP_FLAGS> GetHeapProperties()

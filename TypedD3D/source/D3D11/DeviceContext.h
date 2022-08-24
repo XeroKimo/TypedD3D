@@ -1,6 +1,5 @@
 #pragma once
 #include "DeviceChild.h"
-#include "expected.hpp"
 #include "span_tuple.h"
 #include "gsl/pointers"
 #include "ResourceViews.h"
@@ -141,7 +140,7 @@ namespace TypedD3D::Internal
                         Get().Draw(VertexCount, StartVertexLocation);
                     }
 
-                    tl::expected<D3D11_MAPPED_SUBRESOURCE, HRESULT> Map(
+                    D3D11_MAPPED_SUBRESOURCE Map(
                         gsl::not_null<Wrapper<ID3D11Resource>> pResource,
                         UINT Subresource,
                         D3D11_MAP MapType,
@@ -149,10 +148,7 @@ namespace TypedD3D::Internal
                     {
                         D3D11_MAPPED_SUBRESOURCE subresource;
 
-                        if(HRESULT result = Get().Map(pResource.get().Get(), Subresource, MapType, MapFlags, &subresource); FAILED(result))
-                        {
-                            return tl::unexpected(result);
-                        }
+                        ThrowIfFailed(Get().Map(pResource.get().Get(), Subresource, MapType, MapFlags, &subresource));
                         return subresource;
                     }
 
@@ -292,14 +288,13 @@ namespace TypedD3D::Internal
                         Get().End(&pAsync);
                     }
 
-                    tl::expected<void*, HRESULT> GetData(
+                    void* GetData(
                         ID3D11Asynchronous& pAsync,
                         UINT GetDataFlags)
                     {
                         void* data;
 
-                        if(HRESULT result = Get().GetData(&pAsync, data, pAsync.GetDataSize(), GetDataFlags); FAILED(result))
-                            return tl::unexpected(result);
+                        ThrowIfFailed(Get().GetData(&pAsync, data, pAsync.GetDataSize(), GetDataFlags));
 
                         return data;
                     }
@@ -1301,12 +1296,11 @@ namespace TypedD3D::Internal
                         return Get().GetContextFlags();
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D11CommandList>, HRESULT> FinishCommandList(BOOL RestoreDeferredContextState)
+                    Microsoft::WRL::ComPtr<ID3D11CommandList> FinishCommandList(BOOL RestoreDeferredContextState)
                     {
                         Microsoft::WRL::ComPtr<ID3D11CommandList> commandList;
 
-                        if(HRESULT result = Get().FinishCommandList(RestoreDeferredContextState, &commandList); FAILED(result))
-                            return tl::unexpected(result);
+                        ThrowIfFailed(Get().FinishCommandList(RestoreDeferredContextState, &commandList));
 
                         return commandList;
                     }

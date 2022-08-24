@@ -1,5 +1,4 @@
 #pragma once
-#include "expected.hpp"
 #include "COMHelpers.h"
 
 namespace TypedD3D::Helpers::Common

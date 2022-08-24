@@ -5,7 +5,7 @@
 //
 //*********************************************************
 #pragma once
-#include "expected.hpp"
+#include "source/Exceptions.h"
 #include <wrl/client.h>
 
 namespace TypedD3D::Helpers::COM
@@ -46,16 +46,11 @@ namespace TypedD3D::Helpers::COM
     /// <param name="...args">All arguments not including the IID and void**</param>
     /// <returns></returns>
     template<class Unknown, class Func, class... Args>
-    tl::expected<Microsoft::WRL::ComPtr<Unknown>, HRESULT> IIDToObjectForwardFunction(Func&& function, Args&&... args)
+    Microsoft::WRL::ComPtr<Unknown> IIDToObjectForwardFunction(Func&& function, Args&&... args)
     {
         using Microsoft::WRL::ComPtr;
         ComPtr<Unknown> unknown;
-
-        HRESULT hr = std::invoke(function, args..., IID_PPV_ARGS(&unknown));
-
-        if(FAILED(hr))
-            return tl::unexpected(hr);
-
+        ThrowIfFailed(std::invoke(std::forward<Func>(function), std::forward<Args>(args)..., IID_PPV_ARGS(&unknown)));
         return unknown;
     }
 
@@ -71,16 +66,11 @@ namespace TypedD3D::Helpers::COM
     /// <param name="...args">All arguments not including the IID and void**</param>
     /// <returns></returns>
     template<class Unknown, class Func, class Obj, class... Args>
-    tl::expected<Microsoft::WRL::ComPtr<Unknown>, HRESULT> IIDToObjectForwardFunction(Func&& function, Obj&& obj, Args&&... args)
+    Microsoft::WRL::ComPtr<Unknown> IIDToObjectForwardFunction(Func&& function, Obj&& obj, Args&&... args)
     {
         using Microsoft::WRL::ComPtr;
         ComPtr<Unknown> unknown;
-
-        HRESULT hr = std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown));
-
-        if(FAILED(hr))
-            return tl::unexpected(hr);
-
+        ThrowIfFailed(std::invoke(std::forward<Func>(function), std::forward<Obj>(obj), std::forward<Args>(args)..., IID_PPV_ARGS(&unknown)));
         return unknown;
     }
 
@@ -95,16 +85,11 @@ namespace TypedD3D::Helpers::COM
     /// <param name="...args">All arguments not including the IUnknown param</param>
     /// <returns></returns>
     template<class Unknown, class Func, class... Args>
-    tl::expected<Microsoft::WRL::ComPtr<Unknown>, HRESULT> UnknownObjectForwardFunction(Func&& function, Args&&... args)
+    Microsoft::WRL::ComPtr<Unknown> UnknownObjectForwardFunction(Func&& function, Args&&... args)
     {
         using Microsoft::WRL::ComPtr;
         ComPtr<Unknown> unknown;
-
-        HRESULT hr = std::invoke(function, args..., &unknown);
-
-        if(FAILED(hr))
-            return tl::unexpected(hr);
-
+        ThrowIfFailed(std::invoke(std::forward<Func>(function), std::forward<Args>(args)..., &unknown));
         return unknown;
     }
 
@@ -120,16 +105,11 @@ namespace TypedD3D::Helpers::COM
     /// <param name="...args">All arguments not including the IUnknown param</param>
     /// <returns></returns>
     template<class Unknown, class Func, class Obj, class... Args>
-    tl::expected<Microsoft::WRL::ComPtr<Unknown>, HRESULT> UnknownObjectForwardFunction(Func&& function, Obj&& obj, Args&&... args)
+    Microsoft::WRL::ComPtr<Unknown> UnknownObjectForwardFunction(Func&& function, Obj&& obj, Args&&... args)
     {
         using Microsoft::WRL::ComPtr;
         ComPtr<Unknown> unknown;
-
-        HRESULT hr = std::invoke(function, obj, args..., &unknown);
-
-        if(FAILED(hr))
-            return tl::unexpected(hr);
-
+        ThrowIfFailed(std::invoke(std::forward<Func>(function), std::forward<Obj>(obj), std::forward<Args>(args)..., &unknown));
         return unknown;
     }
 };

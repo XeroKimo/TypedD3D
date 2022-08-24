@@ -36,7 +36,7 @@ namespace TypedD3D::Internal
                     using derived_self = DerivedSelf;
 
                 public:
-                    tl::expected<Microsoft::WRL::ComPtr<IDXGIOutput>, HRESULT> EnumOutputs(UINT Output)
+                    Microsoft::WRL::ComPtr<IDXGIOutput> EnumOutputs(UINT Output)
                     {
                         return Helpers::COM::UnknownObjectForwardFunction<IDXGIOutput>(&value_type::EnumOutputs, Get(), Output);
                     }

@@ -7,7 +7,6 @@
 
 #pragma once
 #include "COMHelpers.h"
-#include "expected.hpp"
 #include <dxgi1_6.h>
 #include <type_traits>
 
@@ -24,49 +23,46 @@ namespace TypedD3D::Helpers::DXGI
         DEFINE_ENUM_FLAG_OPERATORS(CreationFlags);
 
         template<class Factory = IDXGIFactory>
-        tl::expected<Microsoft::WRL::ComPtr<Factory>, HRESULT> Create(CreationFlags flags)
+        Microsoft::WRL::ComPtr<Factory> Create(CreationFlags flags)
         {
-            using Microsoft::WRL::ComPtr;
+            return COM::IIDToObjectForwardFunction<Factory>(&CreateDXGIFactory);
 
-            if constexpr(std::is_same_v<Factory, IDXGIFactory>)
-            {
-                return COM::IIDToObjectForwardFunction<IDXGIFactory>(&CreateDXGIFactory);
-            }
-            else if constexpr(std::is_same_v<Factory, IDXGIFactory1>)
-            {
-                return COM::IIDToObjectForwardFunction<IDXGIFactory1>(&CreateDXGIFactory1);
-            }
-            else
-            {
-                if constexpr(std::is_same_v<Factory, IDXGIFactory2>)
-                {
-                    return COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory2, static_cast<UINT>(flags));
-                }
-                else
-                {
-                    tl::expected<ComPtr<IDXGIFactory2>, HRESULT> factory = COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory2, static_cast<UINT>(flags));
+            //if constexpr(std::is_same_v<Factory, IDXGIFactory>)
+            //{
+            //    return COM::IIDToObjectForwardFunction<IDXGIFactory>(&CreateDXGIFactory);
+            //}
+            //else if constexpr(std::is_same_v<Factory, IDXGIFactory1>)
+            //{
+            //    return COM::IIDToObjectForwardFunction<IDXGIFactory1>(&CreateDXGIFactory1);
+            //}
+            //else
+            //{
+            //    if constexpr(std::is_same_v<Factory, IDXGIFactory2>)
+            //    {
+            //        return COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory2, static_cast<UINT>(flags));
+            //    }
+            //    else
+            //    {
+            //        tl::expected<ComPtr<IDXGIFactory2>, HRESULT> factory = COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory2, static_cast<UINT>(flags));
 
-                    if(!factory)
-                        return tl::unexpected(factory.error());
+            //        if(!factory)
+            //            return tl::unexpected(factory.error());
 
-                    return COM::Cast<Factory>(factory.value());
-                }
-            }
+            //        return COM::Cast<Factory>(factory.value());
+            //    }
+            //}
         }
     }
 
     namespace SwapChain
     {
         template<class SwapChain = IDXGISwapChain1>
-        tl::expected<Microsoft::WRL::ComPtr<SwapChain>, HRESULT> Create(IDXGIFactory2& factory, IUnknown& device, HWND hWnd, const DXGI_SWAP_CHAIN_DESC1& desc, const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* optFullscreenDesc = nullptr, IDXGIOutput* optRestrictToOutput = nullptr)
+        Microsoft::WRL::ComPtr<SwapChain> Create(IDXGIFactory2& factory, IUnknown& device, HWND hWnd, const DXGI_SWAP_CHAIN_DESC1& desc, const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* optFullscreenDesc = nullptr, IDXGIOutput* optRestrictToOutput = nullptr)
         {
             using Microsoft::WRL::ComPtr;
 
             ComPtr<IDXGISwapChain1> swapChain;
-            HRESULT hr = factory.CreateSwapChainForHwnd(&device, hWnd, &desc, optFullscreenDesc, optRestrictToOutput, &swapChain);
-
-            if(FAILED(hr))
-                return tl::unexpected(hr);
+            ThrowIfFailed(factory.CreateSwapChainForHwnd(&device, hWnd, &desc, optFullscreenDesc, optRestrictToOutput, &swapChain));
 
             if constexpr(std::is_same_v<SwapChain, IDXGISwapChain1>)
                 return swapChain;
@@ -75,7 +71,7 @@ namespace TypedD3D::Helpers::DXGI
         }
 
         template<class SwapChain = IDXGISwapChain1>
-        tl::expected<Microsoft::WRL::ComPtr<SwapChain>, HRESULT> CreateFlipDiscard(IDXGIFactory2& factory, IUnknown& device, HWND hWnd, DXGI_FORMAT format, UINT bufferCount, DXGI_SWAP_CHAIN_FLAG flags, bool fullScreen, IDXGIOutput* optRestrictToOutput = nullptr)
+        Microsoft::WRL::ComPtr<SwapChain> CreateFlipDiscard(IDXGIFactory2& factory, IUnknown& device, HWND hWnd, DXGI_FORMAT format, UINT bufferCount, DXGI_SWAP_CHAIN_FLAG flags, bool fullScreen, IDXGIOutput* optRestrictToOutput = nullptr)
         {
             DXGI_SWAP_CHAIN_DESC1 desc{};
             desc.Width = 0;
@@ -103,7 +99,7 @@ namespace TypedD3D::Helpers::DXGI
         }
 
         template<class Resource = ID3D12Resource>
-        inline tl::expected<Microsoft::WRL::ComPtr<Resource>, HRESULT> GetBuffer(IDXGISwapChain& swapChain, UINT index)
+        inline Microsoft::WRL::ComPtr<Resource> GetBuffer(IDXGISwapChain& swapChain, UINT index)
         {
             return COM::IIDToObjectForwardFunction<Resource>(&IDXGISwapChain::GetBuffer, swapChain, index);
         }

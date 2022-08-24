@@ -4,10 +4,10 @@
 #include "source/Internal/IUnknownWrapper.h"
 #include "source/Internal/d3dConcepts.h"
 #include "source/Helpers/COMHelpers.h"
-#include "expected.hpp"
 #include <dxgi1_6.h>
 #include <span>
 #include <d3d12.h>
+#include <memory>
 
 struct ID3D12CommandQueue;
 
@@ -39,31 +39,26 @@ namespace TypedD3D::Internal
                     using derived_self = DerivedSelf;
 
                 public:
-                    HRESULT Present(UINT SyncInterval, UINT Flags)
+                    void Present(UINT SyncInterval, UINT Flags)
                     {
-                        return Get().Present(SyncInterval, Flags);
+                        Helpers::ThrowIfFailed(Get().Present(SyncInterval, Flags));
                     }
 
                     template<Resource Ty>
-                    tl::expected<Wrapper<Ty>, HRESULT> GetBuffer(UINT buffer)
+                    Wrapper<Ty> GetBuffer(UINT buffer)
                     {
-                        tl::expected<Microsoft::WRL::ComPtr<Ty>, HRESULT> resource = Helpers::COM::IIDToObjectForwardFunction<Ty>(&value_type::GetBuffer, Get(), buffer);
-
-                        if(!resource.has_value())
-                            return tl::unexpected(resource.error());
-
-                        return Wrapper<Ty>(resource.value());
+                        return Wrapper<Ty>(Helpers::COM::IIDToObjectForwardFunction<Ty>(&value_type::GetBuffer, Get(), buffer));
                     }
 
-                    HRESULT SetFullscreenState(BOOL Fullscreen, IDXGIOutput* optTarget)
+                    void SetFullscreenState(BOOL Fullscreen, IDXGIOutput* optTarget)
                     {
-                        return Get().SetFullscreenState(Fullscreen, optTarget);
+                        Helpers::ThrowIfFailed(Get().SetFullscreenState(Fullscreen, optTarget));
                     }
 
                     std::pair<BOOL, Microsoft::WRL::ComPtr<IDXGIOutput>> GetFullscreenState()
                     {
                         std::pair<BOOL, Microsoft::WRL::ComPtr<IDXGIOutput>> state;
-                        Get().GetFullscreenState(&state.first, &state.second);
+                        Helpers::ThrowIfFailed(Get().GetFullscreenState(&state.first, &state.second));
                         return state;
                     }
 
@@ -74,19 +69,19 @@ namespace TypedD3D::Internal
                         return desc;
                     }
 
-                    HRESULT ResizeBuffers(
+                    void ResizeBuffers(
                         UINT BufferCount,
                         UINT Width,
                         UINT Height,
                         DXGI_FORMAT NewFormat,
                         UINT SwapChainFlags)
                     {
-                        return Get().ResizeBuffers(BufferCount, Width, Height, NewFormat, SwapChainFlags);
+                        Helpers::ThrowIfFailed(Get().ResizeBuffers(BufferCount, Width, Height, NewFormat, SwapChainFlags));
                     }
 
-                    HRESULT ResizeTarget(const DXGI_MODE_DESC& pNewTargetParameters)
+                    void ResizeTarget(const DXGI_MODE_DESC& pNewTargetParameters)
                     {
-                        return Get().ResizeTarget(&pNewTargetParameters);
+                        Helpers::ThrowIfFailed(Get().ResizeTarget(&pNewTargetParameters));
                     }
 
                     Microsoft::WRL::ComPtr<IDXGIOutput> GetContainingOutput()
@@ -139,7 +134,7 @@ namespace TypedD3D::Internal
                     DXGI_SWAP_CHAIN_FULLSCREEN_DESC GetFullscreenDesc()
                     {
                         DXGI_SWAP_CHAIN_FULLSCREEN_DESC desc;
-                        HRESULT result = Get().GetFullscreenDesc(&desc);
+                        Helpers::ThrowIfFailed(Get().GetFullscreenDesc(&desc));
                         return desc;
                     }
 
@@ -150,14 +145,14 @@ namespace TypedD3D::Internal
                         return hwnd;
                     }
 
-                    HRESULT GetCoreWindow(REFIID refiid, void** ppUnk)
+                    void GetCoreWindow(REFIID refiid, void** ppUnk)
                     {
-                        return Get().GetCoreWindow(refiid, ppUnk);
+                        Helpers::ThrowIfFailed(Get().GetCoreWindow(refiid, ppUnk));
                     }
 
-                    HRESULT Present1(UINT SyncInterval, UINT PresentFlags, const DXGI_PRESENT_PARAMETERS& pPresentParameters)
+                    void Present1(UINT SyncInterval, UINT PresentFlags, const DXGI_PRESENT_PARAMETERS& pPresentParameters)
                     {
-                        return Get().Present1(SyncInterval, PresentFlags, &pPresentParameters);
+                        Helpers::ThrowIfFailed(Get().Present1(SyncInterval, PresentFlags, &pPresentParameters));
                     }
 
                     BOOL IsTemporaryMonoSupported()
@@ -169,31 +164,28 @@ namespace TypedD3D::Internal
                     {
                         return Helpers::COM::UnknownObjectForwardFunction<IDXGIOutput>(&value_type::GetRestrictToOutput, Get()).value();
                     }
-                    HRESULT SetBackgroundColor(DXGI_RGBA pColor)
+
+                    void SetBackgroundColor(DXGI_RGBA pColor)
                     {
-                        return Get().SetBackgroundColor(&pColor);
+                        Helpers::ThrowIfFailed(Get().SetBackgroundColor(&pColor));
                     }
 
-                    tl::expected<DXGI_RGBA, HRESULT> GetBackgroundColor(DXGI_RGBA* pColor)
+                    DXGI_RGBA GetBackgroundColor()
                     {
                         DXGI_RGBA color;
-                        HRESULT result = Get().GetBackgroundColor(&color);
-                        if(FAILED(result))
-                            return tl::unexpected(result);
+                        Helpers::ThrowIfFailed(Get().GetBackgroundColor(&color));
                         return color;
                     }
 
-                    HRESULT SetRotation(DXGI_MODE_ROTATION Rotation)
+                    void SetRotation(DXGI_MODE_ROTATION Rotation)
                     {
-                        return Get().SetRotation(Rotation);
+                        Helpers::ThrowIfFailed(Get().SetRotation(Rotation));
                     }
 
-                    tl::expected<DXGI_MODE_ROTATION, HRESULT> GetRotation()
+                    DXGI_MODE_ROTATION GetRotation()
                     {
                         DXGI_MODE_ROTATION rotation;
-                        HRESULT result = Get().GetRotation(rotation);
-                        if(FAILED(result))
-                            return tl::unexpected(result);
+                        Helpers::ThrowIfFailed(Get().GetRotation(rotation));
                         return rotation;
                     }
                 private:
@@ -218,31 +210,27 @@ namespace TypedD3D::Internal
                     using derived_self = DerivedSelf;
 
                 public:
-                    HRESULT SetSourceSize(UINT Width, UINT Height)
+                    void SetSourceSize(UINT Width, UINT Height)
                     {
-                        return Get().SetSourceSize(Width, Height);
+                        Helpers::ThrowIfFailed(Get().SetSourceSize(Width, Height));
                     }
 
-                    tl::expected<std::pair<UINT, UINT>, HRESULT> GetSourceSize()
+                    std::pair<UINT, UINT> GetSourceSize()
                     {
                         std::pair<UINT, UINT> size;
-                        HRESULT result = Get().GetSourceSize(&size.first, &size.second);
-                        if(FAILED(result))
-                            return tl::unexpected(result);
+                        Helpers::ThrowIfFailed(Get().GetSourceSize(&size.first, &size.second));
                         return size;
                     }
 
-                    HRESULT SetMaximumFrameLatency(UINT MaxLatency)
+                    void SetMaximumFrameLatency(UINT MaxLatency)
                     {
-                        return Get().SetMaximumFrameLatency(&MaxLatency);
+                        Helpers::ThrowIfFailed(Get().SetMaximumFrameLatency(&MaxLatency));
                     }
 
-                    tl::expected<UINT, HRESULT> STDMETHODCALLTYPE GetMaximumFrameLatency()
+                    UINT GetMaximumFrameLatency()
                     {
                         UINT latency;
-                        HRESULT result = Get().GetMaximumFrameLatency(&latency);
-                        if(FAILED(result))
-                            return tl::unexpected(result);
+                        Helpers::ThrowIfFailed(Get().GetMaximumFrameLatency(&latency));
                         return latency;
                     }
 
@@ -251,17 +239,15 @@ namespace TypedD3D::Internal
                         return Get().GetFrameLatencyWaitableObject();
                     }
 
-                    HRESULT SetMatrixTransform(const DXGI_MATRIX_3X2_F& pMatrix)
+                    void SetMatrixTransform(const DXGI_MATRIX_3X2_F& pMatrix)
                     {
-                        return Get().SetMatrixTransform(&pMatrix);
+                        Helpers::ThrowIfFailed(Get().SetMatrixTransform(&pMatrix));
                     }
 
-                    tl::expected<DXGI_MATRIX_3X2_F, HRESULT> STDMETHODCALLTYPE GetMatrixTransform()
+                    DXGI_MATRIX_3X2_F GetMatrixTransform()
                     {
                         DXGI_MATRIX_3X2_F matrix;
-                        HRESULT result = Get().GetMatrixTransform(&matrix);
-                        if(FAILED(result))
-                            return tl::unexpected(result);
+                        Helpers::ThrowIfFailed(Get().GetMatrixTransform(&matrix));
                         return matrix;
                     }
                 private:
@@ -298,13 +284,13 @@ namespace TypedD3D::Internal
                         return static_cast<DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG>(colorSupport);
                     }
 
-                    HRESULT SetColorSpace1(DXGI_COLOR_SPACE_TYPE ColorSpace)
+                    void SetColorSpace1(DXGI_COLOR_SPACE_TYPE ColorSpace)
                     {
-                        return Get().SetColorSpace1(ColorSpace);
+                        Helpers::ThrowIfFailed(Get().SetColorSpace1(ColorSpace));
                     }
 
                     template<std::derived_from<ID3D12CommandQueue> QueueTy>
-                    HRESULT ResizeBuffers1(
+                    void ResizeBuffers1(
                         UINT BufferCount,
                         UINT Width,
                         UINT Height,
@@ -313,14 +299,14 @@ namespace TypedD3D::Internal
                         std::span<UINT> pCreationNodeMask,
                         std::span<Direct<QueueTy>> ppPresentQueue)
                     {
-                        std::unique_ptr<IUnknown[]> queues = std::make_unique<IUnknown[]>(ppPresentQueue.size());
+                        std::unique_ptr<IUnknown*[]> queues = std::make_unique<IUnknown*[]>(ppPresentQueue.size());
 
                         for(size_t i = 0; i < ppPresentQueue.size(); i++)
                         {
                             queues[i] = ppPresentQueue[i].Get();
                         }
 
-                        return Get().ResizeBuffers1(BufferCount, Width, Height, Format, SwapChainFlags, pCreationNodeMask.data(), queues.get());
+                        Helpers::ThrowIfFailed(Get().ResizeBuffers1(BufferCount, Width, Height, Format, SwapChainFlags, pCreationNodeMask.data(), queues.get()));
                     }
                 private:
                     derived_self& ToDerived() { return static_cast<derived_self&>(*this); }

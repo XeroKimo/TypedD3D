@@ -29,10 +29,10 @@ void D3D11HelloWorld()
 {
     CreateWindow();
 
-    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::DXGI::Factory::Create1<IDXGIFactory2>().value();
+    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::DXGI::Factory::Create1<IDXGIFactory2>();
     D3D_FEATURE_LEVEL levels = D3D_FEATURE_LEVEL_12_0;
 
-    auto [device, deviceContext] = TypedD3D::D3D11::CreateDevice<TypedD3D::Wrapper<ID3D11Device>, TypedD3D::Wrapper<ID3D11DeviceContext>>(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, std::span(&levels, 1), D3D11_SDK_VERSION).value();
+    auto [device, deviceContext] = TypedD3D::D3D11::CreateDevice<TypedD3D::Wrapper<ID3D11Device>, TypedD3D::Wrapper<ID3D11DeviceContext>>(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, std::span(&levels, 1), D3D11_SDK_VERSION);
     TypedD3D::Wrapper<IDXGISwapChain3> swapChain = factory->CreateSwapChainForHwnd<IDXGISwapChain3>(
         device,
         handle,
@@ -49,14 +49,14 @@ void D3D11HelloWorld()
             .Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
         },
         nullptr,
-        nullptr).value();
+        nullptr);
 
     UINT backBuffer = 0;
     MSG msg;
 
 
     TypedD3D::Wrapper<ID3D11RenderTargetView> rtv;
-    rtv = device->CreateRenderTargetView(swapChain->GetBuffer<ID3D11Resource>(0).value(), nullptr).value();
+    rtv = device->CreateRenderTargetView(swapChain->GetBuffer<ID3D11Resource>(0), nullptr);
 
     ComPtr<ID3DBlob> vertexBlob;
     ComPtr<ID3DBlob> errorBlob;
@@ -70,14 +70,14 @@ void D3D11HelloWorld()
         return;
     }
 
-    TypedD3D::Wrapper<ID3D11VertexShader> vs = device->CreateVertexShader(*vertexBlob.Get(), nullptr).value();
+    TypedD3D::Wrapper<ID3D11VertexShader> vs = device->CreateVertexShader(*vertexBlob.Get(), nullptr);
 
     ComPtr<ID3DBlob> pixelBlob;
     hr = D3DCompileFromFile(L"PixelShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pixelBlob, nullptr);
     if(FAILED(hr))
         return;
 
-    TypedD3D::Wrapper<ID3D11PixelShader> ps = device->CreatePixelShader(*pixelBlob.Get(), nullptr).value();
+    TypedD3D::Wrapper<ID3D11PixelShader> ps = device->CreatePixelShader(*pixelBlob.Get(), nullptr);
 
     std::array<D3D11_INPUT_ELEMENT_DESC, 1> inputElements
     {
@@ -93,7 +93,7 @@ void D3D11HelloWorld()
         }
     };
 
-    TypedD3D::Wrapper<ID3D11InputLayout> inputLayout = device->CreateInputLayout(inputElements, *vertexBlob.Get()).value();
+    TypedD3D::Wrapper<ID3D11InputLayout> inputLayout = device->CreateInputLayout(inputElements, *vertexBlob.Get());
 
     auto vertices = std::to_array<Vertex>(
         {
@@ -117,7 +117,7 @@ void D3D11HelloWorld()
         .SysMemPitch = sizeof(Vertex),
         .SysMemSlicePitch = sizeof(Vertex) * vertices.size()
     };
-    TypedD3D::Wrapper<ID3D11Buffer> vertexBuffer = device->CreateBuffer(desc, &data).value();
+    TypedD3D::Wrapper<ID3D11Buffer> vertexBuffer = device->CreateBuffer(desc, &data);
     D3D11_VIEWPORT viewport
     {
         .TopLeftX = 0,

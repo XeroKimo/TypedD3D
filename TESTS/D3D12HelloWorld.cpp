@@ -38,25 +38,25 @@ void D3D12HelloWorld()
     TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> b;
     //TypedD3D::tl::expected<ComPtr<IDXGIFactory2>, HRESULT> factory = TypedD3D::Helpers::COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory1);
     //TypedD3D::Wrapper<IDXGIAdapter> adapter = factory->EnumAdapters<IDXGIAdapter>(0);
-    ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface().value();
+    ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface();
     debugLayer->EnableDebugLayer();
-    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::DXGI::Factory::Create1<IDXGIFactory2>().value();
-    TypedD3D::Wrapper<ID3D12Device1> device = TypedD3D::D3D12::CreateDevice<ID3D12Device1>(D3D_FEATURE_LEVEL_12_0).value();
+    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::DXGI::Factory::Create1<IDXGIFactory2>();
+    TypedD3D::Wrapper<ID3D12Device1> device = TypedD3D::D3D12::CreateDevice<ID3D12Device1>(D3D_FEATURE_LEVEL_12_0);
     ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Helpers::COM::Cast<ID3D12DebugDevice>(device.Get());
 
     constexpr UINT backBufferCount = 2;
 
-    TypedD3D::Direct<ID3D12CommandQueue> commandQueue = device->CreateCommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>(D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE, 0).value();
+    TypedD3D::Direct<ID3D12CommandQueue> commandQueue = device->CreateCommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>(D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE, 0);
     std::array<TypedD3D::Direct<ID3D12CommandAllocator>, backBufferCount> commandAllocators;
-    commandAllocators[0] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().value();
-    commandAllocators[1] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().value();
-    TypedD3D::Direct<ID3D12GraphicsCommandList> temp = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0]).value();
+    commandAllocators[0] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>();
+    commandAllocators[1] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>();
+    TypedD3D::Direct<ID3D12GraphicsCommandList> temp = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0]);
     TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList = TypedD3D::Cast<TypedD3D::Direct<ID3D12GraphicsCommandList1>>(temp);
     TypedD3D::Compute<ID3D12GraphicsCommandList1> commandList54;
 
     //TypedD3D::Compute<ID3D12GraphicsCommandList1> cltest = commandList;
     UINT64 fenceValue = 0;
-    ComPtr<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE).value();
+    ComPtr<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE);
     HANDLE syncEvent = CreateEventW(nullptr, false, false, nullptr);
 
     TypedD3D::Wrapper<IDXGISwapChain3> swapChain = factory->CreateSwapChainForHwnd<IDXGISwapChain3>(
@@ -75,9 +75,9 @@ void D3D12HelloWorld()
             .Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH
         },
         nullptr,
-        nullptr).value();
+        nullptr);
 
-    TypedD3D::RTV<ID3D12DescriptorHeap> swapChainBufferDescriptorHeap = device->CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>(2, 0).value();
+    TypedD3D::RTV<ID3D12DescriptorHeap> swapChainBufferDescriptorHeap = device->CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>(2, 0);
 
     UINT rtvOffset = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> descriptorHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
@@ -87,7 +87,7 @@ void D3D12HelloWorld()
 
     for(UINT i = 0; i < desc.BufferCount; i++)
     {
-        swapChainBuffers[i] = swapChain->GetBuffer<ID3D12Resource>(i).value();
+        swapChainBuffers[i] = swapChain->GetBuffer<ID3D12Resource>(i);
 
         device->CreateRenderTargetView(*swapChainBuffers[i].Get(), nullptr, descriptorHandle);
         descriptorHandle = descriptorHandle.Offset(1, rtvOffset);
@@ -106,7 +106,7 @@ void D3D12HelloWorld()
 
     ComPtr<ID3DBlob> signatureBlob;
     D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, nullptr);
-    ComPtr<ID3D12RootSignature> rootSignature = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize()).value();
+    ComPtr<ID3D12RootSignature> rootSignature = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize());
 
     ComPtr<ID3DBlob> vertexBlob;
     ComPtr<ID3DBlob> errorBlob;
@@ -194,11 +194,7 @@ void D3D12HelloWorld()
 
     graphicsPipelineState.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    tl::expected<TypedD3D::D3D12::PipelineState::Graphics, HRESULT> pipelineState = device->CreateGraphicsPipelineState(graphicsPipelineState);
-    if(!pipelineState)
-    {
-        pipelineState.error();
-    }
+    TypedD3D::D3D12::PipelineState::Graphics pipelineState = device->CreateGraphicsPipelineState(graphicsPipelineState);
 
     auto vertices = std::to_array<Vertex>(
         {
@@ -236,7 +232,7 @@ void D3D12HelloWorld()
         D3D12_HEAP_FLAG_NONE,
         vertexDesc,
         D3D12_RESOURCE_STATE_COPY_DEST,
-        nullptr).value();
+        nullptr);
 
 
     D3D12_HEAP_PROPERTIES uploadProperties
@@ -252,7 +248,7 @@ void D3D12HelloWorld()
         D3D12_HEAP_FLAG_NONE,
         vertexDesc,
         D3D12_RESOURCE_STATE_GENERIC_READ,
-        nullptr).value();
+        nullptr);
 
     D3D12_SUBRESOURCE_DATA vertexData
     {
@@ -308,7 +304,7 @@ void D3D12HelloWorld()
     std::vector<ID3D12Resource*> resources(backBufferCount);
     for(size_t i = 0; i < backBufferCount; i++)
     {
-        resources[i] = swapChain->GetBuffer<ID3D12Resource>(i).value().Get();
+        resources[i] = swapChain->GetBuffer<ID3D12Resource>(i).Get();
     }
 
 
@@ -357,7 +353,7 @@ void D3D12HelloWorld()
                                     commandList->ClearRenderTargetView(backBufferHandle, std::to_array({ 0.f, 0.3f, 0.7f, 1.f }), {});
                                     commandList->OMSetRenderTargets(std::span(&backBufferHandle, 1), true, nullptr);
 
-                                    commandList->SetPipelineState(pipelineState.value().Get());
+                                    commandList->SetPipelineState(pipelineState.Get());
                                     commandList->SetGraphicsRootSignature(rootSignature.Get());
                                     commandList->RSSetViewports(std::span(&viewport, 1));
                                     commandList->RSSetScissorRects(std::span(&rect, 1));
