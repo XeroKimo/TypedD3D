@@ -8,6 +8,7 @@
 #include <dxgi1_6.h>
 #include <span>
 #include <d3d12.h>
+#include <memory> 
 
 struct ID3D12CommandQueue;
 
