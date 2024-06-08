@@ -53,8 +53,10 @@
     <ClInclude Include="TypedD3D11.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\D3D12\CommandList.ixx" />
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp" />
     <ClCompile Include="source\Shared.ixx" />
+    <ClCompile Include="source\TypedD3D12.ixx" />
     <ClCompile Include="TypedDXGI.h" />
   </ItemGroup>
   <ItemGroup>

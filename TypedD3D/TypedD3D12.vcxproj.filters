@@ -122,6 +122,12 @@
     <ClCompile Include="source\Shared.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\TypedD3D12.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D12\CommandList.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="gsl\algorithm" />

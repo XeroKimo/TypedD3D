@@ -14,7 +14,7 @@
 #include "expected.hpp"
 #include <d3d12.h>
 #include <wrl/client.h>
-import TypedD3D.Shared;
+import TypedD3D12;
 
 namespace TypedD3D::D3D12
 {

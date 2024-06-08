@@ -3,7 +3,9 @@
 #include "source/D3D12Wrappers.h"
 #include <memory>
 #include <array>
-import TypedD3D.Shared;
+#include <span>
+
+import TypedD3D12;
 namespace TypedD3D::D3D12
 {
     struct ClockCalibrationData
