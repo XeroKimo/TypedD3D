@@ -1,6 +1,5 @@
 #pragma once
 #include "source/Wrappers.h"
-#include "source/Internal/IUnknownWrapper.h"
 #include "Resources.h"
 #include "Shaders.h"
 #include "InputLayout.h"
@@ -580,7 +579,10 @@ namespace TypedD3D::Internal
 
         }
     }
+}
 
+namespace TypedD3D
+{
     template<std::derived_from<ID3D11Device> Ty>
     struct Traits<Ty>
     {
@@ -591,7 +593,7 @@ namespace TypedD3D::Internal
         using const_reference = const Ty&;
 
         template<class DerivedSelf>
-        using Interface = typename D3D11::Device::Traits<Ty>::template Interface<DerivedSelf>;
+        using Interface = typename Internal::D3D11::Device::Traits<Ty>::template Interface<DerivedSelf>;
     };
 }
 

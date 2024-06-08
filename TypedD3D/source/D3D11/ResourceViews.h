@@ -1,10 +1,10 @@
 #pragma once
 #include "source/Wrappers.h"
-#include "source/Internal/IUnknownWrapper.h"
 #include "expected.hpp"
 #include "DeviceChild.h"
 #include "Resources.h"
 #include <d3d11_4.h>
+import TypedD3D.Shared;
 
 namespace TypedD3D::Internal
 {
@@ -41,6 +41,12 @@ namespace TypedD3D::Internal
         }
     }
 
+}
+
+namespace TypedD3D
+{
+
+
     template<>
     struct Traits<ID3D11View>
     {
@@ -51,7 +57,7 @@ namespace TypedD3D::Internal
         using const_reference = const ID3D11View&;
 
         template<class DerivedSelf>
-        class Interface : public D3D11::DeviceChild::Interface<DerivedSelf>
+        class Interface : public Internal::D3D11::DeviceChild::Interface<DerivedSelf>
         {
         private:
             using derived_self = DerivedSelf;
@@ -87,9 +93,9 @@ namespace TypedD3D::Internal
             using derived_self = DerivedSelf;
 
         public:
-            typename D3D11::View::ViewToResourceDesc<value_type>::type GetDesc()
+            typename Internal::D3D11::View::ViewToResourceDesc<value_type>::type GetDesc()
             {
-                typename D3D11::View::ViewToResourceDesc<value_type>::type description;
+                typename Internal::D3D11::View::ViewToResourceDesc<value_type>::type description;
                 Get().GetDesc(&description);
                 return description;
             }
@@ -99,5 +105,4 @@ namespace TypedD3D::Internal
             reference Get() { return *ToDerived().derived_self::Get(); }
         };
     };
-
 }

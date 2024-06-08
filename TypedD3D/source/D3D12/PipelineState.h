@@ -1,8 +1,8 @@
 #pragma once
-#include "source/Internal/IUnknownWrapper.h"
 #include "expected.hpp"
 #include <d3d12.h>
 
+import TypedD3D.Shared;
 namespace TypedD3D::D3D12
 {
     template<class Ty>

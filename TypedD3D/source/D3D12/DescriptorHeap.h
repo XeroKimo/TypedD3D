@@ -1,9 +1,8 @@
 #pragma once
-#include "source/Internal/IUnknownWrapper.h"
 #include "source/D3D12Wrappers.h"
 #include <d3d12.h>
 
-
+import TypedD3D.Shared;
 namespace TypedD3D::D3D12
 {
     template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>

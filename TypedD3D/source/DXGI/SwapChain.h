@@ -1,7 +1,6 @@
 #pragma once
 #include "source/Wrappers.h"
 #include "source/D3D12Wrappers.h"
-#include "source/Internal/IUnknownWrapper.h"
 #include "source/Internal/d3dConcepts.h"
 #include "expected.hpp"
 #include <memory>
@@ -10,6 +9,7 @@
 #include <d3d12.h>
 
 struct ID3D12CommandQueue;
+import TypedD3D.Shared;
 
 namespace TypedD3D::Internal
 {
@@ -330,6 +330,10 @@ namespace TypedD3D::Internal
         }
     }
 
+}
+
+namespace TypedD3D
+{
     template<std::derived_from<IDXGISwapChain> Ty>
     struct Traits<Ty>
     {
@@ -340,11 +344,9 @@ namespace TypedD3D::Internal
         using cosnt_reference = const Ty&;
 
         template<class DerivedSelf>
-        using Interface = DXGI::SwapChain::TraitsImpl<Ty>::template Interface<DerivedSelf>;
+        using Interface = Internal::DXGI::SwapChain::TraitsImpl<Ty>::template Interface<DerivedSelf>;
     };
-
 }
-
 
 namespace TypedD3D::DXGI
 {

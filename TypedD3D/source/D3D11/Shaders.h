@@ -14,8 +14,11 @@ namespace TypedD3D::Internal
             std::same_as<Ty, ID3D11PixelShader> ||
             std::same_as<Ty, ID3D11ComputeShader>;
     }
+}
 
-    template<D3D11::ShaderConcept Ty>
+namespace TypedD3D
+{
+    template<Internal::D3D11::ShaderConcept Ty>
     struct Traits<Ty>
     {
         using value_type = Ty;
@@ -25,7 +28,7 @@ namespace TypedD3D::Internal
         using const_reference = const Ty&;
 
         template<class DerivedSelf>
-        class Interface : public D3D11::DeviceChild::Interface<DerivedSelf>
+        class Interface : public Internal::D3D11::DeviceChild::Interface<DerivedSelf>
         {
 
         };

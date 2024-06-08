@@ -1,10 +1,10 @@
 #pragma once
 
-#include "source/Internal/IUnknownWrapper.h"
 #include "source/Wrappers.h"
 #include "expected.hpp"
 #include <dxgi1_6.h>
 #include "expected.hpp"
+#include <wrl/client.h>
 
 import TypedD3D.Shared;
 
@@ -66,7 +66,10 @@ namespace TypedD3D::Internal
         }
     }
 
+}
 
+namespace TypedD3D
+{
     template<std::derived_from<IDXGIAdapter> Ty>
     struct Traits<Ty>
     {
@@ -77,10 +80,9 @@ namespace TypedD3D::Internal
         using cosnt_reference = const Ty&;
 
         template<class DerivedSelf>
-        using Interface = DXGI::Adapter::TraitsImpl<Ty>::template Interface<DerivedSelf>;
+        using Interface = Internal::DXGI::Adapter::TraitsImpl<Ty>::template Interface<DerivedSelf>;
     };
 }
-
 
 namespace TypedD3D::DXGI
 {

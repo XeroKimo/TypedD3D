@@ -1,8 +1,9 @@
 #pragma once
 #include "source/Wrappers.h"
 #include "source/D3D12Wrappers.h"
-#include "source/Internal/IUnknownWrapper.h"
 #include "expected.hpp"
+
+import TypedD3D.Shared;
 
 struct ID3D11Device;
 struct ID3D12CommandQueue;
@@ -323,7 +324,10 @@ namespace TypedD3D::Internal
             };
         }
     }
+}
 
+namespace TypedD3D
+{
     template<std::derived_from<IDXGIFactory> Ty>
     struct Traits<Ty>
     {
@@ -334,7 +338,7 @@ namespace TypedD3D::Internal
         using cosnt_reference = const Ty&;
 
         template<class DerivedSelf>
-        using Interface = DXGI::Factory::TraitsImpl<Ty>::template Interface<DerivedSelf>;
+        using Interface = Internal::DXGI::Factory::TraitsImpl<Ty>::template Interface<DerivedSelf>;
     };
 }
 

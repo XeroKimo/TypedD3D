@@ -1,9 +1,9 @@
 #pragma once
 #include "source/Wrappers.h"
-#include "source/Internal/IUnknownWrapper.h"
 #include "expected.hpp"
 #include "DeviceChild.h"
 #include <d3d11_4.h>
+import TypedD3D.Shared;
 
 namespace TypedD3D::Internal
 {
@@ -45,8 +45,11 @@ namespace TypedD3D::Internal
                 std::same_as<Ty, ID3D11RasterizerState>;
         }
     }
+}
 
-    template<D3D11::State::StateObject Ty>
+namespace TypedD3D
+{
+    template<Internal::D3D11::State::StateObject Ty>
     struct Traits<Ty>
     {
         using value_type = Ty;
@@ -56,15 +59,15 @@ namespace TypedD3D::Internal
         using const_reference = const Ty&;
 
         template<class DerivedSelf>
-        class Interface : public D3D11::DeviceChild::Interface<DerivedSelf>
+        class Interface : public Internal::D3D11::DeviceChild::Interface<DerivedSelf>
         {
         private:
             using derived_self = DerivedSelf;
 
         public:
-            typename D3D11::State::ViewToStateDesc<value_type>::type GetDesc()
+            typename Internal::D3D11::State::ViewToStateDesc<value_type>::type GetDesc()
             {
-                typename D3D11::State::ViewToStateDesc<value_type>::type description;
+                typename Internal::D3D11::State::ViewToStateDesc<value_type>::type description;
                 Get().GetDesc(&description);
                 return description;
             }

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "source/Internal/IUnknownWrapper.h"
 #include "source/D3D12Wrappers.h"
 #include <d3d12.h>
 #include <wrl/client.h>
 #include <assert.h>
+import TypedD3D.Shared;
 
 namespace TypedD3D::Internal
 {
@@ -40,21 +40,6 @@ namespace TypedD3D::Internal
         }
     }
 
-    template<D3D12_COMMAND_LIST_TYPE Type>
-    struct Traits<ID3D12CommandAllocator, Type>
-    {
-        static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-
-        using value_type = ID3D12CommandAllocator;
-        using pointer = ID3D12CommandAllocator*;
-        using const_pointer = const ID3D12CommandAllocator*;
-        using reference = ID3D12CommandAllocator&;
-        using const_reference = const ID3D12CommandAllocator&;
-
-        template<class DerivedSelf>
-        using Interface = typename D3D12::CommandAllocator::Traits::template Interface<DerivedSelf>;
-    };
-
     template<>
     struct DirectMapper<ID3D12CommandAllocator>
     {
@@ -77,6 +62,24 @@ namespace TypedD3D::Internal
     struct BundleMapper<ID3D12CommandAllocator>
     {
         using type = D3D12::CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+    };
+}
+
+namespace TypedD3D
+{
+    template<D3D12_COMMAND_LIST_TYPE Type>
+    struct Traits<ID3D12CommandAllocator, Type>
+    {
+        static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
+
+        using value_type = ID3D12CommandAllocator;
+        using pointer = ID3D12CommandAllocator*;
+        using const_pointer = const ID3D12CommandAllocator*;
+        using reference = ID3D12CommandAllocator&;
+        using const_reference = const ID3D12CommandAllocator&;
+
+        template<class DerivedSelf>
+        using Interface = typename Internal::D3D12::CommandAllocator::Traits::template Interface<DerivedSelf>;
     };
 }
 

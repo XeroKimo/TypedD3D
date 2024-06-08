@@ -1,6 +1,8 @@
 #pragma once
-#include "Internal/IUnknownWrapper.h"
 
+#include <concepts>
+#include <wrl/client.h>
+import TypedD3D.Shared;
 namespace TypedD3D
 {
     namespace Internal

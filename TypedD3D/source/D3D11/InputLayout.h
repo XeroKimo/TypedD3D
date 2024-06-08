@@ -1,6 +1,8 @@
 #pragma once
 #include "DeviceChild.h"
 
+import TypedD3D.Shared;
+
 
 namespace TypedD3D::Internal
 {
@@ -10,7 +12,10 @@ namespace TypedD3D::Internal
         {
         }
     }
+}
 
+namespace TypedD3D
+{
     template<>
     struct Traits<ID3D11InputLayout>
     {
@@ -21,7 +26,7 @@ namespace TypedD3D::Internal
         using const_reference = const ID3D11InputLayout&;
 
         template<class DerivedSelf>
-        class Interface : public D3D11::DeviceChild::Interface<DerivedSelf>
+        class Interface : public Internal::D3D11::DeviceChild::Interface<DerivedSelf>
         {
 
         };

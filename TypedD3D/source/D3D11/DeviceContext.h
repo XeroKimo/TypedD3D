@@ -1318,7 +1318,10 @@ namespace TypedD3D::Internal
             };
         }
     }
+}
 
+namespace TypedD3D
+{
     template<std::derived_from<ID3D11DeviceContext> Ty>
     struct Traits<Ty>
     {
@@ -1329,7 +1332,7 @@ namespace TypedD3D::Internal
         using const_reference = const Ty&;
 
         template<class DerivedSelf>
-        using Interface = typename D3D11::DeviceContext::Traits<Ty>::template Interface<DerivedSelf>;
+        using Interface = typename Internal::D3D11::DeviceContext::Traits<Ty>::template Interface<DerivedSelf>;
     };
 }
 

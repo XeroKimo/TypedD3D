@@ -1,11 +1,11 @@
 #pragma once
 
-#include "source/Internal/IUnknownWrapper.h"
 #include "source/D3D12Wrappers.h"
 #include <d3d12.h>
 #include <wrl/client.h>
 #include <assert.h>
 #include <cstddef>
+import TypedD3D.Shared;
 
 namespace TypedD3D::Internal
 {
@@ -16,7 +16,10 @@ namespace TypedD3D::Internal
         {
         }
     }
+}
 
+namespace TypedD3D
+{
     template<>
     struct Traits<ID3D12Resource>
     {

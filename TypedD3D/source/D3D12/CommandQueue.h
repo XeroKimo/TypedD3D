@@ -1,10 +1,9 @@
 #pragma once
 #include "CommandList.h"
-#include "source/Internal/IUnknownWrapper.h"
 #include "source/D3D12Wrappers.h"
 #include <memory>
 #include <array>
-
+import TypedD3D.Shared;
 namespace TypedD3D::D3D12
 {
     struct ClockCalibrationData
@@ -139,6 +138,35 @@ namespace TypedD3D::Internal
     }
 
 
+    template<>
+    struct DirectMapper<ID3D12CommandQueue>
+    {
+        using type = D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
+    };
+
+    template<>
+    struct ComputeMapper<ID3D12CommandQueue>
+    {
+        using type = D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+    };
+
+    template<>
+    struct CopyMapper<ID3D12CommandQueue>
+    {
+        using type = D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COPY>;
+    };
+
+    template<>
+    struct BundleMapper<ID3D12CommandQueue>
+    {
+        using type = D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+    };
+}
+
+namespace TypedD3D
+{
+
+
     template<D3D12_COMMAND_LIST_TYPE Type>
     struct Traits<ID3D12CommandQueue, Type>
     {
@@ -154,7 +182,7 @@ namespace TypedD3D::Internal
         using allocator_value_type = D3D12::CommandAllocator_t<command_list_value>;
 
         template<class DerivedSelf>
-        class Interface : public D3D12::CommandQueue::Traits::Interface<DerivedSelf>
+        class Interface : public Internal::D3D12::CommandQueue::Traits::Interface<DerivedSelf>
         {
         private:
             using derived_self = DerivedSelf;
@@ -166,7 +194,7 @@ namespace TypedD3D::Internal
             {
                 if constexpr(Extents == std::dynamic_extent)
                 {
-                    std::unique_ptr<ID3D12CommandList* []> submitList = std::make_unique<ID3D12CommandList* []>(commandLists.size());
+                    std::unique_ptr<ID3D12CommandList* []> submitList = std::make_unique<ID3D12CommandList * []>(commandLists.size());
 
                     for(size_t i = 0; i < commandLists.size(); i++)
                     {
@@ -192,30 +220,6 @@ namespace TypedD3D::Internal
             derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
             reference Get() { return *ToDerived().derived_self::Get(); }
         };
-    };
-
-    template<>
-    struct DirectMapper<ID3D12CommandQueue>
-    {
-        using type = D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
-    };
-
-    template<>
-    struct ComputeMapper<ID3D12CommandQueue>
-    {
-        using type = D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-    };
-
-    template<>
-    struct CopyMapper<ID3D12CommandQueue>
-    {
-        using type = D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COPY>;
-    };
-
-    template<>
-    struct BundleMapper<ID3D12CommandQueue>
-    {
-        using type = D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
     };
 }
 

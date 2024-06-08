@@ -1,7 +1,6 @@
 #pragma once
 #include "source/Helpers/D3D12Helpers.h"
 #include "expected.hpp"
-#include "source/Internal/IUnknownWrapper.h"
 #include "source/Internal/D3D12/Meta.h"
 #include "source/D3D12Wrappers.h"
 #include "CommandList.h"
@@ -15,6 +14,7 @@
 #include "expected.hpp"
 #include <d3d12.h>
 #include <wrl/client.h>
+import TypedD3D.Shared;
 
 namespace TypedD3D::D3D12
 {
@@ -853,6 +853,9 @@ namespace TypedD3D::Internal
     }
 
 
+}
+namespace TypedD3D
+{
     template<std::derived_from<ID3D12Device> Ty>
     struct Traits<Ty>
     {
@@ -863,10 +866,9 @@ namespace TypedD3D::Internal
         using const_reference = const Ty&;
 
         template<class DerivedSelf>
-        using Interface = typename D3D12::Device::Traits<Ty>::template Interface<DerivedSelf>;
+        using Interface = typename Internal::D3D12::Device::Traits<Ty>::template Interface<DerivedSelf>;
     };
 }
-
 namespace TypedD3D::D3D12
 {
     template<std::derived_from<ID3D12Device> Ty>

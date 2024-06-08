@@ -1,8 +1,8 @@
 #pragma once
 #include "source/Wrappers.h"
-#include "source/Internal/IUnknownWrapper.h"
 #include "expected.hpp"
 #include <d3d11_4.h>
+import TypedD3D.Shared;
 
 namespace TypedD3D::Internal
 {

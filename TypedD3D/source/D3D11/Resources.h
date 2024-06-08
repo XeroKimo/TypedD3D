@@ -1,35 +1,12 @@
 #pragma once
 #include "source/Wrappers.h"
-#include "source/Internal/IUnknownWrapper.h"
 #include "expected.hpp"
 #include "DeviceChild.h"
 #include <d3d11_4.h>
+import TypedD3D.Shared;
 
-namespace TypedD3D::Internal
+namespace TypedD3D
 {
-    namespace D3D11
-    {
-        namespace Resource
-        {
-        }
-
-        namespace Buffer
-        {
-        }
-
-        namespace Texture1D
-        {
-        }
-
-        namespace Texture2D
-        {
-        }
-
-        namespace Texture3D
-        {
-        }
-    }
-
     template<>
     struct Traits<ID3D11Resource>
     {
@@ -40,7 +17,7 @@ namespace TypedD3D::Internal
         using const_reference = const ID3D11Resource&;
 
         template<class DerivedSelf>
-        class Interface : public D3D11::DeviceChild::Interface<DerivedSelf>
+        class Interface : public Internal::D3D11::DeviceChild::Interface<DerivedSelf>
         {
         private:
             using derived_self = DerivedSelf;
