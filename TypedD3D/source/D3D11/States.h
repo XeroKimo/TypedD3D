@@ -1,7 +1,7 @@
 #pragma once
 #include "source/Wrappers.h"
 #include "source/Internal/IUnknownWrapper.h"
-#include "source/Helpers/COMHelpers.h"
+#include "expected.hpp"
 #include "DeviceChild.h"
 #include <d3d11_4.h>
 

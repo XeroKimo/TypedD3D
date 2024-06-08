@@ -1,6 +1,6 @@
 #pragma once
 #include "source/Internal/IUnknownWrapper.h"
-#include "source/Helpers/COMHelpers.h"
+#include "expected.hpp"
 #include <d3d12.h>
 
 namespace TypedD3D::D3D12
@@ -54,7 +54,7 @@ namespace TypedD3D::Internal
         public:
             Microsoft::WRL::ComPtr<ID3DBlob> GetCachedBlob()
             {
-                return Helpers::COM::UnknownObjectForwardFunction<ID3DBlob>(&value_type::GetCachedBlob, Get()).value();
+                return UnknownObjectForwardFunction<ID3DBlob>(&value_type::GetCachedBlob, Get()).value();
             }
 
         private:

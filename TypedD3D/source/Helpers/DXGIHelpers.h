@@ -6,10 +6,14 @@
 //*********************************************************
 
 #pragma once
-#include "COMHelpers.h"
 #include "expected.hpp"
 #include <dxgi1_6.h>
 #include <type_traits>
+
+#include "expected.hpp"
+#include <wrl/client.h>
+
+import TypedD3D.Shared;
 
 namespace TypedD3D::Helpers::DXGI
 {
@@ -30,26 +34,26 @@ namespace TypedD3D::Helpers::DXGI
 
             if constexpr(std::is_same_v<Factory, IDXGIFactory>)
             {
-                return COM::IIDToObjectForwardFunction<IDXGIFactory>(&CreateDXGIFactory);
+                return IIDToObjectForwardFunction<IDXGIFactory>(&CreateDXGIFactory);
             }
             else if constexpr(std::is_same_v<Factory, IDXGIFactory1>)
             {
-                return COM::IIDToObjectForwardFunction<IDXGIFactory1>(&CreateDXGIFactory1);
+                return IIDToObjectForwardFunction<IDXGIFactory1>(&CreateDXGIFactory1);
             }
             else
             {
                 if constexpr(std::is_same_v<Factory, IDXGIFactory2>)
                 {
-                    return COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory2, static_cast<UINT>(flags));
+                    return IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory2, static_cast<UINT>(flags));
                 }
                 else
                 {
-                    tl::expected<ComPtr<IDXGIFactory2>, HRESULT> factory = COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory2, static_cast<UINT>(flags));
+                    tl::expected<ComPtr<IDXGIFactory2>, HRESULT> factory = IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory2, static_cast<UINT>(flags));
 
                     if(!factory)
                         return tl::unexpected(factory.error());
 
-                    return COM::Cast<Factory>(factory.value());
+                    return Cast<Factory>(factory.value());
                 }
             }
         }
@@ -71,7 +75,7 @@ namespace TypedD3D::Helpers::DXGI
             if constexpr(std::is_same_v<SwapChain, IDXGISwapChain1>)
                 return swapChain;
             else
-                return COM::Cast<SwapChain>(swapChain);
+                return Cast<SwapChain>(swapChain);
         }
 
         template<class SwapChain = IDXGISwapChain1>
@@ -105,7 +109,7 @@ namespace TypedD3D::Helpers::DXGI
         template<class Resource = ID3D12Resource>
         inline tl::expected<Microsoft::WRL::ComPtr<Resource>, HRESULT> GetBuffer(IDXGISwapChain& swapChain, UINT index)
         {
-            return COM::IIDToObjectForwardFunction<Resource>(&IDXGISwapChain::GetBuffer, swapChain, index);
+            return IIDToObjectForwardFunction<Resource>(&IDXGISwapChain::GetBuffer, swapChain, index);
         }
     };
 }

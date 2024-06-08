@@ -6,7 +6,6 @@
 //*********************************************************
 
 #pragma once
-#include "COMHelpers.h"
 #include "DXGIHelpers.h"
 #include "CommonHelpers.h"
 #include "expected.hpp"
@@ -28,7 +27,7 @@ namespace TypedD3D::Helpers::D3D12
         using Microsoft::WRL::ComPtr;
 
         static_assert(std::derived_from<Device, ID3D12Device>, "This function requires it's type to inherit from ID3D12Device");
-        return Helpers::COM::IIDToObjectForwardFunction<Device>(&D3D12CreateDevice, optAdapter, minFeatureLevel);
+        return IIDToObjectForwardFunction<Device>(&D3D12CreateDevice, optAdapter, minFeatureLevel);
     }
 
     //Creates a open command list
@@ -36,7 +35,7 @@ namespace TypedD3D::Helpers::D3D12
     tl::expected<Microsoft::WRL::ComPtr<CommandList>, HRESULT> CreateCommandList(ID3D12Device& device, D3D12_COMMAND_LIST_TYPE type, ID3D12CommandAllocator& allocator, UINT nodeMask = 0, ID3D12PipelineState* optInitialPipeline = nullptr)
     {
         static_assert(std::derived_from<CommandList, ID3D12CommandList>, "This function requires it's type to inherit from ID3D12CommandList");
-        return Helpers::COM::IIDToObjectForwardFunction<CommandList>(&ID3D12Device::CreateCommandList, device, nodeMask, type, &allocator, optInitialPipeline);
+        return IIDToObjectForwardFunction<CommandList>(&ID3D12Device::CreateCommandList, device, nodeMask, type, &allocator, optInitialPipeline);
     }
 
     //Creates a closed command list
@@ -44,54 +43,54 @@ namespace TypedD3D::Helpers::D3D12
     tl::expected<Microsoft::WRL::ComPtr<CommandList>, HRESULT> CreateCommandList(ID3D12Device4& device, D3D12_COMMAND_LIST_TYPE type, D3D12_COMMAND_LIST_FLAGS flags, UINT nodeMask = 0)
     {
         static_assert(std::is_base_of_v<ID3D12CommandList, CommandList>, "This function requires it's type to inherit from ID3D12CommandList");
-        return Helpers::COM::IIDToObjectForwardFunction<CommandList>(&ID3D12Device4::CreateCommandList1, device, nodeMask, type, flags);
+        return IIDToObjectForwardFunction<CommandList>(&ID3D12Device4::CreateCommandList1, device, nodeMask, type, flags);
     }
 
     inline tl::expected<Microsoft::WRL::ComPtr<ID3D12CommandAllocator>, HRESULT> CreateCommandAllocator(ID3D12Device& device, D3D12_COMMAND_LIST_TYPE type)
     {
-        return Helpers::COM::IIDToObjectForwardFunction<ID3D12CommandAllocator>(&ID3D12Device::CreateCommandAllocator, device, type);
+        return IIDToObjectForwardFunction<ID3D12CommandAllocator>(&ID3D12Device::CreateCommandAllocator, device, type);
     }
 
     inline tl::expected<Microsoft::WRL::ComPtr<ID3D12PipelineState>, HRESULT> CreateGraphicsPipelineState(ID3D12Device& device, const D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc)
     {
-        return Helpers::COM::IIDToObjectForwardFunction<ID3D12PipelineState>(&ID3D12Device::CreateGraphicsPipelineState, device, &desc);
+        return IIDToObjectForwardFunction<ID3D12PipelineState>(&ID3D12Device::CreateGraphicsPipelineState, device, &desc);
     }
 
     inline tl::expected<Microsoft::WRL::ComPtr<ID3D12PipelineState>, HRESULT> CreateComputePipelineState(ID3D12Device& device, const D3D12_COMPUTE_PIPELINE_STATE_DESC& desc)
     {
-        return Helpers::COM::IIDToObjectForwardFunction<ID3D12PipelineState>(&ID3D12Device::CreateComputePipelineState, device, &desc);
+        return IIDToObjectForwardFunction<ID3D12PipelineState>(&ID3D12Device::CreateComputePipelineState, device, &desc);
     }
 
     inline tl::expected<Microsoft::WRL::ComPtr<ID3D12CommandQueue>, HRESULT> CreateCommandQueue(ID3D12Device& device, const D3D12_COMMAND_QUEUE_DESC& desc)
     {
-        return Helpers::COM::IIDToObjectForwardFunction<ID3D12CommandQueue>(&ID3D12Device::CreateCommandQueue, device, &desc);
+        return IIDToObjectForwardFunction<ID3D12CommandQueue>(&ID3D12Device::CreateCommandQueue, device, &desc);
     }
 
     inline tl::expected<Microsoft::WRL::ComPtr<ID3D12Fence>, HRESULT> CreateFence(ID3D12Device& device, D3D12_FENCE_FLAGS flags, UINT64 initialValue = 0)
     {
-        return Helpers::COM::IIDToObjectForwardFunction<ID3D12Fence>(&ID3D12Device::CreateFence, device, initialValue, flags);
+        return IIDToObjectForwardFunction<ID3D12Fence>(&ID3D12Device::CreateFence, device, initialValue, flags);
     }
 
     inline tl::expected<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>, HRESULT> CreateDescriptorHeap(ID3D12Device& device, const D3D12_DESCRIPTOR_HEAP_DESC& descriptorHeapDesc)
     {
-        return Helpers::COM::IIDToObjectForwardFunction<ID3D12DescriptorHeap>(&ID3D12Device::CreateDescriptorHeap, device, &descriptorHeapDesc);
+        return IIDToObjectForwardFunction<ID3D12DescriptorHeap>(&ID3D12Device::CreateDescriptorHeap, device, &descriptorHeapDesc);
     }
 
     inline tl::expected<Microsoft::WRL::ComPtr<ID3D12RootSignature>, HRESULT> CreateRootSignature(ID3D12Device& device, UINT nodeMask, const void* pBlobWithRootSignature, SIZE_T blobLengthInBytes)
     {
-        return Helpers::COM::IIDToObjectForwardFunction<ID3D12RootSignature>(&ID3D12Device::CreateRootSignature, device, nodeMask, pBlobWithRootSignature, blobLengthInBytes);
+        return IIDToObjectForwardFunction<ID3D12RootSignature>(&ID3D12Device::CreateRootSignature, device, nodeMask, pBlobWithRootSignature, blobLengthInBytes);
     }
 
     inline tl::expected<Microsoft::WRL::ComPtr<ID3D12QueryHeap>, HRESULT> CreateQueryHeap(ID3D12Device& device, const D3D12_QUERY_HEAP_DESC& desc)
     {
-        return Helpers::COM::IIDToObjectForwardFunction<ID3D12QueryHeap>(&ID3D12Device::CreateQueryHeap, device, &desc);
+        return IIDToObjectForwardFunction<ID3D12QueryHeap>(&ID3D12Device::CreateQueryHeap, device, &desc);
     }
 
     inline tl::expected<Microsoft::WRL::ComPtr<ID3D12CommandSignature>, HRESULT> CreateCommandSignature(ID3D12Device& device,
         const D3D12_COMMAND_SIGNATURE_DESC& pDesc,
         ID3D12RootSignature* optRootSignature)
     {
-        return Helpers::COM::IIDToObjectForwardFunction<ID3D12CommandSignature>(&ID3D12Device::CreateCommandSignature, device, &pDesc, optRootSignature);
+        return IIDToObjectForwardFunction<ID3D12CommandSignature>(&ID3D12Device::CreateCommandSignature, device, &pDesc, optRootSignature);
     }
 
     inline tl::expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateCommittedResource(ID3D12Device& device,
@@ -101,14 +100,14 @@ namespace TypedD3D::Helpers::D3D12
         D3D12_RESOURCE_STATES InitialResourceState,
         const D3D12_CLEAR_VALUE* optOptimizedClearValue)
     {
-        return Helpers::COM::IIDToObjectForwardFunction<ID3D12Resource>(&ID3D12Device::CreateCommittedResource, device, &pHeapProperties, HeapFlags, &pDesc, InitialResourceState, optOptimizedClearValue);
+        return IIDToObjectForwardFunction<ID3D12Resource>(&ID3D12Device::CreateCommittedResource, device, &pHeapProperties, HeapFlags, &pDesc, InitialResourceState, optOptimizedClearValue);
     }
 
     inline tl::expected<Microsoft::WRL::ComPtr<ID3D12Heap>, HRESULT> CreateHeap(
         ID3D12Device& device,
         const D3D12_HEAP_DESC& pDesc)
     {
-        return Helpers::COM::IIDToObjectForwardFunction<ID3D12Heap>(&ID3D12Device::CreateHeap, device, &pDesc);
+        return IIDToObjectForwardFunction<ID3D12Heap>(&ID3D12Device::CreateHeap, device, &pDesc);
     }
 
     inline tl::expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreatePlacedResource(ID3D12Device& device,
@@ -118,7 +117,7 @@ namespace TypedD3D::Helpers::D3D12
         D3D12_RESOURCE_STATES InitialState,
         const D3D12_CLEAR_VALUE* optOptimizedClearValue)
     {
-        return Helpers::COM::IIDToObjectForwardFunction<ID3D12Resource>(&ID3D12Device::CreatePlacedResource, device, &pHeap, HeapOffset, &pDesc, InitialState, optOptimizedClearValue);
+        return IIDToObjectForwardFunction<ID3D12Resource>(&ID3D12Device::CreatePlacedResource, device, &pHeap, HeapOffset, &pDesc, InitialState, optOptimizedClearValue);
     }
 
     inline tl::expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateReservedResource(ID3D12Device& device,
@@ -126,7 +125,7 @@ namespace TypedD3D::Helpers::D3D12
         D3D12_RESOURCE_STATES InitialState,
         const D3D12_CLEAR_VALUE* optOptimizedClearValue)
     {
-        return Helpers::COM::IIDToObjectForwardFunction<ID3D12Resource>(&ID3D12Device::CreateReservedResource, device, &pDesc, InitialState, optOptimizedClearValue);
+        return IIDToObjectForwardFunction<ID3D12Resource>(&ID3D12Device::CreateReservedResource, device, &pDesc, InitialState, optOptimizedClearValue);
     }
 
     template<class Resource = ID3D12Resource>
@@ -378,14 +377,14 @@ namespace TypedD3D::Helpers::D3D12
     tl::expected<Microsoft::WRL::ComPtr<DebugTy>, HRESULT> GetDebugInterface()
     {
         if constexpr(std::same_as<DebugTy, ID3D12Debug>)
-            return Helpers::COM::IIDToObjectForwardFunction<ID3D12Debug>(&D3D12GetDebugInterface);
+            return IIDToObjectForwardFunction<ID3D12Debug>(&D3D12GetDebugInterface);
         else
         {
             auto debug = GetDebugInterface<ID3D12Debug>();
             if(!debug.has_value())
                 return tl::unexpected(debug.error());
 
-            return Helpers::COM::Cast<DebugTy>(debug.value());
+            return Cast<DebugTy>(debug.value());
         }
     }
 }

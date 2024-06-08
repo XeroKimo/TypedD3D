@@ -1,9 +1,11 @@
 #pragma once
-#include "source/Helpers/COMHelpers.h"
+#include "expected.hpp"
 #include <wrl/client.h>
 #include <type_traits>
 #include <utility>
 #include <concepts>
+
+import TypedD3D.Shared;
 
 namespace TypedD3D::Internal
 {
@@ -203,27 +205,27 @@ namespace TypedD3D::Internal
     template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, auto... CastTags>
     Internal::IUnknownWrapper<DerivedTy, CastTags...> Cast(const Internal::IUnknownWrapper<Ty, CastTags...>& other) noexcept
     {
-        return IUnknownWrapper<DerivedTy, CastTags...>(Helpers::COM::Cast<DerivedTy>(other.m_ptr));
+        return IUnknownWrapper<DerivedTy, CastTags...>(Cast<DerivedTy>(other.m_ptr));
     }
 
     template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, auto... CastTags>
     Internal::IUnknownWrapper<DerivedTy, CastTags...> Cast(Internal::IUnknownWrapper<Ty, CastTags...>&& other) noexcept
     {
-        return IUnknownWrapper<DerivedTy, CastTags...>(Helpers::COM::Cast<DerivedTy>(std::move(other.m_ptr)));
+        return IUnknownWrapper<DerivedTy, CastTags...>(Cast<DerivedTy>(std::move(other.m_ptr)));
     }
 
     template<class DerivedTy, std::derived_from<IUnknown> CastTy, auto... CastTags>
         requires Internal::is_unknown_wrapper<DerivedTy>
     DerivedTy Cast(const Internal::IUnknownWrapper<CastTy, CastTags...>& other) noexcept
     {
-        return DerivedTy(Helpers::COM::Cast<typename DerivedTy::value_type>(other.m_ptr));
+        return DerivedTy(TypedD3D::Cast<typename DerivedTy::value_type>(other.m_ptr));
     }
 
     template<class DerivedTy, std::derived_from<IUnknown> CastTy, auto... CastTags>
         requires Internal::is_unknown_wrapper<DerivedTy>
     DerivedTy Cast(Internal::IUnknownWrapper<CastTy, CastTags...>&& other) noexcept
     {
-        return DerivedTy(Helpers::COM::Cast<typename DerivedTy::value_type>(std::move(other.m_ptr)));
+        return DerivedTy(TypedD3D::Cast<typename DerivedTy::value_type>(std::move(other.m_ptr)));
     }
 }
 

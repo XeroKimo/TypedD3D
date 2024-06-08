@@ -1,6 +1,6 @@
 #pragma once
 #include "source/Helpers/D3D12Helpers.h"
-#include "source/Helpers/COMHelpers.h"
+#include "expected.hpp"
 #include "source/Internal/IUnknownWrapper.h"
 #include "source/Internal/D3D12/Meta.h"
 #include "source/D3D12Wrappers.h"
@@ -500,7 +500,7 @@ namespace TypedD3D::Internal
                         const void* pLibraryBlob,
                         SIZE_T BlobLength)
                     {
-                        return Helpers::COM::IIDToObjectForwardFunction<ID3D12PipelineLibrary>(ID3D12Device1::CreatePipelineLibrary, Get(), pLibraryBlob, BlobLength);
+                        return IIDToObjectForwardFunction<ID3D12PipelineLibrary>(ID3D12Device1::CreatePipelineLibrary, Get(), pLibraryBlob, BlobLength);
                     }
 
                     HRESULT SetEventOnMultipleFenceCompletion(
@@ -558,7 +558,7 @@ namespace TypedD3D::Internal
                     tl::expected<Microsoft::WRL::ComPtr<ID3D12PipelineState>, HRESULT> CreatePipelineState(
                         const D3D12_PIPELINE_STATE_STREAM_DESC pDesc)
                     {
-                        return Helpers::COM::IIDToObjectForwardFunction<ID3D12PipelineState>(&ID3D12Device2::CreatePipelineState, Get(), &pDesc);
+                        return IIDToObjectForwardFunction<ID3D12PipelineState>(&ID3D12Device2::CreatePipelineState, Get(), &pDesc);
                     }
 
                 private:
@@ -586,13 +586,13 @@ namespace TypedD3D::Internal
                     tl::expected<Microsoft::WRL::ComPtr<ID3D12Heap>, HRESULT> OpenExistingHeapFromAddress(
                         const void* pAddress)
                     {
-                        return Helpers::COM::IIDToObjectForwardFunction<ID3D12Heap>(&ID3D12Device3::OpenExistingHeapFromAddress, Get(), pAddress);
+                        return IIDToObjectForwardFunction<ID3D12Heap>(&ID3D12Device3::OpenExistingHeapFromAddress, Get(), pAddress);
                     }
 
                     HRESULT OpenExistingHeapFromFileMapping(
                         HANDLE hFileMapping)
                     {
-                        return Helpers::COM::IIDToObjectForwardFunction<ID3D12Heap>(&ID3D12Device3::OpenExistingHeapFromFileMapping, Get(), hFileMapping);
+                        return IIDToObjectForwardFunction<ID3D12Heap>(&ID3D12Device3::OpenExistingHeapFromFileMapping, Get(), hFileMapping);
                     }
 
                     HRESULT EnqueueMakeResident(
@@ -646,7 +646,7 @@ namespace TypedD3D::Internal
                     tl::expected<Microsoft::WRL::ComPtr<ID3D12ProtectedResourceSession>, HRESULT> CreateProtectedResourceSession(
                         const D3D12_PROTECTED_RESOURCE_SESSION_DESC& pDesc)
                     {
-                        return Helpers::COM::IIDToObjectForwardFunction<ID3D12ProtectedResourceSession>(&ID3D12Device4::CreateProtectedResourceSession, Get(), &pDesc);
+                        return IIDToObjectForwardFunction<ID3D12ProtectedResourceSession>(&ID3D12Device4::CreateProtectedResourceSession, Get(), &pDesc);
                     }
 
                     tl::expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateCommittedResource1(
@@ -657,7 +657,7 @@ namespace TypedD3D::Internal
                         const D3D12_CLEAR_VALUE* pOptimizedClearValue,
                         ID3D12ProtectedResourceSession* pProtectedSession)
                     {
-                        return Helpers::COM::IIDToObjectForwardFunction<ID3D12Resource>(
+                        return IIDToObjectForwardFunction<ID3D12Resource>(
                             &ID3D12Device4::CreateCommittedResource1,
                             Get(),
                             &pHeapProperties,
@@ -672,7 +672,7 @@ namespace TypedD3D::Internal
                         const D3D12_HEAP_DESC& pDesc,
                         ID3D12ProtectedResourceSession* pProtectedSession)
                     {
-                        return Helpers::COM::IIDToObjectForwardFunction<ID3D12Heap>(
+                        return IIDToObjectForwardFunction<ID3D12Heap>(
                             &ID3D12Device4::CreateHeap1,
                             Get(),
                             &pDesc,
@@ -685,7 +685,7 @@ namespace TypedD3D::Internal
                         const D3D12_CLEAR_VALUE* pOptimizedClearValue,
                         ID3D12ProtectedResourceSession* pProtectedSession)
                     {
-                        return Helpers::COM::IIDToObjectForwardFunction<ID3D12Heap>(
+                        return IIDToObjectForwardFunction<ID3D12Heap>(
                             &ID3D12Device4::CreateReservedResource1,
                             Get(),
                             &pDesc,
@@ -793,7 +793,7 @@ namespace TypedD3D::Internal
                         const void* pCreationParametersData,
                         SIZE_T CreationParametersDataSizeInBytes)
                     {
-                        return Helpers::COM::IIDToObjectForwardFunction<ID3D12MetaCommand>(
+                        return IIDToObjectForwardFunction<ID3D12MetaCommand>(
                             &ID3D12Device5::CreateMetaCommand,
                             Get(),
                             CommandId,
@@ -821,7 +821,7 @@ namespace TypedD3D::Internal
                     tl::expected<Microsoft::WRL::ComPtr<ID3D12StateObject>, HRESULT> CreateStateObject(
                         const D3D12_STATE_OBJECT_DESC& pDesc)
                     {
-                        return Helpers::COM::IIDToObjectForwardFunction<ID3D12StateObject>(
+                        return IIDToObjectForwardFunction<ID3D12StateObject>(
                             &ID3D12Device5::CreateStateObject,
                             Get(),
                             &pDesc);

@@ -1,7 +1,7 @@
 #pragma once
 #include "source/Wrappers.h"
 #include "source/Internal/IUnknownWrapper.h"
-#include "source/Helpers/COMHelpers.h"
+#include "expected.hpp"
 #include <d3d11_4.h>
 
 namespace TypedD3D::Internal
@@ -22,7 +22,7 @@ namespace TypedD3D::Internal
                 {
                     Microsoft::WRL::ComPtr<ID3D11Device> device;
                     InternalGet().GetDevice(&device);
-                    return Wrapper<DeviceTy>(Helpers::COM::Cast<DeviceTy>(device));
+                    return Wrapper<DeviceTy>(Cast<DeviceTy>(device));
                 }
 
                 //TODO: Figure out how this works to update to a more modern API

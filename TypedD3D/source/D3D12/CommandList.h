@@ -9,7 +9,7 @@
 #include "DescriptorHeap.h"
 #include "source/Internal/D3D12/Meta.h"
 #include "source/Internal/IUnknownWrapper.h"
-#include "source/Helpers/COMHelpers.h"
+#include "expected.hpp"
 #include "source/D3D12Wrappers.h"
 #include "span_tuple.h"
 #include <memory>

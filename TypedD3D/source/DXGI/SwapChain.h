@@ -3,8 +3,8 @@
 #include "source/D3D12Wrappers.h"
 #include "source/Internal/IUnknownWrapper.h"
 #include "source/Internal/d3dConcepts.h"
-#include "source/Helpers/COMHelpers.h"
 #include "expected.hpp"
+#include <memory>
 #include <dxgi1_6.h>
 #include <span>
 #include <d3d12.h>
@@ -47,7 +47,7 @@ namespace TypedD3D::Internal
                     template<Resource Ty>
                     tl::expected<Wrapper<Ty>, HRESULT> GetBuffer(UINT buffer)
                     {
-                        tl::expected<Microsoft::WRL::ComPtr<Ty>, HRESULT> resource = Helpers::COM::IIDToObjectForwardFunction<Ty>(&value_type::GetBuffer, Get(), buffer);
+                        tl::expected<Microsoft::WRL::ComPtr<Ty>, HRESULT> resource = IIDToObjectForwardFunction<Ty>(&value_type::GetBuffer, Get(), buffer);
 
                         if(!resource.has_value())
                             return tl::unexpected(resource.error());
@@ -91,7 +91,7 @@ namespace TypedD3D::Internal
 
                     Microsoft::WRL::ComPtr<IDXGIOutput> GetContainingOutput()
                     {
-                        return Helpers::COM::UnknownObjectForwardFunction<IDXGIOutput>(&value_type::GetContainingOutput, Get()).value();
+                        return UnknownObjectForwardFunction<IDXGIOutput>(&value_type::GetContainingOutput, Get()).value();
                     }
 
                     DXGI_FRAME_STATISTICS GetFrameStatistics()
@@ -167,7 +167,7 @@ namespace TypedD3D::Internal
 
                     Microsoft::WRL::ComPtr<IDXGIOutput> GetRestrictToOutput()
                     {
-                        return Helpers::COM::UnknownObjectForwardFunction<IDXGIOutput>(&value_type::GetRestrictToOutput, Get()).value();
+                        return UnknownObjectForwardFunction<IDXGIOutput>(&value_type::GetRestrictToOutput, Get()).value();
                     }
                     HRESULT SetBackgroundColor(DXGI_RGBA pColor)
                     {

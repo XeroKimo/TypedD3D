@@ -2,8 +2,11 @@
 
 #include "source/Internal/IUnknownWrapper.h"
 #include "source/Wrappers.h"
-#include "source/Helpers/COMHelpers.h"
+#include "expected.hpp"
 #include <dxgi1_6.h>
+#include "expected.hpp"
+
+import TypedD3D.Shared;
 
 namespace TypedD3D::DXGI
 {
@@ -38,7 +41,7 @@ namespace TypedD3D::Internal
                 public:
                     tl::expected<Microsoft::WRL::ComPtr<IDXGIOutput>, HRESULT> EnumOutputs(UINT Output)
                     {
-                        return Helpers::COM::UnknownObjectForwardFunction<IDXGIOutput>(&value_type::EnumOutputs, Get(), Output);
+                        return UnknownObjectForwardFunction<IDXGIOutput>(&value_type::EnumOutputs, Get(), Output);
                     }
 
                     DXGI_ADAPTER_DESC GetDesc()
