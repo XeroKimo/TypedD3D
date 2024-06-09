@@ -36,10 +36,10 @@ void D3D11HelloWorld()
 {
     CreateWindow();
 
-    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::DXGI::Factory::Create1<IDXGIFactory2>().value();
+    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::CreateDXGIFactory1<IDXGIFactory2>().value();
     D3D_FEATURE_LEVEL levels = D3D_FEATURE_LEVEL_12_0;
 
-    auto [device, deviceContext] = TypedD3D::D3D11::CreateDevice<TypedD3D::Wrapper<ID3D11Device>, TypedD3D::Wrapper<ID3D11DeviceContext>>(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, std::span(&levels, 1), D3D11_SDK_VERSION).value();
+    auto [device, deviceContext] = TypedD3D::CreateD3D11Device<TypedD3D::Wrapper<ID3D11Device>, TypedD3D::Wrapper<ID3D11DeviceContext>>(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, std::span(&levels, 1), D3D11_SDK_VERSION).value();
     TypedD3D::Wrapper<IDXGISwapChain3> swapChain = factory->CreateSwapChainForHwnd<IDXGISwapChain3>(
         device,
         handle,

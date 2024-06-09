@@ -6,84 +6,85 @@ module;
 export module TypedD3D12:DescriptorHeap;
 import TypedD3D.Shared;
 import :Wrappers;
-namespace TypedD3D::D3D12
+
+namespace TypedD3D
 {
     template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-    struct GPU_DESCRIPTOR_HANDLE : private D3D12_GPU_DESCRIPTOR_HANDLE
+    struct D3D12_GPU_DESCRIPTOR_HANDLE : private ::D3D12_GPU_DESCRIPTOR_HANDLE
     {
-        using D3D12_GPU_DESCRIPTOR_HANDLE::ptr;
+        using ::D3D12_GPU_DESCRIPTOR_HANDLE::ptr;
 
     public:
-        GPU_DESCRIPTOR_HANDLE() = default;
-        GPU_DESCRIPTOR_HANDLE(D3D12_GPU_DESCRIPTOR_HANDLE handle) :
-            D3D12_GPU_DESCRIPTOR_HANDLE(handle)
+        D3D12_GPU_DESCRIPTOR_HANDLE() = default;
+        D3D12_GPU_DESCRIPTOR_HANDLE(::D3D12_GPU_DESCRIPTOR_HANDLE handle) :
+            ::D3D12_GPU_DESCRIPTOR_HANDLE(handle)
         {
 
         }
 
     public:
-        GPU_DESCRIPTOR_HANDLE Offset(INT64 offsetInDescriptors, UINT64 incrementSize)
+        D3D12_GPU_DESCRIPTOR_HANDLE Offset(INT64 offsetInDescriptors, UINT64 incrementSize)
         {
             auto copy = *this;
             copy.ptr += incrementSize * offsetInDescriptors;
             return copy;
         }
-        GPU_DESCRIPTOR_HANDLE Offset(INT64 offset)
+        D3D12_GPU_DESCRIPTOR_HANDLE Offset(INT64 offset)
         {
             auto copy = *this;
             copy.ptr += offset;
             return copy;
         }
 
-        D3D12_GPU_DESCRIPTOR_HANDLE& Get() { return *this; }
-        const D3D12_GPU_DESCRIPTOR_HANDLE& Get() const { return *this; }
-        explicit operator D3D12_GPU_DESCRIPTOR_HANDLE() { return *this; }
+        ::D3D12_GPU_DESCRIPTOR_HANDLE& Get() { return *this; }
+        const ::D3D12_GPU_DESCRIPTOR_HANDLE& Get() const { return *this; }
+        explicit operator ::D3D12_GPU_DESCRIPTOR_HANDLE() { return *this; }
     };
 
     template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-    struct CPU_DESCRIPTOR_HANDLE : private D3D12_CPU_DESCRIPTOR_HANDLE
+    struct D3D12_CPU_DESCRIPTOR_HANDLE : private ::D3D12_CPU_DESCRIPTOR_HANDLE
     {
-        using D3D12_CPU_DESCRIPTOR_HANDLE::ptr;
+        using ::D3D12_CPU_DESCRIPTOR_HANDLE::ptr;
 
     public:
-        CPU_DESCRIPTOR_HANDLE() = default;
-        CPU_DESCRIPTOR_HANDLE(D3D12_CPU_DESCRIPTOR_HANDLE handle) :
-            D3D12_CPU_DESCRIPTOR_HANDLE(handle)
+        D3D12_CPU_DESCRIPTOR_HANDLE() = default;
+        D3D12_CPU_DESCRIPTOR_HANDLE(::D3D12_CPU_DESCRIPTOR_HANDLE handle) :
+            ::D3D12_CPU_DESCRIPTOR_HANDLE(handle)
         {
 
         }
 
     public:
-        CPU_DESCRIPTOR_HANDLE Offset(INT64 offsetInDescriptors, UINT64 incrementSize)
+        D3D12_CPU_DESCRIPTOR_HANDLE Offset(INT64 offsetInDescriptors, UINT64 incrementSize)
         {
             auto copy = *this;
             copy.ptr += incrementSize * offsetInDescriptors;
             return copy;
         }
-        CPU_DESCRIPTOR_HANDLE Offset(INT64 offset)
+        D3D12_CPU_DESCRIPTOR_HANDLE Offset(INT64 offset)
         {
             auto copy = *this;
             copy.ptr += offset;
             return copy;
         }
 
-        D3D12_CPU_DESCRIPTOR_HANDLE& Get() { return *this; }
-        const D3D12_CPU_DESCRIPTOR_HANDLE& Get() const { return *this; }
-        explicit operator D3D12_CPU_DESCRIPTOR_HANDLE() { return *this; }
+        ::D3D12_CPU_DESCRIPTOR_HANDLE& Get() { return *this; }
+        const ::D3D12_CPU_DESCRIPTOR_HANDLE& Get() const { return *this; }
+        explicit operator ::D3D12_CPU_DESCRIPTOR_HANDLE() { return *this; }
     };
 
-    static_assert(sizeof(CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
-    static_assert(sizeof(CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
-    static_assert(sizeof(CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
-    static_assert(sizeof(CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
+    static_assert(sizeof(D3D12_CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(::D3D12_CPU_DESCRIPTOR_HANDLE));
+    static_assert(sizeof(D3D12_CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(::D3D12_CPU_DESCRIPTOR_HANDLE));
+    static_assert(sizeof(D3D12_CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(::D3D12_CPU_DESCRIPTOR_HANDLE));
+    static_assert(sizeof(D3D12_CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(::D3D12_CPU_DESCRIPTOR_HANDLE));
 
-    static_assert(sizeof(GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
-    static_assert(sizeof(GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
-    static_assert(sizeof(GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
-    static_assert(sizeof(GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(D3D12_CPU_DESCRIPTOR_HANDLE));
+    static_assert(sizeof(D3D12_GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(::D3D12_CPU_DESCRIPTOR_HANDLE));
+    static_assert(sizeof(D3D12_GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(::D3D12_CPU_DESCRIPTOR_HANDLE));
+    static_assert(sizeof(D3D12_GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(::D3D12_CPU_DESCRIPTOR_HANDLE));
+    static_assert(sizeof(D3D12_GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>) == sizeof(::D3D12_CPU_DESCRIPTOR_HANDLE));
 };
 
-namespace TypedD3D::Internal
+namespace TypedD3D
 {
     template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
     struct is_descriptor_heap_flag_compatible : std::false_type {};
@@ -153,22 +154,6 @@ namespace TypedD3D::Internal
     template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
     using GetTraitType = HeapTraitMapper<Type, HeapFlags>::type;
 
-    namespace D3D12
-    {
-        export template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-        using DescriptorHeap_t = IUnknownWrapper<ID3D12DescriptorHeap, HeapTraitMapper<Type, HeapFlags>::template type>;
-
-        export template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-        using CPU_DESCRIPTOR_HANDLE = ::TypedD3D::D3D12::CPU_DESCRIPTOR_HANDLE<Type, HeapFlags>;
-
-        export template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-        using GPU_DESCRIPTOR_HANDLE = ::TypedD3D::D3D12::GPU_DESCRIPTOR_HANDLE<Type, HeapFlags>;
-
-        namespace DescriptorHeap
-        {
-        }
-    }
-
     template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
     struct DescriptorHeapTraits
     {
@@ -177,8 +162,8 @@ namespace TypedD3D::Internal
         using const_pointer = const ID3D12DescriptorHeap*;
         using reference = ID3D12DescriptorHeap&;
         using const_reference = const ID3D12DescriptorHeap&;
-        using CPU_DESCRIPTOR_HANDLE = ::TypedD3D::D3D12::CPU_DESCRIPTOR_HANDLE<Type, HeapFlags>;
-        using GPU_DESCRIPTOR_HANDLE = ::TypedD3D::D3D12::GPU_DESCRIPTOR_HANDLE<Type, HeapFlags>;
+        using CPU_DESCRIPTOR_HANDLE = D3D12_CPU_DESCRIPTOR_HANDLE<Type, HeapFlags>;
+        using GPU_DESCRIPTOR_HANDLE = D3D12_GPU_DESCRIPTOR_HANDLE<Type, HeapFlags>;
 
         template<class DerivedSelf>
         class Interface
@@ -196,150 +181,73 @@ namespace TypedD3D::Internal
             reference Get() { return *ToDerived().derived_self::Get(); }
         };
     };
-}
 
-namespace TypedD3D::Internal
-{
     template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType>
     struct ShaderVisibleTraits<ID3D12DescriptorHeap, HeapType> : DescriptorHeapTraits<HeapType, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>
     {
 
     };
-}
 
-namespace TypedD3D
-{
     template<D3D12TraitTags Tag>
-    struct D3D12TaggedTraits<ID3D12DescriptorHeap, Tag> : public Internal::DescriptorHeapTraits<Internal::TraitTagToHeapType<Tag>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>
+    concept IsDescriptorHeapTag = (Tag == D3D12TraitTags::DSV)
+        || (Tag == D3D12TraitTags::RTV)
+        || (Tag == D3D12TraitTags::Sampler)
+        || (Tag == D3D12TraitTags::CBV_SRV_UAV);
+
+    template<D3D12TraitTags Tag>
+        requires IsDescriptorHeapTag<Tag>
+    struct D3D12TaggedTraits<ID3D12DescriptorHeap, Tag> : public DescriptorHeapTraits<TraitTagToHeapType<Tag>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>
     {
 
     };
 
+    export template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
+    using DescriptorHeap_t = IUnknownWrapper<ID3D12DescriptorHeap, HeapTraitMapper<Type, HeapFlags>::template type>;
+
+    template<class Ty>
+    struct ShadeVisibleMapper;
+
     template<>
     struct ShaderVisibleMapper<CBV_SRV_UAV<ID3D12DescriptorHeap>>
     {
-        using type = Internal::D3D12::DescriptorHeap_t<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
+        using type = DescriptorHeap_t<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
     };
 
     template<>
     struct ShaderVisibleMapper<Sampler<ID3D12DescriptorHeap>>
     {
-        using type = Internal::D3D12::DescriptorHeap_t<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
-    };
-
-    //template<>
-    //struct ShaderVisibleMapper<D3D12_CPU_DESCRIPTOR_HANDLE>
-    //{
-    //    using type = std::void_t<::TypedD3D::D3D12::CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>>;
-    //};
-
-    template<>
-    struct CBV_SRV_UAVMapper<D3D12_CPU_DESCRIPTOR_HANDLE>
-    {
-        using type = ::TypedD3D::D3D12::CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
+        using type = DescriptorHeap_t<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
     };
 
     template<>
-    struct SamplerMapper<D3D12_CPU_DESCRIPTOR_HANDLE>
+    struct ShaderVisibleMapper<CBV_SRV_UAV<::D3D12_GPU_DESCRIPTOR_HANDLE>>
     {
-        using type = ::TypedD3D::D3D12::CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    //template<>
-    //struct CBV_SRV_UAVMapper<ShaderVisible<D3D12_CPU_DESCRIPTOR_HANDLE>>
-    //{
-    //    using type = ::TypedD3D::D3D12::CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
-    //};
-
-    //template<>
-    //struct SamplerMapper<ShaderVisible<D3D12_CPU_DESCRIPTOR_HANDLE>>
-    //{
-    //    using type = ::TypedD3D::D3D12::CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
-    //};
-
-    template<>
-    struct RTVMapper<D3D12_CPU_DESCRIPTOR_HANDLE>
-    {
-        using type = ::TypedD3D::D3D12::CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
+        using type = D3D12_GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
     };
 
     template<>
-    struct DSVMapper<D3D12_CPU_DESCRIPTOR_HANDLE>
+    struct ShaderVisibleMapper<Sampler<::D3D12_GPU_DESCRIPTOR_HANDLE>>
     {
-        using type = ::TypedD3D::D3D12::CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
+        using type = D3D12_GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
     };
 
-    template<>
-    struct ShaderVisibleMapper<CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE>>
+    template<D3D12TraitTags Tag>
+        requires IsDescriptorHeapTag<Tag>
+    struct D3D12TaggedWrapperMapper<::D3D12_CPU_DESCRIPTOR_HANDLE, Tag>
     {
-        using type = ::TypedD3D::D3D12::CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
+        using type = D3D12_CPU_DESCRIPTOR_HANDLE<TraitTagToHeapType<Tag>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
     };
 
-    template<>
-    struct ShaderVisibleMapper<Sampler<D3D12_CPU_DESCRIPTOR_HANDLE>>
+    template<D3D12TraitTags Tag>
+        requires IsDescriptorHeapTag<Tag>
+    struct D3D12TaggedWrapperMapper<::D3D12_GPU_DESCRIPTOR_HANDLE, Tag>
     {
-        using type = ::TypedD3D::D3D12::CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
+        using type = D3D12_GPU_DESCRIPTOR_HANDLE<TraitTagToHeapType<Tag>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
     };
 
-    //template<>
-    //struct ShaderVisibleMapper<D3D12_GPU_DESCRIPTOR_HANDLE>
-    //{
-    //    using type = std::void_t<::TypedD3D::D3D12::GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>>;
-    //};
 
-    template<>
-    struct CBV_SRV_UAVMapper<D3D12_GPU_DESCRIPTOR_HANDLE>
-    {
-        using type = ::TypedD3D::D3D12::GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    template<>
-    struct SamplerMapper<D3D12_GPU_DESCRIPTOR_HANDLE>
-    {
-        using type = ::TypedD3D::D3D12::GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    //template<>
-    //struct CBV_SRV_UAVMapper<ShaderVisible<D3D12_GPU_DESCRIPTOR_HANDLE>>
-    //{
-    //    using type = ::TypedD3D::D3D12::GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
-    //};
-
-    //template<>
-    //struct SamplerMapper<ShaderVisible<D3D12_GPU_DESCRIPTOR_HANDLE>>
-    //{
-    //    using type = ::TypedD3D::D3D12::GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
-    //};
-
-    template<>
-    struct RTVMapper<D3D12_GPU_DESCRIPTOR_HANDLE>
-    {
-        using type = ::TypedD3D::D3D12::GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    template<>
-    struct DSVMapper<D3D12_GPU_DESCRIPTOR_HANDLE>
-    {
-        using type = ::TypedD3D::D3D12::GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    template<>
-    struct ShaderVisibleMapper<CBV_SRV_UAV<D3D12_GPU_DESCRIPTOR_HANDLE>>
-    {
-        using type = ::TypedD3D::D3D12::GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
-    };
-
-    template<>
-    struct ShaderVisibleMapper<Sampler<D3D12_GPU_DESCRIPTOR_HANDLE>>
-    {
-        using type = ::TypedD3D::D3D12::GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
-    };
-}
-
-namespace TypedD3D::D3D12
-{
-    export template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-    using DescriptorHeap_t = Internal::D3D12::DescriptorHeap_t<Type, HeapFlags>;
+    export template<class Ty>
+    using ShaderVisible = ShaderVisibleMapper<Ty>::type;
 
     namespace DescriptorHeap
     {

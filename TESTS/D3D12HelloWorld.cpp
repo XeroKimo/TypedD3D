@@ -35,13 +35,13 @@ using Microsoft::WRL::ComPtr;
 void D3D12HelloWorld()
 {
     CreateWindow();
-    TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> b;
+    TypedD3D::D3D12CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> b;
     //TypedD3D::expected<ComPtr<IDXGIFactory2>, HRESULT> factory = TypedD3D::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory1);
     //TypedD3D::Wrapper<IDXGIAdapter> adapter = factory->EnumAdapters<IDXGIAdapter>(0);
     ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface().value();
     debugLayer->EnableDebugLayer();
-    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::DXGI::Factory::Create1<IDXGIFactory2>().and_then([](auto& val) -> TypedD3D::expected<TypedD3D::Wrapper<IDXGIFactory2>, HRESULT>{ return val; }).value();
-    TypedD3D::Wrapper<ID3D12Device1> device = TypedD3D::D3D12::CreateDevice<ID3D12Device1>(D3D_FEATURE_LEVEL_12_0).value();
+    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::CreateDXGIFactory1<IDXGIFactory2>().and_then([](auto& val) -> TypedD3D::expected<TypedD3D::Wrapper<IDXGIFactory2>, HRESULT>{ return val; }).value();
+    TypedD3D::Wrapper<ID3D12Device1> device = TypedD3D::CreateD3D12Device<ID3D12Device1>(D3D_FEATURE_LEVEL_12_0).value();
     ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Cast<ID3D12DebugDevice>(device.Get());
 
     constexpr UINT backBufferCount = 2;
@@ -195,7 +195,7 @@ void D3D12HelloWorld()
 
     graphicsPipelineState.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    TypedD3D::expected<TypedD3D::D3D12::PipelineState::Graphics, HRESULT> pipelineState = device->CreateGraphicsPipelineState(graphicsPipelineState);
+    TypedD3D::expected<TypedD3D::PipelineState::Graphics, HRESULT> pipelineState = device->CreateGraphicsPipelineState(graphicsPipelineState);
     if(!pipelineState)
     {
         pipelineState.error();

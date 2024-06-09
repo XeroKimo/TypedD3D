@@ -9,17 +9,6 @@ module;
 export module TypedD3D12:Resource;
 import TypedD3D.Shared;
 
-namespace TypedD3D::Internal
-{
-    namespace D3D12
-    {
-        export using Resource_t = IUnknownWrapper<ID3D12Resource, UntaggedTraits>;
-        namespace Resource
-        {
-        }
-    }
-}
-
 namespace TypedD3D
 {
     template<>
@@ -89,9 +78,6 @@ namespace TypedD3D
             reference Get() { return *ToDerived().derived_self::Get(); }
         };
     };
-}
 
-namespace TypedD3D::D3D12
-{
-    export using Resource = Internal::D3D12::Resource_t;
+    export using D3D12Resource = IUnknownWrapper<ID3D12Resource, UntaggedTraits>;
 }

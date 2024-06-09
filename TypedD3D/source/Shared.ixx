@@ -228,6 +228,8 @@ namespace TypedD3D
         {
         }
 
+        //This is here in case of using mappers as Mapper<A>::type, and OtherMapper<A>::type is not seen as the
+        //same type for template template classes, despite Mapper<A>::type<B> is the same as OtherMapper<A>::type<B>
         template<class OtherTy, template<class> class OtherTraits>
             requires std::same_as<OtherTraits<Ty>, Traits<Ty>>
         IUnknownWrapper(const IUnknownWrapper<OtherTy, OtherTraits>& other) : Base{ other.m_ptr }

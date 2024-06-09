@@ -8,38 +8,22 @@ export module TypedD3D12:PipelineState;
 
 import :Wrappers;
 import TypedD3D.Shared;
-namespace TypedD3D::D3D12
+namespace TypedD3D
 {
     template<class Ty>
     concept PipelineTypeTag = std::same_as<Ty, D3D12_GRAPHICS_PIPELINE_STATE_DESC> || std::same_as<Ty, D3D12_COMPUTE_PIPELINE_STATE_DESC>;
-}
 
-namespace TypedD3D::Internal
-{
-    namespace D3D12
-    {
-        namespace PipelineState
-        {
-            enum class TypeEnum
-            {
-                Graphics,
-                Compute
-            };
+    template<class>
+    constexpr D3D12TraitTags PiplineStateTypeToEnum;
 
-            template<class>
-            constexpr TypeEnum ToEnum;
+    template<>
+    constexpr D3D12TraitTags PiplineStateTypeToEnum<D3D12_GRAPHICS_PIPELINE_STATE_DESC> = D3D12TraitTags::Graphics;
 
-            template<>
-            constexpr D3D12TraitTags ToEnum<D3D12_GRAPHICS_PIPELINE_STATE_DESC> = D3D12TraitTags::Graphics;
+    template<>
+    constexpr D3D12TraitTags PiplineStateTypeToEnum<D3D12_COMPUTE_PIPELINE_STATE_DESC> = D3D12TraitTags::Compute;
 
-            template<>
-            constexpr D3D12TraitTags ToEnum<D3D12_COMPUTE_PIPELINE_STATE_DESC> = D3D12TraitTags::Compute;
-        }
-
-        template<class Ty>
-        using PipelineState_t = IUnknownWrapper<ID3D12PipelineState, TraitTagToTypeMapper<PipelineState::ToEnum<Ty>>::template type>;
-
-    }
+    template<class Ty>
+    using PipelineState_t = IUnknownWrapper<ID3D12PipelineState, TraitTagToTypeMapper<PiplineStateTypeToEnum<Ty>>::template type>;
 
     template<D3D12TraitTags Type>
     struct PipelineTraits
@@ -67,20 +51,12 @@ namespace TypedD3D::Internal
             reference Get() { return *ToDerived().derived_self::Get(); }
         };
     };
-}
 
-namespace TypedD3D
-{
+
     template<D3D12TraitTags Tag>
-    struct D3D12TaggedTraits<ID3D12PipelineState, Tag> : Internal::PipelineTraits<Tag>
+    struct D3D12TaggedTraits<ID3D12PipelineState, Tag> : PipelineTraits<Tag>
     {
     };
-}
-
-namespace TypedD3D::D3D12
-{
-    export template<PipelineTypeTag Ty>
-    using PipelineState_t = Internal::D3D12::PipelineState_t<Ty>;
 
     namespace PipelineState
     {
