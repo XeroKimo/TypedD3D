@@ -159,7 +159,7 @@ namespace TypedD3D::Internal
                         UINT8 Stencil,
                         std::span<const D3D12_RECT> rects)
                     {
-                        Get().ClearDepthStencilView(DepthStencilView, ClearFlags, Depth, Stencil, static_cast<UINT>(rects.size()), rects.data());
+                        Get().ClearDepthStencilView(DepthStencilView.Get(), ClearFlags, Depth, Stencil, static_cast<UINT>(rects.size()), rects.data());
                     }
 
                     void ClearRenderTargetView(
