@@ -20,17 +20,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyExpected.h" />
-    <ClInclude Include="source\D3D11\Constants.h" />
     <ClInclude Include="expected.hpp" />
-    <ClInclude Include="source\Internal\D3D12\Meta.h" />
     <ClInclude Include="d3dx12.h" />
-    <ClInclude Include="source\Helpers\CommonHelpers.h" />
     <ClInclude Include="source\Helpers\D3D12Helpers.h" />
     <ClInclude Include="source\Helpers\DXGIHelpers.h" />
-    <ClInclude Include="source\Internal\d3dConcepts.h" />
     <ClInclude Include="span_tuple.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\D3D11\D3D11Constants.ixx" />
     <ClCompile Include="source\D3D11\D3D11Device.ixx" />
     <ClCompile Include="source\D3D11\DeviceContext.ixx" />
     <ClCompile Include="source\D3D11\InputLayout.ixx" />

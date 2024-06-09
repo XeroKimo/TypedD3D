@@ -181,7 +181,7 @@ void D3D12HelloWorld()
         .InputLayout = layoutDesc,
         .PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
         .NumRenderTargets = 1,
-        .SampleDesc = TypedD3D::Helpers::Common::GetDescription(*swapChain.Get()).SampleDesc,
+        .SampleDesc = TypedD3D::GetDescription(*swapChain.Get()).SampleDesc,
     };
 
     graphicsPipelineState.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;

@@ -1,7 +1,6 @@
 module;
 #include "span_tuple.h"
 #include "gsl/pointers"
-#include "Constants.h"
 #include <d3d11_4.h>
 #include <tuple>
 #include <optional>
@@ -11,6 +10,7 @@ module;
 
 
 export module TypedD3D11:DeviceContext;
+import :Constants;
 import :DeviceChild;
 import :States;
 import :Resources;

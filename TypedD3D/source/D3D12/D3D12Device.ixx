@@ -1,10 +1,7 @@
 module;
 
 #include "source/Helpers/D3D12Helpers.h"
-#include "source/Internal/D3D12/Meta.h"
-
 #include "span_tuple.h"
-
 #include <d3d12.h>
 #include <wrl/client.h>
 
@@ -27,8 +24,192 @@ namespace TypedD3D
 		std::vector<D3D12_META_COMMAND_PARAMETER_DESC> parameterDescs;
 	};
 
+#pragma region Device Feature Map
+	template<D3D12_FEATURE Feature>
+	struct D3D12DeviceFeatureMap;
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS>
+	{
+		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_ARCHITECTURE>
+	{
+		using type = D3D12_FEATURE_DATA_ARCHITECTURE;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_FEATURE_LEVELS>
+	{
+		using type = D3D12_FEATURE_DATA_FEATURE_LEVELS;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_FORMAT_SUPPORT>
+	{
+		using type = D3D12_FEATURE_DATA_FORMAT_INFO;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT>
+	{
+		using type = D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_SHADER_MODEL>
+	{
+		using type = D3D12_FEATURE_DATA_SHADER_MODEL;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS1>
+	{
+		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS1;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_SUPPORT>
+	{
+		using type = D3D12_FEATURE_DATA_PROTECTED_RESOURCE_SESSION_SUPPORT;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_ROOT_SIGNATURE>
+	{
+		using type = D3D12_FEATURE_DATA_ROOT_SIGNATURE;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_ARCHITECTURE1>
+	{
+		using type = D3D12_FEATURE_DATA_ARCHITECTURE1;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS2>
+	{
+		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS2;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_SHADER_CACHE>
+	{
+		using type = D3D12_FEATURE_DATA_SHADER_CACHE;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_COMMAND_QUEUE_PRIORITY>
+	{
+		using type = D3D12_FEATURE_DATA_COMMAND_QUEUE_PRIORITY;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS3>
+	{
+		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS3;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_EXISTING_HEAPS>
+	{
+		using type = D3D12_FEATURE_DATA_EXISTING_HEAPS;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS4>
+	{
+		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS4;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_SERIALIZATION>
+	{
+		using type = D3D12_FEATURE_DATA_SERIALIZATION;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_CROSS_NODE>
+	{
+		using type = D3D12_FEATURE_DATA_CROSS_NODE;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS5>
+	{
+		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS5;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS6>
+	{
+		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS6;
+	};
+
+	//Requires Windows 11
+	//template<>
+	//struct D3D12DeviceFeatureMap<D3D12_FEATURE_DISPLAYABLE>
+	//{
+	//    using type = D3D12_FEATURE_DATA_DISPLAYABLE;
+	//};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_QUERY_META_COMMAND>
+	{
+		using type = D3D12_FEATURE_DATA_QUERY_META_COMMAND;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS7>
+	{
+		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS7;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_TYPE_COUNT>
+	{
+		using type = D3D12_FEATURE_DATA_PROTECTED_RESOURCE_SESSION_TYPE_COUNT;
+	};
+
+	template<>
+	struct D3D12DeviceFeatureMap<D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_TYPES>
+	{
+		using type = D3D12_FEATURE_DATA_PROTECTED_RESOURCE_SESSION_TYPES;
+	};
+
+	//Requires Windows 11
+	//template<>
+	//struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS8>
+	//{
+	//    using type = D3D12_FEATURE_DATA_D3D12_OPTIONS8;
+	//};
+
+	//Requires Windows 11
+	//template<>
+	//struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS9>
+	//{
+	//    using type = D3D12_FEATURE_DATA_D3D12_OPTIONS9;
+	//};
+
+	//Requires Windows 11
+	//template<>
+	//struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS10>
+	//{
+	//    using type = D3D12_FEATURE_DATA_D3D12_OPTIONS10;
+	//};
+
+	//Requires Windows 11
+	//template<>
+	//struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS11>
+	//{
+	//    using type = D3D12_FEATURE_DATA_D3D12_OPTIONS11;
+	//};
+#pragma endregion
+
 	export template<std::derived_from<ID3D12Device> DeviceTy>
-		using Device_t = IUnknownWrapper<DeviceTy, UntaggedTraits>;
+	using Device_t = IUnknownWrapper<DeviceTy, UntaggedTraits>;
 
 	template<class Ty>
 	struct D3D12DeviceTraits;
@@ -109,9 +290,9 @@ namespace TypedD3D
 			}
 
 			template<D3D12_FEATURE Feature>
-			expected<typename DeviceFeatureToType<Feature>::type, HRESULT> CheckFeatureSupport()
+			expected<typename D3D12DeviceFeatureMap<Feature>::type, HRESULT> CheckFeatureSupport()
 			{
-				using feature_t = typename DeviceFeatureToType<Feature>::type;
+				using feature_t = typename D3D12DeviceFeatureMap<Feature>::type;
 				feature_t feature{};
 
 				HRESULT hr = Get().CheckFeatureSupport(Feature, &feature, sizeof(feature_t));

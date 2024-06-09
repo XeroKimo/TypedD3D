@@ -15,31 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\Helpers\CommonHelpers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\Helpers\D3D12Helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\Helpers\DXGIHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Internal\D3D12\Meta.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="d3dx12.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\Internal\d3dConcepts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="expected.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="span_tuple.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\D3D11\Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MyExpected.h">
@@ -117,6 +105,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\D3D12\D3D12Wrappers.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D11\D3D11Constants.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

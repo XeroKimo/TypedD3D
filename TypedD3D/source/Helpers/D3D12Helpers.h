@@ -7,7 +7,6 @@
 
 #pragma once
 #include "DXGIHelpers.h"
-#include "CommonHelpers.h"
 #include "MyExpected.h"
 #include "span_tuple.h"
 #include <functional>
@@ -18,6 +17,8 @@
 #include <assert.h>
 #include <algorithm>
 #include <optional>
+
+import TypedD3D.Shared;
 
 namespace TypedD3D::Helpers::D3D12
 {
@@ -133,7 +134,7 @@ namespace TypedD3D::Helpers::D3D12
     {
         UINT rtvOffset = device.GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
         D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptor.GetCPUDescriptorHandleForHeapStart();
-        DXGI_SWAP_CHAIN_DESC1 desc = Helpers::Common::GetDescription(swapChain);
+        DXGI_SWAP_CHAIN_DESC1 desc = TypedD3D::GetDescription(swapChain);
 
         std::vector<Microsoft::WRL::ComPtr<Resource>> buffers(desc.BufferCount);
         for(UINT i = 0; i < desc.BufferCount; i++)
