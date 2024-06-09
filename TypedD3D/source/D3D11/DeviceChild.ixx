@@ -1,7 +1,10 @@
-#pragma once
+module;
+
 #include "source/Wrappers.h"
 #include "expected.hpp"
 #include <d3d11_4.h>
+
+export module TypedD3D11:DeviceChild;
 import TypedD3D.Shared;
 
 namespace TypedD3D::Internal

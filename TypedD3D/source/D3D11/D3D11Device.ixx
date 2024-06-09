@@ -1,10 +1,5 @@
-#pragma once
+module;
 #include "source/Wrappers.h"
-#include "Resources.h"
-#include "Shaders.h"
-#include "InputLayout.h"
-#include "ResourceViews.h"
-#include "States.h"
 #include "gsl/pointers"
 #include <d3d11_4.h>
 #include <span>
@@ -12,13 +7,21 @@
 #include "expected.hpp"
 #include <wrl/client.h>
 
+export module TypedD3D11:Device;
+import :DeviceChild;
+import :States;
+import :Shaders;
+import :InputLayout;
+import :ResourceViews;
+import :Resources;
+
 import TypedD3D.Shared;
 
 namespace TypedD3D::Internal
 {
     namespace D3D11
     {
-        template<class Ty>
+        export template<class Ty>
         using Device_t = IUnknownWrapper<Ty>;
 
         namespace Device
@@ -599,12 +602,12 @@ namespace TypedD3D
 
 namespace TypedD3D::D3D11
 {
-    template<std::derived_from<ID3D11Device> DeviceTy>
+    export template<std::derived_from<ID3D11Device> DeviceTy>
     using Device_t = Internal::D3D11::Device_t<DeviceTy>;
 
-    using Device = Device_t<ID3D11Device>;
+    export using Device = Device_t<ID3D11Device>;
 
-    template<class DeviceTy = ID3D11Device, class DeviceContextTy = ID3D11DeviceContext>
+    export template<class DeviceTy = ID3D11Device, class DeviceContextTy = ID3D11DeviceContext>
     auto CreateDevice(
         IDXGIAdapter* optAdapter,
         D3D_DRIVER_TYPE DriverType,

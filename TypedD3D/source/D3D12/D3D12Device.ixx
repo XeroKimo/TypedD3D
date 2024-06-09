@@ -6,11 +6,11 @@ module;
 #include "source/D3D12Wrappers.h"
 
 #include "span_tuple.h"
-#include "source/Types.h"
 
 #include "expected.hpp"
 #include <d3d12.h>
 #include <wrl/client.h>
+
 
 export module TypedD3D12:Device;
 export import TypedD3D.Shared;

@@ -1,9 +1,11 @@
-#pragma once
+module;
 #include "source/Wrappers.h"
 #include "expected.hpp"
-#include "DeviceChild.h"
-#include "Resources.h"
 #include <d3d11_4.h>
+
+export module TypedD3D11:ResourceViews;
+import :DeviceChild;
+import :Resources;
 import TypedD3D.Shared;
 
 namespace TypedD3D::Internal
@@ -47,7 +49,7 @@ namespace TypedD3D
 {
 
 
-    template<>
+    export template<>
     struct Traits<ID3D11View>
     {
         using value_type = ID3D11View;
@@ -76,7 +78,7 @@ namespace TypedD3D
         };
     };
 
-    template<class Ty>
+    export template<class Ty>
         requires std::derived_from<Ty, ID3D11View> && (!std::same_as<ID3D11View, Ty>)
     struct Traits<Ty>
     {

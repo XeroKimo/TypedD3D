@@ -1,13 +1,14 @@
-#pragma once
+module;
 #include "source/Wrappers.h"
 #include "expected.hpp"
-#include "DeviceChild.h"
 #include <d3d11_4.h>
+export module TypedD3D11:Resources;
+import :DeviceChild;
 import TypedD3D.Shared;
 
 namespace TypedD3D
 {
-    template<>
+    export template<>
     struct Traits<ID3D11Resource>
     {
         using value_type = ID3D11Resource;
@@ -46,7 +47,7 @@ namespace TypedD3D
         };
     };
 
-    template<>
+    export template<>
     struct Traits<ID3D11Buffer>
     {
         using value_type = ID3D11Buffer;
@@ -75,7 +76,7 @@ namespace TypedD3D
         };
     };
 
-    template<>
+    export template<>
     struct Traits<ID3D11Texture1D>
     {
         using value_type = ID3D11Texture1D;
@@ -104,7 +105,7 @@ namespace TypedD3D
         };
     };
 
-    template<>
+    export template<>
     struct Traits<ID3D11Texture2D>
     {
         using value_type = ID3D11Texture2D;
@@ -133,7 +134,7 @@ namespace TypedD3D
         };
     };
 
-    template<>
+    export template<>
     struct Traits<ID3D11Texture3D>
     {
         using value_type = ID3D11Texture3D;

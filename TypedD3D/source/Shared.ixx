@@ -2,11 +2,17 @@ module;
 
 #include "expected.hpp"
 #include <wrl/client.h>
+#include <minwindef.h>
 
 export module TypedD3D.Shared;
 
 namespace TypedD3D
 {
+    export enum class Stride : UINT {};
+    export enum class Offset : UINT {};
+
+    export enum class FenceValue : UINT64 {};
+
 	export template<class Ty, class Err>
 	using expected = tl::expected<Ty, Err>;
 

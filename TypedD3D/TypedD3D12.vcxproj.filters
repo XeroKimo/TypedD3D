@@ -39,43 +39,13 @@
     <ClInclude Include="source\Internal\d3dConcepts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\D3D11\Device.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="expected.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\D3D11\DeviceContext.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\D3D11\DeviceChild.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TypedD3D11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="span_tuple.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\D3D11\Shaders.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\D3D11\Resources.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\D3D11\InputLayout.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\D3D11\ResourceViews.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\D3D11\States.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\D3D11\Constants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\Types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -104,10 +74,10 @@
     <ClCompile Include="source\D3D12\PipelineState.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\D3D12\Resource.ixx">
+    <ClCompile Include="source\D3D12\D3D12Resource.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\D3D12\Device.ixx">
+    <ClCompile Include="source\D3D12\D3D12Device.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\TypedDXGI.ixx">
@@ -120,6 +90,33 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\DXGI\SwapChain.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D11\DeviceChild.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\TypedD3D11.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D11\InputLayout.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D11\D3D11Resource.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D11\ResourceViews.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D11\States.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D11\Shaders.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D11\D3D11Device.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D11\DeviceContext.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

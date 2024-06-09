@@ -1,18 +1,23 @@
-#pragma once
-#include "DeviceChild.h"
+module;
 #include "expected.hpp"
 #include "span_tuple.h"
 #include "gsl/pointers"
-#include "ResourceViews.h"
-#include "States.h"
 #include "Constants.h"
-#include "source/Types.h"
 #include <d3d11_4.h>
 #include <tuple>
 #include <optional>
 #include <array>
 #include <vector>
 #include <utility>
+#include <source/Wrappers.h>
+
+export module TypedD3D11:DeviceContext;
+import :DeviceChild;
+import :States;
+import :Resources;
+import :Shaders;
+import :InputLayout;
+import :ResourceViews;
 
 namespace TypedD3D::D3D11
 {
@@ -80,7 +85,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(ppConstantBuffers.size());
+                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer * []>(ppConstantBuffers.size());
                         for(size_t i = 0; i < ppConstantBuffers.size(); i++)
                         {
                             rawBuffers[i] = ppConstantBuffers[i].Get();
@@ -92,7 +97,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView* []> rawBuffers = std::make_unique<ID3D11ShaderResourceView* []>(ppShaderResourceViews.size());
+                        std::unique_ptr<ID3D11ShaderResourceView* []> rawBuffers = std::make_unique<ID3D11ShaderResourceView * []>(ppShaderResourceViews.size());
                         for(size_t i = 0; i < ppShaderResourceViews.size(); i++)
                         {
                             rawBuffers[i] = ppShaderResourceViews[i].Get();
@@ -111,7 +116,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11SamplerState>> ppSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState* []>(ppSamplers.size());
+                        std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState * []>(ppSamplers.size());
                         for(size_t i = 0; i < ppSamplers.size(); i++)
                         {
                             rawSamplers[i] = ppSamplers[i].Get();
@@ -167,7 +172,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(ppConstantBuffers.size());
+                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer * []>(ppConstantBuffers.size());
                         for(size_t i = 0; i < ppConstantBuffers.size(); i++)
                         {
                             rawBuffers[i] = ppConstantBuffers[i].Get();
@@ -185,7 +190,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         xk::span_tuple<Wrapper<ID3D11Buffer>, std::dynamic_extent, const Stride, const Offset> vertexBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(vertexBuffers.size());
+                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer * []>(vertexBuffers.size());
                         for(size_t i = 0; i < vertexBuffers.size(); i++)
                         {
                             rawBuffers[i] = get<0>(vertexBuffers)[i].Get();
@@ -197,8 +202,8 @@ namespace TypedD3D::Internal
                         std::unique_ptr<std::underlying_type_t<Offset>[]> offsets = std::make_unique< std::underlying_type_t<Offset>[]>(vertexBuffers.size());
                         std::memcpy(offsets.get(), vertexBuffers.data<2>(), vertexBuffers.size_bytes<2>());
                         Get().IASetVertexBuffers(
-                            StartSlot, 
-                            static_cast<UINT>(vertexBuffers.size()), 
+                            StartSlot,
+                            static_cast<UINT>(vertexBuffers.size()),
                             rawBuffers.get(),
                             strides.get(),
                             offsets.get());
@@ -235,7 +240,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(ppConstantBuffers.size());
+                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer * []>(ppConstantBuffers.size());
                         for(size_t i = 0; i < ppConstantBuffers.size(); i++)
                         {
                             rawBuffers[i] = ppConstantBuffers[i].Get();
@@ -260,7 +265,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView* []> rawBuffers = std::make_unique<ID3D11ShaderResourceView* []>(ppShaderResourceViews.size());
+                        std::unique_ptr<ID3D11ShaderResourceView* []> rawBuffers = std::make_unique<ID3D11ShaderResourceView * []>(ppShaderResourceViews.size());
                         for(size_t i = 0; i < ppShaderResourceViews.size(); i++)
                         {
                             rawBuffers[i] = ppShaderResourceViews[i].Get();
@@ -272,7 +277,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11SamplerState>> ppSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState* []>(ppSamplers.size());
+                        std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState * []>(ppSamplers.size());
                         for(size_t i = 0; i < ppSamplers.size(); i++)
                         {
                             rawSamplers[i] = ppSamplers[i].Get();
@@ -315,7 +320,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView* []> rawBuffers = std::make_unique<ID3D11ShaderResourceView* []>(ppShaderResourceViews.size());
+                        std::unique_ptr<ID3D11ShaderResourceView* []> rawBuffers = std::make_unique<ID3D11ShaderResourceView * []>(ppShaderResourceViews.size());
                         for(size_t i = 0; i < ppShaderResourceViews.size(); i++)
                         {
                             rawBuffers[i] = ppShaderResourceViews[i].Get();
@@ -327,7 +332,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11SamplerState>> ppSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState* []>(ppSamplers.size());
+                        std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState * []>(ppSamplers.size());
                         for(size_t i = 0; i < ppSamplers.size(); i++)
                         {
                             rawSamplers[i] = ppSamplers[i].Get();
@@ -339,7 +344,7 @@ namespace TypedD3D::Internal
                         std::span<Wrapper<ID3D11RenderTargetView>> ppRenderTargetViews,
                         Wrapper<ID3D11DepthStencilView> optDepthStencilView)
                     {
-                        std::unique_ptr<ID3D11RenderTargetView* []> rawBuffers = std::make_unique<ID3D11RenderTargetView* []>(ppRenderTargetViews.size());
+                        std::unique_ptr<ID3D11RenderTargetView* []> rawBuffers = std::make_unique<ID3D11RenderTargetView * []>(ppRenderTargetViews.size());
                         for(size_t i = 0; i < ppRenderTargetViews.size(); i++)
                         {
                             rawBuffers[i] = ppRenderTargetViews[i].Get();
@@ -354,7 +359,7 @@ namespace TypedD3D::Internal
                         std::span<ID3D11UnorderedAccessView*> ppUnorderedAccessViews,
                         const UINT* pUAVInitialCounts)
                     {
-                        std::unique_ptr<ID3D11RenderTargetView* []> rawBuffers = std::make_unique<ID3D11RenderTargetView* []>(ppRenderTargetViews.size());
+                        std::unique_ptr<ID3D11RenderTargetView* []> rawBuffers = std::make_unique<ID3D11RenderTargetView * []>(ppRenderTargetViews.size());
                         for(size_t i = 0; i < ppRenderTargetViews.size(); i++)
                         {
                             rawBuffers[i] = ppRenderTargetViews[i].Get();
@@ -391,7 +396,7 @@ namespace TypedD3D::Internal
                     void SOSetTargets(
                         xk::span_tuple<Wrapper<ID3D11Buffer>, std::dynamic_extent, const Offset> ppSOTargets)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(ppSOTargets.size());
+                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer * []>(ppSOTargets.size());
                         for(size_t i = 0; i < ppSOTargets.size(); i++)
                         {
                             rawBuffers[i] = get<0>(ppSOTargets)[i].Get();
@@ -576,7 +581,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView* []> rawBuffers = std::make_unique<ID3D11ShaderResourceView* []>(ppShaderResourceViews.size());
+                        std::unique_ptr<ID3D11ShaderResourceView* []> rawBuffers = std::make_unique<ID3D11ShaderResourceView * []>(ppShaderResourceViews.size());
                         for(size_t i = 0; i < ppShaderResourceViews.size(); i++)
                         {
                             rawBuffers[i] = ppShaderResourceViews[i].Get();
@@ -595,7 +600,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11SamplerState>> ppSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState* []>(ppSamplers.size());
+                        std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState * []>(ppSamplers.size());
                         for(size_t i = 0; i < ppSamplers.size(); i++)
                         {
                             rawSamplers[i] = ppSamplers[i].Get();
@@ -607,7 +612,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(ppConstantBuffers.size());
+                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer * []>(ppConstantBuffers.size());
                         for(size_t i = 0; i < ppConstantBuffers.size(); i++)
                         {
                             rawBuffers[i] = ppConstantBuffers[i].Get();
@@ -619,7 +624,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView* []> rawBuffers = std::make_unique<ID3D11ShaderResourceView* []>(ppShaderResourceViews.size());
+                        std::unique_ptr<ID3D11ShaderResourceView* []> rawBuffers = std::make_unique<ID3D11ShaderResourceView * []>(ppShaderResourceViews.size());
                         for(size_t i = 0; i < ppShaderResourceViews.size(); i++)
                         {
                             rawBuffers[i] = ppShaderResourceViews[i].Get();
@@ -638,7 +643,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11SamplerState>> ppSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState* []>(ppSamplers.size());
+                        std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState * []>(ppSamplers.size());
                         for(size_t i = 0; i < ppSamplers.size(); i++)
                         {
                             rawSamplers[i] = ppSamplers[i].Get();
@@ -650,7 +655,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(ppConstantBuffers.size());
+                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer * []>(ppConstantBuffers.size());
                         for(size_t i = 0; i < ppConstantBuffers.size(); i++)
                         {
                             rawBuffers[i] = ppConstantBuffers[i].Get();
@@ -662,7 +667,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView* []> rawBuffers = std::make_unique<ID3D11ShaderResourceView* []>(ppShaderResourceViews.size());
+                        std::unique_ptr<ID3D11ShaderResourceView* []> rawBuffers = std::make_unique<ID3D11ShaderResourceView * []>(ppShaderResourceViews.size());
                         for(size_t i = 0; i < ppShaderResourceViews.size(); i++)
                         {
                             rawBuffers[i] = ppShaderResourceViews[i].Get();
@@ -674,7 +679,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         xk::span_tuple<Wrapper<ID3D11UnorderedAccessView>, std::dynamic_extent, const UINT> ppUnorderedAccessViews)
                     {
-                        std::unique_ptr<ID3D11UnorderedAccessView* []> rawBuffers = std::make_unique<ID3D11UnorderedAccessView* []>(ppUnorderedAccessViews.size());
+                        std::unique_ptr<ID3D11UnorderedAccessView* []> rawBuffers = std::make_unique<ID3D11UnorderedAccessView * []>(ppUnorderedAccessViews.size());
                         for(size_t i = 0; i < ppUnorderedAccessViews.size(); i++)
                         {
                             rawBuffers[i] = get<0>(ppUnorderedAccessViews[i]).Get();
@@ -693,7 +698,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11SamplerState>> ppSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState* []>(ppSamplers.size());
+                        std::unique_ptr<ID3D11SamplerState* []> rawSamplers = std::make_unique<ID3D11SamplerState * []>(ppSamplers.size());
                         for(size_t i = 0; i < ppSamplers.size(); i++)
                         {
                             rawSamplers[i] = ppSamplers[i].Get();
@@ -705,7 +710,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         std::span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer* []>(ppConstantBuffers.size());
+                        std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer * []>(ppConstantBuffers.size());
                         for(size_t i = 0; i < ppConstantBuffers.size(); i++)
                         {
                             rawBuffers[i] = ppConstantBuffers[i].Get();
@@ -717,7 +722,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer*[]> tempBuffers = std::make_unique<ID3D11Buffer*[]>(NumBuffers);
+                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer * []>(NumBuffers);
                         Get().VSGetConstantBuffers(StartSlot, NumBuffers, tempBuffers.get());
 
                         std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
@@ -733,7 +738,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView*[]> tempViews = std::make_unique<ID3D11ShaderResourceView*[]>(NumViews);
+                        std::unique_ptr<ID3D11ShaderResourceView* []> tempViews = std::make_unique<ID3D11ShaderResourceView * []>(NumViews);
                         Get().PSGetShaderResources(StartSlot, NumViews, tempViews.get());
 
                         std::vector<Wrapper<ID3D11ShaderResourceView>> views(NumViews);
@@ -766,7 +771,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState*[]> tempSamplers = std::make_unique<ID3D11SamplerState*[]>(NumSamplers - StartSlot);
+                        std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState * []>(NumSamplers - StartSlot);
                         Get().PSGetSamplers(StartSlot, NumSamplers, tempSamplers.get());
 
                         std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers - StartSlot);
@@ -799,7 +804,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer*[]> tempBuffers = std::make_unique<ID3D11Buffer*[]>(NumBuffers);
+                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer * []>(NumBuffers);
                         Get().PSGetConstantBuffers(StartSlot, NumBuffers, tempBuffers.get());
 
                         std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
@@ -822,7 +827,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
+                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer * []>(NumBuffers);
                         std::unique_ptr<UINT[]> tempStrides = std::make_unique<UINT[]>(NumBuffers);
                         std::unique_ptr<UINT[]> tempOffsets = std::make_unique<UINT[]>(NumBuffers);
                         Get().IAGetVertexBuffers(StartSlot, NumBuffers, tempBuffers.get(), tempStrides.get(), tempOffsets.get());
@@ -854,7 +859,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer*[]> tempBuffers = std::make_unique<ID3D11Buffer*[]>(NumBuffers);
+                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer * []>(NumBuffers);
                         Get().GSGetConstantBuffers(StartSlot, NumBuffers, tempBuffers.get());
 
                         std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
@@ -894,7 +899,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView*[]> tempViews = std::make_unique<ID3D11ShaderResourceView*[]>(NumViews);
+                        std::unique_ptr<ID3D11ShaderResourceView* []> tempViews = std::make_unique<ID3D11ShaderResourceView * []>(NumViews);
                         Get().VSGetShaderResources(StartSlot, NumViews, tempViews.get());
 
                         std::vector<Wrapper<ID3D11ShaderResourceView>> views(NumViews);
@@ -910,7 +915,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState*[]> tempSamplers = std::make_unique<ID3D11SamplerState*[]>(NumSamplers - StartSlot);
+                        std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState * []>(NumSamplers - StartSlot);
                         Get().VSGetSamplers(StartSlot, NumSamplers, tempSamplers.get());
 
                         std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers - StartSlot);
@@ -933,7 +938,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView*[]> tempViews = std::make_unique<ID3D11ShaderResourceView*[]>(NumViews);
+                        std::unique_ptr<ID3D11ShaderResourceView* []> tempViews = std::make_unique<ID3D11ShaderResourceView * []>(NumViews);
                         Get().GSGetShaderResources(StartSlot, NumViews, tempViews.get());
 
                         std::vector<Wrapper<ID3D11ShaderResourceView>> views(NumViews);
@@ -949,7 +954,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState*[]> tempSamplers = std::make_unique<ID3D11SamplerState*[]>(NumSamplers - StartSlot);
+                        std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState * []>(NumSamplers - StartSlot);
                         Get().GSGetSamplers(StartSlot, NumSamplers, tempSamplers.get());
 
                         std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers - StartSlot);
@@ -964,7 +969,7 @@ namespace TypedD3D::Internal
                     std::pair<std::vector<Wrapper<ID3D11RenderTargetView>>, Wrapper<ID3D11DepthStencilView>>  OMGetRenderTargets(
                         UINT NumViews)
                     {
-                        std::unique_ptr<ID3D11RenderTargetView* []> tempViews = std::make_unique<ID3D11RenderTargetView* []>(NumViews);
+                        std::unique_ptr<ID3D11RenderTargetView* []> tempViews = std::make_unique<ID3D11RenderTargetView * []>(NumViews);
                         std::pair<std::vector<Wrapper<ID3D11RenderTargetView>>, Wrapper<ID3D11DepthStencilView>> output;
                         Microsoft::WRL::ComPtr<ID3D11DepthStencilView> tempDS;
                         Get().OMGetRenderTargets(NumViews, tempViews.get(), &tempDS);
@@ -987,8 +992,8 @@ namespace TypedD3D::Internal
                         UINT UAVStartSlot,
                         UINT NumUAVs)
                     {
-                        std::unique_ptr<ID3D11RenderTargetView* []> tempRTVs = std::make_unique<ID3D11RenderTargetView* []>(NumRTVs);
-                        std::unique_ptr<ID3D11UnorderedAccessView* []> tempUAVs = std::make_unique<ID3D11UnorderedAccessView* []>(NumUAVs);
+                        std::unique_ptr<ID3D11RenderTargetView* []> tempRTVs = std::make_unique<ID3D11RenderTargetView * []>(NumRTVs);
+                        std::unique_ptr<ID3D11UnorderedAccessView* []> tempUAVs = std::make_unique<ID3D11UnorderedAccessView * []>(NumUAVs);
 
                         TypedD3D::D3D11::OMGetRenderTargetsAndUnorderedAccessViewsData data;
 
@@ -1029,7 +1034,7 @@ namespace TypedD3D::Internal
 
                     std::vector<Wrapper<ID3D11Buffer>> SOGetTargets(UINT NumBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer* []>(NumBuffers);
+                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer * []>(NumBuffers);
                         Get().SOGetTargets(NumBuffers, tempBuffers.get());
 
                         std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
@@ -1074,7 +1079,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView*[]> tempViews = std::make_unique<ID3D11ShaderResourceView*[]>(NumViews);
+                        std::unique_ptr<ID3D11ShaderResourceView* []> tempViews = std::make_unique<ID3D11ShaderResourceView * []>(NumViews);
                         Get().HSGetShaderResources(StartSlot, NumViews, tempViews.get());
 
                         std::vector<Wrapper<ID3D11ShaderResourceView>> views(NumViews);
@@ -1107,7 +1112,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState*[]> tempSamplers = std::make_unique<ID3D11SamplerState*[]>(NumSamplers - StartSlot);
+                        std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState * []>(NumSamplers - StartSlot);
                         Get().HSGetSamplers(StartSlot, NumSamplers, tempSamplers.get());
 
                         std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers - StartSlot);
@@ -1123,7 +1128,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer*[]> tempBuffers = std::make_unique<ID3D11Buffer*[]>(NumBuffers);
+                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer * []>(NumBuffers);
                         Get().HSGetConstantBuffers(StartSlot, NumBuffers, tempBuffers.get());
 
                         std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
@@ -1139,7 +1144,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView*[]> tempViews = std::make_unique<ID3D11ShaderResourceView*[]>(NumViews);
+                        std::unique_ptr<ID3D11ShaderResourceView* []> tempViews = std::make_unique<ID3D11ShaderResourceView * []>(NumViews);
                         Get().DSGetShaderResources(StartSlot, NumViews, tempViews.get());
 
                         std::vector<Wrapper<ID3D11ShaderResourceView>> views(NumViews);
@@ -1172,7 +1177,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState*[]> tempSamplers = std::make_unique<ID3D11SamplerState*[]>(NumSamplers - StartSlot);
+                        std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState * []>(NumSamplers - StartSlot);
                         Get().DSGetSamplers(StartSlot, NumSamplers, tempSamplers.get());
 
                         std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers - StartSlot);
@@ -1188,7 +1193,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer*[]> tempBuffers = std::make_unique<ID3D11Buffer*[]>(NumBuffers);
+                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer * []>(NumBuffers);
                         Get().DSGetConstantBuffers(StartSlot, NumBuffers, tempBuffers.get());
 
                         std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);
@@ -1204,7 +1209,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumViews)
                     {
-                        std::unique_ptr<ID3D11ShaderResourceView*[]> tempViews = std::make_unique<ID3D11ShaderResourceView*[]>(NumViews);
+                        std::unique_ptr<ID3D11ShaderResourceView* []> tempViews = std::make_unique<ID3D11ShaderResourceView * []>(NumViews);
                         Get().CSGetShaderResources(StartSlot, NumViews, tempViews.get());
 
                         std::vector<Wrapper<ID3D11ShaderResourceView>> views(NumViews);
@@ -1220,7 +1225,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumViews)
                     {
-                        std::unique_ptr<ID3D11UnorderedAccessView* []> tempViews = std::make_unique<ID3D11UnorderedAccessView* []>(NumViews);
+                        std::unique_ptr<ID3D11UnorderedAccessView* []> tempViews = std::make_unique<ID3D11UnorderedAccessView * []>(NumViews);
                         Get().CSGetUnorderedAccessViews(StartSlot, NumViews, tempViews.get());
 
                         std::vector<Wrapper<ID3D11UnorderedAccessView>> views(NumViews);
@@ -1253,7 +1258,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumSamplers)
                     {
-                        std::unique_ptr<ID3D11SamplerState*[]> tempSamplers = std::make_unique<ID3D11SamplerState*[]>(NumSamplers - StartSlot);
+                        std::unique_ptr<ID3D11SamplerState* []> tempSamplers = std::make_unique<ID3D11SamplerState * []>(NumSamplers - StartSlot);
                         Get().CSGetSamplers(StartSlot, NumSamplers, tempSamplers.get());
 
                         std::vector<Wrapper<ID3D11SamplerState>> samplers(NumSamplers - StartSlot);
@@ -1269,7 +1274,7 @@ namespace TypedD3D::Internal
                         UINT StartSlot,
                         UINT NumBuffers)
                     {
-                        std::unique_ptr<ID3D11Buffer*[]> tempBuffers = std::make_unique<ID3D11Buffer*[]>(NumBuffers);
+                        std::unique_ptr<ID3D11Buffer* []> tempBuffers = std::make_unique<ID3D11Buffer * []>(NumBuffers);
                         Get().CSGetConstantBuffers(StartSlot, NumBuffers, tempBuffers.get());
 
                         std::vector<Wrapper<ID3D11Buffer>> buffers(NumBuffers);

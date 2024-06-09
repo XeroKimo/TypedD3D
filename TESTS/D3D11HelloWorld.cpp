@@ -1,8 +1,16 @@
-#include "TypedD3D11.h"
 #include <Windows.h>
 #include <tuple>
 #include <d3dcompiler.h>
-
+#include <wrl/client.h>
+#include <span>
+#include "source/Wrappers.h"
+#include <dxgi1_6.h>
+#include <d3d11_4.h>
+#include <memory>
+#include <cassert>
+#include "span_tuple.h"
+#include "expected.hpp"
+import TypedD3D11;
 import TypedDXGI;
 #undef CreateWindow
 namespace

@@ -1,5 +1,10 @@
-#pragma once
-#include "DeviceChild.h"
+module;
+#include "source/Wrappers.h"
+#include <concepts>
+#include <d3d11_4.h>
+export module TypedD3D11:Shaders;
+import :DeviceChild;
+import TypedD3D.Shared;
 
 namespace TypedD3D::Internal
 {

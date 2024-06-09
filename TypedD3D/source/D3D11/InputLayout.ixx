@@ -1,5 +1,8 @@
-#pragma once
-#include "DeviceChild.h"
+module;
+#include <d3d11_4.h>
+#include "source/Wrappers.h"
+export module TypedD3D11:InputLayout;
+import :DeviceChild;
 
 import TypedD3D.Shared;
 

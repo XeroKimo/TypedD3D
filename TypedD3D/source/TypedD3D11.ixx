@@ -1,0 +1,9 @@
+export module TypedD3D11;
+export import :DeviceChild;
+export import :Device;
+export import :DeviceContext;
+export import :InputLayout;
+export import :Resources;
+export import :ResourceViews;
+export import :States;
+export import :Shaders;
