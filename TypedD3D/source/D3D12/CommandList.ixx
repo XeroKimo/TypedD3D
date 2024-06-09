@@ -1,6 +1,5 @@
 module;
 #include "source/Internal/D3D12/Meta.h"
-#include "expected.hpp"
 #include "source/D3D12Wrappers.h"
 #include "span_tuple.h"
 #include <memory>

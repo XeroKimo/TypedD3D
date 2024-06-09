@@ -4,7 +4,6 @@ module;
 #include <d3d11_4.h>
 #include <span>
 
-#include "expected.hpp"
 #include <wrl/client.h>
 
 export module TypedD3D11:Device;
@@ -169,121 +168,121 @@ namespace TypedD3D::Internal
                     using derived_self = DerivedSelf;
 
                 public:
-                    tl::expected<Wrapper<ID3D11Buffer>, HRESULT> CreateBuffer(
+                    expected<Wrapper<ID3D11Buffer>, HRESULT> CreateBuffer(
                         const D3D11_BUFFER_DESC& pDesc,
                         const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
                     {
                         return UnknownObjectForwardFunction<ID3D11Buffer>(&value_type::CreateBuffer, Get(), &pDesc, optInitialData)
-                            .and_then([](auto resource) -> tl::expected<Wrapper<ID3D11Buffer>, HRESULT> { return Wrapper<ID3D11Buffer>(resource); });
+                            .and_then([](auto resource) -> expected<Wrapper<ID3D11Buffer>, HRESULT> { return Wrapper<ID3D11Buffer>(resource); });
                     }
 
-                    tl::expected<Wrapper<ID3D11Texture1D>, HRESULT> CreateTexture1D(
+                    expected<Wrapper<ID3D11Texture1D>, HRESULT> CreateTexture1D(
                         const D3D11_TEXTURE1D_DESC& pDesc,
                         const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
                     {
                         return UnknownObjectForwardFunction<ID3D11Texture1D>(&value_type::CreateTexture1D, Get(), &pDesc, optInitialData)
-                            .and_then([](auto resource) -> tl::expected<Wrapper<ID3D11Texture1D>, HRESULT> { return Wrapper<ID3D11Texture1D>(resource); });
+                            .and_then([](auto resource) -> expected<Wrapper<ID3D11Texture1D>, HRESULT> { return Wrapper<ID3D11Texture1D>(resource); });
                     }
 
-                    tl::expected<Wrapper<ID3D11Texture2D>, HRESULT> CreateTexture2D(
+                    expected<Wrapper<ID3D11Texture2D>, HRESULT> CreateTexture2D(
                         const D3D11_TEXTURE2D_DESC& pDesc,
                         const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
                     {
                         return UnknownObjectForwardFunction<ID3D11Texture2D>(&value_type::CreateTexture2D, Get(), &pDesc, optInitialData)
-                            .and_then([](auto resource) -> tl::expected<Wrapper<ID3D11Texture2D>, HRESULT> { return Wrapper<ID3D11Texture2D>(resource); });
+                            .and_then([](auto resource) -> expected<Wrapper<ID3D11Texture2D>, HRESULT> { return Wrapper<ID3D11Texture2D>(resource); });
                     }
 
-                    tl::expected<Wrapper<ID3D11Texture3D>, HRESULT> CreateTexture3D(
+                    expected<Wrapper<ID3D11Texture3D>, HRESULT> CreateTexture3D(
                         const D3D11_TEXTURE3D_DESC& pDesc,
                         const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
                     {
                         return UnknownObjectForwardFunction<ID3D11Texture3D>(&value_type::CreateTexture3D, Get(), &pDesc, optInitialData)
-                            .and_then([](auto resource) -> tl::expected<Wrapper<ID3D11Texture3D>, HRESULT> { return Wrapper<ID3D11Texture3D>(resource); });
+                            .and_then([](auto resource) -> expected<Wrapper<ID3D11Texture3D>, HRESULT> { return Wrapper<ID3D11Texture3D>(resource); });
                     }
 
-                    tl::expected<Wrapper<ID3D11ShaderResourceView>, HRESULT> CreateShaderResourceView(
+                    expected<Wrapper<ID3D11ShaderResourceView>, HRESULT> CreateShaderResourceView(
                         gsl::not_null<Wrapper<ID3D11Resource>> pResource,
                         const D3D11_SHADER_RESOURCE_VIEW_DESC* optDesc = nullptr)
                     {
                         return UnknownObjectForwardFunction<ID3D11ShaderResourceView>(&value_type::CreateShaderResourceView, Get(), pResource.get().Get(), optDesc)
-                            .and_then([](auto view) -> tl::expected<Wrapper<ID3D11ShaderResourceView>, HRESULT> { return Wrapper<ID3D11ShaderResourceView>(view); });
+                            .and_then([](auto view) -> expected<Wrapper<ID3D11ShaderResourceView>, HRESULT> { return Wrapper<ID3D11ShaderResourceView>(view); });
                     }
 
-                    tl::expected<Wrapper<ID3D11UnorderedAccessView>, HRESULT> CreateUnorderedAccessView(
+                    expected<Wrapper<ID3D11UnorderedAccessView>, HRESULT> CreateUnorderedAccessView(
                         gsl::not_null<Wrapper<ID3D11Resource>> pResource,
                         const D3D11_UNORDERED_ACCESS_VIEW_DESC* optDesc = nullptr)
                     {
                         return UnknownObjectForwardFunction<ID3D11UnorderedAccessView>(&value_type::CreateUnorderedAccessView, Get(), pResource.get().Get(), optDesc)
-                            .and_then([](auto view) -> tl::expected<Wrapper<ID3D11UnorderedAccessView>, HRESULT> { return Wrapper<ID3D11UnorderedAccessView>(view); });
+                            .and_then([](auto view) -> expected<Wrapper<ID3D11UnorderedAccessView>, HRESULT> { return Wrapper<ID3D11UnorderedAccessView>(view); });
                     }
 
-                    tl::expected<Wrapper<ID3D11RenderTargetView>, HRESULT> CreateRenderTargetView(
+                    expected<Wrapper<ID3D11RenderTargetView>, HRESULT> CreateRenderTargetView(
                         gsl::not_null<Wrapper<ID3D11Resource>> pResource,
                         const D3D11_RENDER_TARGET_VIEW_DESC* optDesc = nullptr)
                     {
                         return UnknownObjectForwardFunction<ID3D11RenderTargetView>(&value_type::CreateRenderTargetView, Get(), pResource.get().Get(), optDesc)
-                            .and_then([](auto view) -> tl::expected<Wrapper<ID3D11RenderTargetView>, HRESULT> { return Wrapper<ID3D11RenderTargetView>(view); });
+                            .and_then([](auto view) -> expected<Wrapper<ID3D11RenderTargetView>, HRESULT> { return Wrapper<ID3D11RenderTargetView>(view); });
                     }
 
-                    tl::expected<Wrapper<ID3D11DepthStencilView>, HRESULT> CreateDepthStencilView(
+                    expected<Wrapper<ID3D11DepthStencilView>, HRESULT> CreateDepthStencilView(
                         gsl::not_null<Wrapper<ID3D11Resource>> pResource,
                         const D3D11_DEPTH_STENCIL_VIEW_DESC* optDesc = nullptr)
                     {
                         return UnknownObjectForwardFunction<ID3D11DepthStencilView>(&value_type::CreateDepthStencilView, Get(), pResource.get().Get(), optDesc)
-                            .and_then([](auto view) -> tl::expected<Wrapper<ID3D11DepthStencilView>, HRESULT> { return Wrapper<ID3D11DepthStencilView>(view); });
+                            .and_then([](auto view) -> expected<Wrapper<ID3D11DepthStencilView>, HRESULT> { return Wrapper<ID3D11DepthStencilView>(view); });
                     }
 
-                    tl::expected<Wrapper<ID3D11InputLayout>, HRESULT> CreateInputLayout(
+                    expected<Wrapper<ID3D11InputLayout>, HRESULT> CreateInputLayout(
                         std::span<const D3D11_INPUT_ELEMENT_DESC> inputElementDescs,
                         ID3DBlob& pShaderBytecodeWithInputSignature)
                     {
                         return CreateInputLayout(inputElementDescs, pShaderBytecodeWithInputSignature.GetBufferPointer(), pShaderBytecodeWithInputSignature.GetBufferSize());
                     }
 
-                    tl::expected<Wrapper<ID3D11InputLayout>, HRESULT> CreateInputLayout(
+                    expected<Wrapper<ID3D11InputLayout>, HRESULT> CreateInputLayout(
                         std::span<const D3D11_INPUT_ELEMENT_DESC> inputElementDescs,
                         const void* pShaderBytecodeWithInputSignature,
                         SIZE_T BytecodeLength)
                     {
                         return UnknownObjectForwardFunction<ID3D11InputLayout>(&value_type::CreateInputLayout, Get(), inputElementDescs.data(), static_cast<UINT>(inputElementDescs.size()), pShaderBytecodeWithInputSignature, BytecodeLength)
-                            .and_then([](auto inputLayout) -> tl::expected<Wrapper<ID3D11InputLayout>, HRESULT> { return Wrapper<ID3D11InputLayout>(inputLayout); });
+                            .and_then([](auto inputLayout) -> expected<Wrapper<ID3D11InputLayout>, HRESULT> { return Wrapper<ID3D11InputLayout>(inputLayout); });
                     }
 
-                    tl::expected<Wrapper<ID3D11VertexShader>, HRESULT> CreateVertexShader(
+                    expected<Wrapper<ID3D11VertexShader>, HRESULT> CreateVertexShader(
                         ID3DBlob& pShaderBytecode,
                         ID3D11ClassLinkage* pClassLinkage)
                     {
                         return CreateVertexShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                     }
 
-                    tl::expected<Wrapper<ID3D11VertexShader>, HRESULT> CreateVertexShader(
+                    expected<Wrapper<ID3D11VertexShader>, HRESULT> CreateVertexShader(
                         const void* pShaderBytecode,
                         SIZE_T BytecodeLength,
                         ID3D11ClassLinkage* pClassLinkage)
                     {
                         using ShaderTy = Wrapper<ID3D11VertexShader>;
                         return UnknownObjectForwardFunction<ID3D11VertexShader>(&value_type::CreateVertexShader, Get(), pShaderBytecode, BytecodeLength, pClassLinkage)
-                            .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
+                            .and_then([](auto shader) -> expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
                     }
 
-                    tl::expected<Wrapper<ID3D11GeometryShader>, HRESULT> CreateGeometryShader(
+                    expected<Wrapper<ID3D11GeometryShader>, HRESULT> CreateGeometryShader(
                         ID3DBlob& pShaderBytecode,
                         ID3D11ClassLinkage* pClassLinkage)
                     {
                         return CreateGeometryShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                     }
 
-                    tl::expected<Wrapper<ID3D11GeometryShader>, HRESULT> CreateGeometryShader(
+                    expected<Wrapper<ID3D11GeometryShader>, HRESULT> CreateGeometryShader(
                         const void* pShaderBytecode,
                         SIZE_T BytecodeLength,
                         ID3D11ClassLinkage* pClassLinkage)
                     {
                         using ShaderTy = Wrapper<ID3D11GeometryShader>;
                         return UnknownObjectForwardFunction<ID3D11GeometryShader>(&value_type::CreateGeometryShader, Get(), pShaderBytecode, BytecodeLength, pClassLinkage)
-                            .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
+                            .and_then([](auto shader) -> expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
                     }
 
-                    tl::expected<Wrapper<ID3D11GeometryShader>, HRESULT> CreateGeometryShaderWithStreamOutput(
+                    expected<Wrapper<ID3D11GeometryShader>, HRESULT> CreateGeometryShaderWithStreamOutput(
                         ID3DBlob& pShaderBytecode,
                         std::span<const D3D11_SO_DECLARATION_ENTRY> pSODeclaration,
                         std::span<const UINT> pBufferStrides,
@@ -299,7 +298,7 @@ namespace TypedD3D::Internal
                             optClassLinkage);
                     }
 
-                    tl::expected<Wrapper<ID3D11GeometryShader>, HRESULT> CreateGeometryShaderWithStreamOutput(
+                    expected<Wrapper<ID3D11GeometryShader>, HRESULT> CreateGeometryShaderWithStreamOutput(
                         const void* pShaderBytecode,
                         SIZE_T BytecodeLength,
                         std::span<const D3D11_SO_DECLARATION_ENTRY> pSODeclaration,
@@ -319,134 +318,134 @@ namespace TypedD3D::Internal
                             pBufferStrides.size(),
                             RasterizedStream,
                             optClassLinkage)
-                            .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
+                            .and_then([](auto shader) -> expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
                     }
 
-                    tl::expected<Wrapper<ID3D11PixelShader>, HRESULT> CreatePixelShader(
+                    expected<Wrapper<ID3D11PixelShader>, HRESULT> CreatePixelShader(
                         ID3DBlob& pShaderBytecode,
                         ID3D11ClassLinkage* pClassLinkage)
                     {
                         return CreatePixelShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                     }
 
-                    tl::expected<Wrapper<ID3D11PixelShader>, HRESULT> CreatePixelShader(
+                    expected<Wrapper<ID3D11PixelShader>, HRESULT> CreatePixelShader(
                         const void* pShaderBytecode,
                         SIZE_T BytecodeLength,
                         ID3D11ClassLinkage* pClassLinkage)
                     {
                         using ShaderTy = Wrapper<ID3D11PixelShader>;
                         return UnknownObjectForwardFunction<ID3D11PixelShader>(&value_type::CreatePixelShader, Get(), pShaderBytecode, BytecodeLength, pClassLinkage)
-                            .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
+                            .and_then([](auto shader) -> expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
                     }
 
-                    tl::expected<Wrapper<ID3D11HullShader>, HRESULT> CreateHullShader(
+                    expected<Wrapper<ID3D11HullShader>, HRESULT> CreateHullShader(
                         ID3DBlob& pShaderBytecode,
                         ID3D11ClassLinkage* pClassLinkage)
                     {
                         return CreateHullShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                     }
 
-                    tl::expected<Wrapper<ID3D11HullShader>, HRESULT> CreateHullShader(
+                    expected<Wrapper<ID3D11HullShader>, HRESULT> CreateHullShader(
                         const void* pShaderBytecode,
                         SIZE_T BytecodeLength,
                         ID3D11ClassLinkage* pClassLinkage)
                     {
                         using ShaderTy = Wrapper<ID3D11HullShader>;
                         return UnknownObjectForwardFunction<ID3D11HullShader>(&value_type::CreateHullShader, Get(), pShaderBytecode, BytecodeLength, pClassLinkage)
-                            .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
+                            .and_then([](auto shader) -> expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
                     }
 
-                    tl::expected<Wrapper<ID3D11DomainShader>, HRESULT> CreateDomainShader(
+                    expected<Wrapper<ID3D11DomainShader>, HRESULT> CreateDomainShader(
                         ID3DBlob& pShaderBytecode,
                         ID3D11ClassLinkage* pClassLinkage)
                     {
                         return CreateDomainShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                     }
 
-                    tl::expected<Wrapper<ID3D11DomainShader>, HRESULT> CreateDomainShader(
+                    expected<Wrapper<ID3D11DomainShader>, HRESULT> CreateDomainShader(
                         const void* pShaderBytecode,
                         SIZE_T BytecodeLength,
                         ID3D11ClassLinkage* pClassLinkage)
                     {
                         using ShaderTy = Wrapper<ID3D11DomainShader>;
                         return UnknownObjectForwardFunction<ID3D11DomainShader>(&value_type::CreateDomainShader, Get(), pShaderBytecode, BytecodeLength, pClassLinkage)
-                            .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
+                            .and_then([](auto shader) -> expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
                     }
 
-                    tl::expected<Wrapper<ID3D11ComputeShader>, HRESULT> CreateComputeShader(
+                    expected<Wrapper<ID3D11ComputeShader>, HRESULT> CreateComputeShader(
                         ID3DBlob& pShaderBytecode,
                         ID3D11ClassLinkage* pClassLinkage)
                     {
                         return CreateComputeShader(pShaderBytecode.GetBufferPointer(), pShaderBytecode.GetBufferSize(), pClassLinkage);
                     }
 
-                    tl::expected<Wrapper<ID3D11ComputeShader>, HRESULT> CreateComputeShader(
+                    expected<Wrapper<ID3D11ComputeShader>, HRESULT> CreateComputeShader(
                         const void* pShaderBytecode,
                         SIZE_T BytecodeLength,
                         ID3D11ClassLinkage* pClassLinkage)
                     {
                         using ShaderTy = Wrapper<ID3D11ComputeShader>;
                         return UnknownObjectForwardFunction<ID3D11ComputeShader>(&value_type::CreateComputeShader, Get(), pShaderBytecode, BytecodeLength, pClassLinkage)
-                            .and_then([](auto shader) -> tl::expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
+                            .and_then([](auto shader) -> expected<ShaderTy, HRESULT> { return ShaderTy(shader); });
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D11ClassLinkage>, HRESULT> CreateClassLinkage()
+                    expected<Microsoft::WRL::ComPtr<ID3D11ClassLinkage>, HRESULT> CreateClassLinkage()
                     {
                         return UnknownObjectForwardFunction<ID3D11ClassLinkage>(&value_type::CreateClassLinkage, Get());
                     }
 
-                    tl::expected<Wrapper<ID3D11BlendState>, HRESULT> CreateBlendState(
+                    expected<Wrapper<ID3D11BlendState>, HRESULT> CreateBlendState(
                         const D3D11_BLEND_DESC& pBlendStateDesc)
                     {
                         return UnknownObjectForwardFunction<ID3D11BlendState>(&value_type::CreateBlendState, Get(), &pBlendStateDesc)
-                            .and_then([](auto stateObj) -> tl::expected<ID3D11BlendState, HRESULT> { return Wrapper<ID3D11BlendState>(stateObj); });
+                            .and_then([](auto stateObj) -> expected<ID3D11BlendState, HRESULT> { return Wrapper<ID3D11BlendState>(stateObj); });
                     }
 
-                    tl::expected<Wrapper<ID3D11DepthStencilState>, HRESULT> CreateDepthStencilState(
+                    expected<Wrapper<ID3D11DepthStencilState>, HRESULT> CreateDepthStencilState(
                         const D3D11_DEPTH_STENCIL_DESC& pDepthStencilDesc)
                     {
                         return UnknownObjectForwardFunction<ID3D11DepthStencilState>(&value_type::CreateDepthStencilState, Get(), &pDepthStencilDesc)
-                            .and_then([](auto stateObj) -> tl::expected<ID3D11DepthStencilState, HRESULT> { return Wrapper<ID3D11DepthStencilState>(stateObj); });
+                            .and_then([](auto stateObj) -> expected<ID3D11DepthStencilState, HRESULT> { return Wrapper<ID3D11DepthStencilState>(stateObj); });
                     }
 
-                    tl::expected<Wrapper<ID3D11RasterizerState>, HRESULT>  CreateRasterizerState(
+                    expected<Wrapper<ID3D11RasterizerState>, HRESULT>  CreateRasterizerState(
                         const D3D11_RASTERIZER_DESC& pRasterizerDesc)
                     {
                         return UnknownObjectForwardFunction<ID3D11RasterizerState>(&value_type::CreateRasterizerState, Get(), &pRasterizerDesc)
-                            .and_then([](auto stateObj) -> tl::expected<ID3D11RasterizerState, HRESULT> { return Wrapper<ID3D11RasterizerState>(stateObj); });
+                            .and_then([](auto stateObj) -> expected<ID3D11RasterizerState, HRESULT> { return Wrapper<ID3D11RasterizerState>(stateObj); });
                     }
 
-                    tl::expected<Wrapper<ID3D11SamplerState>, HRESULT> CreateSamplerState(
+                    expected<Wrapper<ID3D11SamplerState>, HRESULT> CreateSamplerState(
                         const D3D11_SAMPLER_DESC& pSamplerDesc)
                     {
                         return UnknownObjectForwardFunction<ID3D11SamplerState>(&value_type::CreateSamplerState, Get(), &pSamplerDesc)
-                            .and_then([](auto stateObj) -> tl::expected<ID3D11SamplerState, HRESULT> { return Wrapper<ID3D11SamplerState>(stateObj); });
+                            .and_then([](auto stateObj) -> expected<ID3D11SamplerState, HRESULT> { return Wrapper<ID3D11SamplerState>(stateObj); });
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D11Query>, HRESULT> CreateQuery(
+                    expected<Microsoft::WRL::ComPtr<ID3D11Query>, HRESULT> CreateQuery(
                         const D3D11_QUERY_DESC& pQueryDesc)
                     {
                         return UnknownObjectForwardFunction<ID3D11Query>(&value_type::CreateQuery, Get(), &pQueryDesc);
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D11Predicate>, HRESULT> CreatePredicate(
+                    expected<Microsoft::WRL::ComPtr<ID3D11Predicate>, HRESULT> CreatePredicate(
                         const D3D11_QUERY_DESC& pPredicateDesc)
                     {
                         return UnknownObjectForwardFunction<ID3D11Predicate>(&value_type::CreatePredicate, Get(), &pPredicateDesc);
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D11Counter>, HRESULT> CreateCounter(
+                    expected<Microsoft::WRL::ComPtr<ID3D11Counter>, HRESULT> CreateCounter(
                         const D3D11_COUNTER_DESC& pCounterDesc)
                     {
                         return UnknownObjectForwardFunction<ID3D11Counter>(&value_type::CreateCounter, Get(), &pCounterDesc);
                     }
 
                     template<std::derived_from<ID3D11DeviceContext> DeviceContextTy = ID3D11DeviceContext>
-                    tl::expected<Wrapper<DeviceContextTy>, HRESULT> CreateDeferredContext(
+                    expected<Wrapper<DeviceContextTy>, HRESULT> CreateDeferredContext(
                         UINT ContextFlags)
                     {
                         return UnknownObjectForwardFunction<DeviceContextTy>(&value_type::CreateDeferredContext, Get(), &ContextFlags)
-                            .and_then([](auto deviceContext) -> tl::expected<Wrapper<DeviceContextTy>, HRESULT> { return Wrapper<DeviceContextTy>(deviceContext); });
+                            .and_then([](auto deviceContext) -> expected<Wrapper<DeviceContextTy>, HRESULT> { return Wrapper<DeviceContextTy>(deviceContext); });
                     }
 
                       //TODO: Figure out how this works to update to a more modern API
@@ -458,7 +457,7 @@ namespace TypedD3D::Internal
                         return Get().OpenSharedResource(hResource, ReturnedInterface, ppResource);
                     }
 
-                    tl::expected<D3D11_FORMAT_SUPPORT, HRESULT> CheckFormatSupport(
+                    expected<D3D11_FORMAT_SUPPORT, HRESULT> CheckFormatSupport(
                         DXGI_FORMAT Format)
                     {
                         UINT FormatSupport;
@@ -663,13 +662,13 @@ namespace TypedD3D::D3D11
                 nullptr,
                 &tempDeviceContext);
                 FAILED(result))
-                return tl::expected<std::pair<Wrapper<DeviceTy>, Wrapper<DeviceContextTy>>, HRESULT>(tl::unexpected(result));
+                return expected<std::pair<Wrapper<DeviceTy>, Wrapper<DeviceContextTy>>, HRESULT>(tl::unexpected(result));
 
             std::pair<Wrapper<DeviceTy>, Wrapper<DeviceContextTy>> device;
             device.first = Wrapper<DeviceTy>(Cast<DeviceTy>(tempDevice));
             device.second = Wrapper<DeviceContextTy>(Cast<DeviceContextTy>(tempDeviceContext));
 
-            return tl::expected<std::pair<Wrapper<DeviceTy>, Wrapper<DeviceContextTy>>, HRESULT>(device);
+            return expected<std::pair<Wrapper<DeviceTy>, Wrapper<DeviceContextTy>>, HRESULT>(device);
         }
     }
 }

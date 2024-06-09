@@ -1,5 +1,4 @@
 module;
-#include "expected.hpp"
 #include "span_tuple.h"
 #include "gsl/pointers"
 #include "Constants.h"
@@ -146,7 +145,7 @@ namespace TypedD3D::Internal
                         Get().Draw(VertexCount, StartVertexLocation);
                     }
 
-                    tl::expected<D3D11_MAPPED_SUBRESOURCE, HRESULT> Map(
+                    expected<D3D11_MAPPED_SUBRESOURCE, HRESULT> Map(
                         gsl::not_null<Wrapper<ID3D11Resource>> pResource,
                         UINT Subresource,
                         D3D11_MAP MapType,
@@ -297,7 +296,7 @@ namespace TypedD3D::Internal
                         Get().End(&pAsync);
                     }
 
-                    tl::expected<void*, HRESULT> GetData(
+                    expected<void*, HRESULT> GetData(
                         ID3D11Asynchronous& pAsync,
                         UINT GetDataFlags)
                     {
@@ -1306,7 +1305,7 @@ namespace TypedD3D::Internal
                         return Get().GetContextFlags();
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D11CommandList>, HRESULT> FinishCommandList(BOOL RestoreDeferredContextState)
+                    expected<Microsoft::WRL::ComPtr<ID3D11CommandList>, HRESULT> FinishCommandList(BOOL RestoreDeferredContextState)
                     {
                         Microsoft::WRL::ComPtr<ID3D11CommandList> commandList;
 

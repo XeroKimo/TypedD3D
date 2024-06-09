@@ -1,9 +1,8 @@
 module;
 
 #include "source/Wrappers.h"
-#include "expected.hpp"
 #include <dxgi1_6.h>
-#include "expected.hpp"
+#include "MyExpected.h"
 #include <wrl/client.h>
 
 export module TypedDXGI:Adapter;
@@ -40,7 +39,7 @@ namespace TypedD3D::Internal
                     using derived_self = DerivedSelf;
 
                 public:
-                    tl::expected<Microsoft::WRL::ComPtr<IDXGIOutput>, HRESULT> EnumOutputs(UINT Output)
+                    expected<Microsoft::WRL::ComPtr<IDXGIOutput>, HRESULT> EnumOutputs(UINT Output)
                     {
                         return UnknownObjectForwardFunction<IDXGIOutput>(&value_type::EnumOutputs, Get(), Output);
                     }

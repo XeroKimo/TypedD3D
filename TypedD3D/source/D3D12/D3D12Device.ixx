@@ -1,13 +1,11 @@
 module;
 
 #include "source/Helpers/D3D12Helpers.h"
-#include "expected.hpp"
 #include "source/Internal/D3D12/Meta.h"
 #include "source/D3D12Wrappers.h"
 
 #include "span_tuple.h"
 
-#include "expected.hpp"
 #include <d3d12.h>
 #include <wrl/client.h>
 
@@ -65,7 +63,7 @@ namespace TypedD3D::Internal
                     }
 
                     template<D3D12_COMMAND_LIST_TYPE Type>
-                    tl::expected<CommandQueue_t<Type>, HRESULT> CreateCommandQueue(
+                    expected<CommandQueue_t<Type>, HRESULT> CreateCommandQueue(
                         D3D12_COMMAND_QUEUE_PRIORITY priority,
                         D3D12_COMMAND_QUEUE_FLAGS flags,
                         UINT nodeMask)
@@ -81,45 +79,45 @@ namespace TypedD3D::Internal
                         };
 
                         return Helpers::D3D12::CreateCommandQueue(Get(), desc)
-                            .and_then([](auto commandQueue) -> tl::expected<queue_type, HRESULT> { return queue_type(commandQueue); });
+                            .and_then([](auto commandQueue) -> expected<queue_type, HRESULT> { return queue_type(commandQueue); });
                     }
 
                     template<D3D12_COMMAND_LIST_TYPE Type>
-                    tl::expected<CommandAllocator_t<Type>, HRESULT> CreateCommandAllocator()
+                    expected<CommandAllocator_t<Type>, HRESULT> CreateCommandAllocator()
                     {
                         using allocator_type = TypedD3D::D3D12::CommandAllocator_t<Type>;
 
                         return Helpers::D3D12::CreateCommandAllocator(Get(), Type)
-                            .and_then([](auto commandAllocator) -> tl::expected<allocator_type, HRESULT> { return allocator_type(commandAllocator); });
+                            .and_then([](auto commandAllocator) -> expected<allocator_type, HRESULT> { return allocator_type(commandAllocator); });
                     }
 
-                    tl::expected<Graphics<ID3D12PipelineState>, HRESULT> CreateGraphicsPipelineState(
+                    expected<Graphics<ID3D12PipelineState>, HRESULT> CreateGraphicsPipelineState(
                         const D3D12_GRAPHICS_PIPELINE_STATE_DESC& pDesc)
                     {
                         return Helpers::D3D12::CreateGraphicsPipelineState(Get(), pDesc)
-                            .and_then([](auto pipelineState) -> tl::expected<Graphics<ID3D12PipelineState>, HRESULT> { return Graphics<ID3D12PipelineState>(pipelineState); });
+                            .and_then([](auto pipelineState) -> expected<Graphics<ID3D12PipelineState>, HRESULT> { return Graphics<ID3D12PipelineState>(pipelineState); });
                     }
 
-                    tl::expected<Compute<ID3D12PipelineState>, HRESULT> CreateComputePipelineState(
+                    expected<Compute<ID3D12PipelineState>, HRESULT> CreateComputePipelineState(
                         const D3D12_COMPUTE_PIPELINE_STATE_DESC& pDesc)
                     {
                         return Helpers::D3D12::CreateComputePipelineState(Get(), pDesc)
-                            .and_then([](auto pipelineState) -> tl::expected<Graphics<ID3D12PipelineState>, HRESULT> { return Compute<ID3D12PipelineState>(pipelineState); });
+                            .and_then([](auto pipelineState) -> expected<Graphics<ID3D12PipelineState>, HRESULT> { return Compute<ID3D12PipelineState>(pipelineState); });
                     }
 
                     template<D3D12_COMMAND_LIST_TYPE Type>
-                    tl::expected<CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList(
+                    expected<CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList(
                         CommandAllocator_t<Type> pCommandAllocator,
                         UINT nodeMask = 0,
                         ID3D12PipelineState* optInitialState = nullptr)
                     {
                         using command_list_type = TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, Type>;
                         return Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(Get(), Type, *pCommandAllocator.Get(), nodeMask, optInitialState)
-                            .and_then([](auto commandList)->tl::expected<command_list_type, HRESULT> { return command_list_type(commandList); });
+                            .and_then([](auto commandList)->expected<command_list_type, HRESULT> { return command_list_type(commandList); });
                     }
 
                     template<D3D12_FEATURE Feature>
-                    tl::expected<typename Meta::DeviceFeatureToType<Feature>::type, HRESULT> CheckFeatureSupport()
+                    expected<typename Meta::DeviceFeatureToType<Feature>::type, HRESULT> CheckFeatureSupport()
                     {
                         using feature_t = typename Meta::DeviceFeatureToType<Feature>::type;
                         feature_t feature{};
@@ -133,7 +131,7 @@ namespace TypedD3D::Internal
                     }
 
                     template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlag>
-                    tl::expected<DescriptorHeap_t<Type, HeapFlag>, HRESULT> CreateDescriptorHeap(
+                    expected<DescriptorHeap_t<Type, HeapFlag>, HRESULT> CreateDescriptorHeap(
                         UINT NumDescriptors,
                         UINT NodeMask)
                     {
@@ -148,7 +146,7 @@ namespace TypedD3D::Internal
                         };
 
                         return Helpers::D3D12::CreateDescriptorHeap(Get(), desc)
-                            .and_then([](auto descriptorHeap) -> tl::expected<DescriptorHeap_t, HRESULT> { return DescriptorHeap_t(descriptorHeap); });
+                            .and_then([](auto descriptorHeap) -> expected<DescriptorHeap_t, HRESULT> { return DescriptorHeap_t(descriptorHeap); });
                     }
 
                     UINT GetDescriptorHandleIncrementSize(
@@ -157,7 +155,7 @@ namespace TypedD3D::Internal
                         return Get().GetDescriptorHandleIncrementSize(DescriptorHeapType);
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12RootSignature>, HRESULT> CreateRootSignature(
+                    expected<Microsoft::WRL::ComPtr<ID3D12RootSignature>, HRESULT> CreateRootSignature(
                         UINT nodeMask,
                         const void* pBlobWithRootSignature,
                         SIZE_T blobLengthInBytes)
@@ -285,7 +283,7 @@ namespace TypedD3D::Internal
                         return Get().GetCustomHeapProperties(nodeMask, heapType);
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateCommittedResource(
+                    expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateCommittedResource(
                         const D3D12_HEAP_PROPERTIES& pHeapProperties,
                         D3D12_HEAP_FLAGS HeapFlags,
                         const D3D12_RESOURCE_DESC& pDesc,
@@ -301,7 +299,7 @@ namespace TypedD3D::Internal
                             optOptimizedClearValue);
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12Heap>, HRESULT> CreateHeap(
+                    expected<Microsoft::WRL::ComPtr<ID3D12Heap>, HRESULT> CreateHeap(
                         const D3D12_HEAP_DESC& pDesc)
                     {
                         return Helpers::D3D12::CreateHeap(
@@ -309,7 +307,7 @@ namespace TypedD3D::Internal
                             pDesc);
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreatePlacedResource(
+                    expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreatePlacedResource(
                         ID3D12Heap& pHeap,
                         UINT64 HeapOffset,
                         const D3D12_RESOURCE_DESC& pDesc,
@@ -325,7 +323,7 @@ namespace TypedD3D::Internal
                             optOptimizedClearValue);
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateReservedResource(
+                    expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateReservedResource(
                         const D3D12_RESOURCE_DESC& pDesc,
                         D3D12_RESOURCE_STATES InitialState,
                         const D3D12_CLEAR_VALUE* optOptimizedClearValue)
@@ -337,7 +335,7 @@ namespace TypedD3D::Internal
                             optOptimizedClearValue);
                     }
 
-                    tl::expected<HANDLE, HRESULT> CreateSharedHandle(
+                    expected<HANDLE, HRESULT> CreateSharedHandle(
                         ID3D12DeviceChild& pObject,
                         const SECURITY_ATTRIBUTES* optAttributes,
                         DWORD Access,
@@ -370,7 +368,7 @@ namespace TypedD3D::Internal
                             ppvObj);
                     }
 
-                    tl::expected<HANDLE, HRESULT> OpenSharedHandleByName(
+                    expected<HANDLE, HRESULT> OpenSharedHandleByName(
                         LPCWSTR Name,
                         DWORD Access)
                     {
@@ -403,7 +401,7 @@ namespace TypedD3D::Internal
                             objects.data());
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12Fence>, HRESULT> CreateFence(
+                    expected<Microsoft::WRL::ComPtr<ID3D12Fence>, HRESULT> CreateFence(
                         UINT64 InitialValue,
                         D3D12_FENCE_FLAGS Flags)
                     {
@@ -436,7 +434,7 @@ namespace TypedD3D::Internal
                             optOutTotalBytes);
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12QueryHeap>, HRESULT> CreateQueryHeap(
+                    expected<Microsoft::WRL::ComPtr<ID3D12QueryHeap>, HRESULT> CreateQueryHeap(
                         const D3D12_QUERY_HEAP_DESC& pDesc)
                     {
                         return Helpers::D3D12::CreateQueryHeap(Get(), pDesc);
@@ -448,7 +446,7 @@ namespace TypedD3D::Internal
                         return Get().SetStablePowerState(Enable);
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12CommandSignature>, HRESULT> CreateCommandSignature(
+                    expected<Microsoft::WRL::ComPtr<ID3D12CommandSignature>, HRESULT> CreateCommandSignature(
                         const D3D12_COMMAND_SIGNATURE_DESC& pDesc,
                         ID3D12RootSignature* optRootSignature)
                     {
@@ -501,7 +499,7 @@ namespace TypedD3D::Internal
                     using derived_self = DerivedSelf;
 
                 public:
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12PipelineLibrary>, HRESULT> CreatePipelineLibrary(
+                    expected<Microsoft::WRL::ComPtr<ID3D12PipelineLibrary>, HRESULT> CreatePipelineLibrary(
                         const void* pLibraryBlob,
                         SIZE_T BlobLength)
                     {
@@ -560,7 +558,7 @@ namespace TypedD3D::Internal
                     using derived_self = DerivedSelf;
 
                 public:
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12PipelineState>, HRESULT> CreatePipelineState(
+                    expected<Microsoft::WRL::ComPtr<ID3D12PipelineState>, HRESULT> CreatePipelineState(
                         const D3D12_PIPELINE_STATE_STREAM_DESC pDesc)
                     {
                         return IIDToObjectForwardFunction<ID3D12PipelineState>(&ID3D12Device2::CreatePipelineState, Get(), &pDesc);
@@ -588,7 +586,7 @@ namespace TypedD3D::Internal
                     using derived_self = DerivedSelf;
 
                 public:
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12Heap>, HRESULT> OpenExistingHeapFromAddress(
+                    expected<Microsoft::WRL::ComPtr<ID3D12Heap>, HRESULT> OpenExistingHeapFromAddress(
                         const void* pAddress)
                     {
                         return IIDToObjectForwardFunction<ID3D12Heap>(&ID3D12Device3::OpenExistingHeapFromAddress, Get(), pAddress);
@@ -636,11 +634,11 @@ namespace TypedD3D::Internal
 
                 public:
                     template<D3D12_COMMAND_LIST_TYPE Type>
-                    tl::expected<TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList1(
+                    expected<TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList1(
                         UINT nodeMask,
                         D3D12_COMMAND_LIST_FLAGS flags)
                     {
-                        tl::expected<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>, HRESULT> cl = Helpers::D3D12::CreateCommandList(Get(), Type, flags, nodeMask);
+                        expected<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>, HRESULT> cl = Helpers::D3D12::CreateCommandList(Get(), Type, flags, nodeMask);
 
                         if(!cl.has_value())
                             return tl::unexpected(cl.error());
@@ -648,13 +646,13 @@ namespace TypedD3D::Internal
                         return TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, Type>(cl.value());
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12ProtectedResourceSession>, HRESULT> CreateProtectedResourceSession(
+                    expected<Microsoft::WRL::ComPtr<ID3D12ProtectedResourceSession>, HRESULT> CreateProtectedResourceSession(
                         const D3D12_PROTECTED_RESOURCE_SESSION_DESC& pDesc)
                     {
                         return IIDToObjectForwardFunction<ID3D12ProtectedResourceSession>(&ID3D12Device4::CreateProtectedResourceSession, Get(), &pDesc);
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateCommittedResource1(
+                    expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateCommittedResource1(
                         const D3D12_HEAP_PROPERTIES& pHeapProperties,
                         D3D12_HEAP_FLAGS HeapFlags,
                         const D3D12_RESOURCE_DESC& pDesc,
@@ -673,7 +671,7 @@ namespace TypedD3D::Internal
                             pProtectedSession);
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12Heap>, HRESULT> CreateHeap1(
+                    expected<Microsoft::WRL::ComPtr<ID3D12Heap>, HRESULT> CreateHeap1(
                         const D3D12_HEAP_DESC& pDesc,
                         ID3D12ProtectedResourceSession* pProtectedSession)
                     {
@@ -684,7 +682,7 @@ namespace TypedD3D::Internal
                             pProtectedSession);
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateReservedResource1(
+                    expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateReservedResource1(
                         const D3D12_RESOURCE_DESC& pDesc,
                         D3D12_RESOURCE_STATES InitialState,
                         const D3D12_CLEAR_VALUE* pOptimizedClearValue,
@@ -751,7 +749,7 @@ namespace TypedD3D::Internal
                         return pNumMetaCommands;
                     }
 
-                    tl::expected<std::vector<D3D12_META_COMMAND_DESC>, HRESULT> EnumerateMetaCommands(
+                    expected<std::vector<D3D12_META_COMMAND_DESC>, HRESULT> EnumerateMetaCommands(
                         UINT pNumMetaCommands)
                     {
                         std::vector<D3D12_META_COMMAND_DESC> pDescs(pNumMetaCommands);
@@ -770,7 +768,7 @@ namespace TypedD3D::Internal
                         return pNumMetaCommandParams;
                     }
 
-                    tl::expected<TypedD3D::D3D12::MetaCommandParameterInfo, HRESULT> STDMETHODCALLTYPE EnumerateMetaCommandParameters(
+                    expected<TypedD3D::D3D12::MetaCommandParameterInfo, HRESULT> STDMETHODCALLTYPE EnumerateMetaCommandParameters(
                         _In_  REFGUID CommandId,
                         _In_  D3D12_META_COMMAND_PARAMETER_STAGE Stage,
                         UINT parameterCount)
@@ -792,7 +790,7 @@ namespace TypedD3D::Internal
                         return info;
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12MetaCommand>, HRESULT> CreateMetaCommand(
+                    expected<Microsoft::WRL::ComPtr<ID3D12MetaCommand>, HRESULT> CreateMetaCommand(
                         REFGUID CommandId,
                         UINT NodeMask,
                         const void* pCreationParametersData,
@@ -808,7 +806,7 @@ namespace TypedD3D::Internal
                     }
 
                     template<class CreationParamStruct>
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12MetaCommand>, HRESULT> CreateMetaCommand(
+                    expected<Microsoft::WRL::ComPtr<ID3D12MetaCommand>, HRESULT> CreateMetaCommand(
                         REFGUID CommandId,
                         UINT NodeMask,
                         const CreationParamStruct& pCreationParametersData)
@@ -816,14 +814,14 @@ namespace TypedD3D::Internal
                         return CreateMetaCommand(CommandId, NodeMask, &pCreationParametersData, sizeof(CreationParamStruct));
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12MetaCommand>, HRESULT> CreateMetaCommand(
+                    expected<Microsoft::WRL::ComPtr<ID3D12MetaCommand>, HRESULT> CreateMetaCommand(
                         REFGUID CommandId,
                         UINT NodeMask)
                     {
                         return CreateMetaCommand(CommandId, NodeMask, nullptr, 0);
                     }
 
-                    tl::expected<Microsoft::WRL::ComPtr<ID3D12StateObject>, HRESULT> CreateStateObject(
+                    expected<Microsoft::WRL::ComPtr<ID3D12StateObject>, HRESULT> CreateStateObject(
                         const D3D12_STATE_OBJECT_DESC& pDesc)
                     {
                         return IIDToObjectForwardFunction<ID3D12StateObject>(
@@ -892,12 +890,12 @@ namespace TypedD3D::D3D12
         if constexpr(std::is_base_of_v<ID3D12Device, DeviceTy>)
         {
             return Helpers::D3D12::CreateDevice<DeviceTy>(minimumFeatureLevel, optAdapter)
-                .and_then([](auto device) -> tl::expected<Device_t<DeviceTy>, HRESULT> { return Device_t<DeviceTy>(device); });
+                .and_then([](auto device) -> expected<Device_t<DeviceTy>, HRESULT> { return Device_t<DeviceTy>(device); });
         }
         else
         {
             return Helpers::D3D12::CreateDevice<typename DeviceTy::value_type>(minimumFeatureLevel, optAdapter)
-                .and_then([](auto device) -> tl::expected<DeviceTy, HRESULT> { return DeviceTy(device); });
+                .and_then([](auto device) -> expected<DeviceTy, HRESULT> { return DeviceTy(device); });
         }
     }
 }

@@ -1,6 +1,5 @@
 module;
 
-#include "expected.hpp"
 #include <d3d12.h>
 #include "source/D3D12Wrappers.h"
 

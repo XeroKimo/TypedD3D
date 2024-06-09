@@ -2,7 +2,6 @@ module;
 #include "source/Wrappers.h"
 #include "source/D3D12Wrappers.h"
 #include "source/Internal/d3dConcepts.h"
-#include "expected.hpp"
 #include <memory>
 #include <dxgi1_6.h>
 #include <span>
@@ -46,12 +45,12 @@ namespace TypedD3D::Internal
                     }
 
                     template<Resource Ty>
-                    tl::expected<Wrapper<Ty>, HRESULT> GetBuffer(UINT buffer)
+                    expected<Wrapper<Ty>, HRESULT> GetBuffer(UINT buffer)
                     {
-                        tl::expected<Microsoft::WRL::ComPtr<Ty>, HRESULT> resource = IIDToObjectForwardFunction<Ty>(&value_type::GetBuffer, Get(), buffer);
+                        expected<Microsoft::WRL::ComPtr<Ty>, HRESULT> resource = IIDToObjectForwardFunction<Ty>(&value_type::GetBuffer, Get(), buffer);
 
                         if(!resource.has_value())
-                            return tl::unexpected(resource.error());
+                            return unexpected(resource.error());
 
                         return Wrapper<Ty>(resource.value());
                     }
@@ -175,7 +174,7 @@ namespace TypedD3D::Internal
                         return Get().SetBackgroundColor(&pColor);
                     }
 
-                    tl::expected<DXGI_RGBA, HRESULT> GetBackgroundColor(DXGI_RGBA* pColor)
+                    expected<DXGI_RGBA, HRESULT> GetBackgroundColor(DXGI_RGBA* pColor)
                     {
                         DXGI_RGBA color;
                         HRESULT result = Get().GetBackgroundColor(&color);
@@ -189,7 +188,7 @@ namespace TypedD3D::Internal
                         return Get().SetRotation(Rotation);
                     }
 
-                    tl::expected<DXGI_MODE_ROTATION, HRESULT> GetRotation()
+                    expected<DXGI_MODE_ROTATION, HRESULT> GetRotation()
                     {
                         DXGI_MODE_ROTATION rotation;
                         HRESULT result = Get().GetRotation(rotation);
@@ -224,7 +223,7 @@ namespace TypedD3D::Internal
                         return Get().SetSourceSize(Width, Height);
                     }
 
-                    tl::expected<std::pair<UINT, UINT>, HRESULT> GetSourceSize()
+                    expected<std::pair<UINT, UINT>, HRESULT> GetSourceSize()
                     {
                         std::pair<UINT, UINT> size;
                         HRESULT result = Get().GetSourceSize(&size.first, &size.second);
@@ -238,7 +237,7 @@ namespace TypedD3D::Internal
                         return Get().SetMaximumFrameLatency(&MaxLatency);
                     }
 
-                    tl::expected<UINT, HRESULT> STDMETHODCALLTYPE GetMaximumFrameLatency()
+                    expected<UINT, HRESULT> STDMETHODCALLTYPE GetMaximumFrameLatency()
                     {
                         UINT latency;
                         HRESULT result = Get().GetMaximumFrameLatency(&latency);
@@ -257,7 +256,7 @@ namespace TypedD3D::Internal
                         return Get().SetMatrixTransform(&pMatrix);
                     }
 
-                    tl::expected<DXGI_MATRIX_3X2_F, HRESULT> STDMETHODCALLTYPE GetMatrixTransform()
+                    expected<DXGI_MATRIX_3X2_F, HRESULT> STDMETHODCALLTYPE GetMatrixTransform()
                     {
                         DXGI_MATRIX_3X2_F matrix;
                         HRESULT result = Get().GetMatrixTransform(&matrix);

@@ -1,7 +1,7 @@
 module;
 
 #include "source/D3D12Wrappers.h"
-#include "expected.hpp"
+#include <utility>
 #include <d3d12.h>
 #include <wrl/client.h>
 #include <assert.h>
@@ -39,7 +39,7 @@ namespace TypedD3D
             using derived_self = DerivedSelf;
 
         public:
-            tl::expected<std::byte*, HRESULT> Map(UINT Subresource, const D3D12_RANGE* optReadRange)
+            expected<std::byte*, HRESULT> Map(UINT Subresource, const D3D12_RANGE* optReadRange)
             {
                 void* dataPtr;
 
