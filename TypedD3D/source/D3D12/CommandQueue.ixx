@@ -1,11 +1,16 @@
-#pragma once
-#include "CommandList.h"
+module;
+
+#include "CommandAllocator.h"
 #include "source/D3D12Wrappers.h"
+#include "DescriptorHeap.h"
 #include <memory>
 #include <array>
 #include <span>
 
-import TypedD3D12;
+export module TypedD3D12:CommandQueue;
+import :CommandList;
+import TypedD3D.Shared;
+
 namespace TypedD3D::D3D12
 {
     struct ClockCalibrationData
@@ -19,7 +24,7 @@ namespace TypedD3D::Internal
 {
     namespace D3D12
     {
-        template<D3D12_COMMAND_LIST_TYPE Type>
+        export template<D3D12_COMMAND_LIST_TYPE Type>
         using CommandQueue_t = IUnknownWrapper<ID3D12CommandQueue, Type>;
 
         namespace CommandQueue
@@ -227,14 +232,14 @@ namespace TypedD3D
 
 namespace TypedD3D::D3D12
 {
-    template<D3D12_COMMAND_LIST_TYPE Type>
+    export template<D3D12_COMMAND_LIST_TYPE Type>
     using CommandQueue_t = Internal::D3D12::CommandQueue_t<Type>;
 
     namespace CommandQueue
     {
-        using Direct = CommandQueue_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
-        using Bundle = CommandQueue_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-        using Compute = CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-        using Copy = CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COPY>;
+        export using Direct = CommandQueue_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
+        export using Bundle = CommandQueue_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+        export using Compute = CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+        export using Copy = CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COPY>;
     }
 }

@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\D3D12\CommandList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TypedD3D12.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -34,9 +31,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\Internal\D3D12\Meta.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\D3D12\CommandQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\D3D12\PipelineState.h">
@@ -126,6 +120,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\D3D12\CommandList.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D12\CommandQueue.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
