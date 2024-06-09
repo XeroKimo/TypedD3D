@@ -33,12 +33,6 @@
     <ClInclude Include="source\Internal\D3D12\Meta.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\D3D12\PipelineState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\D3D12\DescriptorHeap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="d3dx12.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -58,9 +52,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\DXGI\Adapter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\D3D12\Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\D3D11\Device.h">
@@ -123,6 +114,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\D3D12\CommandAllocator.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D12\DescriptorHeap.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D12\PipelineState.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D12\Resource.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

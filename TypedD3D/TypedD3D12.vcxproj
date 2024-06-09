@@ -29,14 +29,11 @@
     <ClInclude Include="source\D3D11\Shaders.h" />
     <ClInclude Include="source\D3D11\States.h" />
     <ClInclude Include="source\D3D12Wrappers.h" />
-    <ClInclude Include="source\D3D12\Resource.h" />
     <ClInclude Include="source\DXGI\Adapter.h" />
     <ClInclude Include="source\DXGI\Factory.h" />
     <ClInclude Include="source\DXGI\SwapChain.h" />
     <ClInclude Include="expected.hpp" />
-    <ClInclude Include="source\D3D12\DescriptorHeap.h" />
     <ClInclude Include="source\Internal\D3D12\Meta.h" />
-    <ClInclude Include="source\D3D12\PipelineState.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="source\Helpers\CommonHelpers.h" />
     <ClInclude Include="source\Helpers\D3D12Helpers.h" />
@@ -53,6 +50,9 @@
     <ClCompile Include="source\D3D12\CommandAllocator.ixx" />
     <ClCompile Include="source\D3D12\CommandList.ixx" />
     <ClCompile Include="source\D3D12\CommandQueue.ixx" />
+    <ClCompile Include="source\D3D12\DescriptorHeap.ixx" />
+    <ClCompile Include="source\D3D12\Resource.ixx" />
+    <ClCompile Include="source\D3D12\PipelineState.ixx" />
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp" />
     <ClCompile Include="source\Shared.ixx" />
     <ClCompile Include="source\TypedD3D12.ixx" />

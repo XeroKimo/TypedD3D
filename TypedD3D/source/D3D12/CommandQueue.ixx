@@ -1,7 +1,6 @@
 module;
 
 #include "source/D3D12Wrappers.h"
-#include "DescriptorHeap.h"
 #include <memory>
 #include <array>
 #include <span>

@@ -1,5 +1,4 @@
 module;
-#include "DescriptorHeap.h"
 #include "source/Internal/D3D12/Meta.h"
 #include "expected.hpp"
 #include "source/D3D12Wrappers.h"
@@ -17,6 +16,7 @@ module;
 
 export module TypedD3D12:CommandList;
 import :CommandAllocator;
+import :DescriptorHeap;
 import TypedD3D.Shared;
 
 

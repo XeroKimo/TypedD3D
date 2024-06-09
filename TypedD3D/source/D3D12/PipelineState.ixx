@@ -1,6 +1,10 @@
-#pragma once
+module;
+
 #include "expected.hpp"
 #include <d3d12.h>
+#include "source/D3D12Wrappers.h"
+
+export module TypedD3D12:PipelineState;
 
 import TypedD3D.Shared;
 namespace TypedD3D::D3D12
@@ -78,12 +82,12 @@ namespace TypedD3D::Internal
 
 namespace TypedD3D::D3D12
 {
-    template<PipelineTypeTag Ty>
+    export template<PipelineTypeTag Ty>
     using PipelineState_t = Internal::D3D12::PipelineState_t<Ty>;
 
     namespace PipelineState
     {
-        using Graphics = PipelineState_t<D3D12_GRAPHICS_PIPELINE_STATE_DESC>;
-        using Compute = PipelineState_t<D3D12_COMPUTE_PIPELINE_STATE_DESC>;
+        export using Graphics = PipelineState_t<D3D12_GRAPHICS_PIPELINE_STATE_DESC>;
+        export using Compute = PipelineState_t<D3D12_COMPUTE_PIPELINE_STATE_DESC>;
     }
 }

@@ -1,17 +1,20 @@
-#pragma once
+module;
 
 #include "source/D3D12Wrappers.h"
+#include "expected.hpp"
 #include <d3d12.h>
 #include <wrl/client.h>
 #include <assert.h>
 #include <cstddef>
+
+export module TypedD3D12:Resource;
 import TypedD3D.Shared;
 
 namespace TypedD3D::Internal
 {
     namespace D3D12
     {
-        using Resource_t = IUnknownWrapper<ID3D12Resource>;
+        export using Resource_t = IUnknownWrapper<ID3D12Resource>;
         namespace Resource
         {
         }
@@ -91,5 +94,5 @@ namespace TypedD3D
 
 namespace TypedD3D::D3D12
 {
-    using Resource = Internal::D3D12::Resource_t;
+    export using Resource = Internal::D3D12::Resource_t;
 }
