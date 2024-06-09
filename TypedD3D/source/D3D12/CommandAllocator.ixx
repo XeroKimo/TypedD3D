@@ -1,16 +1,18 @@
-#pragma once
+module;
 
 #include "source/D3D12Wrappers.h"
 #include <d3d12.h>
 #include <wrl/client.h>
 #include <assert.h>
+
+export module TypedD3D12:CommandAllocator;
 import TypedD3D.Shared;
 
 namespace TypedD3D::Internal
 {
     namespace D3D12
     {
-        template<D3D12_COMMAND_LIST_TYPE Type>
+        export template<D3D12_COMMAND_LIST_TYPE Type>
         using CommandAllocator_t = IUnknownWrapper<ID3D12CommandAllocator, Type>;
 
         namespace CommandAllocator
@@ -85,14 +87,14 @@ namespace TypedD3D
 
 namespace TypedD3D::D3D12
 {
-    template<D3D12_COMMAND_LIST_TYPE Type>
+    export template<D3D12_COMMAND_LIST_TYPE Type>
     using CommandAllocator_t = TypedD3D::Internal::D3D12::CommandAllocator_t<Type>;
 
     namespace CommandAllocator
     {
-        using Direct = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
-        using Bundle = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-        using Compute = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-        using Copy = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_COPY>;
+        export using Direct = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
+        export using Bundle = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+        export using Compute = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+        export using Copy = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_COPY>;
     }
 }

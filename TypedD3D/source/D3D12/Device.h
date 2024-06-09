@@ -3,7 +3,6 @@
 #include "expected.hpp"
 #include "source/Internal/D3D12/Meta.h"
 #include "source/D3D12Wrappers.h"
-#include "CommandAllocator.h"
 #include "PipelineState.h"
 #include "DescriptorHeap.h"
 #include "span_tuple.h"

@@ -1,5 +1,4 @@
 module;
-#include "CommandAllocator.h"
 #include "DescriptorHeap.h"
 #include "source/Internal/D3D12/Meta.h"
 #include "expected.hpp"
@@ -17,6 +16,7 @@ module;
 #pragma warning (disable : 4584)
 
 export module TypedD3D12:CommandList;
+import :CommandAllocator;
 import TypedD3D.Shared;
 
 

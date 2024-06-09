@@ -1,6 +1,5 @@
 module;
 
-#include "CommandAllocator.h"
 #include "source/D3D12Wrappers.h"
 #include "DescriptorHeap.h"
 #include <memory>
@@ -9,6 +8,7 @@ module;
 
 export module TypedD3D12:CommandQueue;
 import :CommandList;
+import :CommandAllocator;
 import TypedD3D.Shared;
 
 namespace TypedD3D::D3D12
