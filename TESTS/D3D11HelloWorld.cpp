@@ -3,7 +3,6 @@
 #include <d3dcompiler.h>
 #include <wrl/client.h>
 #include <span>
-#include "source/Wrappers.h"
 #include <dxgi1_6.h>
 #include <d3d11_4.h>
 #include <memory>

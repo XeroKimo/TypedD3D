@@ -7,3 +7,4 @@ export import :DescriptorHeap;
 export import :PipelineState;
 export import :Resource;
 export import :Device;
+export import :Wrappers;

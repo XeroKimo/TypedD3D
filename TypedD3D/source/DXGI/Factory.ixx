@@ -1,11 +1,12 @@
 module;
 
 #include "dxgi1_6.h"
-#include "source/Wrappers.h"
-#include "source/D3D12Wrappers.h"
+#include <concepts>
 
 export module TypedDXGI:Factory;
 import TypedD3D.Shared;
+import TypedD3D12;
+//import :Wrappers;
 
 struct ID3D11Device;
 struct ID3D12CommandQueue;

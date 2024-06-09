@@ -1,14 +1,15 @@
 module;
-#include "source/Wrappers.h"
-#include "source/D3D12Wrappers.h"
+
 #include "source/Internal/d3dConcepts.h"
 #include <memory>
 #include <dxgi1_6.h>
 #include <span>
 #include <d3d12.h>
+#include <wrl/client.h>
 export module TypedDXGI:SwapChain;
 struct ID3D12CommandQueue;
 import TypedD3D.Shared;
+import TypedD3D12;
 
 
 namespace TypedD3D::Internal

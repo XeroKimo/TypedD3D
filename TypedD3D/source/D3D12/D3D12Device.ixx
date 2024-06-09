@@ -2,7 +2,6 @@ module;
 
 #include "source/Helpers/D3D12Helpers.h"
 #include "source/Internal/D3D12/Meta.h"
-#include "source/D3D12Wrappers.h"
 
 #include "span_tuple.h"
 

@@ -1,7 +1,8 @@
 module;
 
-#include "source/Wrappers.h"
+#include <concepts>
 #include <d3d11_4.h>
+#include <wrl/client.h>
 
 export module TypedD3D11:DeviceChild;
 import TypedD3D.Shared;

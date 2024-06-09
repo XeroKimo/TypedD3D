@@ -1,5 +1,5 @@
 module;
-#include "source/Wrappers.h"
+
 #include <d3d11_4.h>
 export module TypedD3D11:Resources;
 import :DeviceChild;

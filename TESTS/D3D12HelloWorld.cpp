@@ -6,7 +6,6 @@
 #include <wrl/client.h>
 #include "d3dx12.h"
 #include "source/Helpers/D3D12Helpers.h"
-#include "source/D3D12Wrappers.h"
 
 import TypedD3D12;
 import TypedDXGI;

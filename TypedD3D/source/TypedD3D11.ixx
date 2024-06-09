@@ -1,4 +1,5 @@
 export module TypedD3D11;
+export import TypedD3D.Shared;
 export import :DeviceChild;
 export import :Device;
 export import :DeviceContext;

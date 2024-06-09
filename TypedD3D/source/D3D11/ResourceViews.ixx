@@ -1,6 +1,7 @@
 module;
-#include "source/Wrappers.h"
+
 #include <d3d11_4.h>
+#include <concepts>
 
 export module TypedD3D11:ResourceViews;
 import :DeviceChild;

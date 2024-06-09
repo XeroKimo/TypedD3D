@@ -1,13 +1,14 @@
 module;
 
-#include "source/D3D12Wrappers.h"
 #include <memory>
 #include <array>
 #include <span>
+#include <d3d12.h>
 
 export module TypedD3D12:CommandQueue;
 import :CommandList;
 import :CommandAllocator;
+import :Wrappers;
 import TypedD3D.Shared;
 
 namespace TypedD3D::D3D12
@@ -143,34 +144,34 @@ namespace TypedD3D::Internal
         }
     }
 
+}
+
+namespace TypedD3D
+{
 
     template<>
     struct DirectMapper<ID3D12CommandQueue>
     {
-        using type = D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
+        using type = Internal::D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
     };
 
     template<>
     struct ComputeMapper<ID3D12CommandQueue>
     {
-        using type = D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+        using type = Internal::D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
     };
 
     template<>
     struct CopyMapper<ID3D12CommandQueue>
     {
-        using type = D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COPY>;
+        using type = Internal::D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COPY>;
     };
 
     template<>
     struct BundleMapper<ID3D12CommandQueue>
     {
-        using type = D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+        using type = Internal::D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
     };
-}
-
-namespace TypedD3D
-{
 
 
     template<D3D12_COMMAND_LIST_TYPE Type>

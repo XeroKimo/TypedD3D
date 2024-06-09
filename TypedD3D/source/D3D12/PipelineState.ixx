@@ -1,10 +1,12 @@
 module;
 
 #include <d3d12.h>
-#include "source/D3D12Wrappers.h"
+#include <concepts>
+#include <wrl/client.h>
 
 export module TypedD3D12:PipelineState;
 
+import :Wrappers;
 import TypedD3D.Shared;
 namespace TypedD3D::D3D12
 {
@@ -65,17 +67,20 @@ namespace TypedD3D::Internal
             reference Get() { return *ToDerived().derived_self::Get(); }
         };
     };
+}
 
+namespace TypedD3D
+{
     template<>
     struct GraphicsMapper<ID3D12PipelineState>
     {
-        using type = D3D12::PipelineState_t<D3D12_GRAPHICS_PIPELINE_STATE_DESC>;
+        using type = Internal::D3D12::PipelineState_t<D3D12_GRAPHICS_PIPELINE_STATE_DESC>;
     };
 
     template<>
     struct ComputeMapper<ID3D12PipelineState>
     {
-        using type = D3D12::PipelineState_t<D3D12_COMPUTE_PIPELINE_STATE_DESC>;
+        using type = Internal::D3D12::PipelineState_t<D3D12_COMPUTE_PIPELINE_STATE_DESC>;
     };
 }
 

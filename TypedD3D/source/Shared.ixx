@@ -3,6 +3,7 @@ module;
 #include "MyExpected.h"
 #include <wrl/client.h>
 #include <minwindef.h>
+#include <concepts>
 
 export module TypedD3D.Shared;
 
@@ -358,4 +359,16 @@ namespace TypedD3D
     {
         return DerivedTy(TypedD3D::Cast<typename DerivedTy::value_type>(std::move(other.m_ptr)));
     }
+
+    template<class Ty>
+    struct WrapperMapper;
+
+    template<std::derived_from<IUnknown> Ty>
+    struct WrapperMapper<Ty>
+    {
+        using type = IUnknownWrapper<Ty>;
+    };
+
+    export template<class Ty>
+    using Wrapper = WrapperMapper<Ty>::type;
 }

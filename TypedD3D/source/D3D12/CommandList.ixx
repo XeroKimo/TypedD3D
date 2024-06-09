@@ -1,6 +1,5 @@
 module;
 #include "source/Internal/D3D12/Meta.h"
-#include "source/D3D12Wrappers.h"
 #include "span_tuple.h"
 #include <memory>
 #include <d3d12.h>
@@ -1257,25 +1256,25 @@ namespace TypedD3D::Internal
     template<std::derived_from<ID3D12CommandList> Ty>
     struct DirectMapper<Ty>
     {
-        using type = D3D12::CommandList_t<Ty, D3D12_COMMAND_LIST_TYPE_DIRECT>;
+        using type = Internal::D3D12::CommandList_t<Ty, D3D12_COMMAND_LIST_TYPE_DIRECT>;
     };
 
     template<std::derived_from<ID3D12CommandList> Ty>
     struct ComputeMapper<Ty>
     {
-        using type = D3D12::CommandList_t<Ty, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+        using type = Internal::D3D12::CommandList_t<Ty, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
     };
 
     template<std::derived_from<ID3D12CommandList> Ty>
     struct CopyMapper<Ty>
     {
-        using type = D3D12::CommandList_t<Ty, D3D12_COMMAND_LIST_TYPE_COPY>;
+        using type = Internal::D3D12::CommandList_t<Ty, D3D12_COMMAND_LIST_TYPE_COPY>;
     };
 
     template<std::derived_from<ID3D12CommandList> Ty>
     struct BundleMapper<Ty>
     {
-        using type = D3D12::CommandList_t<Ty, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+        using type = Internal::D3D12::CommandList_t<Ty, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
     };
 
 }
