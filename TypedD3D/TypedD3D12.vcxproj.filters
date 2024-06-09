@@ -125,6 +125,9 @@
     <ClCompile Include="source\D3D12\Resource.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\D3D12\Device.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="gsl\algorithm" />

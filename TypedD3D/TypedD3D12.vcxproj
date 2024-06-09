@@ -51,6 +51,7 @@
     <ClCompile Include="source\D3D12\CommandList.ixx" />
     <ClCompile Include="source\D3D12\CommandQueue.ixx" />
     <ClCompile Include="source\D3D12\DescriptorHeap.ixx" />
+    <ClCompile Include="source\D3D12\Device.ixx" />
     <ClCompile Include="source\D3D12\Resource.ixx" />
     <ClCompile Include="source\D3D12\PipelineState.ixx" />
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp" />

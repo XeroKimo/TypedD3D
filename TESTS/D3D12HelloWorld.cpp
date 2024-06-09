@@ -9,6 +9,9 @@
 #include <exception>
 #include <wrl/client.h>
 #include "d3dx12.h"
+#include "source/Helpers/D3D12Helpers.h"
+
+import TypedD3D12;
 
 #undef CreateWindow
 namespace

@@ -1,4 +1,6 @@
 #pragma once
+
+#include "dxgi1_6.h"
 #include "source/Wrappers.h"
 #include "source/D3D12Wrappers.h"
 #include "expected.hpp"
@@ -7,8 +9,6 @@ import TypedD3D.Shared;
 
 struct ID3D11Device;
 struct ID3D12CommandQueue;
-
-import TypedD3D.Shared;
 
 namespace TypedD3D::Internal
 {
