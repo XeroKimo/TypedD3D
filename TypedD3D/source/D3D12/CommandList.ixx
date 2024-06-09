@@ -65,10 +65,10 @@ namespace TypedD3D::Internal
         }
 
         export template<std::derived_from<ID3D12CommandList> Ty, D3D12_COMMAND_LIST_TYPE Type>
-        using CommandList_t = IUnknownWrapper<Ty, CommandList::ToInternalType<Type>>;
+        using CommandList_t = IUnknownWrapper<Ty, TraitTagToTypeMapper<CommandListTypeToTraitTag<Type>>::template type>;
 
         template<std::derived_from<ID3D12CommandList> Ty>
-        using RenderPass_t = IUnknownWrapper<Ty, CommandList::TypeEnum::RenderPass>;
+        using RenderPass_t = IUnknownWrapper<Ty, RenderPassTraits>;
 
         namespace CommandList
         {
@@ -2038,12 +2038,10 @@ namespace TypedD3D::D3D12
 
     }
 
-
-
-    template<std::derived_from<ID3D12CommandList> Ty, Internal::D3D12::CommandList::TypeEnum Type>
-    struct Traits<Ty, Type>
+    template<std::derived_from<ID3D12CommandList> Ty, D3D12TraitTags Type>
+    struct CommandListTraits
     {
-        static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Internal::D3D12::CommandList::ToStandardType<Type>;
+        static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Internal::D3D12::TraitTagToCommandListType<Type>;
 
         using value_type = Ty;
         using pointer = Ty*;
@@ -2056,7 +2054,7 @@ namespace TypedD3D::D3D12
     };
 
     template<std::derived_from<ID3D12CommandList> Ty>
-    struct Traits<Ty, Internal::D3D12::CommandList::TypeEnum::RenderPass>
+    struct RenderPassTraits
     {
         static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
@@ -2068,6 +2066,22 @@ namespace TypedD3D::D3D12
 
         template<class DerivedSelf>
         using Interface = typename Internal::D3D12::RenderPass::TraitsImpl<Ty>::template Interface<DerivedSelf>;
+    };
+
+    template<std::derived_from<ID3D12CommandList> Ty, D3D12TraitTags Tag>
+        requires (Tag == D3D12TraitTags::Direct) ||
+    (Tag == D3D12TraitTags::Compute) ||
+        (Tag == D3D12TraitTags::Copy) ||
+        (Tag == D3D12TraitTags::Bundle)
+        struct D3D12TaggedTraits<Ty, Tag> : CommandListTraits<Ty, Tag>
+    {
+        static constexpr D3D12TraitTags tag_value = Tag;
+    };
+
+    template<std::derived_from<ID3D12CommandList> Ty>
+    struct D3D12TaggedTraits<Ty, D3D12TraitTags::Render_Pass> : RenderPassTraits<Ty>
+    {
+        static constexpr D3D12TraitTags tag_value = D3D12TraitTags::Render_Pass;
     };
 };
 

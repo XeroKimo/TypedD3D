@@ -54,7 +54,7 @@ namespace TypedD3D::Internal
     namespace D3D11
     {
         template<class Ty>
-        using DeviceContext_t = IUnknownWrapper<Ty>;
+        using DeviceContext_t = IUnknownWrapper<Ty, UntaggedTraits>;
 
         namespace DeviceContext
         {
@@ -1327,7 +1327,7 @@ namespace TypedD3D::Internal
 namespace TypedD3D
 {
     template<std::derived_from<ID3D11DeviceContext> Ty>
-    struct Traits<Ty>
+    struct UntaggedTraits<Ty>
     {
         using value_type = Ty;
         using pointer = Ty*;

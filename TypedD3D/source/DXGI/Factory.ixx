@@ -16,7 +16,7 @@ namespace TypedD3D::Internal
     namespace DXGI
     {
         export template<class Ty>
-        using Factory_t = IUnknownWrapper<Ty>;
+        using Factory_t = IUnknownWrapper<Ty, UntaggedTraits>;
 
         namespace Factory
         {
@@ -332,7 +332,7 @@ namespace TypedD3D::Internal
 namespace TypedD3D
 {
     template<std::derived_from<IDXGIFactory> Ty>
-    struct Traits<Ty>
+    struct UntaggedTraits<Ty>
     {
         using value_type = Ty;
         using pointer = Ty*;

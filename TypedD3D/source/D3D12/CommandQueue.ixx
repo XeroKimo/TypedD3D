@@ -25,7 +25,7 @@ namespace TypedD3D::Internal
     namespace D3D12
     {
         export template<D3D12_COMMAND_LIST_TYPE Type>
-        using CommandQueue_t = IUnknownWrapper<ID3D12CommandQueue, Type>;
+        using CommandQueue_t = IUnknownWrapper<ID3D12CommandQueue, GetTraitTagType<CommandListTypeToTraitTag<Type>>>;
 
         namespace CommandQueue
         {
@@ -148,36 +148,10 @@ namespace TypedD3D::Internal
 
 namespace TypedD3D
 {
-
-    template<>
-    struct DirectMapper<ID3D12CommandQueue>
+    template<D3D12TraitTags Type>
+    struct CommandQueueTraits
     {
-        using type = Internal::D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
-    };
-
-    template<>
-    struct ComputeMapper<ID3D12CommandQueue>
-    {
-        using type = Internal::D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-    };
-
-    template<>
-    struct CopyMapper<ID3D12CommandQueue>
-    {
-        using type = Internal::D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COPY>;
-    };
-
-    template<>
-    struct BundleMapper<ID3D12CommandQueue>
-    {
-        using type = Internal::D3D12::CommandQueue_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-    };
-
-
-    template<D3D12_COMMAND_LIST_TYPE Type>
-    struct Traits<ID3D12CommandQueue, Type>
-    {
-        static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
+        static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Internal::D3D12::TraitTagToCommandListType<Type>;
 
         using value_type = ID3D12CommandQueue;
         using pointer = ID3D12CommandQueue*;
@@ -227,6 +201,18 @@ namespace TypedD3D
             derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
             reference Get() { return *ToDerived().derived_self::Get(); }
         };
+    };
+
+
+
+    template<std::derived_from<ID3D12CommandQueue> Ty, D3D12TraitTags Tag>
+        requires (Tag == D3D12TraitTags::Direct) ||
+    (Tag == D3D12TraitTags::Compute) ||
+        (Tag == D3D12TraitTags::Copy) ||
+        (Tag == D3D12TraitTags::Bundle)
+        struct D3D12TaggedTraits<Ty, Tag> : CommandQueueTraits<Tag>
+    {
+        static constexpr D3D12TraitTags tag_value = Tag;
     };
 }
 

@@ -17,7 +17,7 @@ namespace TypedD3D::Internal
     namespace DXGI
     {
         export template<std::derived_from<IDXGIAdapter> Ty>
-        using Adapter_t = IUnknownWrapper<Ty>;
+        using Adapter_t = IUnknownWrapper<Ty, UntaggedTraits>;
 
         namespace Adapter
         {
@@ -71,7 +71,7 @@ namespace TypedD3D::Internal
 namespace TypedD3D
 {
     template<std::derived_from<IDXGIAdapter> Ty>
-    struct Traits<Ty>
+    struct UntaggedTraits<Ty>
     {
         using value_type = Ty;
         using pointer = Ty*;

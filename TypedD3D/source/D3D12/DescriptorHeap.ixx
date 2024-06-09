@@ -100,10 +100,63 @@ namespace TypedD3D::Internal
     template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
     concept Descriptor_Heap_Flag_Compatible = is_descriptor_heap_flag_compatible<Type, HeapFlags>::value;
 
+    template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType>
+    constexpr D3D12TraitTags HeapTypeToTraitTag;
+
+    template<>
+    constexpr D3D12TraitTags HeapTypeToTraitTag<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV> = D3D12TraitTags::CBV_SRV_UAV;
+
+    template<>
+    constexpr D3D12TraitTags HeapTypeToTraitTag<D3D12_DESCRIPTOR_HEAP_TYPE_DSV> = D3D12TraitTags::DSV;
+
+    template<>
+    constexpr D3D12TraitTags HeapTypeToTraitTag<D3D12_DESCRIPTOR_HEAP_TYPE_RTV> = D3D12TraitTags::RTV;
+
+    template<>
+    constexpr D3D12TraitTags HeapTypeToTraitTag<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER> = D3D12TraitTags::Sampler;
+
+    template<D3D12TraitTags>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitTagToHeapType;
+
+    template<>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitTagToHeapType<D3D12TraitTags::CBV_SRV_UAV> = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+
+    template<>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitTagToHeapType<D3D12TraitTags::DSV> = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+
+    template<>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitTagToHeapType<D3D12TraitTags::RTV> = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+
+    template<>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitTagToHeapType<D3D12TraitTags::Sampler> = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+
+    template<class Ty, D3D12_DESCRIPTOR_HEAP_TYPE HeapType>
+    struct ShaderVisibleTraits;
+
+    template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
+    struct HeapTraitMapper;    
+    
+    template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType>
+    struct HeapTraitMapper<HeapType, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>
+    {
+        template<class Ty>
+        using type = D3D12TaggedTraits<Ty, HeapTypeToTraitTag<HeapType>>;
+    };
+    
+    template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType>
+    struct HeapTraitMapper<HeapType, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>
+    {
+        template<class Ty>
+        using type = ShaderVisibleTraits<Ty, HeapType>;
+    };
+
+    template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
+    using GetTraitType = HeapTraitMapper<Type, HeapFlags>::type;
+
     namespace D3D12
     {
         export template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-        using DescriptorHeap_t = IUnknownWrapper<ID3D12DescriptorHeap, Type, HeapFlags>;
+        using DescriptorHeap_t = IUnknownWrapper<ID3D12DescriptorHeap, HeapTraitMapper<Type, HeapFlags>::template type>;
 
         export template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
         using CPU_DESCRIPTOR_HANDLE = ::TypedD3D::D3D12::CPU_DESCRIPTOR_HANDLE<Type, HeapFlags>;
@@ -117,7 +170,7 @@ namespace TypedD3D::Internal
     }
 
     template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-    struct Traits<ID3D12DescriptorHeap, Type, HeapFlags>
+    struct DescriptorHeapTraits
     {
         using value_type = ID3D12DescriptorHeap;
         using pointer = ID3D12DescriptorHeap*;
@@ -145,50 +198,21 @@ namespace TypedD3D::Internal
     };
 }
 
+namespace TypedD3D::Internal
+{
+    template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType>
+    struct ShaderVisibleTraits<ID3D12DescriptorHeap, HeapType> : DescriptorHeapTraits<HeapType, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>
+    {
+
+    };
+}
+
 namespace TypedD3D
 {
-
-
-    //template<>
-    //struct ShaderVisibleMapper<ID3D12DescriptorHeap>
-    //{
-    //    using type = std::void_t<D3D12::DescriptorHeap_t<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>>;
-    //};
-
-    template<>
-    struct CBV_SRV_UAVMapper<ID3D12DescriptorHeap>
+    template<D3D12TraitTags Tag>
+    struct D3D12TaggedTraits<ID3D12DescriptorHeap, Tag> : public Internal::DescriptorHeapTraits<Internal::TraitTagToHeapType<Tag>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>
     {
-        using type = Internal::D3D12::DescriptorHeap_t<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
 
-    template<>
-    struct SamplerMapper<ID3D12DescriptorHeap>
-    {
-        using type = Internal::D3D12::DescriptorHeap_t<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    //template<>
-    //struct CBV_SRV_UAVMapper<ShaderVisible<ID3D12DescriptorHeap>>
-    //{
-    //    using type = Internal::D3D12::DescriptorHeap_t<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    //};
-
-    //template<>
-    //struct SamplerMapper<ShaderVisible<ID3D12DescriptorHeap>>
-    //{
-    //    using type = Internal::D3D12::DescriptorHeap_t<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    //};
-
-    template<>
-    struct RTVMapper<ID3D12DescriptorHeap>
-    {
-        using type = Internal::D3D12::DescriptorHeap_t<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    template<>
-    struct DSVMapper<ID3D12DescriptorHeap>
-    {
-        using type = Internal::D3D12::DescriptorHeap_t<D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
     };
 
     template<>

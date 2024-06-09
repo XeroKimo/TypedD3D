@@ -33,7 +33,7 @@ namespace TypedD3D::Internal
     namespace D3D12
     {
         export template<std::derived_from<ID3D12Device> DeviceTy>
-        using Device_t = IUnknownWrapper<DeviceTy>;
+        using Device_t = IUnknownWrapper<DeviceTy, UntaggedTraits>;
 
         namespace Device
         {
@@ -859,7 +859,7 @@ namespace TypedD3D::Internal
 namespace TypedD3D
 {
     template<std::derived_from<ID3D12Device> Ty>
-    struct Traits<Ty>
+    struct UntaggedTraits<Ty>
     {
         using value_type = Ty;
         using pointer = Ty*;

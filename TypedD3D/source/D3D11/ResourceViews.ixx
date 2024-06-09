@@ -50,7 +50,7 @@ namespace TypedD3D
 
 
     export template<>
-    struct Traits<ID3D11View>
+    struct UntaggedTraits<ID3D11View>
     {
         using value_type = ID3D11View;
         using pointer = ID3D11View*;
@@ -80,7 +80,7 @@ namespace TypedD3D
 
     export template<class Ty>
         requires std::derived_from<Ty, ID3D11View> && (!std::same_as<ID3D11View, Ty>)
-    struct Traits<Ty>
+    struct UntaggedTraits<Ty>
     {
         using value_type = Ty;
         using pointer = Ty*;
@@ -89,7 +89,7 @@ namespace TypedD3D
         using const_reference = const Ty&;
 
         template<class DerivedSelf>
-        class Interface : public Traits<ID3D11View>::Interface<DerivedSelf>
+        class Interface : public UntaggedTraits<ID3D11View>::Interface<DerivedSelf>
         {
         private:
             using derived_self = DerivedSelf;

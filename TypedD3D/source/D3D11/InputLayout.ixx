@@ -6,21 +6,10 @@ import :DeviceChild;
 
 import TypedD3D.Shared;
 
-
-namespace TypedD3D::Internal
-{
-    namespace D3D11
-    {
-        namespace InputLayout
-        {
-        }
-    }
-}
-
 namespace TypedD3D
 {
     template<>
-    struct Traits<ID3D11InputLayout>
+    struct UntaggedTraits<ID3D11InputLayout>
     {
         using value_type = ID3D11InputLayout;
         using pointer = ID3D11InputLayout*;

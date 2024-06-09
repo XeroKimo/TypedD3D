@@ -8,7 +8,7 @@ import TypedD3D.Shared;
 namespace TypedD3D
 {
     export template<>
-    struct Traits<ID3D11Resource>
+    struct UntaggedTraits<ID3D11Resource>
     {
         using value_type = ID3D11Resource;
         using pointer = ID3D11Resource*;
@@ -47,7 +47,7 @@ namespace TypedD3D
     };
 
     export template<>
-    struct Traits<ID3D11Buffer>
+    struct UntaggedTraits<ID3D11Buffer>
     {
         using value_type = ID3D11Buffer;
         using pointer = ID3D11Buffer*;
@@ -56,7 +56,7 @@ namespace TypedD3D
         using const_reference = const ID3D11Buffer&;
 
         template<class DerivedSelf>
-        class Interface : public Traits<ID3D11Resource>::Interface<DerivedSelf>
+        class Interface : public UntaggedTraits<ID3D11Resource>::Interface<DerivedSelf>
         {
         private:
             using derived_self = DerivedSelf;
@@ -76,7 +76,7 @@ namespace TypedD3D
     };
 
     export template<>
-    struct Traits<ID3D11Texture1D>
+    struct UntaggedTraits<ID3D11Texture1D>
     {
         using value_type = ID3D11Texture1D;
         using pointer = ID3D11Texture1D*;
@@ -85,7 +85,7 @@ namespace TypedD3D
         using const_reference = const ID3D11Texture1D&;
 
         template<class DerivedSelf>
-        class Interface : public Traits<ID3D11Resource>::Interface<DerivedSelf>
+        class Interface : public UntaggedTraits<ID3D11Resource>::Interface<DerivedSelf>
         {
         private:
             using derived_self = DerivedSelf;
@@ -105,7 +105,7 @@ namespace TypedD3D
     };
 
     export template<>
-    struct Traits<ID3D11Texture2D>
+    struct UntaggedTraits<ID3D11Texture2D>
     {
         using value_type = ID3D11Texture2D;
         using pointer = ID3D11Texture2D*;
@@ -114,7 +114,7 @@ namespace TypedD3D
         using const_reference = const ID3D11Texture2D&;
 
         template<class DerivedSelf>
-        class Interface : public Traits<ID3D11Resource>::Interface<DerivedSelf>
+        class Interface : public UntaggedTraits<ID3D11Resource>::Interface<DerivedSelf>
         {
         private:
             using derived_self = DerivedSelf;
@@ -134,7 +134,7 @@ namespace TypedD3D
     };
 
     export template<>
-    struct Traits<ID3D11Texture3D>
+    struct UntaggedTraits<ID3D11Texture3D>
     {
         using value_type = ID3D11Texture3D;
         using pointer = ID3D11Texture3D*;
@@ -143,7 +143,7 @@ namespace TypedD3D
         using const_reference = const ID3D11Texture3D&;
 
         template<class DerivedSelf>
-        class Interface : public Traits<ID3D11Resource>::Interface<DerivedSelf>
+        class Interface : public UntaggedTraits<ID3D11Resource>::Interface<DerivedSelf>
         {
         private:
             using derived_self = DerivedSelf;

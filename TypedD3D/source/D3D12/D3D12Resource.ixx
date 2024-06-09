@@ -13,7 +13,7 @@ namespace TypedD3D::Internal
 {
     namespace D3D12
     {
-        export using Resource_t = IUnknownWrapper<ID3D12Resource>;
+        export using Resource_t = IUnknownWrapper<ID3D12Resource, UntaggedTraits>;
         namespace Resource
         {
         }
@@ -23,7 +23,7 @@ namespace TypedD3D::Internal
 namespace TypedD3D
 {
     template<>
-    struct Traits<ID3D12Resource>
+    struct UntaggedTraits<ID3D12Resource>
     {
         using value_type = ID3D12Resource;
         using pointer = ID3D12Resource*;

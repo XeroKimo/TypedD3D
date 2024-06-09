@@ -30,19 +30,19 @@ namespace TypedD3D::Internal
             constexpr TypeEnum ToEnum;
 
             template<>
-            constexpr TypeEnum ToEnum<D3D12_GRAPHICS_PIPELINE_STATE_DESC> = TypeEnum::Graphics;
+            constexpr D3D12TraitTags ToEnum<D3D12_GRAPHICS_PIPELINE_STATE_DESC> = D3D12TraitTags::Graphics;
 
             template<>
-            constexpr TypeEnum ToEnum<D3D12_COMPUTE_PIPELINE_STATE_DESC> = TypeEnum::Compute;
+            constexpr D3D12TraitTags ToEnum<D3D12_COMPUTE_PIPELINE_STATE_DESC> = D3D12TraitTags::Compute;
         }
 
         template<class Ty>
-        using PipelineState_t = IUnknownWrapper<ID3D12PipelineState, PipelineState::ToEnum<Ty>>;
+        using PipelineState_t = IUnknownWrapper<ID3D12PipelineState, TraitTagToTypeMapper<PipelineState::ToEnum<Ty>>::template type>;
 
     }
 
-    template<D3D12::PipelineState::TypeEnum Type>
-    struct Traits<ID3D12PipelineState, Type>
+    template<D3D12TraitTags Type>
+    struct PipelineTraits
     {
         using value_type = ID3D12PipelineState;
         using pointer = ID3D12PipelineState*;
@@ -71,16 +71,9 @@ namespace TypedD3D::Internal
 
 namespace TypedD3D
 {
-    template<>
-    struct GraphicsMapper<ID3D12PipelineState>
+    template<D3D12TraitTags Tag>
+    struct D3D12TaggedTraits<ID3D12PipelineState, Tag> : Internal::PipelineTraits<Tag>
     {
-        using type = Internal::D3D12::PipelineState_t<D3D12_GRAPHICS_PIPELINE_STATE_DESC>;
-    };
-
-    template<>
-    struct ComputeMapper<ID3D12PipelineState>
-    {
-        using type = Internal::D3D12::PipelineState_t<D3D12_COMPUTE_PIPELINE_STATE_DESC>;
     };
 }
 

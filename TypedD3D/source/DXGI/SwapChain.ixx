@@ -17,7 +17,7 @@ namespace TypedD3D::Internal
     namespace DXGI
     {
         template<class Ty>
-        using SwapChain_t = IUnknownWrapper<Ty>;
+        using SwapChain_t = IUnknownWrapper<Ty, UntaggedTraits>;
 
         namespace SwapChain
         {
@@ -336,7 +336,7 @@ namespace TypedD3D::Internal
 namespace TypedD3D
 {
     template<std::derived_from<IDXGISwapChain> Ty>
-    struct Traits<Ty>
+    struct UntaggedTraits<Ty>
     {
         using value_type = Ty;
         using pointer = Ty*;

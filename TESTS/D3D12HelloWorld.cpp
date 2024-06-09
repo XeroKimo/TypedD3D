@@ -46,6 +46,7 @@ void D3D12HelloWorld()
 
     constexpr UINT backBufferCount = 2;
 
+    using namespace TypedD3D;
     TypedD3D::Direct<ID3D12CommandQueue> commandQueue = device->CreateCommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>(D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE, 0).value();
     std::array<TypedD3D::Direct<ID3D12CommandAllocator>, backBufferCount> commandAllocators;
     commandAllocators[0] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().value();

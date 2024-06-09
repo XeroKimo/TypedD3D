@@ -24,7 +24,7 @@ namespace TypedD3D::Internal
 namespace TypedD3D
 {
     template<Internal::D3D11::ShaderConcept Ty>
-    struct Traits<Ty>
+    struct UntaggedTraits<Ty>
     {
         using value_type = Ty;
         using pointer = Ty*;
