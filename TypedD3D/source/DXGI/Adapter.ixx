@@ -1,4 +1,4 @@
-#pragma once
+module;
 
 #include "source/Wrappers.h"
 #include "expected.hpp"
@@ -6,6 +6,7 @@
 #include "expected.hpp"
 #include <wrl/client.h>
 
+export module TypedDXGI:Adapter;
 import TypedD3D.Shared;
 
 namespace TypedD3D::DXGI
@@ -16,7 +17,7 @@ namespace TypedD3D::Internal
 {
     namespace DXGI
     {
-        template<std::derived_from<IDXGIAdapter> Ty>
+        export template<std::derived_from<IDXGIAdapter> Ty>
         using Adapter_t = IUnknownWrapper<Ty>;
 
         namespace Adapter
@@ -86,8 +87,8 @@ namespace TypedD3D
 
 namespace TypedD3D::DXGI
 {
-    template<std::derived_from<IDXGIAdapter> Ty>
+    export template<std::derived_from<IDXGIAdapter> Ty>
     using Adapter_t = Internal::DXGI::Adapter_t<Ty>;
 
-    using Adapter = Adapter_t<IDXGIAdapter>;
+    export using Adapter = Adapter_t<IDXGIAdapter>;
 }

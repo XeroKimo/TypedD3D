@@ -1,4 +1,4 @@
-#pragma once
+module;
 #include "source/Wrappers.h"
 #include "source/D3D12Wrappers.h"
 #include "source/Internal/d3dConcepts.h"
@@ -7,9 +7,10 @@
 #include <dxgi1_6.h>
 #include <span>
 #include <d3d12.h>
-
+export module TypedDXGI:SwapChain;
 struct ID3D12CommandQueue;
 import TypedD3D.Shared;
+
 
 namespace TypedD3D::Internal
 {
@@ -350,9 +351,9 @@ namespace TypedD3D
 
 namespace TypedD3D::DXGI
 {
-    template<std::derived_from<IDXGISwapChain> Ty>
+    export template<std::derived_from<IDXGISwapChain> Ty>
     using SwapChain_t = Internal::DXGI::SwapChain_t<Ty>;
 
-    using SwapChain = SwapChain_t<IDXGISwapChain>;
-    using SwapChain1 = SwapChain_t<IDXGISwapChain1>;
+    export using SwapChain = SwapChain_t<IDXGISwapChain>;
+    export using SwapChain1 = SwapChain_t<IDXGISwapChain1>;
 }

@@ -1,7 +1,3 @@
-#include "TypedD3D12.h"
-#include "source/DXGI/Factory.h"
-#include "source/DXGI/SwapChain.h"
-#include "source/DXGI/Adapter.h"
 #include <d3dcompiler.h>
 #include <d3d12sdklayers.h>
 #include <assert.h>
@@ -10,8 +6,10 @@
 #include <wrl/client.h>
 #include "d3dx12.h"
 #include "source/Helpers/D3D12Helpers.h"
+#include "source/D3D12Wrappers.h"
 
 import TypedD3D12;
+import TypedDXGI;
 
 #undef CreateWindow
 namespace

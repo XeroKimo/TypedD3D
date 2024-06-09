@@ -15,13 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TypedD3D12.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\Helpers\CommonHelpers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\D3D12\Device.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\Helpers\D3D12Helpers.h">
@@ -42,16 +36,7 @@
     <ClInclude Include="source\D3D12Wrappers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\DXGI\Factory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\DXGI\SwapChain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\Internal\d3dConcepts.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\DXGI\Adapter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\D3D11\Device.h">
@@ -98,9 +83,6 @@
     <ClCompile Include="source\Helpers\D3D12Helpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TypedDXGI.h">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\Shared.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -126,6 +108,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\D3D12\Device.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\TypedDXGI.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DXGI\Adapter.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DXGI\Factory.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DXGI\SwapChain.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

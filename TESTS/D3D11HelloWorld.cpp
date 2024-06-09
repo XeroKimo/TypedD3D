@@ -1,9 +1,9 @@
 #include "TypedD3D11.h"
-#include "TypedDXGI.h"
 #include <Windows.h>
 #include <tuple>
 #include <d3dcompiler.h>
 
+import TypedDXGI;
 #undef CreateWindow
 namespace
 {

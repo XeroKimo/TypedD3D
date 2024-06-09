@@ -1,10 +1,11 @@
-#pragma once
+module;
 
 #include "dxgi1_6.h"
 #include "source/Wrappers.h"
 #include "source/D3D12Wrappers.h"
 #include "expected.hpp"
 
+export module TypedDXGI:Factory;
 import TypedD3D.Shared;
 
 struct ID3D11Device;
@@ -14,7 +15,7 @@ namespace TypedD3D::Internal
 {
     namespace DXGI
     {
-        template<class Ty>
+        export template<class Ty>
         using Factory_t = IUnknownWrapper<Ty>;
 
         namespace Factory
@@ -150,9 +151,11 @@ namespace TypedD3D::Internal
                 public:
                     BOOL IsWindowedStereoEnabled() { return Get().IsWindowedStereoEnabled(); }
 
-                    template< std::derived_from<IDXGISwapChain> SwapChain = IDXGISwapChain, std::derived_from<ID3D11Device> Device = ID3D11Device>
+
+                    //TODO: Temporary fix, make sure only ID3D11Devices can be accepted here
+                    template< std::derived_from<IDXGISwapChain> SwapChain = IDXGISwapChain, class /*std::derived_from<ID3D11Device>*/ Device = ID3D11Device*>
                     tl::expected<Wrapper<SwapChain>, HRESULT> CreateSwapChainForHwnd(
-                        Wrapper<Device> pDevice,
+                        /*Wrapper<Device>*/Device pDevice,
                         HWND hWnd,
                         const DXGI_SWAP_CHAIN_DESC1& pDesc,
                         const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* optFullscreenDesc,
@@ -344,12 +347,12 @@ namespace TypedD3D
 
 namespace TypedD3D::DXGI
 {
-    template<std::derived_from<IDXGIFactory> Ty>
+    export template<std::derived_from<IDXGIFactory> Ty>
     using Factory_t = Internal::DXGI::Factory_t<Ty>;
 
     namespace Factory
     {
-        template<class FactoryTy = IDXGIFactory>
+        export template<class FactoryTy = IDXGIFactory>
         tl::expected<Wrapper<FactoryTy>, HRESULT> Create()
         {
             auto factory = IIDToObjectForwardFunction<FactoryTy>(&CreateDXGIFactory);
@@ -360,7 +363,7 @@ namespace TypedD3D::DXGI
             return Wrapper<FactoryTy>(factory.value());
         }
 
-        template<class FactoryTy = IDXGIFactory>
+        export template<class FactoryTy = IDXGIFactory>
         tl::expected<Wrapper<FactoryTy>, HRESULT> Create1()
         {
             auto factory = IIDToObjectForwardFunction<FactoryTy>(&CreateDXGIFactory1);
@@ -371,7 +374,7 @@ namespace TypedD3D::DXGI
             return Wrapper<FactoryTy>(factory.value());
         }
 
-        template<class FactoryTy = IDXGIFactory>
+        export template<class FactoryTy = IDXGIFactory>
         tl::expected<Wrapper<FactoryTy>, HRESULT> Create2(UINT flags)
         {
             auto factory = IIDToObjectForwardFunction<FactoryTy>(&CreateDXGIFactory2, flags);
