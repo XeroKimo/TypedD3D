@@ -1,21 +1,17 @@
-//*********************************************************
-//
-// Copyright (c) 2022 Renzy Alarcon
-// Licensed under the MIT License (MIT).
-//
-//*********************************************************
+module;
 
-#pragma once
 #include "MyExpected.h"
 #include <dxgi1_6.h>
 #include <type_traits>
 
 #include "MyExpected.h"
+#include <d3d12.h>
 #include <wrl/client.h>
 
+export module TypedD3D.Legacy.DXGIHelpers;
 import TypedD3D.Shared;
 
-namespace TypedD3D::Helpers::DXGI
+export namespace TypedD3D::Helpers::DXGI
 {
     namespace Factory
     {

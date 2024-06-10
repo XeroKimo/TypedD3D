@@ -22,8 +22,6 @@
     <ClInclude Include="MyExpected.h" />
     <ClInclude Include="expected.hpp" />
     <ClInclude Include="d3dx12.h" />
-    <ClInclude Include="source\Helpers\D3D12Helpers.h" />
-    <ClInclude Include="source\Helpers\DXGIHelpers.h" />
     <ClInclude Include="span_tuple.h" />
   </ItemGroup>
   <ItemGroup>
@@ -47,9 +45,11 @@
     <ClCompile Include="source\DXGI\Adapter.ixx" />
     <ClCompile Include="source\DXGI\Factory.ixx" />
     <ClCompile Include="source\DXGI\SwapChain.ixx" />
+    <ClCompile Include="source\Legacy\D3D12LegacyHelpers.ixx" />
+    <ClCompile Include="source\Legacy\DXGILegacyHelpers.ixx" />
     <ClCompile Include="source\TypedD3D11.ixx" />
     <ClCompile Include="source\TypedDXGI.ixx" />
-    <ClCompile Include="source\Helpers\D3D12Helpers.cpp" />
+    <ClCompile Include="source\Legacy\D3D12LegacyHelpers.cpp" />
     <ClCompile Include="source\Shared.ixx" />
     <ClCompile Include="source\TypedD3D12.ixx" />
   </ItemGroup>

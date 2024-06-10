@@ -5,7 +5,18 @@
 //
 //*********************************************************
 
-#include "D3D12Helpers.h"
+#include "MyExpected.h"
+#include "span_tuple.h"
+#include <functional>
+#include <type_traits>
+#include <d3d12.h>
+#include <chrono>
+#include <span>
+#include <assert.h>
+#include <algorithm>
+#include <optional>
+
+module TypedD3D.Legacy.D3D12Helpers;
 
 namespace TypedD3D::Helpers::D3D12
 {

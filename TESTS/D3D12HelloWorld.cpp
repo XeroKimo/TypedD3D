@@ -4,11 +4,14 @@
 #include <Windows.h>
 #include <exception>
 #include <wrl/client.h>
+#include <array>
 #include "d3dx12.h"
-#include "source/Helpers/D3D12Helpers.h"
+#include "dxgi1_6.h"
+#include "MyExpected.h"
 
 import TypedD3D12;
 import TypedDXGI;
+import TypedD3D.Legacy.D3D12Helpers;
 
 #undef CreateWindow
 namespace

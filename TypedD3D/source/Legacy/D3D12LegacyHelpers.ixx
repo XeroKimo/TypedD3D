@@ -1,12 +1,5 @@
-//*********************************************************
-//
-// Copyright (c) 2022 Renzy Alarcon
-// Licensed under the MIT License (MIT).
-//
-//*********************************************************
+module;
 
-#pragma once
-#include "DXGIHelpers.h"
 #include "MyExpected.h"
 #include "span_tuple.h"
 #include <functional>
@@ -17,10 +10,14 @@
 #include <assert.h>
 #include <algorithm>
 #include <optional>
+#include <wrl/client.h>
+#include <dxgi1_6.h>
 
+export module TypedD3D.Legacy.D3D12Helpers;
+import TypedD3D.Legacy.DXGIHelpers;
 import TypedD3D.Shared;
 
-namespace TypedD3D::Helpers::D3D12
+export namespace TypedD3D::Helpers::D3D12
 {
     template<std::derived_from<ID3D12Device> Device = ID3D12Device>
     expected<Microsoft::WRL::ComPtr<Device>, HRESULT> CreateDevice(D3D_FEATURE_LEVEL minFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
@@ -354,20 +351,20 @@ namespace TypedD3D::Helpers::D3D12
     void Frame(const PresentFrameParams& presentFrameParams, const FenceCPUSyncParams& fenceSyncParams, ID3D12CommandQueue& commandQueue, UINT64& currentFrameFenceValue, UINT64& highestFrameFenceValue, UINT& backBufferIndex, UINT bufferCount, Func&& func)
     {
         PrependCPUWait(fenceSyncParams, currentFrameFenceValue, [&]()
-        {
-            currentFrameFenceValue = highestFrameFenceValue;
-            func(FrameData
-                {
-                    .commandQueue = commandQueue,
-                    .fence = fenceSyncParams.fence,
-                    .currentFrameFenceValue = currentFrameFenceValue,
-                    .backBufferIndex = backBufferIndex
-                });
+            {
+                currentFrameFenceValue = highestFrameFenceValue;
+                func(FrameData
+                    {
+                        .commandQueue = commandQueue,
+                        .fence = fenceSyncParams.fence,
+                        .currentFrameFenceValue = currentFrameFenceValue,
+                        .backBufferIndex = backBufferIndex
+                    });
 
-            currentFrameFenceValue = highestFrameFenceValue = SignalFenceGPU(commandQueue, fenceSyncParams.fence, currentFrameFenceValue);
-            presentFrameParams.swapChain.Present(presentFrameParams.syncInterval, presentFrameParams.presentFlags);
-            backBufferIndex = (backBufferIndex + 1) % bufferCount;
-        });
+                currentFrameFenceValue = highestFrameFenceValue = SignalFenceGPU(commandQueue, fenceSyncParams.fence, currentFrameFenceValue);
+                presentFrameParams.swapChain.Present(presentFrameParams.syncInterval, presentFrameParams.presentFlags);
+                backBufferIndex = (backBufferIndex + 1) % bufferCount;
+            });
     }
 
     D3D12_RESOURCE_BARRIER TransitionBarrier(ID3D12Resource& resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after, D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE, UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);

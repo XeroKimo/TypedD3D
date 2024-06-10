@@ -1,10 +1,11 @@
 module;
 
-#include "source/Helpers/D3D12Helpers.h"
 #include "span_tuple.h"
 #include <d3d12.h>
 #include <wrl/client.h>
-
+#include <vector>
+#include <memory>
+#include <dxgi1_6.h>
 
 export module TypedD3D12:Device;
 export import TypedD3D.Shared;
@@ -14,6 +15,8 @@ export import :CommandAllocator;
 export import :DescriptorHeap;
 export import :PipelineState;
 export import :Resource;
+
+import TypedD3D.Legacy.D3D12Helpers;
 
 namespace TypedD3D
 {
