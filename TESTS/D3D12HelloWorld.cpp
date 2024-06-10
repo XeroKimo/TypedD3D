@@ -1,14 +1,17 @@
-#include "TypedD3D12.h"
-#include "source/DXGI/Factory.h"
-#include "source/DXGI/SwapChain.h"
-#include "source/DXGI/Adapter.h"
 #include <d3dcompiler.h>
 #include <d3d12sdklayers.h>
 #include <assert.h>
 #include <Windows.h>
 #include <exception>
 #include <wrl/client.h>
+#include <array>
 #include "d3dx12.h"
+#include "dxgi1_6.h"
+#include "MyExpected.h"
+
+import TypedD3D12;
+import TypedDXGI;
+import TypedD3D.Legacy.D3D12Helpers;
 
 #undef CreateWindow
 namespace
@@ -35,24 +38,25 @@ using Microsoft::WRL::ComPtr;
 void D3D12HelloWorld()
 {
     CreateWindow();
-    TypedD3D::D3D12::CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> b;
-    //TypedD3D::tl::expected<ComPtr<IDXGIFactory2>, HRESULT> factory = TypedD3D::Helpers::COM::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory1);
+    TypedD3D12::CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> b;
+    //TypedD3D::expected<ComPtr<IDXGIFactory2>, HRESULT> factory = TypedD3D::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory1);
     //TypedD3D::Wrapper<IDXGIAdapter> adapter = factory->EnumAdapters<IDXGIAdapter>(0);
     ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface().value();
     debugLayer->EnableDebugLayer();
-    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::DXGI::Factory::Create1<IDXGIFactory2>().value();
-    TypedD3D::Wrapper<ID3D12Device1> device = TypedD3D::D3D12::CreateDevice<ID3D12Device1>(D3D_FEATURE_LEVEL_12_0).value();
-    ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Helpers::COM::Cast<ID3D12DebugDevice>(device.Get());
+    TypedD3D12::Wrapper<IDXGIFactory2> factory = TypedDXGI::CreateFactory1<IDXGIFactory2>().and_then([](auto& val) -> TypedD3D::expected<TypedD3D::Wrapper<IDXGIFactory2>, HRESULT>{ return val; }).value();
+    TypedD3D12::Wrapper<ID3D12Device1> device = TypedD3D12::CreateDevice<ID3D12Device1>(D3D_FEATURE_LEVEL_12_0).value();
+    ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Cast<ID3D12DebugDevice>(device.Get());
 
     constexpr UINT backBufferCount = 2;
 
-    TypedD3D::Direct<ID3D12CommandQueue> commandQueue = device->CreateCommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>(D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE, 0).value();
-    std::array<TypedD3D::Direct<ID3D12CommandAllocator>, backBufferCount> commandAllocators;
+    using namespace TypedD3D;
+    TypedD3D12::Direct<ID3D12CommandQueue> commandQueue = device->CreateCommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>(D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE, 0).value();
+    std::array<TypedD3D12::Direct<ID3D12CommandAllocator>, backBufferCount> commandAllocators;
     commandAllocators[0] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().value();
     commandAllocators[1] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>().value();
-    TypedD3D::Direct<ID3D12GraphicsCommandList> temp = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0]).value();
-    TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList = TypedD3D::Cast<TypedD3D::Direct<ID3D12GraphicsCommandList1>>(temp);
-    TypedD3D::Compute<ID3D12GraphicsCommandList1> commandList54;
+    TypedD3D12::Direct<ID3D12GraphicsCommandList> temp = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0]).value();
+    TypedD3D12::Direct<ID3D12GraphicsCommandList1> commandList = TypedD3D::Cast<TypedD3D12::Direct<ID3D12GraphicsCommandList1>>(temp);
+    TypedD3D12::Compute<ID3D12GraphicsCommandList1> commandList54;
 
     //TypedD3D::Compute<ID3D12GraphicsCommandList1> cltest = commandList;
     UINT64 fenceValue = 0;
@@ -77,13 +81,13 @@ void D3D12HelloWorld()
         nullptr,
         nullptr).value();
 
-    TypedD3D::RTV<ID3D12DescriptorHeap> swapChainBufferDescriptorHeap = device->CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>(2, 0).value();
+    TypedD3D12::RTV<ID3D12DescriptorHeap> swapChainBufferDescriptorHeap = device->CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>(2, 0).value();
 
     UINT rtvOffset = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> descriptorHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    TypedD3D12::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> descriptorHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
     DXGI_SWAP_CHAIN_DESC1 desc = swapChain->GetDesc1();
 
-    std::array<TypedD3D::Wrapper<ID3D12Resource>, 2> swapChainBuffers;
+    std::array<TypedD3D12::Wrapper<ID3D12Resource>, 2> swapChainBuffers;
 
     for(UINT i = 0; i < desc.BufferCount; i++)
     {
@@ -180,7 +184,7 @@ void D3D12HelloWorld()
         .InputLayout = layoutDesc,
         .PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
         .NumRenderTargets = 1,
-        .SampleDesc = TypedD3D::Helpers::Common::GetDescription(*swapChain.Get()).SampleDesc,
+        .SampleDesc = TypedD3D::GetDescription(*swapChain.Get()).SampleDesc,
     };
 
     graphicsPipelineState.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
@@ -194,7 +198,7 @@ void D3D12HelloWorld()
 
     graphicsPipelineState.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    tl::expected<TypedD3D::D3D12::PipelineState::Graphics, HRESULT> pipelineState = device->CreateGraphicsPipelineState(graphicsPipelineState);
+    TypedD3D::expected<TypedD3D12::Graphics<ID3D12PipelineState>, HRESULT> pipelineState = device->CreateGraphicsPipelineState(graphicsPipelineState);
     if(!pipelineState)
     {
         pipelineState.error();
@@ -269,8 +273,8 @@ void D3D12HelloWorld()
         D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
     commandList->ResourceBarrier(std::span(&barrier, 1));
     commandList->Close();
-    TypedD3D::Direct<ID3D12CommandList> a = commandList;
-    std::array submitList = std::to_array<TypedD3D::Direct<ID3D12CommandList>>({ commandList });
+    TypedD3D12::Direct<ID3D12CommandList> a = commandList;
+    std::array submitList = std::to_array<TypedD3D12::Direct<ID3D12CommandList>>({ commandList });
     commandQueue->ExecuteCommandLists(std::span(submitList));
 
     TypedD3D::Helpers::D3D12::FlushCommandQueue(*commandQueue.Get(), *fence.Get(), fenceValue, syncEvent);
@@ -338,7 +342,7 @@ void D3D12HelloWorld()
                         *commandList.Get(), 
                         *commandAllocators[frameData.backBufferIndex].Get(), 
                         frameData.commandQueue,
-                        [&](TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList)
+                        [&](TypedD3D12::Direct<ID3D12GraphicsCommandList1> commandList)
                         {
                             D3D12_RESOURCE_BARRIER beginBarrier = TypedD3D::Helpers::D3D12::TransitionBarrier(
                                 *swapChainBuffers[frameData.backBufferIndex].Get(),
@@ -351,9 +355,9 @@ void D3D12HelloWorld()
                                 D3D12_RESOURCE_STATE_PRESENT);
 
                             TypedD3D::Helpers::D3D12::ResourceBarrier(*commandList.Get(), std::span(&beginBarrier, 1), std::span(&endBarrier, 1),
-                                [&](TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList)
+                                [&](TypedD3D12::Direct<ID3D12GraphicsCommandList1> commandList)
                                 {
-                                    TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart().Offset(frameData.backBufferIndex, rtvOffset);
+                                    TypedD3D12::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart().Offset(frameData.backBufferIndex, rtvOffset);
                                     commandList->ClearRenderTargetView(backBufferHandle, std::to_array({ 0.f, 0.3f, 0.7f, 1.f }), {});
                                     commandList->OMSetRenderTargets(std::span(&backBufferHandle, 1), true, nullptr);
 

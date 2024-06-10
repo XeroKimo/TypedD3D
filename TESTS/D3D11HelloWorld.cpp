@@ -1,9 +1,16 @@
-#include "TypedD3D11.h"
-#include "TypedDXGI.h"
 #include <Windows.h>
 #include <tuple>
 #include <d3dcompiler.h>
-
+#include <wrl/client.h>
+#include <span>
+#include <dxgi1_6.h>
+#include <d3d11_4.h>
+#include <memory>
+#include "MyExpected.h"
+#include <cassert>
+#include "span_tuple.h"
+import TypedD3D11;
+import TypedDXGI;
 #undef CreateWindow
 namespace
 {
@@ -29,10 +36,10 @@ void D3D11HelloWorld()
 {
     CreateWindow();
 
-    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedD3D::DXGI::Factory::Create1<IDXGIFactory2>().value();
+    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedDXGI::CreateFactory1<IDXGIFactory2>().value();
     D3D_FEATURE_LEVEL levels = D3D_FEATURE_LEVEL_12_0;
 
-    auto [device, deviceContext] = TypedD3D::D3D11::CreateDevice<TypedD3D::Wrapper<ID3D11Device>, TypedD3D::Wrapper<ID3D11DeviceContext>>(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, std::span(&levels, 1), D3D11_SDK_VERSION).value();
+    auto [device, deviceContext] = TypedD3D11::CreateDevice<TypedD3D::Wrapper<ID3D11Device>, TypedD3D::Wrapper<ID3D11DeviceContext>>(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_DEBUG, std::span(&levels, 1), D3D11_SDK_VERSION).value();
     TypedD3D::Wrapper<IDXGISwapChain3> swapChain = factory->CreateSwapChainForHwnd<IDXGISwapChain3>(
         device,
         handle,
