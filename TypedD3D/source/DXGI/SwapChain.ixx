@@ -17,20 +17,22 @@ struct ID3D12Resource;
 template<class Ty>
 concept Resource = std::derived_from<Ty, ID3D11Resource> || std::derived_from<Ty, ID3D12Resource>;
 
-namespace TypedD3D
+namespace TypedD3D::DXGI
 {
 	template<class Ty>
 	using SwapChain_t = IUnknownWrapper<Ty, UntaggedTraits>;
 
-	export using SwapChain = SwapChain_t<IDXGISwapChain>;
-	export using SwapChain1 = SwapChain_t<IDXGISwapChain1>;
-
+	namespace Aliases
+	{
+		export using SwapChain = SwapChain_t<IDXGISwapChain>;
+		export using SwapChain1 = SwapChain_t<IDXGISwapChain1>;
+	}
 
 	template<class Ty>
-	struct SwapChainTraitsImpl;
+	struct SwapChainTraits;
 
 	template<>
-	struct SwapChainTraitsImpl<IDXGISwapChain>
+	struct SwapChainTraits<IDXGISwapChain>
 	{
 		using value_type = IDXGISwapChain;
 		using pointer = IDXGISwapChain*;
@@ -121,7 +123,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct SwapChainTraitsImpl<IDXGISwapChain1>
+	struct SwapChainTraits<IDXGISwapChain1>
 	{
 		using value_type = IDXGISwapChain1;
 		using pointer = IDXGISwapChain1*;
@@ -130,7 +132,7 @@ namespace TypedD3D
 		using cosnt_reference = const IDXGISwapChain1&;
 
 		template<class DerivedSelf>
-		class Interface : public SwapChainTraitsImpl<IDXGISwapChain>::Interface<DerivedSelf>
+		class Interface : public SwapChainTraits<IDXGISwapChain>::Interface<DerivedSelf>
 		{
 		private:
 			using derived_self = DerivedSelf;
@@ -209,7 +211,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct SwapChainTraitsImpl<IDXGISwapChain2>
+	struct SwapChainTraits<IDXGISwapChain2>
 	{
 		using value_type = IDXGISwapChain2;
 		using pointer = IDXGISwapChain2*;
@@ -218,7 +220,7 @@ namespace TypedD3D
 		using cosnt_reference = const IDXGISwapChain2&;
 
 		template<class DerivedSelf>
-		class Interface : public SwapChainTraitsImpl<IDXGISwapChain1>::Interface<DerivedSelf>
+		class Interface : public SwapChainTraits<IDXGISwapChain1>::Interface<DerivedSelf>
 		{
 		private:
 			using derived_self = DerivedSelf;
@@ -277,7 +279,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct SwapChainTraitsImpl<IDXGISwapChain3>
+	struct SwapChainTraits<IDXGISwapChain3>
 	{
 		using value_type = IDXGISwapChain3;
 		using pointer = IDXGISwapChain3*;
@@ -286,7 +288,7 @@ namespace TypedD3D
 		using cosnt_reference = const IDXGISwapChain3&;
 
 		template<class DerivedSelf>
-		class Interface : public SwapChainTraitsImpl<IDXGISwapChain2>::Interface<DerivedSelf>
+		class Interface : public SwapChainTraits<IDXGISwapChain2>::Interface<DerivedSelf>
 		{
 		private:
 			using derived_self = DerivedSelf;
@@ -333,7 +335,10 @@ namespace TypedD3D
 			reference Get() { return *ToDerived().derived_self::Get(); }
 		};
 	};
+}
 
+namespace TypedD3D
+{
 	template<std::derived_from<IDXGISwapChain> Ty>
 	struct UntaggedTraits<Ty>
 	{
@@ -344,6 +349,6 @@ namespace TypedD3D
 		using cosnt_reference = const Ty&;
 
 		template<class DerivedSelf>
-		using Interface = SwapChainTraitsImpl<Ty>::template Interface<DerivedSelf>;
+		using Interface = DXGI::SwapChainTraits<Ty>::template Interface<DerivedSelf>;
 	};
 }

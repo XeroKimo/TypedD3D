@@ -8,16 +8,16 @@ module;
 export module TypedDXGI:Adapter;
 import TypedD3D.Shared;
 
-namespace TypedD3D
+namespace TypedD3D::DXGI
 {
 	export template<std::derived_from<IDXGIAdapter> Ty>
-	using DXGIAdapter_t = IUnknownWrapper<Ty, UntaggedTraits>;
+	using Adapter_t = IUnknownWrapper<Ty, UntaggedTraits>;
 
 	template<class Ty>
-	struct DXGIAdapterTraitsImpl;
+	struct AdapterTraits;
 
 	template<>
-	struct DXGIAdapterTraitsImpl<IDXGIAdapter>
+	struct AdapterTraits<IDXGIAdapter>
 	{
 		using value_type = IDXGIAdapter;
 		using pointer = IDXGIAdapter*;
@@ -56,10 +56,16 @@ namespace TypedD3D
 		};
 	};
 
+	namespace Aliases
+	{
+		export using DXGIAdapter = Adapter_t<IDXGIAdapter>;
+	}
+}
+
+namespace TypedD3D
+{
 	template<std::derived_from<IDXGIAdapter> Ty>
-	struct UntaggedTraits<Ty> : public DXGIAdapterTraitsImpl<Ty>
+	struct UntaggedTraits<Ty> : public DXGI::AdapterTraits<Ty>
 	{
 	};
-
-	export using DXGIAdapter = DXGIAdapter_t<IDXGIAdapter>;
 }

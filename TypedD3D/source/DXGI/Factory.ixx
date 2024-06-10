@@ -11,16 +11,16 @@ import TypedD3D12;
 struct ID3D11Device;
 struct ID3D12CommandQueue;
 
-namespace TypedD3D
+namespace TypedD3D::DXGI
 {
 	export template<class Ty>
-		using DXGIFactory_t = IUnknownWrapper<Ty, UntaggedTraits>;
+	using Factory_t = IUnknownWrapper<Ty, UntaggedTraits>;
 
 	template<class Ty>
-	struct DXGIFactoryTraitsImpl;
+	struct FactoryTraits;
 
 	template<>
-	struct DXGIFactoryTraitsImpl<IDXGIFactory>
+	struct FactoryTraits<IDXGIFactory>
 	{
 		using value_type = IDXGIFactory;
 		using pointer = IDXGIFactory*;
@@ -91,7 +91,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct DXGIFactoryTraitsImpl<IDXGIFactory1>
+	struct FactoryTraits<IDXGIFactory1>
 	{
 		using value_type = IDXGIFactory1;
 		using pointer = IDXGIFactory1*;
@@ -100,7 +100,7 @@ namespace TypedD3D
 		using cosnt_reference = const IDXGIFactory1&;
 
 		template<class DerivedSelf>
-		class Interface : public DXGIFactoryTraitsImpl<IDXGIFactory>::Interface<DerivedSelf>
+		class Interface : public FactoryTraits<IDXGIFactory>::Interface<DerivedSelf>
 		{
 		private:
 			using derived_self = DerivedSelf;
@@ -130,7 +130,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct DXGIFactoryTraitsImpl<IDXGIFactory2>
+	struct FactoryTraits<IDXGIFactory2>
 	{
 		using value_type = IDXGIFactory2;
 		using pointer = IDXGIFactory2*;
@@ -139,7 +139,7 @@ namespace TypedD3D
 		using cosnt_reference = const IDXGIFactory2&;
 
 		template<class DerivedSelf>
-		class Interface : public DXGIFactoryTraitsImpl<IDXGIFactory1>::Interface<DerivedSelf>
+		class Interface : public FactoryTraits<IDXGIFactory1>::Interface<DerivedSelf>
 		{
 		private:
 			using derived_self = DerivedSelf;
@@ -322,21 +322,8 @@ namespace TypedD3D
 		};
 	};
 
-	template<std::derived_from<IDXGIFactory> Ty>
-	struct UntaggedTraits<Ty>
-	{
-		using value_type = Ty;
-		using pointer = Ty*;
-		using const_pointer = const Ty*;
-		using reference = Ty&;
-		using cosnt_reference = const Ty&;
-
-		template<class DerivedSelf>
-		using Interface = DXGIFactoryTraitsImpl<Ty>::template Interface<DerivedSelf>;
-	};
-
 	export template<class FactoryTy = IDXGIFactory>
-	expected<Wrapper<FactoryTy>, HRESULT> CreateDXGIFactory()
+	expected<Wrapper<FactoryTy>, HRESULT> CreateFactory()
 	{
 		auto factory = IIDToObjectForwardFunction<FactoryTy>(&::CreateDXGIFactory);
 
@@ -347,7 +334,7 @@ namespace TypedD3D
 	}
 
 	export template<class FactoryTy = IDXGIFactory>
-	expected<Wrapper<FactoryTy>, HRESULT> CreateDXGIFactory1()
+	expected<Wrapper<FactoryTy>, HRESULT> CreateFactory1()
 	{
 		auto factory = IIDToObjectForwardFunction<FactoryTy>(&::CreateDXGIFactory1);
 
@@ -358,7 +345,7 @@ namespace TypedD3D
 	}
 
 	export template<class FactoryTy = IDXGIFactory>
-	expected<Wrapper<FactoryTy>, HRESULT> CreateDXGIFactory2(UINT flags)
+	expected<Wrapper<FactoryTy>, HRESULT> CreateFactory2(UINT flags)
 	{
 		auto factory = IIDToObjectForwardFunction<FactoryTy>(&::CreateDXGIFactory2, flags);
 
@@ -367,4 +354,20 @@ namespace TypedD3D
 
 		return Wrapper<FactoryTy>(factory.value());
 	}
+}
+
+namespace TypedD3D
+{
+	template<std::derived_from<IDXGIFactory> Ty>
+	struct UntaggedTraits<Ty>
+	{
+		using value_type = Ty;
+		using pointer = Ty*;
+		using const_pointer = const Ty*;
+		using reference = Ty&;
+		using cosnt_reference = const Ty&;
+
+		template<class DerivedSelf>
+		using Interface = DXGI::FactoryTraits<Ty>::template Interface<DerivedSelf>;
+	};
 }

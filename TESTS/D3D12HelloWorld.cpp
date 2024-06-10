@@ -43,7 +43,7 @@ void D3D12HelloWorld()
     //TypedD3D::Wrapper<IDXGIAdapter> adapter = factory->EnumAdapters<IDXGIAdapter>(0);
     ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface().value();
     debugLayer->EnableDebugLayer();
-    TypedD3D12::Wrapper<IDXGIFactory2> factory = TypedD3D::CreateDXGIFactory1<IDXGIFactory2>().and_then([](auto& val) -> TypedD3D::expected<TypedD3D::Wrapper<IDXGIFactory2>, HRESULT>{ return val; }).value();
+    TypedD3D12::Wrapper<IDXGIFactory2> factory = TypedDXGI::CreateFactory1<IDXGIFactory2>().and_then([](auto& val) -> TypedD3D::expected<TypedD3D::Wrapper<IDXGIFactory2>, HRESULT>{ return val; }).value();
     TypedD3D12::Wrapper<ID3D12Device1> device = TypedD3D12::CreateDevice<ID3D12Device1>(D3D_FEATURE_LEVEL_12_0).value();
     ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Cast<ID3D12DebugDevice>(device.Get());
 
