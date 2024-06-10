@@ -18,30 +18,30 @@ import :Shaders;
 import :InputLayout;
 import :ResourceViews;
 
-namespace TypedD3D
+namespace TypedD3D::D3D11
 {
-	export struct D3D11IAGetVertexBufferData
+	export struct IAGetVertexBufferData
 	{
 		std::vector<Wrapper<ID3D11Buffer>> buffers;
 		std::vector<UINT> strides;
 		std::vector<UINT> offsets;
 	};
 
-	export struct D3D11IAGetIndexBufferData
+	export struct IAGetIndexBufferData
 	{
 		Wrapper<ID3D11Buffer> buffer;
 		DXGI_FORMAT format;
 		UINT offset;
 	};
 
-	export struct D3D11OMGetRenderTargetsAndUnorderedAccessViewsData
+	export struct OMGetRenderTargetsAndUnorderedAccessViewsData
 	{
 		std::vector<Wrapper<ID3D11RenderTargetView>> renderTargetViews;
 		Wrapper<ID3D11DepthStencilView> depthStencilView;
 		std::vector<Wrapper<ID3D11UnorderedAccessView>> unorderedAccessViews;
 	};
 
-	export struct D3D11OMGetBlendStateData
+	export struct OMGetBlendStateData
 	{
 		Wrapper<ID3D11BlendState> blendState;
 		std::array<FLOAT, 4> blendFactor;
@@ -61,7 +61,7 @@ namespace TypedD3D
 		using const_reference = const ID3D11DeviceContext&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D11DeviceChildInterface<DerivedSelf>
+		class Interface : public DeviceChildInterface<DerivedSelf>
 		{
 		private:
 			using derived_self = DerivedSelf;
@@ -809,7 +809,7 @@ namespace TypedD3D
 				return Wrapper<ID3D11InputLayout>(std::move(layout));
 			}
 
-			D3D11IAGetVertexBufferData IAGetVertexBuffers(
+			IAGetVertexBufferData IAGetVertexBuffers(
 				UINT StartSlot,
 				UINT NumBuffers)
 			{
@@ -818,7 +818,7 @@ namespace TypedD3D
 				std::unique_ptr<UINT[]> tempOffsets = std::make_unique<UINT[]>(NumBuffers);
 				Get().IAGetVertexBuffers(StartSlot, NumBuffers, tempBuffers.get(), tempStrides.get(), tempOffsets.get());
 
-				D3D11IAGetVertexBufferData output;
+				IAGetVertexBufferData output;
 				output.buffers.resize(NumBuffers);
 				output.strides.resize(NumBuffers);
 				output.offsets.resize(NumBuffers);
@@ -832,9 +832,9 @@ namespace TypedD3D
 				return output;
 			}
 
-			D3D11IAGetIndexBufferData IAGetIndexBuffer()
+			IAGetIndexBufferData IAGetIndexBuffer()
 			{
-				D3D11IAGetIndexBufferData output;
+				IAGetIndexBufferData output;
 				Microsoft::WRL::ComPtr<ID3D11Buffer> temp;
 				Get().IAGetIndexBuffer(&temp, &output.format, &output.offset);
 				output.buffer.Attach(temp.Detach());
@@ -973,7 +973,7 @@ namespace TypedD3D
 				return output;
 			}
 
-			D3D11OMGetRenderTargetsAndUnorderedAccessViewsData OMGetRenderTargetsAndUnorderedAccessViews(
+			OMGetRenderTargetsAndUnorderedAccessViewsData OMGetRenderTargetsAndUnorderedAccessViews(
 				UINT NumRTVs,
 				UINT UAVStartSlot,
 				UINT NumUAVs)
@@ -981,7 +981,7 @@ namespace TypedD3D
 				std::unique_ptr<ID3D11RenderTargetView* []> tempRTVs = std::make_unique<ID3D11RenderTargetView * []>(NumRTVs);
 				std::unique_ptr<ID3D11UnorderedAccessView* []> tempUAVs = std::make_unique<ID3D11UnorderedAccessView * []>(NumUAVs);
 
-				D3D11OMGetRenderTargetsAndUnorderedAccessViewsData data;
+				OMGetRenderTargetsAndUnorderedAccessViewsData data;
 
 				data.renderTargetViews.resize(NumRTVs);
 				data.unorderedAccessViews.resize(NumUAVs);
@@ -999,9 +999,9 @@ namespace TypedD3D
 				return data;
 			}
 
-			D3D11OMGetBlendStateData OMGetBlendState()
+			OMGetBlendStateData OMGetBlendState()
 			{
-				D3D11OMGetBlendStateData data;
+				OMGetBlendStateData data;
 				Microsoft::WRL::ComPtr<ID3D11BlendState> blendState;
 				Get().OMGetBlendState(&blendState, data.blendFactor.data(), &data.sampleMask);
 				data.blendState.Attach(blendState.Detach());
@@ -1316,5 +1316,8 @@ namespace TypedD3D
 	export template<std::derived_from<ID3D11DeviceContext> DeviceContextTy>
 	using DeviceContext_t = IUnknownWrapper<DeviceContextTy, UntaggedTraits>;
 
-	export using DeviceContext = DeviceContext_t<ID3D11DeviceContext>;
+	namespace Aliases
+	{
+		export using DeviceContext = DeviceContext_t<ID3D11DeviceContext>;
+	}
 }

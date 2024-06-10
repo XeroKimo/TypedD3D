@@ -17,7 +17,7 @@ namespace TypedD3D
         using const_reference = const ID3D11Resource&;
 
         template<class DerivedSelf>
-        class Interface : public D3D11DeviceChildInterface<DerivedSelf>
+        class Interface : public D3D11::DeviceChildInterface<DerivedSelf>
         {
         private:
             using derived_self = DerivedSelf;

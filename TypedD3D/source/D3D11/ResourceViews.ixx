@@ -8,7 +8,7 @@ import :DeviceChild;
 import :Resources;
 import TypedD3D.Shared;
 
-namespace TypedD3D
+namespace TypedD3D::D3D11
 {
 	template<class Ty>
 	struct ViewToResourceDesc;
@@ -36,6 +36,10 @@ namespace TypedD3D
 	{
 		using type = D3D11_SHADER_RESOURCE_VIEW_DESC;
 	};
+}
+
+namespace TypedD3D
+{
 
 	template<>
 	struct UntaggedTraits<ID3D11View>
@@ -47,7 +51,7 @@ namespace TypedD3D
 		using const_reference = const ID3D11View&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D11DeviceChildInterface<DerivedSelf>
+		class Interface : public D3D11::DeviceChildInterface<DerivedSelf>
 		{
 		private:
 			using derived_self = DerivedSelf;
@@ -83,9 +87,9 @@ namespace TypedD3D
 			using derived_self = DerivedSelf;
 
 		public:
-			typename ViewToResourceDesc<value_type>::type GetDesc()
+			typename D3D11::ViewToResourceDesc<value_type>::type GetDesc()
 			{
-				typename ViewToResourceDesc<value_type>::type description;
+				typename D3D11::ViewToResourceDesc<value_type>::type description;
 				Get().GetDesc(&description);
 				return description;
 			}

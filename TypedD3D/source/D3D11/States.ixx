@@ -7,7 +7,7 @@ export module TypedD3D11:States;
 import :DeviceChild;
 import TypedD3D.Shared;
 
-namespace TypedD3D
+namespace TypedD3D::D3D11
 {
 	template<class Ty>
 	struct ViewToStateDesc;
@@ -41,8 +41,11 @@ namespace TypedD3D
 		std::same_as<Ty, ID3D11SamplerState> ||
 		std::same_as<Ty, ID3D11BlendState> ||
 		std::same_as<Ty, ID3D11RasterizerState>;
+}
 
-	template<StateObject Ty>
+namespace TypedD3D
+{
+	template<D3D11::StateObject Ty>
 	struct UntaggedTraits<Ty>
 	{
 		using value_type = Ty;
@@ -52,15 +55,15 @@ namespace TypedD3D
 		using const_reference = const Ty&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D11DeviceChildInterface<DerivedSelf>
+		class Interface : public D3D11::DeviceChildInterface<DerivedSelf>
 		{
 		private:
 			using derived_self = DerivedSelf;
 
 		public:
-			typename ViewToStateDesc<value_type>::type GetDesc()
+			typename D3D11::ViewToStateDesc<value_type>::type GetDesc()
 			{
-				typename ViewToStateDesc<value_type>::type description;
+				typename D3D11::ViewToStateDesc<value_type>::type description;
 				Get().GetDesc(&description);
 				return description;
 			}

@@ -7,10 +7,10 @@ module;
 export module TypedD3D11:DeviceChild;
 import TypedD3D.Shared;
 
-namespace TypedD3D
+namespace TypedD3D::D3D11
 {
     template<class WrapperTy>
-    class D3D11DeviceChildInterface
+    class DeviceChildInterface
     {
     private:
         using device_type = ID3D11DeviceChild;

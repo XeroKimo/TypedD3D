@@ -16,136 +16,140 @@ import :Resources;
 
 import TypedD3D.Shared;
 
-namespace TypedD3D
+namespace TypedD3D::D3D11
 {
+#pragma region Device Feature Map
+
     template<D3D11_FEATURE Feature>
-    struct D3D11FeatureMap;
+    struct DeviceFeatureMap;
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_THREADING>
+    struct DeviceFeatureMap<D3D11_FEATURE_THREADING>
     {
         using type = D3D11_FEATURE_DATA_THREADING;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_DOUBLES>
+    struct DeviceFeatureMap<D3D11_FEATURE_DOUBLES>
     {
         using type = D3D11_FEATURE_DATA_DOUBLES;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_FORMAT_SUPPORT>
+    struct DeviceFeatureMap<D3D11_FEATURE_FORMAT_SUPPORT>
     {
         using type = D3D11_FEATURE_DATA_FORMAT_SUPPORT;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_FORMAT_SUPPORT2>
+    struct DeviceFeatureMap<D3D11_FEATURE_FORMAT_SUPPORT2>
     {
         using type = D3D11_FEATURE_DATA_FORMAT_SUPPORT;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS>
+    struct DeviceFeatureMap<D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS>
     {
         using type = D3D11_FEATURE_DATA_D3D10_X_HARDWARE_OPTIONS;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_D3D11_OPTIONS>
+    struct DeviceFeatureMap<D3D11_FEATURE_D3D11_OPTIONS>
     {
         using type = D3D11_FEATURE_DATA_D3D11_OPTIONS;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_ARCHITECTURE_INFO>
+    struct DeviceFeatureMap<D3D11_FEATURE_ARCHITECTURE_INFO>
     {
         using type = D3D11_FEATURE_DATA_ARCHITECTURE_INFO;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_D3D9_OPTIONS>
+    struct DeviceFeatureMap<D3D11_FEATURE_D3D9_OPTIONS>
     {
         using type = D3D11_FEATURE_DATA_D3D9_OPTIONS;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_SHADER_MIN_PRECISION_SUPPORT>
+    struct DeviceFeatureMap<D3D11_FEATURE_SHADER_MIN_PRECISION_SUPPORT>
     {
         using type = D3D11_FEATURE_DATA_SHADER_MIN_PRECISION_SUPPORT;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_D3D9_SHADOW_SUPPORT>
+    struct DeviceFeatureMap<D3D11_FEATURE_D3D9_SHADOW_SUPPORT>
     {
         using type = D3D11_FEATURE_DATA_D3D9_SHADOW_SUPPORT;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_D3D11_OPTIONS1>
+    struct DeviceFeatureMap<D3D11_FEATURE_D3D11_OPTIONS1>
     {
         using type = D3D11_FEATURE_DATA_D3D11_OPTIONS1;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_D3D9_SIMPLE_INSTANCING_SUPPORT>
+    struct DeviceFeatureMap<D3D11_FEATURE_D3D9_SIMPLE_INSTANCING_SUPPORT>
     {
         using type = D3D11_FEATURE_DATA_D3D9_SIMPLE_INSTANCING_SUPPORT;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_MARKER_SUPPORT>
+    struct DeviceFeatureMap<D3D11_FEATURE_MARKER_SUPPORT>
     {
         using type = D3D11_FEATURE_DATA_MARKER_SUPPORT;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_D3D9_OPTIONS1>
+    struct DeviceFeatureMap<D3D11_FEATURE_D3D9_OPTIONS1>
     {
         using type = D3D11_FEATURE_DATA_D3D9_OPTIONS1;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_D3D11_OPTIONS2>
+    struct DeviceFeatureMap<D3D11_FEATURE_D3D11_OPTIONS2>
     {
         using type = D3D11_FEATURE_DATA_D3D11_OPTIONS2;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_D3D11_OPTIONS3>
+    struct DeviceFeatureMap<D3D11_FEATURE_D3D11_OPTIONS3>
     {
         using type = D3D11_FEATURE_DATA_D3D11_OPTIONS3;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT>
+    struct DeviceFeatureMap<D3D11_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT>
     {
         using type = D3D11_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_D3D11_OPTIONS4>
+    struct DeviceFeatureMap<D3D11_FEATURE_D3D11_OPTIONS4>
     {
         using type = D3D11_FEATURE_DATA_D3D11_OPTIONS4;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_SHADER_CACHE>
+    struct DeviceFeatureMap<D3D11_FEATURE_SHADER_CACHE>
     {
         using type = D3D11_FEATURE_DATA_SHADER_CACHE;
     };
 
     template<>
-    struct D3D11FeatureMap<D3D11_FEATURE_D3D11_OPTIONS5>
+    struct DeviceFeatureMap<D3D11_FEATURE_D3D11_OPTIONS5>
     {
         using type = D3D11_FEATURE_DATA_D3D11_OPTIONS5;
     };
 
+#pragma endregion
+
     template<class Ty>
-    struct D3D11DeviceTraits;
+    struct DeviceTraits;
 
     template<>
-    struct D3D11DeviceTraits<ID3D11Device>
+    struct DeviceTraits<ID3D11Device>
     {
         using value_type = ID3D11Device;
         using pointer = ID3D11Device*;
@@ -490,9 +494,9 @@ namespace TypedD3D
             }
 
             template<D3D11_FEATURE Feature>
-            typename D3D11FeatureMap<Feature>::type CheckFeatureSupport()
+            typename DeviceFeatureMap<Feature>::type CheckFeatureSupport()
             {
-                using feature_type = typename D3D11FeatureMap<Feature>::type;
+                using feature_type = typename DeviceFeatureMap<Feature>::type;
                 feature_type feature;
                 Get().CheckFeatureSupport(Feature, &feature, sizeof(feature_type));
                 return feature;
@@ -572,17 +576,20 @@ namespace TypedD3D
     };
 
     template<std::derived_from<ID3D11Device> Ty>
-    struct UntaggedTraits<Ty> : D3D11DeviceTraits<Ty>
+    struct UntaggedTraits<Ty> : DeviceTraits<Ty>
     {
     };
 
     export template<std::derived_from<ID3D11Device> DeviceTy>
-    using D3D11Device_t = IUnknownWrapper<DeviceTy, UntaggedTraits>;;
+    using Device_t = IUnknownWrapper<DeviceTy, UntaggedTraits>;;
 
-    export using D3D11Device = D3D11Device_t<ID3D11Device>;
+    namespace Aliases
+    {
+        export using D3D11Device = Device_t<ID3D11Device>;
+    }
 
     export template<class DeviceTy = ID3D11Device, class DeviceContextTy = ID3D11DeviceContext>
-    auto CreateD3D11Device(
+    auto CreateDevice(
             IDXGIAdapter* optAdapter,
             D3D_DRIVER_TYPE DriverType,
             HMODULE Software,
@@ -592,7 +599,7 @@ namespace TypedD3D
     {
         if constexpr(!std::derived_from<DeviceTy, ID3D11Device> && !std::derived_from<DeviceContextTy, ID3D11DeviceContext>)
         {
-            return CreateD3D11Device<typename DeviceTy::value_type, typename DeviceContextTy::value_type>(
+            return CreateDevice<typename DeviceTy::value_type, typename DeviceContextTy::value_type>(
                 optAdapter,
                 DriverType,
                 Software,
@@ -602,7 +609,7 @@ namespace TypedD3D
         }
         else if constexpr(!std::derived_from<DeviceTy, ID3D11Device>)
         {
-            return CreateD3D11Device<typename DeviceTy::value_type, DeviceContextTy>(
+            return CreateDevice<typename DeviceTy::value_type, DeviceContextTy>(
                 optAdapter,
                 DriverType,
                 Software,
