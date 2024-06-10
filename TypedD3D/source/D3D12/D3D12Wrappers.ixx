@@ -1,9 +1,9 @@
 export module TypedD3D12:Wrappers; 
 import TypedD3D.Shared;
 
-namespace TypedD3D
+namespace TypedD3D::D3D12
 {
-    export enum class D3D12TraitTags
+    export enum class TraitTags
     {
         Direct,
         Compute,
@@ -17,51 +17,51 @@ namespace TypedD3D
         Render_Pass
     };
 
-    export template<class Ty, D3D12TraitTags Tag>
-    struct D3D12TaggedTraits;
+    export template<class Ty, TraitTags Tag>
+    struct TaggedTraits;
 
     template<class Ty>
-    using DirectTraits = D3D12TaggedTraits<Ty, D3D12TraitTags::Direct>;
+    using DirectTraits = TaggedTraits<Ty, TraitTags::Direct>;
 
     template<class Ty>
-    using ComputeTraits = D3D12TaggedTraits<Ty, D3D12TraitTags::Compute>;
+    using ComputeTraits = TaggedTraits<Ty, TraitTags::Compute>;
 
     template<class Ty>
-    using CopyTraits = D3D12TaggedTraits<Ty, D3D12TraitTags::Copy>;
+    using CopyTraits = TaggedTraits<Ty, TraitTags::Copy>;
 
     template<class Ty>
-    using BundleTraits = D3D12TaggedTraits<Ty, D3D12TraitTags::Bundle>;
+    using BundleTraits = TaggedTraits<Ty, TraitTags::Bundle>;
 
     template<class Ty>
-    using CBV_SRV_UAVTraits = D3D12TaggedTraits<Ty, D3D12TraitTags::CBV_SRV_UAV>;
+    using CBV_SRV_UAVTraits = TaggedTraits<Ty, TraitTags::CBV_SRV_UAV>;
 
     template<class Ty>
-    using SamplerTraits = D3D12TaggedTraits<Ty, D3D12TraitTags::Sampler>;
+    using SamplerTraits = TaggedTraits<Ty, TraitTags::Sampler>;
 
     template<class Ty>
-    using RTVTraits = D3D12TaggedTraits<Ty, D3D12TraitTags::RTV>;
+    using RTVTraits = TaggedTraits<Ty, TraitTags::RTV>;
 
     template<class Ty>
-    using DSVTraits = D3D12TaggedTraits<Ty, D3D12TraitTags::DSV>;
+    using DSVTraits = TaggedTraits<Ty, TraitTags::DSV>;
 
     template<class Ty>
-    using GraphicsTraits = D3D12TaggedTraits<Ty, D3D12TraitTags::Graphics>;
+    using GraphicsTraits = TaggedTraits<Ty, TraitTags::Graphics>;
 
     template<class Ty>
-    using RenderPassTraits = D3D12TaggedTraits<Ty, D3D12TraitTags::Render_Pass>;
+    using RenderPassTraits = TaggedTraits<Ty, TraitTags::Render_Pass>;
 
-    export template<D3D12TraitTags Tag>
+    export template<TraitTags Tag>
     struct TraitTagToTypeMapper
     {
         template<class Ty>
-        using type = D3D12TaggedTraits<Ty, Tag>;
+        using type = TaggedTraits<Ty, Tag>;
     };
     
-    export template<D3D12TraitTags Tag>
+    export template<TraitTags Tag>
     using GetTraitTagType = TraitTagToTypeMapper<Tag>::template type;
 
-    template<class Ty, D3D12TraitTags Tag>
-    struct D3D12TaggedWrapperMapper
+    template<class Ty, TraitTags Tag>
+    struct TaggedWrapperMapper
     {
         using type = IUnknownWrapper<Ty, TraitTagToTypeMapper<Tag>::type>;
     };
@@ -70,29 +70,32 @@ namespace TypedD3D
     struct ShaderVisibleMapper;
 
     export template<class Ty>
-    using Direct = D3D12TaggedWrapperMapper<Ty, D3D12TraitTags::Direct>::type;
+    using Wrapper = TypedD3D::Wrapper<Ty>;
 
     export template<class Ty>
-    using Compute = D3D12TaggedWrapperMapper<Ty, D3D12TraitTags::Compute>::type;
+    using Direct = TaggedWrapperMapper<Ty, TraitTags::Direct>::type;
 
     export template<class Ty>
-    using Copy = D3D12TaggedWrapperMapper<Ty, D3D12TraitTags::Copy>::type;
+    using Compute = TaggedWrapperMapper<Ty, TraitTags::Compute>::type;
 
     export template<class Ty>
-    using Bundle = D3D12TaggedWrapperMapper<Ty, D3D12TraitTags::Bundle>::type;
+    using Copy = TaggedWrapperMapper<Ty, TraitTags::Copy>::type;
 
     export template<class Ty>
-    using CBV_SRV_UAV = D3D12TaggedWrapperMapper<Ty, D3D12TraitTags::CBV_SRV_UAV>::type;
+    using Bundle = TaggedWrapperMapper<Ty, TraitTags::Bundle>::type;
 
     export template<class Ty>
-    using Sampler = D3D12TaggedWrapperMapper<Ty, D3D12TraitTags::Sampler>::type;
+    using CBV_SRV_UAV = TaggedWrapperMapper<Ty, TraitTags::CBV_SRV_UAV>::type;
 
     export template<class Ty>
-    using RTV = D3D12TaggedWrapperMapper<Ty, D3D12TraitTags::RTV>::type;
+    using Sampler = TaggedWrapperMapper<Ty, TraitTags::Sampler>::type;
 
     export template<class Ty>
-    using DSV = D3D12TaggedWrapperMapper<Ty, D3D12TraitTags::DSV>::type;
+    using RTV = TaggedWrapperMapper<Ty, TraitTags::RTV>::type;
 
     export template<class Ty>
-    using Graphics = D3D12TaggedWrapperMapper<Ty, D3D12TraitTags::Graphics>::type;
+    using DSV = TaggedWrapperMapper<Ty, TraitTags::DSV>::type;
+
+    export template<class Ty>
+    using Graphics = TaggedWrapperMapper<Ty, TraitTags::Graphics>::type;
 }

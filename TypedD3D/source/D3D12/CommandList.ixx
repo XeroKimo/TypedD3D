@@ -17,79 +17,76 @@ import :DescriptorHeap;
 import TypedD3D.Shared;
 
 
-namespace TypedD3D
+namespace TypedD3D::D3D12
 {
 	//Used for meta-programming internally
-	template<std::derived_from<ID3D12CommandList> Ty, D3D12TraitTags Type>
-	using D3D12GenericCommandList = IUnknownWrapper<Ty, TraitTagToTypeMapper<Type>::template type>;
+	template<std::derived_from<ID3D12CommandList> Ty, TraitTags Type>
+	using GenericCommandList = IUnknownWrapper<Ty, TraitTagToTypeMapper<Type>::template type>;
 
 	//Used for public APIs
 	export template<std::derived_from<ID3D12CommandList> Ty, D3D12_COMMAND_LIST_TYPE Type>
-	using D3D12CommandList_t = D3D12GenericCommandList<Ty, CommandListTypeToTraitTag<Type>>;
+	using CommandList_t = GenericCommandList<Ty, CommandListTypeToTraitTag<Type>>;
 
 	template<std::derived_from<ID3D12CommandList> Ty>
-	using D3D12RenderPass_t = D3D12GenericCommandList<Ty, D3D12TraitTags::Render_Pass>;
+	using RenderPass_t = GenericCommandList<Ty, TraitTags::Render_Pass>;
 
-	export using RenderPass4 = D3D12RenderPass_t<ID3D12GraphicsCommandList4>;
-	export using RenderPass5 = D3D12RenderPass_t<ID3D12GraphicsCommandList5>;
-	namespace CommandList
+	export using RenderPass4 = RenderPass_t<ID3D12GraphicsCommandList4>;
+	export using RenderPass5 = RenderPass_t<ID3D12GraphicsCommandList5>;
+	namespace Aliases
 	{
-		export template<class ListTy>
-			using Direct_t = D3D12CommandList_t<ListTy, D3D12_COMMAND_LIST_TYPE_DIRECT>;
+		template<class ListTy>
+		using Direct_t = CommandList_t<ListTy, D3D12_COMMAND_LIST_TYPE_DIRECT>;
 
-		export using DirectBase = Direct_t<ID3D12CommandList>;
-		export using Direct = Direct_t<ID3D12GraphicsCommandList>;
-		export using Direct1 = Direct_t<ID3D12GraphicsCommandList1>;
-		export using Direct2 = Direct_t<ID3D12GraphicsCommandList2>;
-		export using Direct3 = Direct_t<ID3D12GraphicsCommandList3>;
-		export using Direct4 = Direct_t<ID3D12GraphicsCommandList4>;
-		export using Direct5 = Direct_t<ID3D12GraphicsCommandList5>;
-		//using Direct6 = Internal::Direct<ID3D12GraphicsCommandList6>;
+		export using D3D12DirectCommandListBase = Direct_t<ID3D12CommandList>;
+		export using D3D12DirectCommandList = Direct_t<ID3D12GraphicsCommandList>;
+		export using D3D12DirectCommandList1 = Direct_t<ID3D12GraphicsCommandList1>;
+		export using D3D12DirectCommandList2 = Direct_t<ID3D12GraphicsCommandList2>;
+		export using D3D12DirectCommandList3 = Direct_t<ID3D12GraphicsCommandList3>;
+		export using D3D12DirectCommandList4 = Direct_t<ID3D12GraphicsCommandList4>;
+		export using D3D12DirectCommandList5 = Direct_t<ID3D12GraphicsCommandList5>;
 
-		export template<class ListTy>
-			using Bundle_t = D3D12CommandList_t<ListTy, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+		template<class ListTy>
+		using Bundle_t = CommandList_t<ListTy, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
 
-		export using Bundle = Bundle_t<ID3D12GraphicsCommandList>;
-		export using Bundle1 = Bundle_t<ID3D12GraphicsCommandList1>;
-		export using Bundle2 = Bundle_t<ID3D12GraphicsCommandList2>;
-		export using Bundle3 = Bundle_t<ID3D12GraphicsCommandList3>;
-		export using Bundle4 = Bundle_t<ID3D12GraphicsCommandList4>;
-		export using Bundle5 = Bundle_t<ID3D12GraphicsCommandList5>;
-		//using Bundle6 = Internal::Bundle<ID3D12GraphicsCommandList6>;
+		export using D3D12BundleCommandListBase = Bundle_t<ID3D12CommandList>;
+		export using D3D12BundleCommandList = Bundle_t<ID3D12GraphicsCommandList>;
+		export using D3D12BundleCommandList1 = Bundle_t<ID3D12GraphicsCommandList1>;
+		export using D3D12BundleCommandList2 = Bundle_t<ID3D12GraphicsCommandList2>;
+		export using D3D12BundleCommandList3 = Bundle_t<ID3D12GraphicsCommandList3>;
+		export using D3D12BundleCommandList4 = Bundle_t<ID3D12GraphicsCommandList4>;
+		export using D3D12BundleCommandList5 = Bundle_t<ID3D12GraphicsCommandList5>;
 
-		export template<class ListTy>
-			using Compute_t = D3D12CommandList_t<ListTy, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+		template<class ListTy>
+		using Compute_t = CommandList_t<ListTy, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
 
-		export using ComputeBase = Direct_t<ID3D12CommandList>;
-		export using Compute = Compute_t<ID3D12GraphicsCommandList>;
-		export using Compute1 = Compute_t<ID3D12GraphicsCommandList1>;
-		export using Compute2 = Compute_t<ID3D12GraphicsCommandList2>;
-		export using Compute3 = Compute_t<ID3D12GraphicsCommandList3>;
-		export using Compute4 = Compute_t<ID3D12GraphicsCommandList4>;
-		export using Compute5 = Compute_t<ID3D12GraphicsCommandList5>;
-		//using Compute6 = Internal::Compute<ID3D12GraphicsCommandList6>;
+		export using D3D12ComputeCommandListBase = Compute_t<ID3D12CommandList>;
+		export using D3D12ComputeCommandList = Compute_t<ID3D12GraphicsCommandList>;
+		export using D3D12ComputeCommandList1 = Compute_t<ID3D12GraphicsCommandList1>;
+		export using D3D12ComputeCommandList2 = Compute_t<ID3D12GraphicsCommandList2>;
+		export using D3D12ComputeCommandList3 = Compute_t<ID3D12GraphicsCommandList3>;
+		export using D3D12ComputeCommandList4 = Compute_t<ID3D12GraphicsCommandList4>;
+		export using D3D12ComputeCommandList5 = Compute_t<ID3D12GraphicsCommandList5>;
 
 		export template<class ListTy>
-			using Copy_t = D3D12CommandList_t<ListTy, D3D12_COMMAND_LIST_TYPE_COPY>;
+		using Copy_t = CommandList_t<ListTy, D3D12_COMMAND_LIST_TYPE_COPY>;
 
-		export using CopyBase = Direct_t<ID3D12CommandList>;
-		export using Copy = Copy_t<ID3D12GraphicsCommandList>;
-		export using Copy1 = Copy_t<ID3D12GraphicsCommandList1>;
-		export using Copy2 = Copy_t<ID3D12GraphicsCommandList2>;
-		export using Copy3 = Copy_t<ID3D12GraphicsCommandList3>;
-		export using Copy4 = Copy_t<ID3D12GraphicsCommandList4>;
-		export using Copy5 = Copy_t<ID3D12GraphicsCommandList5>;
-		//using Copy6 = Internal::Copy<ID3D12GraphicsCommandList6>;
+		export using D3D12CopyCommandListBase = Copy_t<ID3D12CommandList>;
+		export using D3D12CopyCommandList = Copy_t<ID3D12GraphicsCommandList>;
+		export using D3D12CopyCommandList1 = Copy_t<ID3D12GraphicsCommandList1>;
+		export using D3D12CopyCommandList2 = Copy_t<ID3D12GraphicsCommandList2>;
+		export using D3D12CopyCommandList3 = Copy_t<ID3D12GraphicsCommandList3>;
+		export using D3D12CopyCommandList4 = Copy_t<ID3D12GraphicsCommandList4>;
+		export using D3D12CopyCommandList5 = Copy_t<ID3D12GraphicsCommandList5>;
 	}
 
 	//Commandlist API restrictions https://docs.microsoft.com/en-us/windows/win32/direct3d12/recording-command-lists-and-bundles#command-list-api-restrictions
 
 #pragma region Untagged Traits
 	template<class Ty>
-	struct D3D12CommandListTraits;
+	struct CommandListTraits;
 
 	template<>
-	struct D3D12CommandListTraits<ID3D12CommandList>
+	struct CommandListTraits<ID3D12CommandList>
 	{
 		using value_type = ID3D12CommandList;
 		using pointer = ID3D12CommandList*;
@@ -117,7 +114,7 @@ namespace TypedD3D
 		private:
 			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
 			using derived_self = DerivedSelf;
-			using allocator_value_type = D3D12CommandAllocator_t<Type>;
+			using allocator_value_type = CommandAllocator_t<Type>;
 
 		private:
 			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
@@ -126,7 +123,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12CommandListTraits<ID3D12GraphicsCommandList>
+	struct CommandListTraits<ID3D12GraphicsCommandList>
 	{
 		using value_type = ID3D12GraphicsCommandList;
 		using pointer = ID3D12GraphicsCommandList*;
@@ -317,7 +314,7 @@ namespace TypedD3D
 				Get().EndQuery(&pQueryHeap, Type, Index);
 			}
 
-			void ExecuteBundle(D3D12CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> pCommandList);
+			void ExecuteBundle(CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> pCommandList);
 
 			void ExecuteIndirect(
 				ID3D12CommandSignature& commandSignature,
@@ -566,7 +563,7 @@ namespace TypedD3D
 		private:
 			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
 			using derived_self = DerivedSelf;
-			using allocator_value_type = D3D12CommandAllocator_t<Type>;
+			using allocator_value_type = CommandAllocator_t<Type>;
 
 		public:
 			HRESULT Reset(
@@ -636,7 +633,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12CommandListTraits<ID3D12GraphicsCommandList1>
+	struct CommandListTraits<ID3D12GraphicsCommandList1>
 	{
 		using value_type = ID3D12GraphicsCommandList1;
 		using pointer = ID3D12GraphicsCommandList1*;
@@ -748,7 +745,7 @@ namespace TypedD3D
 		private:
 			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
 			using derived_self = DerivedSelf;
-			using allocator_value_type = D3D12CommandAllocator_t<Type>;
+			using allocator_value_type = CommandAllocator_t<Type>;
 
 		public:
 			////Alphabetical order
@@ -766,7 +763,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12CommandListTraits<ID3D12GraphicsCommandList2>
+	struct CommandListTraits<ID3D12GraphicsCommandList2>
 	{
 		using value_type = ID3D12GraphicsCommandList2;
 		using pointer = ID3D12GraphicsCommandList2*;
@@ -798,7 +795,7 @@ namespace TypedD3D
 		private:
 			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
 			using derived_self = DerivedSelf;
-			using allocator_value_type = D3D12CommandAllocator_t<Type>;
+			using allocator_value_type = CommandAllocator_t<Type>;
 
 		public:
 			////Alphabetical order
@@ -810,7 +807,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12CommandListTraits<ID3D12GraphicsCommandList3>
+	struct CommandListTraits<ID3D12GraphicsCommandList3>
 	{
 		using value_type = ID3D12GraphicsCommandList3;
 		using pointer = ID3D12GraphicsCommandList3*;
@@ -844,7 +841,7 @@ namespace TypedD3D
 		private:
 			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
 			using derived_self = DerivedSelf;
-			using allocator_value_type = D3D12CommandAllocator_t<Type>;
+			using allocator_value_type = CommandAllocator_t<Type>;
 
 		public:
 			//In code order                                                          //Alphabetical order
@@ -857,7 +854,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12CommandListTraits<ID3D12GraphicsCommandList4>
+	struct CommandListTraits<ID3D12GraphicsCommandList4>
 	{
 		using value_type = ID3D12GraphicsCommandList4;
 		using pointer = ID3D12GraphicsCommandList4*;
@@ -872,7 +869,7 @@ namespace TypedD3D
 			using derived_self = DerivedSelf;
 
 		public:
-			D3D12RenderPass_t<ID3D12GraphicsCommandList4> BeginRenderPass(
+			RenderPass_t<ID3D12GraphicsCommandList4> BeginRenderPass(
 				std::span<const D3D12_RENDER_PASS_RENDER_TARGET_DESC> renderTargets,
 				const D3D12_RENDER_PASS_DEPTH_STENCIL_DESC* pDepthStencil,
 				D3D12_RENDER_PASS_FLAGS Flags);
@@ -979,7 +976,7 @@ namespace TypedD3D
 		private:
 			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
 			using derived_self = DerivedSelf;
-			using allocator_value_type = D3D12CommandAllocator_t<Type>;
+			using allocator_value_type = CommandAllocator_t<Type>;
 
 		public:
 			////Alphabetical order
@@ -1000,7 +997,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12CommandListTraits<ID3D12GraphicsCommandList5>
+	struct CommandListTraits<ID3D12GraphicsCommandList5>
 	{
 		using value_type = ID3D12GraphicsCommandList5;
 		using pointer = ID3D12GraphicsCommandList5*;
@@ -1042,7 +1039,7 @@ namespace TypedD3D
 		private:
 			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
 			using derived_self = DerivedSelf;
-			using allocator_value_type = D3D12CommandAllocator_t<Type>;
+			using allocator_value_type = CommandAllocator_t<Type>;
 
 		public:
 			////Alphabetical order
@@ -1054,8 +1051,8 @@ namespace TypedD3D
 		};
 	};
 
-	template<D3D12TraitTags Tag>
-	struct D3D12TaggedTraits<ID3D12CommandList, Tag>
+	template<TraitTags Tag>
+	struct TaggedTraits<ID3D12CommandList, Tag>
 	{
 		using value_type = ID3D12CommandList;
 		using pointer = ID3D12CommandList*;
@@ -1065,7 +1062,7 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12CommandListTraits<ID3D12CommandList>::InterfaceTagged<DerivedSelf, TraitTagToCommandListType<Tag>>
+		class Interface : public CommandListTraits<ID3D12CommandList>::InterfaceTagged<DerivedSelf, TraitTagToCommandListType<Tag>>
 		{
 
 		};
@@ -1074,7 +1071,7 @@ namespace TypedD3D
 
 #pragma region Direct Traits
 	template<>	
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList, D3D12TraitTags::Direct>
+	struct TaggedTraits<ID3D12GraphicsCommandList, TraitTags::Direct>
 	{
 		using value_type = ID3D12GraphicsCommandList;
 		using pointer = ID3D12GraphicsCommandList*;
@@ -1084,15 +1081,15 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12CommandList, D3D12TraitTags::Direct>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
+		class Interface : public TaggedTraits<ID3D12CommandList, TraitTags::Direct>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
 		{
 
 		};
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList1, D3D12TraitTags::Direct>
+	struct TaggedTraits<ID3D12GraphicsCommandList1, TraitTags::Direct>
 	{
 		using value_type = ID3D12GraphicsCommandList1;
 		using pointer = ID3D12GraphicsCommandList1*;
@@ -1102,15 +1099,15 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList, D3D12TraitTags::Direct>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList, TraitTags::Direct>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
 		{
 
 		};
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList2, D3D12TraitTags::Direct>
+	struct TaggedTraits<ID3D12GraphicsCommandList2, TraitTags::Direct>
 	{
 		using value_type = ID3D12GraphicsCommandList2;
 		using pointer = ID3D12GraphicsCommandList2*;
@@ -1120,15 +1117,15 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList1, D3D12TraitTags::Direct>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList1, TraitTags::Direct>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
 		{
 
 		};
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList3, D3D12TraitTags::Direct>
+	struct TaggedTraits<ID3D12GraphicsCommandList3, TraitTags::Direct>
 	{
 		using value_type = ID3D12GraphicsCommandList3;
 		using pointer = ID3D12GraphicsCommandList3*;
@@ -1138,15 +1135,15 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList2, D3D12TraitTags::Direct>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList2, TraitTags::Direct>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
 		{
 
 		};
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList4, D3D12TraitTags::Direct>
+	struct TaggedTraits<ID3D12GraphicsCommandList4, TraitTags::Direct>
 	{
 		using value_type = ID3D12GraphicsCommandList4;
 		using pointer = ID3D12GraphicsCommandList4*;
@@ -1156,15 +1153,15 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList3, D3D12TraitTags::Direct>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList3, TraitTags::Direct>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
 		{
 
 		};
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList5, D3D12TraitTags::Direct>
+	struct TaggedTraits<ID3D12GraphicsCommandList5, TraitTags::Direct>
 	{
 		using value_type = ID3D12GraphicsCommandList5;
 		using pointer = ID3D12GraphicsCommandList5*;
@@ -1174,8 +1171,8 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList4, D3D12TraitTags::Direct>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList4, TraitTags::Direct>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
 		{
 
 		};
@@ -1184,7 +1181,7 @@ namespace TypedD3D
 
 #pragma region Compute Traits
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList, D3D12TraitTags::Compute>
+	struct TaggedTraits<ID3D12GraphicsCommandList, TraitTags::Compute>
 	{
 		using value_type = ID3D12GraphicsCommandList;
 		using pointer = ID3D12GraphicsCommandList*;
@@ -1194,10 +1191,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12CommandList, D3D12TraitTags::Compute>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
+		class Interface : public TaggedTraits<ID3D12CommandList, TraitTags::Compute>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
 		private:
 			using Base::BeginEvent;
 			using Base::BeginQuery;
@@ -1254,7 +1251,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList1, D3D12TraitTags::Compute>
+	struct TaggedTraits<ID3D12GraphicsCommandList1, TraitTags::Compute>
 	{
 		using value_type = ID3D12GraphicsCommandList1;
 		using pointer = ID3D12GraphicsCommandList1*;
@@ -1264,10 +1261,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList, D3D12TraitTags::Compute>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList, TraitTags::Compute>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
 
 		private:
 			//using Base::AtomicCopyBufferUINT;
@@ -1280,7 +1277,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList2, D3D12TraitTags::Compute>
+	struct TaggedTraits<ID3D12GraphicsCommandList2, TraitTags::Compute>
 	{
 		using value_type = ID3D12GraphicsCommandList2;
 		using pointer = ID3D12GraphicsCommandList2*;
@@ -1290,10 +1287,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList1, D3D12TraitTags::Compute>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList1, TraitTags::Compute>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
 
 		private:
 			//using Base::WriteBufferImmediate;
@@ -1301,7 +1298,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList3, D3D12TraitTags::Compute>
+	struct TaggedTraits<ID3D12GraphicsCommandList3, TraitTags::Compute>
 	{
 		using value_type = ID3D12GraphicsCommandList3;
 		using pointer = ID3D12GraphicsCommandList3*;
@@ -1311,10 +1308,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList2, D3D12TraitTags::Compute>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList2, TraitTags::Compute>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
 
 		private:
 			//using Base::SetProtectedResourceSession;
@@ -1322,7 +1319,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList4, D3D12TraitTags::Compute>
+	struct TaggedTraits<ID3D12GraphicsCommandList4, TraitTags::Compute>
 	{
 		using value_type = ID3D12GraphicsCommandList4;
 		using pointer = ID3D12GraphicsCommandList4*;
@@ -1332,10 +1329,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList3, D3D12TraitTags::Compute>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList3, TraitTags::Compute>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
 		private:
 			using Base::BeginRenderPass;
 			using Base::BuildRaytracingAccelerationStructure;
@@ -1350,7 +1347,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList5, D3D12TraitTags::Compute>
+	struct TaggedTraits<ID3D12GraphicsCommandList5, TraitTags::Compute>
 	{
 		using value_type = ID3D12GraphicsCommandList5;
 		using pointer = ID3D12GraphicsCommandList5*;
@@ -1360,10 +1357,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList4, D3D12TraitTags::Compute>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList4, TraitTags::Compute>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
 		private:
 			using Base::RSSetShadingRate;
 			using Base::RSSetShadingRateImage;
@@ -1373,7 +1370,7 @@ namespace TypedD3D
 
 #pragma region Copy Traits
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList, D3D12TraitTags::Copy>
+	struct TaggedTraits<ID3D12GraphicsCommandList, TraitTags::Copy>
 	{
 		using value_type = ID3D12GraphicsCommandList;
 		using pointer = ID3D12GraphicsCommandList*;
@@ -1383,10 +1380,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12CommandList, D3D12TraitTags::Copy>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
+		class Interface : public TaggedTraits<ID3D12CommandList, TraitTags::Copy>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
 
 		private:
 			using Base::BeginEvent;
@@ -1444,7 +1441,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList1, D3D12TraitTags::Copy>
+	struct TaggedTraits<ID3D12GraphicsCommandList1, TraitTags::Copy>
 	{
 		using value_type = ID3D12GraphicsCommandList1;
 		using pointer = ID3D12GraphicsCommandList1*;
@@ -1454,10 +1451,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList, D3D12TraitTags::Copy>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList, TraitTags::Copy>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
 
 		private:
 			//using Base::AtomicCopyBufferUINT;
@@ -1470,7 +1467,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList2, D3D12TraitTags::Copy>
+	struct TaggedTraits<ID3D12GraphicsCommandList2, TraitTags::Copy>
 	{
 		using value_type = ID3D12GraphicsCommandList2;
 		using pointer = ID3D12GraphicsCommandList2*;
@@ -1480,10 +1477,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList1, D3D12TraitTags::Copy>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList1, TraitTags::Copy>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
 
 		private:
 			//using Base::WriteBufferImmediate;
@@ -1491,7 +1488,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList3, D3D12TraitTags::Copy>
+	struct TaggedTraits<ID3D12GraphicsCommandList3, TraitTags::Copy>
 	{
 		using value_type = ID3D12GraphicsCommandList3;
 		using pointer = ID3D12GraphicsCommandList3*;
@@ -1501,10 +1498,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList2, D3D12TraitTags::Copy>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList2, TraitTags::Copy>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
 
 		private:
 			//using Base::SetProtectedResourceSession;
@@ -1512,7 +1509,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList4, D3D12TraitTags::Copy>
+	struct TaggedTraits<ID3D12GraphicsCommandList4, TraitTags::Copy>
 	{
 		using value_type = ID3D12GraphicsCommandList4;
 		using pointer = ID3D12GraphicsCommandList4*;
@@ -1522,10 +1519,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList3, D3D12TraitTags::Copy>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList3, TraitTags::Copy>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
 
 		private:
 			using Base::BeginRenderPass;
@@ -1541,7 +1538,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList5, D3D12TraitTags::Copy>
+	struct TaggedTraits<ID3D12GraphicsCommandList5, TraitTags::Copy>
 	{
 		using value_type = ID3D12GraphicsCommandList5;
 		using pointer = ID3D12GraphicsCommandList5*;
@@ -1551,10 +1548,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList4, D3D12TraitTags::Copy>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList4, TraitTags::Copy>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
 		private:
 			using Base::RSSetShadingRate;
 			using Base::RSSetShadingRateImage;
@@ -1565,7 +1562,7 @@ namespace TypedD3D
 
 #pragma region Bundle Traits
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList, D3D12TraitTags::Bundle>
+	struct TaggedTraits<ID3D12GraphicsCommandList, TraitTags::Bundle>
 	{
 		using value_type = ID3D12GraphicsCommandList;
 		using pointer = ID3D12GraphicsCommandList*;
@@ -1575,10 +1572,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12CommandList, D3D12TraitTags::Bundle>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
+		class Interface : public TaggedTraits<ID3D12CommandList, TraitTags::Bundle>,
+			public CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
 
 		private:
 			using Base::BeginEvent;
@@ -1636,7 +1633,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList1, D3D12TraitTags::Bundle>
+	struct TaggedTraits<ID3D12GraphicsCommandList1, TraitTags::Bundle>
 	{
 		using value_type = ID3D12GraphicsCommandList1;
 		using pointer = ID3D12GraphicsCommandList1*;
@@ -1646,10 +1643,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList, D3D12TraitTags::Bundle>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList, TraitTags::Bundle>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
 
 		private:
 			using Base::AtomicCopyBufferUINT;
@@ -1662,7 +1659,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList2, D3D12TraitTags::Bundle>
+	struct TaggedTraits<ID3D12GraphicsCommandList2, TraitTags::Bundle>
 	{
 		using value_type = ID3D12GraphicsCommandList2;
 		using pointer = ID3D12GraphicsCommandList2*;
@@ -1672,10 +1669,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList1, D3D12TraitTags::Bundle>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList1, TraitTags::Bundle>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
 
 		private:
 			//using Base::WriteBufferImmediate;
@@ -1683,7 +1680,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList3, D3D12TraitTags::Bundle>
+	struct TaggedTraits<ID3D12GraphicsCommandList3, TraitTags::Bundle>
 	{
 		using value_type = ID3D12GraphicsCommandList3;
 		using pointer = ID3D12GraphicsCommandList3*;
@@ -1693,10 +1690,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList2, D3D12TraitTags::Bundle>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList2, TraitTags::Bundle>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
 
 		private:
 			using Base::SetProtectedResourceSession;
@@ -1704,7 +1701,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList4, D3D12TraitTags::Bundle>
+	struct TaggedTraits<ID3D12GraphicsCommandList4, TraitTags::Bundle>
 	{
 		using value_type = ID3D12GraphicsCommandList4;
 		using pointer = ID3D12GraphicsCommandList4*;
@@ -1714,10 +1711,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList3, D3D12TraitTags::Bundle>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList3, TraitTags::Bundle>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
 
 		private:
 			using Base::BeginRenderPass;
@@ -1733,7 +1730,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList5, D3D12TraitTags::Bundle>
+	struct TaggedTraits<ID3D12GraphicsCommandList5, TraitTags::Bundle>
 	{
 		using value_type = ID3D12GraphicsCommandList5;
 		using pointer = ID3D12GraphicsCommandList5*;
@@ -1743,10 +1740,10 @@ namespace TypedD3D
 
 
 		template<class DerivedSelf>
-		class Interface : public D3D12TaggedTraits<ID3D12GraphicsCommandList4, D3D12TraitTags::Bundle>::Interface<DerivedSelf>,
-			public D3D12CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
+		class Interface : public TaggedTraits<ID3D12GraphicsCommandList4, TraitTags::Bundle>::Interface<DerivedSelf>,
+			public CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
 		private:
 			//using Base::RSSetShadingRate;
 			//using Base::RSSetShadingRateImage;
@@ -1756,7 +1753,7 @@ namespace TypedD3D
 
 #pragma region RenderPass Traits
 	template<>
-	struct D3D12TaggedTraits<ID3D12CommandList, D3D12TraitTags::Render_Pass>
+	struct TaggedTraits<ID3D12CommandList, TraitTags::Render_Pass>
 	{
 		using value_type = ID3D12CommandList;
 		using pointer = ID3D12CommandList*;
@@ -1765,14 +1762,14 @@ namespace TypedD3D
 		using const_reference = const ID3D12CommandList&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D12CommandListTraits<ID3D12CommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
+		class Interface : public CommandListTraits<ID3D12CommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
 		{
 
 		};
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList, D3D12TraitTags::Render_Pass>
+	struct TaggedTraits<ID3D12GraphicsCommandList, TraitTags::Render_Pass>
 	{
 		using value_type = ID3D12GraphicsCommandList;
 		using pointer = ID3D12GraphicsCommandList*;
@@ -1781,11 +1778,11 @@ namespace TypedD3D
 		using const_reference = const ID3D12GraphicsCommandList&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D12CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>,
-			public D3D12TaggedTraits<ID3D12CommandList, D3D12TraitTags::Render_Pass>::Interface<DerivedSelf>
+		class Interface : public CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>,
+			public TaggedTraits<ID3D12CommandList, TraitTags::Render_Pass>::Interface<DerivedSelf>
 		{
 		private:
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
 
 		private:
 			using Base::BeginEvent;
@@ -1843,7 +1840,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList1, D3D12TraitTags::Render_Pass>
+	struct TaggedTraits<ID3D12GraphicsCommandList1, TraitTags::Render_Pass>
 	{
 		using value_type = ID3D12GraphicsCommandList1;
 		using pointer = ID3D12GraphicsCommandList1*;
@@ -1852,10 +1849,10 @@ namespace TypedD3D
 		using const_reference = const ID3D12GraphicsCommandList1&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D12CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>,
-			public D3D12TaggedTraits<ID3D12GraphicsCommandList, D3D12TraitTags::Render_Pass>::Interface<DerivedSelf>
+		class Interface : public CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>,
+			public TaggedTraits<ID3D12GraphicsCommandList, TraitTags::Render_Pass>::Interface<DerivedSelf>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList1>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
 
 		private:
 			using Base::AtomicCopyBufferUINT;
@@ -1868,7 +1865,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList2, D3D12TraitTags::Render_Pass>
+	struct TaggedTraits<ID3D12GraphicsCommandList2, TraitTags::Render_Pass>
 	{
 		using value_type = ID3D12GraphicsCommandList2;
 		using pointer = ID3D12GraphicsCommandList2*;
@@ -1877,10 +1874,10 @@ namespace TypedD3D
 		using const_reference = const ID3D12GraphicsCommandList2&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D12CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>,
-			public D3D12TaggedTraits<ID3D12GraphicsCommandList1, D3D12TraitTags::Render_Pass>::Interface<DerivedSelf>
+		class Interface : public CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>,
+			public TaggedTraits<ID3D12GraphicsCommandList1, TraitTags::Render_Pass>::Interface<DerivedSelf>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList2>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
 
 		private:
 			//using Base::WriteBufferImmediate;
@@ -1888,7 +1885,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList3, D3D12TraitTags::Render_Pass>
+	struct TaggedTraits<ID3D12GraphicsCommandList3, TraitTags::Render_Pass>
 	{
 		using value_type = ID3D12GraphicsCommandList3;
 		using pointer = ID3D12GraphicsCommandList3*;
@@ -1897,16 +1894,16 @@ namespace TypedD3D
 		using const_reference = const ID3D12GraphicsCommandList3&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D12CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>,
-			public D3D12TaggedTraits<ID3D12GraphicsCommandList2, D3D12TraitTags::Render_Pass>::Interface<DerivedSelf>
+		class Interface : public CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>,
+			public TaggedTraits<ID3D12GraphicsCommandList2, TraitTags::Render_Pass>::Interface<DerivedSelf>
 		{
 
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList3>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
 		};
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList4, D3D12TraitTags::Render_Pass>
+	struct TaggedTraits<ID3D12GraphicsCommandList4, TraitTags::Render_Pass>
 	{
 		using value_type = ID3D12GraphicsCommandList4;
 		using pointer = ID3D12GraphicsCommandList4*;
@@ -1915,10 +1912,10 @@ namespace TypedD3D
 		using const_reference = const ID3D12GraphicsCommandList4&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D12CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>,
-			public D3D12TaggedTraits<ID3D12GraphicsCommandList3, D3D12TraitTags::Render_Pass>::Interface<DerivedSelf>
+		class Interface : public CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>,
+			public TaggedTraits<ID3D12GraphicsCommandList3, TraitTags::Render_Pass>::Interface<DerivedSelf>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList4>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
 
 		private:
 			using Base::BeginRenderPass;
@@ -1934,7 +1931,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12TaggedTraits<ID3D12GraphicsCommandList5, D3D12TraitTags::Render_Pass>
+	struct TaggedTraits<ID3D12GraphicsCommandList5, TraitTags::Render_Pass>
 	{
 		using value_type = ID3D12GraphicsCommandList5;
 		using pointer = ID3D12GraphicsCommandList5*;
@@ -1943,10 +1940,10 @@ namespace TypedD3D
 		using const_reference = const ID3D12GraphicsCommandList5&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D12CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>,
-			public D3D12TaggedTraits<ID3D12GraphicsCommandList4, D3D12TraitTags::Render_Pass>::Interface<DerivedSelf>
+		class Interface : public CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>,
+			public TaggedTraits<ID3D12GraphicsCommandList4, TraitTags::Render_Pass>::Interface<DerivedSelf>
 		{
-			using Base = D3D12CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
+			using Base = CommandListTraits<ID3D12GraphicsCommandList5>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
 		private:
 			//using Base::RSSetShadingRate;
 			//using Base::RSSetShadingRateImage;
@@ -1955,13 +1952,13 @@ namespace TypedD3D
 #pragma endregion
 
 	template<class DerivedSelf>
-	void D3D12CommandListTraits<ID3D12GraphicsCommandList>::Interface<DerivedSelf>::ExecuteBundle(D3D12CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> pCommandList)
+	void CommandListTraits<ID3D12GraphicsCommandList>::Interface<DerivedSelf>::ExecuteBundle(CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> pCommandList)
 	{
 		Get().ExecuteBundle(pCommandList.Get());
 	}
 
 	template<class DerivedSelf>
-	D3D12RenderPass_t<ID3D12GraphicsCommandList4> D3D12CommandListTraits<ID3D12GraphicsCommandList4>::Interface<DerivedSelf>::BeginRenderPass(std::span<const D3D12_RENDER_PASS_RENDER_TARGET_DESC> renderTargets, const D3D12_RENDER_PASS_DEPTH_STENCIL_DESC* pDepthStencil, D3D12_RENDER_PASS_FLAGS Flags)
+	RenderPass_t<ID3D12GraphicsCommandList4> CommandListTraits<ID3D12GraphicsCommandList4>::Interface<DerivedSelf>::BeginRenderPass(std::span<const D3D12_RENDER_PASS_RENDER_TARGET_DESC> renderTargets, const D3D12_RENDER_PASS_DEPTH_STENCIL_DESC* pDepthStencil, D3D12_RENDER_PASS_FLAGS Flags)
 	{
 		Get().BeginRenderPass(static_cast<UINT>(renderTargets.size()), renderTargets.data(), pDepthStencil, Flags);
 		return RenderPass_t<ID3D12GraphicsCommandList4>(&Get());

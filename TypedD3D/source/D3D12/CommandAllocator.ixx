@@ -8,42 +8,42 @@ export module TypedD3D12:CommandAllocator;
 import TypedD3D.Shared;
 import :Wrappers;
 
-namespace TypedD3D
+namespace TypedD3D::D3D12
 {
 	export template<D3D12_COMMAND_LIST_TYPE Tag>
-	constexpr D3D12TraitTags CommandListTypeToTraitTag;
+	constexpr TraitTags CommandListTypeToTraitTag;
 
 	template<>
-	constexpr D3D12TraitTags CommandListTypeToTraitTag<D3D12_COMMAND_LIST_TYPE_DIRECT> = D3D12TraitTags::Direct;
+	constexpr TraitTags CommandListTypeToTraitTag<D3D12_COMMAND_LIST_TYPE_DIRECT> = TraitTags::Direct;
 
 	template<>
-	constexpr D3D12TraitTags CommandListTypeToTraitTag<D3D12_COMMAND_LIST_TYPE_COMPUTE> = D3D12TraitTags::Compute;
+	constexpr TraitTags CommandListTypeToTraitTag<D3D12_COMMAND_LIST_TYPE_COMPUTE> = TraitTags::Compute;
 
 	template<>
-	constexpr D3D12TraitTags CommandListTypeToTraitTag<D3D12_COMMAND_LIST_TYPE_COPY> = D3D12TraitTags::Copy;
+	constexpr TraitTags CommandListTypeToTraitTag<D3D12_COMMAND_LIST_TYPE_COPY> = TraitTags::Copy;
 
 	template<>
-	constexpr D3D12TraitTags CommandListTypeToTraitTag<D3D12_COMMAND_LIST_TYPE_BUNDLE> = D3D12TraitTags::Bundle;
+	constexpr TraitTags CommandListTypeToTraitTag<D3D12_COMMAND_LIST_TYPE_BUNDLE> = TraitTags::Bundle;
 
-	export template<D3D12TraitTags Tag>
+	export template<TraitTags Tag>
 	constexpr D3D12_COMMAND_LIST_TYPE TraitTagToCommandListType;
 
 	template<>
-	constexpr D3D12_COMMAND_LIST_TYPE TraitTagToCommandListType<D3D12TraitTags::Direct> = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	constexpr D3D12_COMMAND_LIST_TYPE TraitTagToCommandListType<TraitTags::Direct> = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
 	template<>
-	constexpr D3D12_COMMAND_LIST_TYPE TraitTagToCommandListType<D3D12TraitTags::Compute> = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+	constexpr D3D12_COMMAND_LIST_TYPE TraitTagToCommandListType<TraitTags::Compute> = D3D12_COMMAND_LIST_TYPE_COMPUTE;
 
 	template<>
-	constexpr D3D12_COMMAND_LIST_TYPE TraitTagToCommandListType< D3D12TraitTags::Copy> = D3D12_COMMAND_LIST_TYPE_COPY;
+	constexpr D3D12_COMMAND_LIST_TYPE TraitTagToCommandListType< TraitTags::Copy> = D3D12_COMMAND_LIST_TYPE_COPY;
 
 	template<>
-	constexpr D3D12_COMMAND_LIST_TYPE TraitTagToCommandListType<D3D12TraitTags::Bundle> = D3D12_COMMAND_LIST_TYPE_BUNDLE;
+	constexpr D3D12_COMMAND_LIST_TYPE TraitTagToCommandListType<TraitTags::Bundle> = D3D12_COMMAND_LIST_TYPE_BUNDLE;
 
 	export template<D3D12_COMMAND_LIST_TYPE Type>
 	using CommandAllocator_t = IUnknownWrapper<ID3D12CommandAllocator, TraitTagToTypeMapper<CommandListTypeToTraitTag<Type>>::template type>;
 
-	template<D3D12TraitTags Type>
+	template<TraitTags Type>
 	struct CommandAllocatorTraits
 	{
 		static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = TraitTagToCommandListType<Type>;
@@ -69,24 +69,24 @@ namespace TypedD3D
 		};
 	};
 
-	template<D3D12TraitTags Tag>
-		requires (Tag == D3D12TraitTags::Direct) ||
-		(Tag == D3D12TraitTags::Compute) ||
-		(Tag == D3D12TraitTags::Copy) ||
-		(Tag == D3D12TraitTags::Bundle)
-		struct D3D12TaggedTraits<ID3D12CommandAllocator, Tag> : CommandAllocatorTraits<Tag>
+	template<TraitTags Tag>
+		requires (Tag == TraitTags::Direct) ||
+		(Tag == TraitTags::Compute) ||
+		(Tag == TraitTags::Copy) ||
+		(Tag == TraitTags::Bundle)
+		struct TaggedTraits<ID3D12CommandAllocator, Tag> : CommandAllocatorTraits<Tag>
 	{
-		static constexpr D3D12TraitTags tag_value = Tag;
+		static constexpr TraitTags tag_value = Tag;
 	};
 
 	export template<D3D12_COMMAND_LIST_TYPE Type>
-	using D3D12CommandAllocator_t = IUnknownWrapper<ID3D12CommandAllocator, GetTraitTagType<CommandListTypeToTraitTag<Type>>>;
+	using CommandAllocator_t = IUnknownWrapper<ID3D12CommandAllocator, GetTraitTagType<CommandListTypeToTraitTag<Type>>>;
 
-	namespace CommandAllocator
+	namespace Aliases
 	{
-		export using Direct = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
-		export using Bundle = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-		export using Compute = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-		export using Copy = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_COPY>;
+		export using D3D12DirectCommandAllocator = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
+		export using D3D12BundleCommandAllocator = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+		export using D3D12ComputeCommandAllocator = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+		export using D3D12CopyCommandAllocator = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_COPY>;
 	}
 }

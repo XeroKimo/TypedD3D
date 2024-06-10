@@ -11,9 +11,9 @@ import :CommandAllocator;
 import :Wrappers;
 import TypedD3D.Shared;
 
-namespace TypedD3D
+namespace TypedD3D::D3D12
 {
-	struct D3D12ClockCalibrationData
+	struct ClockCalibrationData
 	{
 		UINT64 gpuTimestamp;
 		UINT64 cpuTimestamp;
@@ -61,9 +61,9 @@ namespace TypedD3D
 
 			void EndEvent() { Get().EndEvent(); }
 
-			D3D12ClockCalibrationData GetClockCalibration()
+			ClockCalibrationData GetClockCalibration()
 			{
-				D3D12ClockCalibrationData timeStamps;
+				ClockCalibrationData timeStamps;
 				Get().GetClockCalibration(&timeStamps.gpuTimestamp, &timeStamps.cpuTimestamp);
 				return timeStamps;
 			}
@@ -132,7 +132,7 @@ namespace TypedD3D
 		};
 	};
 
-	template<D3D12TraitTags Type>
+	template<TraitTags Type>
 	struct CommandQueueTraits
 	{
 		static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = TraitTagToCommandListType<Type>;
@@ -143,8 +143,8 @@ namespace TypedD3D
 		using reference = ID3D12CommandQueue&;
 		using const_reference = const ID3D12CommandQueue&;
 
-		using list_value_type = D3D12CommandList_t<ID3D12CommandList, command_list_value>;
-		using allocator_value_type = D3D12CommandAllocator_t<command_list_value>;
+		using list_value_type = CommandList_t<ID3D12CommandList, command_list_value>;
+		using allocator_value_type = CommandAllocator_t<command_list_value>;
 
 		template<class DerivedSelf>
 		class Interface : public CommonCommandQueueTraits::Interface<DerivedSelf>
@@ -189,24 +189,24 @@ namespace TypedD3D
 
 
 
-	template<std::derived_from<ID3D12CommandQueue> Ty, D3D12TraitTags Tag>
-		requires (Tag == D3D12TraitTags::Direct) ||
-	(Tag == D3D12TraitTags::Compute) ||
-		(Tag == D3D12TraitTags::Copy) ||
-		(Tag == D3D12TraitTags::Bundle)
-		struct D3D12TaggedTraits<Ty, Tag> : CommandQueueTraits<Tag>
+	template<std::derived_from<ID3D12CommandQueue> Ty, TraitTags Tag>
+		requires (Tag == TraitTags::Direct) ||
+	(Tag == TraitTags::Compute) ||
+		(Tag == TraitTags::Copy) ||
+		(Tag == TraitTags::Bundle)
+		struct TaggedTraits<Ty, Tag> : CommandQueueTraits<Tag>
 	{
-		static constexpr D3D12TraitTags tag_value = Tag;
+		static constexpr TraitTags tag_value = Tag;
 	};
 
 	template<D3D12_COMMAND_LIST_TYPE Type>
 	using D3D12CommandQueue_t = IUnknownWrapper<ID3D12CommandQueue, GetTraitTagType<CommandListTypeToTraitTag<Type>>>;
 
-	namespace CommandQueue
+	namespace Aliases
 	{
-		export using Direct = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
-		export using Bundle = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-		export using Compute = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-		export using Copy = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COPY>;
+		export using D3D12DirectCommandQueue = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
+		export using D3D12BundleCommandQueue = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
+		export using D3D12ComputeCommandQueue = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
+		export using D3D12CopyCommandQueue = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COPY>;
 	}
 }

@@ -18,9 +18,9 @@ export import :Resource;
 
 import TypedD3D.Legacy.D3D12Helpers;
 
-namespace TypedD3D
+namespace TypedD3D::D3D12
 {
-	struct D3D12MetaCommandParameterInfo
+	struct MetaCommandParameterInfo
 	{
 		UINT totalStructureSizeInBytes;
 		UINT parameterCount;
@@ -29,183 +29,183 @@ namespace TypedD3D
 
 #pragma region Device Feature Map
 	template<D3D12_FEATURE Feature>
-	struct D3D12DeviceFeatureMap;
+	struct DeviceFeatureMap;
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS>
+	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS>
 	{
 		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_ARCHITECTURE>
+	struct DeviceFeatureMap<D3D12_FEATURE_ARCHITECTURE>
 	{
 		using type = D3D12_FEATURE_DATA_ARCHITECTURE;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_FEATURE_LEVELS>
+	struct DeviceFeatureMap<D3D12_FEATURE_FEATURE_LEVELS>
 	{
 		using type = D3D12_FEATURE_DATA_FEATURE_LEVELS;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_FORMAT_SUPPORT>
+	struct DeviceFeatureMap<D3D12_FEATURE_FORMAT_SUPPORT>
 	{
 		using type = D3D12_FEATURE_DATA_FORMAT_INFO;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT>
+	struct DeviceFeatureMap<D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT>
 	{
 		using type = D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_SHADER_MODEL>
+	struct DeviceFeatureMap<D3D12_FEATURE_SHADER_MODEL>
 	{
 		using type = D3D12_FEATURE_DATA_SHADER_MODEL;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS1>
+	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS1>
 	{
 		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS1;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_SUPPORT>
+	struct DeviceFeatureMap<D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_SUPPORT>
 	{
 		using type = D3D12_FEATURE_DATA_PROTECTED_RESOURCE_SESSION_SUPPORT;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_ROOT_SIGNATURE>
+	struct DeviceFeatureMap<D3D12_FEATURE_ROOT_SIGNATURE>
 	{
 		using type = D3D12_FEATURE_DATA_ROOT_SIGNATURE;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_ARCHITECTURE1>
+	struct DeviceFeatureMap<D3D12_FEATURE_ARCHITECTURE1>
 	{
 		using type = D3D12_FEATURE_DATA_ARCHITECTURE1;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS2>
+	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS2>
 	{
 		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS2;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_SHADER_CACHE>
+	struct DeviceFeatureMap<D3D12_FEATURE_SHADER_CACHE>
 	{
 		using type = D3D12_FEATURE_DATA_SHADER_CACHE;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_COMMAND_QUEUE_PRIORITY>
+	struct DeviceFeatureMap<D3D12_FEATURE_COMMAND_QUEUE_PRIORITY>
 	{
 		using type = D3D12_FEATURE_DATA_COMMAND_QUEUE_PRIORITY;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS3>
+	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS3>
 	{
 		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS3;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_EXISTING_HEAPS>
+	struct DeviceFeatureMap<D3D12_FEATURE_EXISTING_HEAPS>
 	{
 		using type = D3D12_FEATURE_DATA_EXISTING_HEAPS;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS4>
+	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS4>
 	{
 		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS4;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_SERIALIZATION>
+	struct DeviceFeatureMap<D3D12_FEATURE_SERIALIZATION>
 	{
 		using type = D3D12_FEATURE_DATA_SERIALIZATION;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_CROSS_NODE>
+	struct DeviceFeatureMap<D3D12_FEATURE_CROSS_NODE>
 	{
 		using type = D3D12_FEATURE_DATA_CROSS_NODE;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS5>
+	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS5>
 	{
 		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS5;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS6>
+	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS6>
 	{
 		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS6;
 	};
 
 	//Requires Windows 11
 	//template<>
-	//struct D3D12DeviceFeatureMap<D3D12_FEATURE_DISPLAYABLE>
+	//struct DeviceFeatureMap<D3D12_FEATURE_DISPLAYABLE>
 	//{
 	//    using type = D3D12_FEATURE_DATA_DISPLAYABLE;
 	//};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_QUERY_META_COMMAND>
+	struct DeviceFeatureMap<D3D12_FEATURE_QUERY_META_COMMAND>
 	{
 		using type = D3D12_FEATURE_DATA_QUERY_META_COMMAND;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS7>
+	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS7>
 	{
 		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS7;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_TYPE_COUNT>
+	struct DeviceFeatureMap<D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_TYPE_COUNT>
 	{
 		using type = D3D12_FEATURE_DATA_PROTECTED_RESOURCE_SESSION_TYPE_COUNT;
 	};
 
 	template<>
-	struct D3D12DeviceFeatureMap<D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_TYPES>
+	struct DeviceFeatureMap<D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_TYPES>
 	{
 		using type = D3D12_FEATURE_DATA_PROTECTED_RESOURCE_SESSION_TYPES;
 	};
 
 	//Requires Windows 11
 	//template<>
-	//struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS8>
+	//struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS8>
 	//{
 	//    using type = D3D12_FEATURE_DATA_D3D12_OPTIONS8;
 	//};
 
 	//Requires Windows 11
 	//template<>
-	//struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS9>
+	//struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS9>
 	//{
 	//    using type = D3D12_FEATURE_DATA_D3D12_OPTIONS9;
 	//};
 
 	//Requires Windows 11
 	//template<>
-	//struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS10>
+	//struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS10>
 	//{
 	//    using type = D3D12_FEATURE_DATA_D3D12_OPTIONS10;
 	//};
 
 	//Requires Windows 11
 	//template<>
-	//struct D3D12DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS11>
+	//struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS11>
 	//{
 	//    using type = D3D12_FEATURE_DATA_D3D12_OPTIONS11;
 	//};
@@ -215,10 +215,10 @@ namespace TypedD3D
 	using Device_t = IUnknownWrapper<DeviceTy, UntaggedTraits>;
 
 	template<class Ty>
-	struct D3D12DeviceTraits;
+	struct DeviceTraits;
 
 	template<>
-	struct D3D12DeviceTraits<ID3D12Device>
+	struct DeviceTraits<ID3D12Device>
 	{
 		using value_type = ID3D12Device;
 		using pointer = ID3D12Device*;
@@ -261,7 +261,7 @@ namespace TypedD3D
 			template<D3D12_COMMAND_LIST_TYPE Type>
 			expected<CommandAllocator_t<Type>, HRESULT> CreateCommandAllocator()
 			{
-				using allocator_type = D3D12CommandAllocator_t<Type>;
+				using allocator_type = CommandAllocator_t<Type>;
 
 				return Helpers::D3D12::CreateCommandAllocator(Get(), Type)
 					.and_then([](auto commandAllocator) -> expected<allocator_type, HRESULT> { return allocator_type(commandAllocator); });
@@ -282,20 +282,20 @@ namespace TypedD3D
 			}
 
 			template<D3D12_COMMAND_LIST_TYPE Type>
-			expected<D3D12CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList(
+			expected<CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList(
 				CommandAllocator_t<Type> pCommandAllocator,
 				UINT nodeMask = 0,
 				ID3D12PipelineState* optInitialState = nullptr)
 			{
-				using command_list_type = TypedD3D::D3D12CommandList_t<ID3D12GraphicsCommandList, Type>;
+				using command_list_type = CommandList_t<ID3D12GraphicsCommandList, Type>;
 				return Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(Get(), Type, *pCommandAllocator.Get(), nodeMask, optInitialState)
 					.and_then([](auto commandList)->expected<command_list_type, HRESULT> { return command_list_type(commandList); });
 			}
 
 			template<D3D12_FEATURE Feature>
-			expected<typename D3D12DeviceFeatureMap<Feature>::type, HRESULT> CheckFeatureSupport()
+			expected<typename DeviceFeatureMap<Feature>::type, HRESULT> CheckFeatureSupport()
 			{
-				using feature_t = typename D3D12DeviceFeatureMap<Feature>::type;
+				using feature_t = typename DeviceFeatureMap<Feature>::type;
 				feature_t feature{};
 
 				HRESULT hr = Get().CheckFeatureSupport(Feature, &feature, sizeof(feature_t));
@@ -342,7 +342,7 @@ namespace TypedD3D
 			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
 			void CreateConstantBufferView(
 				const D3D12_CONSTANT_BUFFER_VIEW_DESC& pDesc,
-				D3D12_CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags> DestDescriptor)
+				CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags> DestDescriptor)
 			{
 				Get().CreateConstantBufferView(pDesc, DestDescriptor.Get());
 			}
@@ -352,7 +352,7 @@ namespace TypedD3D
 			void CreateShaderResourceView(
 				ID3D12Resource& pResource,
 				const D3D12_SHADER_RESOURCE_VIEW_DESC* optDesc,
-				D3D12_CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags> DestDescriptor)
+				CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags> DestDescriptor)
 			{
 				Get().CreateShaderResourceView(&pResource, optDesc, DestDescriptor.Get());
 			}
@@ -360,7 +360,7 @@ namespace TypedD3D
 			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
 			void CreateNullShaderResourceView(
 				const D3D12_SHADER_RESOURCE_VIEW_DESC& pDesc,
-				D3D12_CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags> DestDescriptor)
+				CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags> DestDescriptor)
 			{
 				Get().CreateShaderResourceView(nullptr, &pDesc, DestDescriptor.Get());
 			}
@@ -370,7 +370,7 @@ namespace TypedD3D
 				ID3D12Resource& pResource,
 				ID3D12Resource& pCounterResource,
 				const D3D12_UNORDERED_ACCESS_VIEW_DESC& pDesc,
-				D3D12_CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags> DestDescriptor)
+				CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags> DestDescriptor)
 			{
 				Get().CreateUnorderedAccessView(&pResource, &pCounterResource, &pDesc, DestDescriptor.Get());
 			}
@@ -378,14 +378,14 @@ namespace TypedD3D
 			void CreateRenderTargetView(
 				ID3D12Resource& Resource,
 				const D3D12_RENDER_TARGET_VIEW_DESC* optDesc,
-				RTV<::D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
+				RTV<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
 			{
 				Get().CreateRenderTargetView(&Resource, optDesc, DestDescriptor.Get());
 			}
 
 			void CreateNullRenderTargetView(
 				const D3D12_RENDER_TARGET_VIEW_DESC& Desc,
-				RTV<::D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
+				RTV<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
 			{
 				Get().CreateRenderTargetView(nullptr, &Desc, DestDescriptor.Get());
 			}
@@ -393,14 +393,14 @@ namespace TypedD3D
 			void CreateDepthStencilView(
 				ID3D12Resource& Resource,
 				const D3D12_DEPTH_STENCIL_VIEW_DESC* optDesc,
-				DSV<::D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
+				DSV<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
 			{
 				Get().CreateDepthStencilView(&Resource, optDesc, DestDescriptor.Get());
 			}
 
 			void CreateNullDepthStencilView(
 				const D3D12_DEPTH_STENCIL_VIEW_DESC& optDesc,
-				DSV<::D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
+				DSV<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
 			{
 				Get().CreateDepthStencilView(nullptr, optDesc, DestDescriptor.Get());
 			}
@@ -408,7 +408,7 @@ namespace TypedD3D
 			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
 			void CreateSampler(
 				const D3D12_SAMPLER_DESC& pDesc,
-				D3D12_CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, HeapFlags> DestDescriptor)
+				CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, HeapFlags> DestDescriptor)
 			{
 				Get().CreateSampler(&pDesc, DestDescriptor.Get());
 			}
@@ -416,10 +416,10 @@ namespace TypedD3D
 
 			void CopyDescriptors(
 				UINT NumDestDescriptorRanges,
-				const ::D3D12_CPU_DESCRIPTOR_HANDLE* pDestDescriptorRangeStarts,
+				const D3D12_CPU_DESCRIPTOR_HANDLE* pDestDescriptorRangeStarts,
 				const UINT* pDestDescriptorRangeSizes,
 				UINT NumSrcDescriptorRanges,
-				const ::D3D12_CPU_DESCRIPTOR_HANDLE* pSrcDescriptorRangeStarts,
+				const D3D12_CPU_DESCRIPTOR_HANDLE* pSrcDescriptorRangeStarts,
 				const UINT* pSrcDescriptorRangeSizes,
 				D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapsType)
 			{
@@ -660,7 +660,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12DeviceTraits<ID3D12Device1>
+	struct DeviceTraits<ID3D12Device1>
 	{
 		using value_type = ID3D12Device1;
 		using pointer = ID3D12Device1*;
@@ -669,7 +669,7 @@ namespace TypedD3D
 		using const_reference = const ID3D12Device1&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D12DeviceTraits<ID3D12Device>::Interface<DerivedSelf>
+		class Interface : public DeviceTraits<ID3D12Device>::Interface<DerivedSelf>
 		{
 		private:
 			using derived_self = DerivedSelf;
@@ -719,7 +719,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12DeviceTraits<ID3D12Device2>
+	struct DeviceTraits<ID3D12Device2>
 	{
 		using value_type = ID3D12Device2;
 		using pointer = ID3D12Device2*;
@@ -728,7 +728,7 @@ namespace TypedD3D
 		using const_reference = const ID3D12Device2&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D12DeviceTraits<ID3D12Device1>::Interface<DerivedSelf>
+		class Interface : public DeviceTraits<ID3D12Device1>::Interface<DerivedSelf>
 		{
 		private:
 			using derived_self = DerivedSelf;
@@ -747,7 +747,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12DeviceTraits<ID3D12Device3>
+	struct DeviceTraits<ID3D12Device3>
 	{
 		using value_type = ID3D12Device3;
 		using pointer = ID3D12Device3*;
@@ -756,7 +756,7 @@ namespace TypedD3D
 		using const_reference = const ID3D12Device3&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D12DeviceTraits<ID3D12Device2>::Interface<DerivedSelf>
+		class Interface : public DeviceTraits<ID3D12Device2>::Interface<DerivedSelf>
 		{
 		private:
 			using derived_self = DerivedSelf;
@@ -794,7 +794,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12DeviceTraits<ID3D12Device4>
+	struct DeviceTraits<ID3D12Device4>
 	{
 		using value_type = ID3D12Device4;
 		using pointer = ID3D12Device4*;
@@ -803,14 +803,14 @@ namespace TypedD3D
 		using const_reference = const ID3D12Device4&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D12DeviceTraits<ID3D12Device3>::Interface<DerivedSelf>
+		class Interface : public DeviceTraits<ID3D12Device3>::Interface<DerivedSelf>
 		{
 		private:
 			using derived_self = DerivedSelf;
 
 		public:
 			template<D3D12_COMMAND_LIST_TYPE Type>
-			expected<TypedD3D::D3D12CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList1(
+			expected<CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList1(
 				UINT nodeMask,
 				D3D12_COMMAND_LIST_FLAGS flags)
 			{
@@ -819,7 +819,7 @@ namespace TypedD3D
 				if(!cl.has_value())
 					return tl::unexpected(cl.error());
 
-				return TypedD3D::D3D12CommandList_t<ID3D12GraphicsCommandList, Type>(cl.value());
+				return CommandList_t<ID3D12GraphicsCommandList, Type>(cl.value());
 			}
 
 			expected<Microsoft::WRL::ComPtr<ID3D12ProtectedResourceSession>, HRESULT> CreateProtectedResourceSession(
@@ -889,7 +889,7 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct D3D12DeviceTraits<ID3D12Device5>
+	struct DeviceTraits<ID3D12Device5>
 	{
 		using value_type = ID3D12Device5;
 		using pointer = ID3D12Device5*;
@@ -898,7 +898,7 @@ namespace TypedD3D
 		using const_reference = const ID3D12Device5&;
 
 		template<class DerivedSelf>
-		class Interface : public D3D12DeviceTraits<ID3D12Device4>::Interface<DerivedSelf>
+		class Interface : public DeviceTraits<ID3D12Device4>::Interface<DerivedSelf>
 		{
 		private:
 			using derived_self = DerivedSelf;
@@ -944,12 +944,12 @@ namespace TypedD3D
 				return pNumMetaCommandParams;
 			}
 
-			expected<TypedD3D::D3D12MetaCommandParameterInfo, HRESULT> STDMETHODCALLTYPE EnumerateMetaCommandParameters(
+			expected<MetaCommandParameterInfo, HRESULT> STDMETHODCALLTYPE EnumerateMetaCommandParameters(
 				_In_  REFGUID CommandId,
 				_In_  D3D12_META_COMMAND_PARAMETER_STAGE Stage,
 				UINT parameterCount)
 			{
-				TypedD3D::D3D12MetaCommandParameterInfo info{};
+				MetaCommandParameterInfo info{};
 
 				info.parameterCount = parameterCount;
 				info.parameterDescs.resize(parameterCount);
@@ -1029,29 +1029,18 @@ namespace TypedD3D
 		};
 	};
 
-	template<std::derived_from<ID3D12Device> Ty>
-	struct UntaggedTraits<Ty>
+	namespace Aliases
 	{
-		using value_type = Ty;
-		using pointer = Ty*;
-		using const_pointer = const Ty*;
-		using reference = Ty&;
-		using const_reference = const Ty&;
+		export using Device = Device_t<ID3D12Device>;
+		export using Device1 = Device_t<ID3D12Device1>;
+		export using Device2 = Device_t<ID3D12Device2>;
+		export using Device3 = Device_t<ID3D12Device3>;
+		export using Device4 = Device_t<ID3D12Device4>;
+		export using Device5 = Device_t<ID3D12Device5>;
+	}
 
-		template<class DerivedSelf>
-		using Interface = typename D3D12DeviceTraits<Ty>::template Interface<DerivedSelf>;
-	};
-
-
-	export using D3D12Device = Device_t<ID3D12Device>;
-	export using D3D12Device1 = Device_t<ID3D12Device1>;
-	export using D3D12Device2 = Device_t<ID3D12Device2>;
-	export using D3D12Device3 = Device_t<ID3D12Device3>;
-	export using D3D12Device4 = Device_t<ID3D12Device4>;
-	export using D3D12Device5 = Device_t<ID3D12Device5>;
-
-	export template<class DeviceTy = D3D12Device>
-	auto CreateD3D12Device(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
+	export template<class DeviceTy = Aliases::Device>
+	auto CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
 	{
 		if constexpr(std::is_base_of_v<ID3D12Device, DeviceTy>)
 		{
@@ -1064,4 +1053,20 @@ namespace TypedD3D
 				.and_then([](auto device) -> expected<DeviceTy, HRESULT> { return DeviceTy(device); });
 		}
 	}
+}
+
+namespace TypedD3D
+{
+	template<std::derived_from<ID3D12Device> Ty>
+	struct UntaggedTraits<Ty>
+	{
+		using value_type = Ty;
+		using pointer = Ty*;
+		using const_pointer = const Ty*;
+		using reference = Ty&;
+		using const_reference = const Ty&;
+
+		template<class DerivedSelf>
+		using Interface = typename D3D12::DeviceTraits<Ty>::template Interface<DerivedSelf>;
+	};
 }

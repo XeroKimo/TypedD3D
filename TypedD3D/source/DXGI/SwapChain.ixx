@@ -317,7 +317,7 @@ namespace TypedD3D
 				DXGI_FORMAT Format,
 				UINT SwapChainFlags,
 				std::span<UINT> pCreationNodeMask,
-				std::span<Direct<QueueTy>> ppPresentQueue)
+				std::span<TypedD3D12::Direct<QueueTy>> ppPresentQueue)
 			{
 				std::unique_ptr<IUnknown[]> queues = std::make_unique<IUnknown[]>(ppPresentQueue.size());
 

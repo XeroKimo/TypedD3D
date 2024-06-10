@@ -71,7 +71,7 @@ namespace TypedD3D
 			}
 
 			template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, std::derived_from<ID3D12CommandQueue> QueueTy>
-			expected<Wrapper<SwapChainTy>, HRESULT> CreateSwapChain(Direct<QueueTy> commandQueue, const DXGI_SWAP_CHAIN_DESC& pDesc)
+			expected<Wrapper<SwapChainTy>, HRESULT> CreateSwapChain(TypedD3D12::Direct<QueueTy> commandQueue, const DXGI_SWAP_CHAIN_DESC& pDesc)
 			{
 				return UnknownObjectForwardFunction<SwapChainTy>(&value_type::CreateSwapChain, Get(), commandQueue.Get(), &pDesc)
 					.and_then([](auto swapChain) -> expected<Wrapper<SwapChainTy>, HRESULT> { return Wrapper<SwapChainTy>(swapChain); });
@@ -301,7 +301,7 @@ namespace TypedD3D
 
 			template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, std::derived_from<ID3D12CommandQueue> QueueTy>
 			expected<Wrapper<SwapChainTy>, HRESULT> CreateSwapChainForComposition(
-				Direct<QueueTy> pDevice,
+				TypedD3D12::Direct<QueueTy> pDevice,
 				const DXGI_SWAP_CHAIN_DESC1& pDesc,
 				IDXGIOutput* optRestrictToOutput)
 			{

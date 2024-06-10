@@ -78,6 +78,12 @@ namespace TypedD3D
             reference Get() { return *ToDerived().derived_self::Get(); }
         };
     };
+}
 
-    export using D3D12Resource = IUnknownWrapper<ID3D12Resource, UntaggedTraits>;
+namespace TypedD3D::D3D12
+{
+    namespace Aliases
+    {
+        export using D3D12Resource = IUnknownWrapper<ID3D12Resource, UntaggedTraits>;
+    }
 }
