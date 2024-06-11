@@ -172,7 +172,7 @@ namespace TypedD3D::D3D11
 
 			void IASetVertexBuffers(
 				UINT StartSlot,
-				xk::span_tuple<Wrapper<ID3D11Buffer>, std::dynamic_extent, const Stride, const Offset> vertexBuffers)
+				xk::dynamic_extent_span_tuple<Wrapper<ID3D11Buffer>, const Stride, const Offset> vertexBuffers)
 			{
 				std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer * []>(vertexBuffers.size());
 				for(size_t i = 0; i < vertexBuffers.size(); i++)
@@ -377,7 +377,7 @@ namespace TypedD3D::D3D11
 			}
 
 			void SOSetTargets(
-				xk::span_tuple<Wrapper<ID3D11Buffer>, std::dynamic_extent, const Offset> ppSOTargets)
+				xk::dynamic_extent_span_tuple<Wrapper<ID3D11Buffer>, const Offset> ppSOTargets)
 			{
 				std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer * []>(ppSOTargets.size());
 				for(size_t i = 0; i < ppSOTargets.size(); i++)
@@ -660,7 +660,7 @@ namespace TypedD3D::D3D11
 
 			void CSSetUnorderedAccessViews(
 				UINT StartSlot,
-				xk::span_tuple<Wrapper<ID3D11UnorderedAccessView>, std::dynamic_extent, const UINT> ppUnorderedAccessViews)
+				xk::dynamic_extent_span_tuple<Wrapper<ID3D11UnorderedAccessView>, const UINT> ppUnorderedAccessViews)
 			{
 				std::unique_ptr<ID3D11UnorderedAccessView* []> rawBuffers = std::make_unique<ID3D11UnorderedAccessView * []>(ppUnorderedAccessViews.size());
 				for(size_t i = 0; i < ppUnorderedAccessViews.size(); i++)

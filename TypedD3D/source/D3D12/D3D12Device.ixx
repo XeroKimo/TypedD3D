@@ -667,7 +667,7 @@ namespace TypedD3D::D3D12
 			}
 
 			void SetEventOnMultipleFenceCompletion(
-				xk::span_tuple<const ID3D12Fence*, std::dynamic_extent, const FenceValue> fences,
+				xk::dynamic_extent_span_tuple<const ID3D12Fence*, const FenceValue> fences,
 				D3D12_MULTIPLE_FENCE_WAIT_FLAGS Flags,
 				HANDLE hEvent)
 			{

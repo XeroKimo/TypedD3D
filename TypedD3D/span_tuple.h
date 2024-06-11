@@ -19,8 +19,12 @@
 
 namespace xk
 {
-    template<class First, size_t Extent, class... Ty>
+    template<size_t Extent, class First, class... Ty>
     class span_tuple;
+
+    template<class First, class... Ty>
+    using dynamic_extent_span_tuple = span_tuple<std::dynamic_extent, First, Ty...>;
+
 
     template <class First, class... Others>
     struct span_tuple_iterator {
@@ -183,7 +187,7 @@ namespace xk
     constexpr bool is_any_optional = (is_optional_parameter<Ty> || ...);
 
 
-    template<class First, size_t Extent, class... Ty>
+    template<size_t Extent, class First, class... Ty>
     struct Extent_type
     {
         using pointer = std::tuple<First*, Ty*...>;
@@ -197,7 +201,7 @@ namespace xk
     };
 
     template<class First, class... Ty>
-    struct Extent_type<First, std::dynamic_extent, Ty...>
+    struct Extent_type<std::dynamic_extent, First, Ty...>
     {
         using pointer = std::tuple<First*, Ty*...>;
 
@@ -213,11 +217,11 @@ namespace xk
         size_t m_size{ 0 };
     };
 
-    template<class First, size_t Extent = std::dynamic_extent, class... Ty>
-    class span_tuple : private Extent_type<First, Extent, Ty...>
+    template<size_t Extent, class First, class... Ty>
+    class span_tuple : private Extent_type<Extent, First, Ty...>
     {
     private:
-        using base = Extent_type<First, Extent, Ty...>;
+        using base = Extent_type<Extent, First, Ty...>;
         using base::m_data;
         using base::m_size;
 
@@ -237,7 +241,11 @@ namespace xk
 
     public:
         constexpr span_tuple() noexcept requires (Extent == 0 || Extent == std::dynamic_extent) = default;
+        constexpr span_tuple(First& first, Ty&... others) noexcept requires (Extent == 1)
+            : base(std::forward_as_tuple(&first, &others...), Extent)
+        {
 
+        }
         /// <summary>
         /// begin iterator + size based constructor
         /// </summary>
@@ -319,16 +327,61 @@ namespace xk
 
         }
 
+
+        /// <summary>
+        /// c-array based constructor with dynamic others
+        /// </summary>
+        /// <param name="first"> The c-array for the first element </param>
+        /// <param name="elm"> The c-arrays for the other elements </param>
+        template<size_t Size>
+            requires(Extent == std::dynamic_extent)
+        span_tuple(First(&first)[Size], Ty*... elm) :
+            base(std::forward_as_tuple(first, elm...), Size)
+        {
+
+        }
+
+        /// <summary>
+        /// std::array based constructor with dynamic others
+        /// </summary>
+        /// <param name="first"> The std::array for the first element </param>
+        /// <param name="elm"> The std::arrays for the other elements </param>
+        template <class OtherFirst, class... OtherTy, size_t Size>
+            requires (Extent == std::dynamic_extent) &&
+        std::is_convertible_v<OtherFirst(*)[], First(*)[]> &&
+            (std::is_convertible_v<OtherTy(*)[], Ty(*)[]> && ...)
+            span_tuple(std::array<OtherFirst, Size>& first, OtherTy*... elm) :
+            base(std::forward_as_tuple(first.data(), elm...), std::size(first))
+        {
+
+        }
+
+
+        /// <summary>
+        /// const std::array based constructor with dynamic others
+        /// </summary>
+        /// <param name="first"> The std::array for the first element </param>
+        /// <param name="elm"> The std::arrays for the other elements </param>
+        template <class OtherFirst, class... OtherTy, size_t Size>
+            requires (Extent == std::dynamic_extent) &&
+        std::is_convertible_v<const OtherFirst(*)[], First(*)[]> &&
+            (std::is_convertible_v<const OtherTy(*)[], Ty(*)[]>, ...)
+            span_tuple(const std::array<OtherFirst, Size>& first, const OtherTy*... elm) :
+            base(std::forward_as_tuple(first.data(), elm...), std::size(first))
+        {
+
+        }
+
         /// <summary>
         /// A copy / converting constructor that can take in other sized span_tuples. Cannot take in span_tuples with optional parameters
         /// </summary>
         /// <param name="other"> </param>
         template <class OtherFirst, class... OtherTy, size_t OtherExtent>
-            requires (Extent == std::dynamic_extent || OtherExtent == std::dynamic_extent || Extent == OtherExtent) &&
+            requires ((Extent == std::dynamic_extent && OtherExtent != std::dynamic_extent) || Extent == OtherExtent) &&
         std::is_convertible_v<OtherFirst(*)[], First(*)[]> &&
             (std::is_convertible_v<OtherTy(*)[], Ty(*)[]> && ...) &&
             (!is_any_optional<OtherTy...>)
-            constexpr explicit(Extent != std::dynamic_extent && OtherExtent == std::dynamic_extent) span_tuple(const span_tuple<OtherFirst, OtherExtent, OtherTy...>& other) noexcept
+            constexpr explicit(Extent != std::dynamic_extent && OtherExtent == std::dynamic_extent) span_tuple(const span_tuple<OtherExtent, OtherFirst, OtherTy...>& other) noexcept
             : base(other.data(), other.size())
         {
             if constexpr(Extent != std::dynamic_extent)
@@ -536,12 +589,12 @@ namespace xk
         constexpr bool empty() const noexcept { return m_size == 0; }
 
     //Creates a std::span from a span_tuple at the given Index
-        template<size_t Index, class First, size_t Extent, class... Ty>
-        friend constexpr auto get(span_tuple<First, Extent, Ty...> span);
+        template<size_t Index, size_t Extent, class First, class... Ty>
+        friend constexpr auto get(span_tuple<Extent, First, Ty...> span);
 
     //Creates a std::span from a span_tuple at the given Index
-        template<class Index, class First, size_t Extent, class... Ty>
-        friend constexpr auto get(span_tuple<First, Extent, Ty...> span);
+        template<class Index, size_t Extent, class First, class... Ty>
+        friend constexpr auto get(span_tuple<Extent, First, Ty...> span);
 
 
     // [span.iterators] Iterator support
@@ -727,10 +780,10 @@ namespace xk
 
     template<class First, class... Ty>
         requires is_any_optional<Ty...>
-    class span_tuple<First, std::dynamic_extent, Ty...> : private Extent_type<First, std::dynamic_extent, span_element_t<Ty>...>
+    class span_tuple<std::dynamic_extent, First, Ty...> : private Extent_type<std::dynamic_extent, First, span_element_t<Ty>...>
     {
     private:
-        using base = Extent_type<First, std::dynamic_extent, span_element_t<Ty>...>;
+        using base = Extent_type<std::dynamic_extent, First, span_element_t<Ty>...>;
         using base::m_data;
         using base::m_size;
 
@@ -817,13 +870,54 @@ namespace xk
         }
 
         /// <summary>
+        /// c-array based constructor with dynamic others
+        /// </summary>
+        /// <param name="first"> The c-array for the first element </param>
+        /// <param name="elm"> The c-arrays for the other elements </param>
+        template<size_t Size>
+        span_tuple(First(&first)[Size], Ty*... elm) :
+            base(std::forward_as_tuple(first, elm...), Size)
+        {
+
+        }
+
+        /// <summary>
+        /// std::array based constructor with dynamic others
+        /// </summary>
+        /// <param name="first"> The std::array for the first element </param>
+        /// <param name="elm"> The std::arrays for the other elements </param>
+        template <class OtherFirst, class... OtherTy, size_t Size>
+            requires std::is_convertible_v<OtherFirst(*)[], First(*)[]> &&
+            (std::is_convertible_v<OtherTy(*)[], Ty(*)[]> && ...)
+            span_tuple(std::array<OtherFirst, Size>& first, OtherTy*... elm) :
+            base(std::forward_as_tuple(first.data(), elm...), std::size(first))
+        {
+
+        }
+
+
+        /// <summary>
+        /// const std::array based constructor with dynamic others
+        /// </summary>
+        /// <param name="first"> The std::array for the first element </param>
+        /// <param name="elm"> The std::arrays for the other elements </param>
+        template <class OtherFirst, class... OtherTy, size_t Size>
+            requires std::is_convertible_v<const OtherFirst(*)[], First(*)[]> &&
+            (std::is_convertible_v<const OtherTy(*)[], Ty(*)[]>, ...)
+            span_tuple(const std::array<OtherFirst, Size>& first, const OtherTy*... elm) :
+            base(std::forward_as_tuple(first.data(), elm...), std::size(first))
+        {
+
+        }
+
+        /// <summary>
         /// A copy / converting constructor that can take in other sized span_tuples
         /// </summary>
         /// <param name="other"> </param>
         template <class OtherFirst, class... OtherTy, size_t OtherExtent>
             requires std::is_convertible_v<OtherFirst(*)[], First(*)[]> &&
         (std::is_convertible_v<OtherTy(*)[], Ty(*)[]> && ...)
-            constexpr explicit(OtherExtent == std::dynamic_extent) span_tuple(const span_tuple<OtherFirst, OtherExtent, OtherTy...>& other) noexcept
+            constexpr explicit(OtherExtent == std::dynamic_extent) span_tuple(const span_tuple<OtherExtent, OtherFirst, OtherTy...>& other) noexcept
             : base(other.data(), other.size())
         {
 
@@ -901,43 +995,109 @@ namespace xk
         constexpr bool empty() const noexcept { return std::get<Index>(m_data) == nullptr || m_size == 0; }
 
     //Creates a std::span from a span_tuple at the given Index
-        template<size_t Index, class First, size_t Extent, class... Ty>
-        friend constexpr auto get(span_tuple<First, Extent, Ty...> span);
+        template<size_t Index, size_t Extent, class First, class... Ty>
+        friend constexpr auto get(span_tuple<Extent, First, Ty...> span);
 
     //Creates a std::span from a span_tuple at the given Index
-        template<class Index, class First, size_t Extent, class... Ty>
-        friend constexpr auto get(span_tuple<First, Extent, Ty...> span);
+        template<class Index, size_t Extent, class First, class... Ty>
+        friend constexpr auto get(span_tuple<Extent, First, Ty...> span);
     };
 
-    template<class First, size_t Extent>
-    class span_tuple<First, Extent>;
+    template<size_t Extent, class First>
+    class span_tuple<Extent, First>;
 
     //Creates a std::span from a span_tuple at the given Index
-    template<size_t Index, class First, size_t Extent, class... Ty>
-    constexpr auto get(span_tuple<First, Extent, Ty...> span)
+    template<size_t Index, size_t Extent, class First, class... Ty>
+    constexpr auto get(span_tuple<Extent, First, Ty...> span)
     {
-        return std::span<std::tuple_element_t<Index, typename span_tuple<First, Extent, Ty...>::value_type>, Extent>(get<Index>(span.data()), span.size());
+        return std::span<std::tuple_element_t<Index, typename span_tuple<Extent, First, Ty...>::value_type>, Extent>(get<Index>(span.data()), span.size());
     }
 
     //Creates a std::span from a span_tuple at the given Index
-    template<class Index, class First, size_t Extent, class... Ty>
-    constexpr auto get(span_tuple<First, Extent, Ty...> span)
+    template<class Index, size_t Extent, class First, class... Ty>
+    constexpr auto get(span_tuple<Extent, First, Ty...> span)
     {
         return std::span<Index, Extent>(std::get<Index*>(span.data()), span.size());
+    }
+
+    template<std::contiguous_iterator Ty, std::contiguous_iterator... OtherTy>
+    span_tuple<::std::dynamic_extent, typename Ty::value_type, typename OtherTy::value_type...> make_span_tuple(Ty first, size_t count, OtherTy... others)
+    {
+        return span_tuple<::std::dynamic_extent, typename Ty::value_type, typename OtherTy::value_type...>{first, count, others...};
+    }
+
+    template<class Ty, class... OtherTy>
+    span_tuple<1, Ty, OtherTy...> make_span_tuple(Ty& first, OtherTy&... others)
+    {
+        return span_tuple<1, Ty, OtherTy...>{ first, others... };
+    }
+
+    template<std::contiguous_iterator Ty, std::sized_sentinel_for<Ty> _Sentinel, std::contiguous_iterator... OtherTy>
+    span_tuple<::std::dynamic_extent, typename Ty::value_type, typename OtherTy::value_type...> make_span_tuple(Ty first, _Sentinel _Last, OtherTy... others)
+    {
+        return span_tuple<::std::dynamic_extent, typename Ty::value_type, typename OtherTy::value_type...>{first, _Last, others...};
+    }
+
+    template<class Ty, class... OtherTy>
+    span_tuple<::std::dynamic_extent, Ty, OtherTy...> make_span_tuple(Ty* first, Ty* _Last, OtherTy*... others)
+    {
+        return span_tuple<::std::dynamic_extent, Ty, OtherTy...>{first, _Last, others...};
+    }
+
+    template<class Ty, class... OtherTy>
+    span_tuple<::std::dynamic_extent, Ty, OtherTy...> make_span_tuple(Ty* first, size_t count, OtherTy*... others)
+    {
+        return span_tuple<::std::dynamic_extent, Ty, OtherTy...>{first, count, others...};
+    }
+
+    template<class Ty, class... OtherTy, size_t Extent>
+    span_tuple<Extent, Ty, OtherTy...> make_span_tuple(Ty (&first)[Extent], OtherTy (&... others)[Extent])
+    {
+        return span_tuple<Extent, Ty, OtherTy...>{first, others...};
+    }
+
+    template<class Ty, class... OtherTy, size_t Extent>
+    span_tuple<Extent, Ty, OtherTy...> make_span_tuple(std::array<Ty, Extent>& first, std::array<OtherTy, Extent>&... others)
+    {
+        return span_tuple<Extent, Ty, OtherTy...>{first, others...};
+    }
+
+    template<class Ty, class... OtherTy, size_t Extent>
+    span_tuple<Extent, Ty, OtherTy...> make_span_tuple(const std::array<Ty, Extent>& first, const std::array<OtherTy, Extent>&... others)
+    {
+        return span_tuple<Extent, Ty, OtherTy...>{first, others...};
+    }
+
+    template<class Ty, class... OtherTy, size_t Extent>
+    span_tuple<::std::dynamic_extent, Ty, OtherTy...> make_span_tuple(Ty (&first)[Extent], OtherTy*... others)
+    {
+        return span_tuple<::std::dynamic_extent, Ty, OtherTy...>{first, others...};
+    }
+
+    template<class Ty, class... OtherTy, size_t Extent>
+    span_tuple<::std::dynamic_extent, Ty, OtherTy...> make_span_tuple(std::array<Ty, Extent>& first, OtherTy*... others)
+    {
+        return span_tuple<::std::dynamic_extent, Ty, OtherTy...>{first, others...};
+    }
+
+    template<class Ty, class... OtherTy, size_t Extent>
+    span_tuple<::std::dynamic_extent, Ty, OtherTy...> make_span_tuple(const std::array<Ty, Extent>& first, const OtherTy*... others)
+    {
+        return span_tuple<::std::dynamic_extent, Ty, OtherTy...>{first, others...};
     }
 }
 
 namespace std
 {
-    template<class First, size_t Extent, class... Others>
-    struct tuple_size<xk::span_tuple<First, Extent, Others...>> : std::integral_constant<size_t, sizeof...(Others) + 1>
+    template<size_t Extent, class First, class... Others>
+    struct tuple_size<xk::span_tuple<Extent, First, Others...>> : std::integral_constant<size_t, sizeof...(Others) + 1>
     {
 
     };
 
-    template<size_t Index, class First, size_t Extent, class... Others>
-    struct tuple_element<Index, xk::span_tuple<First, Extent, Others...>>
+    template<size_t Index, size_t Extent, class First, class... Others>
+    struct tuple_element<Index, xk::span_tuple<Extent, First, Others...>>
     {
-        using type = std::span<std::tuple_element_t<Index, typename xk::span_tuple<First, Extent, Others...>::value_type>, Extent>;
+        using type = std::span<std::tuple_element_t<Index, typename xk::span_tuple<Extent, First, Others...>::value_type>, Extent>;
     };
 }

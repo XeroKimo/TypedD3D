@@ -779,7 +779,7 @@ namespace TypedD3D::D3D12
 
 		public:
 			void WriteBufferImmediate(
-				xk::span_tuple<D3D12_WRITEBUFFERIMMEDIATE_PARAMETER, std::dynamic_extent, xk::optional<D3D12_WRITEBUFFERIMMEDIATE_MODE>> pParams)
+				xk::dynamic_extent_span_tuple<D3D12_WRITEBUFFERIMMEDIATE_PARAMETER, xk::optional<D3D12_WRITEBUFFERIMMEDIATE_MODE>> pParams)
 			{
 				Get().WriteBufferImmediate(static_cast<UINT>(pParams.size()), pParams.data<0>(), pParams.data<1>());
 			}

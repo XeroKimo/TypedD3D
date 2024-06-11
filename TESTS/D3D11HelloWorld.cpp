@@ -163,9 +163,19 @@ void D3D11HelloWorld()
             deviceContext->PSSetShader(ps, {});
             deviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-            TypedD3D::Offset offset{ 0 };
-            TypedD3D::Stride stride{ sizeof(Vertex) };
-            deviceContext->IASetVertexBuffers(0, xk::span_tuple<TypedD3D::Wrapper<ID3D11Buffer>, std::dynamic_extent, const TypedD3D::Stride, const TypedD3D::Offset>(&vertexBuffer, 1, &stride, &offset));
+            TypedD3D::Wrapper<ID3D11Buffer> buffers[1]{ vertexBuffer };
+            TypedD3D::Offset offset[1]{ TypedD3D::Offset{0} };
+            TypedD3D::Stride stride[1]{ TypedD3D::Stride{sizeof(Vertex)} };
+            deviceContext->IASetVertexBuffers(0, xk::make_span_tuple(std::begin(buffers), std::end(buffers), std::begin(stride), std::begin(offset)));
+            deviceContext->IASetVertexBuffers(0, xk::make_span_tuple(std::begin(buffers), 1, std::begin(stride), std::begin(offset)));
+            static_assert(std::contiguous_iterator<int*>);
+
+            std::array<TypedD3D::Wrapper<ID3D11Buffer>, 1> buffers2{ vertexBuffer };
+            std::array<TypedD3D::Offset, 1> offset2{ TypedD3D::Offset{0} };
+            std::array<TypedD3D::Stride, 1> stride2{ TypedD3D::Stride{sizeof(Vertex)} };
+
+            deviceContext->IASetVertexBuffers(0, xk::make_span_tuple(std::begin(buffers2), 1, std::begin(stride2), std::begin(offset2)));
+            deviceContext->IASetVertexBuffers(0, xk::make_span_tuple(buffers2, stride2.data(), offset2.data()));
             deviceContext->Draw(3, 0);
 
             swapChain->Present(1, 0);
