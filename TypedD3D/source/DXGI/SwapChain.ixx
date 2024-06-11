@@ -19,6 +19,8 @@ concept Resource = std::derived_from<Ty, ID3D11Resource> || std::derived_from<Ty
 
 namespace TypedD3D::DXGI
 {
+	using Microsoft::WRL::ComPtr;
+
 	template<class Ty>
 	using SwapChain_t = IUnknownWrapper<Ty, UntaggedTraits>;
 
@@ -47,30 +49,25 @@ namespace TypedD3D::DXGI
 			using derived_self = DerivedSelf;
 
 		public:
-			HRESULT Present(UINT SyncInterval, UINT Flags)
+			void Present(UINT SyncInterval, UINT Flags)
 			{
-				return Get().Present(SyncInterval, Flags);
+				ThrowIfFailed(Get().Present(SyncInterval, Flags));
 			}
 
 			template<Resource Ty>
-			expected<Wrapper<Ty>, HRESULT> GetBuffer(UINT buffer)
+			Wrapper<Ty> GetBuffer(UINT buffer)
 			{
-				expected<Microsoft::WRL::ComPtr<Ty>, HRESULT> resource = IIDToObjectForwardFunction<Ty>(&value_type::GetBuffer, Get(), buffer);
-
-				if(!resource.has_value())
-					return unexpected(resource.error());
-
-				return Wrapper<Ty>(resource.value());
+				return IIDToObjectForwardFunction<Ty>(&value_type::GetBuffer, Get(), buffer);
 			}
 
-			HRESULT SetFullscreenState(BOOL Fullscreen, IDXGIOutput* optTarget)
+			void SetFullscreenState(BOOL Fullscreen, IDXGIOutput* optTarget)
 			{
-				return Get().SetFullscreenState(Fullscreen, optTarget);
+				ThrowIfFailed(Get().SetFullscreenState(Fullscreen, optTarget));
 			}
 
-			std::pair<BOOL, Microsoft::WRL::ComPtr<IDXGIOutput>> GetFullscreenState()
+			std::pair<BOOL, ComPtr<IDXGIOutput>> GetFullscreenState()
 			{
-				std::pair<BOOL, Microsoft::WRL::ComPtr<IDXGIOutput>> state;
+				std::pair<BOOL, ComPtr<IDXGIOutput>> state;
 				Get().GetFullscreenState(&state.first, &state.second);
 				return state;
 			}
@@ -82,22 +79,22 @@ namespace TypedD3D::DXGI
 				return desc;
 			}
 
-			HRESULT ResizeBuffers(
+			void ResizeBuffers(
 				UINT BufferCount,
 				UINT Width,
 				UINT Height,
 				DXGI_FORMAT NewFormat,
 				UINT SwapChainFlags)
 			{
-				return Get().ResizeBuffers(BufferCount, Width, Height, NewFormat, SwapChainFlags);
+				ThrowIfFailed(Get().ResizeBuffers(BufferCount, Width, Height, NewFormat, SwapChainFlags));
 			}
 
-			HRESULT ResizeTarget(const DXGI_MODE_DESC& pNewTargetParameters)
+			void ResizeTarget(const DXGI_MODE_DESC& pNewTargetParameters)
 			{
-				return Get().ResizeTarget(&pNewTargetParameters);
+				ThrowIfFailed(Get().ResizeTarget(&pNewTargetParameters));
 			}
 
-			Microsoft::WRL::ComPtr<IDXGIOutput> GetContainingOutput()
+			ComPtr<IDXGIOutput> GetContainingOutput()
 			{
 				return UnknownObjectForwardFunction<IDXGIOutput>(&value_type::GetContainingOutput, Get()).value();
 			}
@@ -158,14 +155,14 @@ namespace TypedD3D::DXGI
 				return hwnd;
 			}
 
-			HRESULT GetCoreWindow(REFIID refiid, void** ppUnk)
+			void GetCoreWindow(REFIID refiid, void** ppUnk)
 			{
-				return Get().GetCoreWindow(refiid, ppUnk);
+				ThrowIfFailed(Get().GetCoreWindow(refiid, ppUnk));
 			}
 
-			HRESULT Present1(UINT SyncInterval, UINT PresentFlags, const DXGI_PRESENT_PARAMETERS& pPresentParameters)
+			void Present1(UINT SyncInterval, UINT PresentFlags, const DXGI_PRESENT_PARAMETERS& pPresentParameters)
 			{
-				return Get().Present1(SyncInterval, PresentFlags, &pPresentParameters);
+				ThrowIfFailed(Get().Present1(SyncInterval, PresentFlags, &pPresentParameters));
 			}
 
 			BOOL IsTemporaryMonoSupported()
@@ -173,41 +170,44 @@ namespace TypedD3D::DXGI
 				return Get().IsTemporaryMonoSupported();
 			}
 
-			Microsoft::WRL::ComPtr<IDXGIOutput> GetRestrictToOutput()
+			ComPtr<IDXGIOutput> GetRestrictToOutput()
 			{
 				return UnknownObjectForwardFunction<IDXGIOutput>(&value_type::GetRestrictToOutput, Get()).value();
 			}
-			HRESULT SetBackgroundColor(DXGI_RGBA pColor)
+
+			void SetBackgroundColor(DXGI_RGBA pColor)
 			{
-				return Get().SetBackgroundColor(&pColor);
+				return ThrowIfFailed(Get().SetBackgroundColor(&pColor));
 			}
 
-			expected<DXGI_RGBA, HRESULT> GetBackgroundColor(DXGI_RGBA* pColor)
+			DXGI_RGBA GetBackgroundColor(DXGI_RGBA* pColor)
 			{
 				DXGI_RGBA color;
-				HRESULT result = Get().GetBackgroundColor(&color);
-				if(FAILED(result))
-					return tl::unexpected(result);
+				ThrowIfFailed(Get().GetBackgroundColor(&color));
 				return color;
 			}
 
-			HRESULT SetRotation(DXGI_MODE_ROTATION Rotation)
+			void SetRotation(DXGI_MODE_ROTATION Rotation)
 			{
-				return Get().SetRotation(Rotation);
+				ThrowIfFailed(Get().SetRotation(Rotation));
 			}
 
-			expected<DXGI_MODE_ROTATION, HRESULT> GetRotation()
+			DXGI_MODE_ROTATION GetRotation()
 			{
 				DXGI_MODE_ROTATION rotation;
-				HRESULT result = Get().GetRotation(rotation);
-				if(FAILED(result))
-					return tl::unexpected(result);
+				ThrowIfFailed(Get().GetRotation(rotation));
 				return rotation;
 			}
 		private:
 			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
 			reference Get() { return *ToDerived().derived_self::Get(); }
 		};
+	};
+
+	export struct SourceSize
+	{
+		UINT Width;
+		UINT Height;
 	};
 
 	template<>
@@ -226,31 +226,27 @@ namespace TypedD3D::DXGI
 			using derived_self = DerivedSelf;
 
 		public:
-			HRESULT SetSourceSize(UINT Width, UINT Height)
+			HRESULT SetSourceSize(SourceSize Size)
 			{
-				return Get().SetSourceSize(Width, Height);
+				return Get().SetSourceSize(Size.Width, Size.Height);
 			}
 
-			expected<std::pair<UINT, UINT>, HRESULT> GetSourceSize()
+			SourceSize GetSourceSize()
 			{
-				std::pair<UINT, UINT> size;
-				HRESULT result = Get().GetSourceSize(&size.first, &size.second);
-				if(FAILED(result))
-					return tl::unexpected(result);
+				SourceSize size;
+				ThrowIfFailed(Get().GetSourceSize(&size.Width, &size.Height));
 				return size;
 			}
 
-			HRESULT SetMaximumFrameLatency(UINT MaxLatency)
+			void SetMaximumFrameLatency(UINT MaxLatency)
 			{
-				return Get().SetMaximumFrameLatency(&MaxLatency);
+				ThrowIfFailed(Get().SetMaximumFrameLatency(&MaxLatency));
 			}
 
-			expected<UINT, HRESULT> STDMETHODCALLTYPE GetMaximumFrameLatency()
+			UINT STDMETHODCALLTYPE GetMaximumFrameLatency()
 			{
 				UINT latency;
-				HRESULT result = Get().GetMaximumFrameLatency(&latency);
-				if(FAILED(result))
-					return tl::unexpected(result);
+				ThrowIfFailed(Get().GetMaximumFrameLatency(&latency));
 				return latency;
 			}
 
@@ -259,17 +255,15 @@ namespace TypedD3D::DXGI
 				return Get().GetFrameLatencyWaitableObject();
 			}
 
-			HRESULT SetMatrixTransform(const DXGI_MATRIX_3X2_F& pMatrix)
+			void SetMatrixTransform(const DXGI_MATRIX_3X2_F& pMatrix)
 			{
-				return Get().SetMatrixTransform(&pMatrix);
+				ThrowIfFailed(Get().SetMatrixTransform(&pMatrix));
 			}
 
-			expected<DXGI_MATRIX_3X2_F, HRESULT> STDMETHODCALLTYPE GetMatrixTransform()
+			DXGI_MATRIX_3X2_F STDMETHODCALLTYPE GetMatrixTransform()
 			{
 				DXGI_MATRIX_3X2_F matrix;
-				HRESULT result = Get().GetMatrixTransform(&matrix);
-				if(FAILED(result))
-					return tl::unexpected(result);
+				ThrowIfFailed(Get().GetMatrixTransform(&matrix));
 				return matrix;
 			}
 		private:
@@ -306,13 +300,13 @@ namespace TypedD3D::DXGI
 				return static_cast<DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG>(colorSupport);
 			}
 
-			HRESULT SetColorSpace1(DXGI_COLOR_SPACE_TYPE ColorSpace)
+			void SetColorSpace1(DXGI_COLOR_SPACE_TYPE ColorSpace)
 			{
-				return Get().SetColorSpace1(ColorSpace);
+				ThrowIfFailed(Get().SetColorSpace1(ColorSpace));
 			}
 
 			template<std::derived_from<ID3D12CommandQueue> QueueTy>
-			HRESULT ResizeBuffers1(
+			void ResizeBuffers1(
 				UINT BufferCount,
 				UINT Width,
 				UINT Height,
@@ -328,7 +322,7 @@ namespace TypedD3D::DXGI
 					queues[i] = ppPresentQueue[i].Get();
 				}
 
-				return Get().ResizeBuffers1(BufferCount, Width, Height, Format, SwapChainFlags, pCreationNodeMask.data(), queues.get());
+				ThrowIfFailed(Get().ResizeBuffers1(BufferCount, Width, Height, Format, SwapChainFlags, pCreationNodeMask.data(), queues.get()));
 			}
 		private:
 			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }

@@ -5,7 +5,6 @@
 //
 //*********************************************************
 
-#include "MyExpected.h"
 #include "span_tuple.h"
 #include <functional>
 #include <type_traits>

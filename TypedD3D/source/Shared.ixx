@@ -1,9 +1,10 @@
 module;
 
-#include "MyExpected.h"
+#include <format>
 #include <wrl/client.h>
 #include <minwindef.h>
 #include <concepts>
+#include <stdexcept>
 
 export module TypedD3D.Shared;
 
@@ -13,12 +14,6 @@ namespace TypedD3D
     export enum class Offset : UINT {};
 
     export enum class FenceValue : UINT64 {};
-
-	export template<class Ty, class Err>
-	using expected = tl::expected<Ty, Err>;
-
-	export template<class Err>
-	using unexpected = tl::unexpected<Err>;
 
     using Microsoft::WRL::ComPtr;
 
@@ -46,6 +41,28 @@ namespace TypedD3D
         return to;
     }
 
+    export class HRESULTError : public std::runtime_error
+    {
+    private:
+        HRESULT errorCode;
+
+    public:
+        HRESULTError(HRESULT result) :
+            std::runtime_error{ std::format("HRESULT Error {:x}", result) },
+            errorCode{ result }
+        {
+
+        }
+
+        HRESULT ErrorCode() const noexcept { return errorCode; }
+    };
+
+    export void ThrowIfFailed(HRESULT hr)
+    {
+        if(FAILED(hr))
+            throw HRESULTError{ hr };
+    }
+
     /// <summary>
     /// Forwards a function which creates or gets an COM object which would require querying it's IID
     /// </summary>
@@ -57,14 +74,11 @@ namespace TypedD3D
     /// <param name="...args">All arguments not including the IID and void**</param>
     /// <returns></returns>
     export template<class Unknown, class Func, class... Args>
-    expected<ComPtr<Unknown>, HRESULT> IIDToObjectForwardFunction(Func&& function, Args&&... args)
+    ComPtr<Unknown> IIDToObjectForwardFunction(Func&& function, Args&&... args)
     {
         ComPtr<Unknown> unknown;
 
-        HRESULT hr = std::invoke(function, args..., IID_PPV_ARGS(&unknown));
-
-        if(FAILED(hr))
-            return unexpected(hr);
+        ThrowIfFailed(std::invoke(function, args..., IID_PPV_ARGS(&unknown)));
 
         return unknown;
     }
@@ -81,14 +95,11 @@ namespace TypedD3D
     /// <param name="...args">All arguments not including the IID and void**</param>
     /// <returns></returns>
     export template<class Unknown, class Func, class Obj, class... Args>
-    expected<ComPtr<Unknown>, HRESULT> IIDToObjectForwardFunction(Func&& function, Obj&& obj, Args&&... args)
+    ComPtr<Unknown> IIDToObjectForwardFunction(Func&& function, Obj&& obj, Args&&... args)
     {
         ComPtr<Unknown> unknown;
 
-        HRESULT hr = std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown));
-
-        if(FAILED(hr))
-            return unexpected(hr);
+        ThrowIfFailed(std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)));
 
         return unknown;
     }
@@ -104,14 +115,11 @@ namespace TypedD3D
     /// <param name="...args">All arguments not including the IUnknown param</param>
     /// <returns></returns>
     export template<class Unknown, class Func, class... Args>
-    expected<ComPtr<Unknown>, HRESULT> UnknownObjectForwardFunction(Func&& function, Args&&... args)
+    ComPtr<Unknown> UnknownObjectForwardFunction(Func&& function, Args&&... args)
     {
         ComPtr<Unknown> unknown;
 
-        HRESULT hr = std::invoke(function, args..., &unknown);
-
-        if(FAILED(hr))
-            return unexpected(hr);
+        ThrowIfFailed(std::invoke(function, args..., &unknown));
 
         return unknown;
     }
@@ -128,14 +136,11 @@ namespace TypedD3D
     /// <param name="...args">All arguments not including the IUnknown param</param>
     /// <returns></returns>
     export template<class Unknown, class Func, class Obj, class... Args>
-    expected<ComPtr<Unknown>, HRESULT> UnknownObjectForwardFunction(Func&& function, Obj&& obj, Args&&... args)
+    ComPtr<Unknown> UnknownObjectForwardFunction(Func&& function, Obj&& obj, Args&&... args)
     {
         ComPtr<Unknown> unknown;
 
-        HRESULT hr = std::invoke(function, obj, args..., &unknown);
-
-        if(FAILED(hr))
-            return unexpected(hr);
+        ThrowIfFailed(std::invoke(function, obj, args..., &unknown));
 
         return unknown;
     }

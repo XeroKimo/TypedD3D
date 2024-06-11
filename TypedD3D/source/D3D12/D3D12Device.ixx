@@ -20,6 +20,7 @@ import TypedD3D.Legacy.D3D12Helpers;
 
 namespace TypedD3D::D3D12
 {
+	using Microsoft::WRL::ComPtr;
 	struct MetaCommandParameterInfo
 	{
 		UINT totalStructureSizeInBytes;
@@ -239,7 +240,7 @@ namespace TypedD3D::D3D12
 			}
 
 			template<D3D12_COMMAND_LIST_TYPE Type>
-			expected<D3D12CommandQueue_t<Type>, HRESULT> CreateCommandQueue(
+			D3D12CommandQueue_t<Type> CreateCommandQueue(
 				D3D12_COMMAND_QUEUE_PRIORITY priority,
 				D3D12_COMMAND_QUEUE_FLAGS flags,
 				UINT nodeMask)
@@ -254,60 +255,50 @@ namespace TypedD3D::D3D12
 					.NodeMask = nodeMask
 				};
 
-				return Helpers::D3D12::CreateCommandQueue(Get(), desc)
-					.and_then([](auto commandQueue) -> expected<queue_type, HRESULT> { return queue_type(commandQueue); });
+				return Helpers::D3D12::CreateCommandQueue(Get(), desc);
 			}
 
 			template<D3D12_COMMAND_LIST_TYPE Type>
-			expected<CommandAllocator_t<Type>, HRESULT> CreateCommandAllocator()
+			CommandAllocator_t<Type> CreateCommandAllocator()
 			{
 				using allocator_type = CommandAllocator_t<Type>;
 
-				return Helpers::D3D12::CreateCommandAllocator(Get(), Type)
-					.and_then([](auto commandAllocator) -> expected<allocator_type, HRESULT> { return allocator_type(commandAllocator); });
+				return Helpers::D3D12::CreateCommandAllocator(Get(), Type);
 			}
 
-			expected<Graphics<ID3D12PipelineState>, HRESULT> CreateGraphicsPipelineState(
+			Graphics<ID3D12PipelineState> CreateGraphicsPipelineState(
 				const D3D12_GRAPHICS_PIPELINE_STATE_DESC& pDesc)
 			{
-				return Helpers::D3D12::CreateGraphicsPipelineState(Get(), pDesc)
-					.and_then([](auto pipelineState) -> expected<Graphics<ID3D12PipelineState>, HRESULT> { return Graphics<ID3D12PipelineState>(pipelineState); });
+				return Helpers::D3D12::CreateGraphicsPipelineState(Get(), pDesc);
 			}
 
-			expected<Compute<ID3D12PipelineState>, HRESULT> CreateComputePipelineState(
+			Compute<ID3D12PipelineState> CreateComputePipelineState(
 				const D3D12_COMPUTE_PIPELINE_STATE_DESC& pDesc)
 			{
-				return Helpers::D3D12::CreateComputePipelineState(Get(), pDesc)
-					.and_then([](auto pipelineState) -> expected<Graphics<ID3D12PipelineState>, HRESULT> { return Compute<ID3D12PipelineState>(pipelineState); });
+				return Helpers::D3D12::CreateComputePipelineState(Get(), pDesc);
 			}
 
 			template<D3D12_COMMAND_LIST_TYPE Type>
-			expected<CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList(
+			CommandList_t<ID3D12GraphicsCommandList, Type> CreateCommandList(
 				CommandAllocator_t<Type> pCommandAllocator,
 				UINT nodeMask = 0,
 				ID3D12PipelineState* optInitialState = nullptr)
 			{
 				using command_list_type = CommandList_t<ID3D12GraphicsCommandList, Type>;
-				return Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(Get(), Type, *pCommandAllocator.Get(), nodeMask, optInitialState)
-					.and_then([](auto commandList)->expected<command_list_type, HRESULT> { return command_list_type(commandList); });
+				return Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(Get(), Type, *pCommandAllocator.Get(), nodeMask, optInitialState);
 			}
 
 			template<D3D12_FEATURE Feature>
-			expected<typename DeviceFeatureMap<Feature>::type, HRESULT> CheckFeatureSupport()
+			typename DeviceFeatureMap<Feature>::type CheckFeatureSupport()
 			{
 				using feature_t = typename DeviceFeatureMap<Feature>::type;
 				feature_t feature{};
-
-				HRESULT hr = Get().CheckFeatureSupport(Feature, &feature, sizeof(feature_t));
-
-				if(FAILED(hr))
-					return tl::unexpected(hr);
-
+				ThrowIfFailed(Get().CheckFeatureSupport(Feature, &feature, sizeof(feature_t)));
 				return feature;
 			}
 
 			template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlag>
-			expected<DescriptorHeap_t<Type, HeapFlag>, HRESULT> CreateDescriptorHeap(
+			DescriptorHeap_t<Type, HeapFlag> CreateDescriptorHeap(
 				UINT NumDescriptors,
 				UINT NodeMask)
 			{
@@ -321,8 +312,7 @@ namespace TypedD3D::D3D12
 					.NodeMask = NodeMask
 				};
 
-				return Helpers::D3D12::CreateDescriptorHeap(Get(), desc)
-					.and_then([](auto descriptorHeap) -> expected<DescriptorHeap_t, HRESULT> { return DescriptorHeap_t(descriptorHeap); });
+				return Helpers::D3D12::CreateDescriptorHeap(Get(), desc);
 			}
 
 			UINT GetDescriptorHandleIncrementSize(
@@ -331,7 +321,7 @@ namespace TypedD3D::D3D12
 				return Get().GetDescriptorHandleIncrementSize(DescriptorHeapType);
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12RootSignature>, HRESULT> CreateRootSignature(
+			ComPtr<ID3D12RootSignature> CreateRootSignature(
 				UINT nodeMask,
 				const void* pBlobWithRootSignature,
 				SIZE_T blobLengthInBytes)
@@ -459,7 +449,7 @@ namespace TypedD3D::D3D12
 				return Get().GetCustomHeapProperties(nodeMask, heapType);
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateCommittedResource(
+			Wrapper<ID3D12Resource> CreateCommittedResource(
 				const D3D12_HEAP_PROPERTIES& pHeapProperties,
 				D3D12_HEAP_FLAGS HeapFlags,
 				const D3D12_RESOURCE_DESC& pDesc,
@@ -475,7 +465,7 @@ namespace TypedD3D::D3D12
 					optOptimizedClearValue);
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12Heap>, HRESULT> CreateHeap(
+			ComPtr<ID3D12Heap> CreateHeap(
 				const D3D12_HEAP_DESC& pDesc)
 			{
 				return Helpers::D3D12::CreateHeap(
@@ -483,7 +473,7 @@ namespace TypedD3D::D3D12
 					pDesc);
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreatePlacedResource(
+			Wrapper<ID3D12Resource> CreatePlacedResource(
 				ID3D12Heap& pHeap,
 				UINT64 HeapOffset,
 				const D3D12_RESOURCE_DESC& pDesc,
@@ -499,7 +489,7 @@ namespace TypedD3D::D3D12
 					optOptimizedClearValue);
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateReservedResource(
+			Wrapper<ID3D12Resource> CreateReservedResource(
 				const D3D12_RESOURCE_DESC& pDesc,
 				D3D12_RESOURCE_STATES InitialState,
 				const D3D12_CLEAR_VALUE* optOptimizedClearValue)
@@ -511,7 +501,7 @@ namespace TypedD3D::D3D12
 					optOptimizedClearValue);
 			}
 
-			expected<HANDLE, HRESULT> CreateSharedHandle(
+			HANDLE CreateSharedHandle(
 				ID3D12DeviceChild& pObject,
 				const SECURITY_ATTRIBUTES* optAttributes,
 				DWORD Access,
@@ -519,15 +509,12 @@ namespace TypedD3D::D3D12
 			{
 				HANDLE handle;
 
-				HRESULT result = Get().CreateSharedHandle(
+				ThrowIfFailed(Get().CreateSharedHandle(
 					&pObject,
 					optAttributes,
 					Access,
 					Name,
-					&handle);
-
-				if(FAILED(result))
-					return tl::unexpected(result);
+					&handle));
 
 				return handle;
 			}
@@ -544,40 +531,37 @@ namespace TypedD3D::D3D12
 					ppvObj);
 			}
 
-			expected<HANDLE, HRESULT> OpenSharedHandleByName(
+			HANDLE OpenSharedHandleByName(
 				LPCWSTR Name,
 				DWORD Access)
 			{
 				HANDLE handle;
 
-				HRESULT result = Get().OpenSharedHandleByName(
+				ThrowIfFailed(Get().OpenSharedHandleByName(
 					Name,
 					Access,
-					&handle);
-
-				if(FAILED(result))
-					return tl::unexpected(result);
+					&handle));
 
 				return handle;
 			}
 
-			HRESULT MakeResident(
+			void MakeResident(
 				const std::span<ID3D12Pageable*> objects)
 			{
-				return Get().MakeResident(
+				ThrowIfFailed(Get().MakeResident(
 					static_cast<UINT>(objects.size()),
-					objects.data());
+					objects.data()));
 			}
 
-			HRESULT Evict(
+			void Evict(
 				const std::span<ID3D12Pageable*> objects)
 			{
-				return Get().Evict(
+				ThrowIfFailed(Get().Evict(
 					static_cast<UINT>(objects.size()),
-					objects.data());
+					objects.data()));
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12Fence>, HRESULT> CreateFence(
+			ComPtr<ID3D12Fence> CreateFence(
 				UINT64 InitialValue,
 				D3D12_FENCE_FLAGS Flags)
 			{
@@ -610,19 +594,19 @@ namespace TypedD3D::D3D12
 					optOutTotalBytes);
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12QueryHeap>, HRESULT> CreateQueryHeap(
+			ComPtr<ID3D12QueryHeap> CreateQueryHeap(
 				const D3D12_QUERY_HEAP_DESC& pDesc)
 			{
 				return Helpers::D3D12::CreateQueryHeap(Get(), pDesc);
 			}
 
-			HRESULT SetStablePowerState(
+			void SetStablePowerState(
 				BOOL Enable)
 			{
-				return Get().SetStablePowerState(Enable);
+				ThrowIfFailed(Get().SetStablePowerState(Enable));
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12CommandSignature>, HRESULT> CreateCommandSignature(
+			ComPtr<ID3D12CommandSignature> CreateCommandSignature(
 				const D3D12_COMMAND_SIGNATURE_DESC& pDesc,
 				ID3D12RootSignature* optRootSignature)
 			{
@@ -675,40 +659,38 @@ namespace TypedD3D::D3D12
 			using derived_self = DerivedSelf;
 
 		public:
-			expected<Microsoft::WRL::ComPtr<ID3D12PipelineLibrary>, HRESULT> CreatePipelineLibrary(
+			ComPtr<ID3D12PipelineLibrary> CreatePipelineLibrary(
 				const void* pLibraryBlob,
 				SIZE_T BlobLength)
 			{
 				return IIDToObjectForwardFunction<ID3D12PipelineLibrary>(ID3D12Device1::CreatePipelineLibrary, Get(), pLibraryBlob, BlobLength);
 			}
 
-			HRESULT SetEventOnMultipleFenceCompletion(
+			void SetEventOnMultipleFenceCompletion(
 				xk::span_tuple<const ID3D12Fence*, std::dynamic_extent, const FenceValue> fences,
 				D3D12_MULTIPLE_FENCE_WAIT_FLAGS Flags,
 				HANDLE hEvent)
 			{
-
-
 				std::unique_ptr<std::underlying_type_t<FenceValue>[]> fenceValues = std::make_unique< std::underlying_type_t<FenceValue>[]>(fences.size());
 				std::memcpy(fenceValues.get(), fences.data<1>(), fences.size_bytes<1>());
 
-				return Get().SetEventOnMultipleFenceCompletion(
+				ThrowIfFailed(Get().SetEventOnMultipleFenceCompletion(
 					fences.data<0>(),
 					fenceValues.get(),
 					static_cast<UINT>(fences.size()),
 					Flags,
-					hEvent);
+					hEvent));
 			}
 
-			HRESULT SetResidencyPriority(
+			void SetResidencyPriority(
 				std::span<ID3D12Pageable*> ppObjects,
 				std::span<const D3D12_RESIDENCY_PRIORITY> priorities)
 			{
 				assert(ppObjects.size() == priorities.size());
-				return Get().SetResidencyPriority(
+				ThrowIfFailed(Get().SetResidencyPriority(
 					static_cast<UINT>(ppObjects.size()),
 					ppObjects.data(),
-					priorities.data());
+					priorities.data()));
 			}
 
 
@@ -734,7 +716,9 @@ namespace TypedD3D::D3D12
 			using derived_self = DerivedSelf;
 
 		public:
-			expected<Microsoft::WRL::ComPtr<ID3D12PipelineState>, HRESULT> CreatePipelineState(
+
+			template<class Ty>
+			PipelineState_t<Ty> CreatePipelineState(
 				const D3D12_PIPELINE_STATE_STREAM_DESC pDesc)
 			{
 				return IIDToObjectForwardFunction<ID3D12PipelineState>(&ID3D12Device2::CreatePipelineState, Get(), &pDesc);
@@ -762,29 +746,29 @@ namespace TypedD3D::D3D12
 			using derived_self = DerivedSelf;
 
 		public:
-			expected<Microsoft::WRL::ComPtr<ID3D12Heap>, HRESULT> OpenExistingHeapFromAddress(
+			ComPtr<ID3D12Heap> OpenExistingHeapFromAddress(
 				const void* pAddress)
 			{
 				return IIDToObjectForwardFunction<ID3D12Heap>(&ID3D12Device3::OpenExistingHeapFromAddress, Get(), pAddress);
 			}
 
-			HRESULT OpenExistingHeapFromFileMapping(
+			ComPtr<ID3D12Heap> OpenExistingHeapFromFileMapping(
 				HANDLE hFileMapping)
 			{
 				return IIDToObjectForwardFunction<ID3D12Heap>(&ID3D12Device3::OpenExistingHeapFromFileMapping, Get(), hFileMapping);
 			}
 
-			HRESULT EnqueueMakeResident(
+			void EnqueueMakeResident(
 				D3D12_RESIDENCY_FLAGS Flags,
 				std::span<ID3D12Pageable*> ppObjects,
 				ID3D12Fence& pFenceToSignal,
 				UINT64 FenceValueToSignal)
 			{
-				return Get().EnqueueMakeResident(
+				ThrowIfFailed(Get().EnqueueMakeResident(
 					Flags,
 					static_cast<UINT>(ppObjects.size()),
 					ppObjects.data(),
-					&pFenceToSignal, FenceValueToSignal);
+					&pFenceToSignal, FenceValueToSignal));
 			}
 
 		private:
@@ -810,25 +794,20 @@ namespace TypedD3D::D3D12
 
 		public:
 			template<D3D12_COMMAND_LIST_TYPE Type>
-			expected<CommandList_t<ID3D12GraphicsCommandList, Type>, HRESULT> CreateCommandList1(
+			CommandList_t<ID3D12GraphicsCommandList, Type> CreateCommandList1(
 				UINT nodeMask,
 				D3D12_COMMAND_LIST_FLAGS flags)
 			{
-				expected<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>, HRESULT> cl = Helpers::D3D12::CreateCommandList(Get(), Type, flags, nodeMask);
-
-				if(!cl.has_value())
-					return tl::unexpected(cl.error());
-
-				return CommandList_t<ID3D12GraphicsCommandList, Type>(cl.value());
+				return Helpers::D3D12::CreateCommandList(Get(), Type, flags, nodeMask);
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12ProtectedResourceSession>, HRESULT> CreateProtectedResourceSession(
+			ComPtr<ID3D12ProtectedResourceSession> CreateProtectedResourceSession(
 				const D3D12_PROTECTED_RESOURCE_SESSION_DESC& pDesc)
 			{
 				return IIDToObjectForwardFunction<ID3D12ProtectedResourceSession>(&ID3D12Device4::CreateProtectedResourceSession, Get(), &pDesc);
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateCommittedResource1(
+			Wrapper<ID3D12Resource> CreateCommittedResource1(
 				const D3D12_HEAP_PROPERTIES& pHeapProperties,
 				D3D12_HEAP_FLAGS HeapFlags,
 				const D3D12_RESOURCE_DESC& pDesc,
@@ -847,7 +826,7 @@ namespace TypedD3D::D3D12
 					pProtectedSession);
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12Heap>, HRESULT> CreateHeap1(
+			ComPtr<ID3D12Heap> CreateHeap1(
 				const D3D12_HEAP_DESC& pDesc,
 				ID3D12ProtectedResourceSession* pProtectedSession)
 			{
@@ -858,7 +837,7 @@ namespace TypedD3D::D3D12
 					pProtectedSession);
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12Resource>, HRESULT> CreateReservedResource1(
+			Wrapper<ID3D12Resource> CreateReservedResource1(
 				const D3D12_RESOURCE_DESC& pDesc,
 				D3D12_RESOURCE_STATES InitialState,
 				const D3D12_CLEAR_VALUE* pOptimizedClearValue,
@@ -905,12 +884,12 @@ namespace TypedD3D::D3D12
 
 		public:
 		//TODO: Figure out how this works to update to a more modern API
-			HRESULT CreateLifetimeTracker(
+			void CreateLifetimeTracker(
 				ID3D12LifetimeOwner& pOwner,
 				REFIID riid,
 				void** ppvTracker)
 			{
-				return Get().CreateLifetimeTracker(&pOwner, riid, ppvTracker);
+				ThrowIfFailed(Get().CreateLifetimeTracker(&pOwner, riid, ppvTracker));
 			}
 
 			void RemoveDevice()
@@ -925,13 +904,11 @@ namespace TypedD3D::D3D12
 				return pNumMetaCommands;
 			}
 
-			expected<std::vector<D3D12_META_COMMAND_DESC>, HRESULT> EnumerateMetaCommands(
+			std::vector<D3D12_META_COMMAND_DESC> EnumerateMetaCommands(
 				UINT pNumMetaCommands)
 			{
 				std::vector<D3D12_META_COMMAND_DESC> pDescs(pNumMetaCommands);
-				HRESULT result = Get().EnumerateMetaCommands(&pNumMetaCommands, pDescs.data());
-				if(FAILED(result))
-					return tl::unexpected(result);
+				ThrowIfFailed(Get().EnumerateMetaCommands(&pNumMetaCommands, pDescs.data()));
 				return pDescs;
 			}
 
@@ -944,7 +921,7 @@ namespace TypedD3D::D3D12
 				return pNumMetaCommandParams;
 			}
 
-			expected<MetaCommandParameterInfo, HRESULT> STDMETHODCALLTYPE EnumerateMetaCommandParameters(
+			MetaCommandParameterInfo STDMETHODCALLTYPE EnumerateMetaCommandParameters(
 				_In_  REFGUID CommandId,
 				_In_  D3D12_META_COMMAND_PARAMETER_STAGE Stage,
 				UINT parameterCount)
@@ -954,19 +931,17 @@ namespace TypedD3D::D3D12
 				info.parameterCount = parameterCount;
 				info.parameterDescs.resize(parameterCount);
 
-				HRESULT result = Get().EnumerateMetaCommandParameters(
+				ThrowIfFailed(Get().EnumerateMetaCommandParameters(
 					CommandId,
 					Stage,
 					&info.totalStructureSizeInBytes,
 					&info.parameterCount,
-					info.parameterDescs.data());
+					info.parameterDescs.data()));
 
-				if(FAILED(result))
-					return tl::unexpected(result);
 				return info;
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12MetaCommand>, HRESULT> CreateMetaCommand(
+			ComPtr<ID3D12MetaCommand> CreateMetaCommand(
 				REFGUID CommandId,
 				UINT NodeMask,
 				const void* pCreationParametersData,
@@ -982,7 +957,7 @@ namespace TypedD3D::D3D12
 			}
 
 			template<class CreationParamStruct>
-			expected<Microsoft::WRL::ComPtr<ID3D12MetaCommand>, HRESULT> CreateMetaCommand(
+			ComPtr<ID3D12MetaCommand> CreateMetaCommand(
 				REFGUID CommandId,
 				UINT NodeMask,
 				const CreationParamStruct& pCreationParametersData)
@@ -990,14 +965,14 @@ namespace TypedD3D::D3D12
 				return CreateMetaCommand(CommandId, NodeMask, &pCreationParametersData, sizeof(CreationParamStruct));
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12MetaCommand>, HRESULT> CreateMetaCommand(
+			ComPtr<ID3D12MetaCommand> CreateMetaCommand(
 				REFGUID CommandId,
 				UINT NodeMask)
 			{
 				return CreateMetaCommand(CommandId, NodeMask, nullptr, 0);
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D12StateObject>, HRESULT> CreateStateObject(
+			ComPtr<ID3D12StateObject> CreateStateObject(
 				const D3D12_STATE_OBJECT_DESC& pDesc)
 			{
 				return IIDToObjectForwardFunction<ID3D12StateObject>(
@@ -1040,17 +1015,15 @@ namespace TypedD3D::D3D12
 	}
 
 	export template<class DeviceTy = Aliases::Device>
-	auto CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
+	Device_t<DeviceTy> CreateDevice(D3D_FEATURE_LEVEL minimumFeatureLevel, IDXGIAdapter* optAdapter = nullptr)
 	{
 		if constexpr(std::is_base_of_v<ID3D12Device, DeviceTy>)
 		{
-			return Helpers::D3D12::CreateDevice<DeviceTy>(minimumFeatureLevel, optAdapter)
-				.and_then([](auto device) -> expected<Device_t<DeviceTy>, HRESULT> { return Device_t<DeviceTy>(device); });
+			return Helpers::D3D12::CreateDevice<DeviceTy>(minimumFeatureLevel, optAdapter);
 		}
 		else
 		{
-			return Helpers::D3D12::CreateDevice<typename DeviceTy::value_type>(minimumFeatureLevel, optAdapter)
-				.and_then([](auto device) -> expected<DeviceTy, HRESULT> { return DeviceTy(device); });
+			return Helpers::D3D12::CreateDevice<typename DeviceTy::value_type>(minimumFeatureLevel, optAdapter);
 		}
 	}
 }
