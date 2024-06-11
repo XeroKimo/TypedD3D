@@ -63,7 +63,7 @@ void D3D11HelloWorld()
 
     TypedD3D::Wrapper<ID3D11RenderTargetView> rtv;
     rtv = device->CreateRenderTargetView(swapChain->GetBuffer<ID3D11Resource>(0), nullptr);
-
+    //f
     ComPtr<ID3DBlob> vertexBlob;
     ComPtr<ID3DBlob> errorBlob;
     HRESULT hr = D3DCompileFromFile(L"VertexShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &vertexBlob, &errorBlob);
