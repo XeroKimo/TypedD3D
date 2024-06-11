@@ -27,14 +27,10 @@ namespace TypedD3D
             using derived_self = DerivedSelf;
 
         public:
-            expected<std::byte*, HRESULT> Map(UINT Subresource, const D3D12_RANGE* optReadRange)
+            std::byte* Map(UINT Subresource, const D3D12_RANGE* optReadRange)
             {
                 void* dataPtr;
-
-                HRESULT result = Get().Map(Subresource, optReadRange, &dataPtr);
-                if(FAILED(result))
-                    return tl::unexpected(result);
-
+                ThrowIfFailed(Get().Map(Subresource, optReadRange, &dataPtr));
                 return static_cast<std::byte*>(dataPtr);
             }
 

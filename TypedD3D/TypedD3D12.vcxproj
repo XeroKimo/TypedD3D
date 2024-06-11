@@ -19,8 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MyExpected.h" />
-    <ClInclude Include="expected.hpp" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="span_tuple.h" />
   </ItemGroup>

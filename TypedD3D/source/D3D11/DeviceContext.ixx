@@ -7,7 +7,7 @@ module;
 #include <array>
 #include <vector>
 #include <utility>
-
+#include <wrl/client.h>
 
 export module TypedD3D11:DeviceContext;
 import :Constants;
@@ -20,6 +20,7 @@ import :ResourceViews;
 
 namespace TypedD3D::D3D11
 {
+	using Microsoft::WRL::ComPtr;
 	export struct IAGetVertexBufferData
 	{
 		std::vector<Wrapper<ID3D11Buffer>> buffers;
@@ -132,7 +133,7 @@ namespace TypedD3D::D3D11
 				Get().Draw(VertexCount, StartVertexLocation);
 			}
 
-			expected<D3D11_MAPPED_SUBRESOURCE, HRESULT> Map(
+			D3D11_MAPPED_SUBRESOURCE Map(
 				gsl::not_null<Wrapper<ID3D11Resource>> pResource,
 				UINT Subresource,
 				D3D11_MAP MapType,
@@ -140,10 +141,7 @@ namespace TypedD3D::D3D11
 			{
 				D3D11_MAPPED_SUBRESOURCE subresource;
 
-				if(HRESULT result = Get().Map(pResource.get().Get(), Subresource, MapType, MapFlags, &subresource); FAILED(result))
-				{
-					return tl::unexpected(result);
-				}
+				ThrowIfFailed(Get().Map(pResource.get().Get(), Subresource, MapType, MapFlags, &subresource));
 				return subresource;
 			}
 
@@ -283,14 +281,13 @@ namespace TypedD3D::D3D11
 				Get().End(&pAsync);
 			}
 
-			expected<void*, HRESULT> GetData(
+			void* GetData(
 				ID3D11Asynchronous& pAsync,
 				UINT GetDataFlags)
 			{
 				void* data;
 
-				if(HRESULT result = Get().GetData(&pAsync, data, pAsync.GetDataSize(), GetDataFlags); FAILED(result))
-					return tl::unexpected(result);
+				ThrowIfFailed(Get().GetData(&pAsync, data, pAsync.GetDataSize(), GetDataFlags));
 
 				return data;
 			}
@@ -1292,13 +1289,10 @@ namespace TypedD3D::D3D11
 				return Get().GetContextFlags();
 			}
 
-			expected<Microsoft::WRL::ComPtr<ID3D11CommandList>, HRESULT> FinishCommandList(BOOL RestoreDeferredContextState)
+			ComPtr<ID3D11CommandList> FinishCommandList(BOOL RestoreDeferredContextState)
 			{
-				Microsoft::WRL::ComPtr<ID3D11CommandList> commandList;
-
-				if(HRESULT result = Get().FinishCommandList(RestoreDeferredContextState, &commandList); FAILED(result))
-					return tl::unexpected(result);
-
+				ComPtr<ID3D11CommandList> commandList;
+				ThrowIfFailed(Get().FinishCommandList(RestoreDeferredContextState, &commandList));
 				return commandList;
 			}
 

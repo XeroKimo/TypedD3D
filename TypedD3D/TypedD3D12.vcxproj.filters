@@ -18,13 +18,7 @@
     <ClInclude Include="d3dx12.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="expected.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="span_tuple.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MyExpected.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
