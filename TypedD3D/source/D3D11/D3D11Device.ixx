@@ -626,4 +626,16 @@ namespace TypedD3D::D3D11
             return device;
         }
     }
+
+    export template<class DeviceTy = ID3D11Device, class DeviceContextTy = ID3D11DeviceContext>
+    auto CreateDevice(
+            IDXGIAdapter* optAdapter,
+            D3D_DRIVER_TYPE DriverType,
+            HMODULE Software,
+            UINT Flags,
+            D3D_FEATURE_LEVEL pFeatureLevels,
+            UINT SDKVersion)
+    {
+        return CreateDevice<DeviceTy, DeviceContextTy>(optAdapter, DriverType, Software, Flags, { &pFeatureLevels, 1 }, SDKVersion);
+    }
 }

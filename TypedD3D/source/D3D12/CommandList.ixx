@@ -790,7 +790,7 @@ namespace TypedD3D::D3D12
 		};
 
 		template<class DerivedSelf, D3D12_COMMAND_LIST_TYPE Type>
-		class InterfaceTagged : Interface<DerivedSelf>
+		class InterfaceTagged : public Interface<DerivedSelf>
 		{
 		private:
 			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
@@ -836,7 +836,7 @@ namespace TypedD3D::D3D12
 		};
 
 		template<class DerivedSelf, D3D12_COMMAND_LIST_TYPE Type>
-		class InterfaceTagged : Interface<DerivedSelf>
+		class InterfaceTagged : public Interface<DerivedSelf>
 		{
 		private:
 			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;

@@ -6,6 +6,7 @@ module;
 #include <vector>
 #include <memory>
 #include <dxgi1_6.h>
+#include <cassert>
 
 export module TypedD3D12:Device;
 export import TypedD3D.Shared;
