@@ -10,6 +10,36 @@ module;
 #include <vector>
 
 export module TypedD3D.Shared;
+import xk.Exceptions;
+
+namespace TypedD3D
+{
+    export class TypedD3DModule
+    {
+    public:
+        using exception_tag = xk::ExceptionModuleTag;
+    };
+}
+
+namespace xk
+{
+    template<>
+    class ExceptionImpl<TypedD3D::TypedD3DModule>
+    {
+    private:
+        HRESULT result;
+
+    public:
+        ExceptionImpl(HRESULT result) :
+            result{ result }
+        {
+
+        }
+
+    public:
+        HRESULT ErrorCode() const noexcept { return result; }
+    };
+}
 
 namespace TypedD3D
 {
@@ -31,35 +61,19 @@ namespace TypedD3D
 		return to;
 	}
 
-	export template<class To, class From>
-		To* Cast(From* from)
-	{
-		To* to;
-		from->QueryInterface(&to);
-		return to;
-	}
+    export template<class To, class From>
+    To* Cast(From* from)
+    {
+        To* to;
+        from->QueryInterface(&to);
+        return to;
+    }
 
-	export class HRESULTError : public std::runtime_error
-	{
-	private:
-		HRESULT errorCode;
-
-	public:
-		HRESULTError(HRESULT result) :
-			std::runtime_error{ std::format("HRESULT Error {:x}", result) },
-			errorCode{ result }
-		{
-
-		}
-
-		HRESULT ErrorCode() const noexcept { return errorCode; }
-	};
-
-	export void ThrowIfFailed(HRESULT hr)
-	{
-		if(FAILED(hr))
-			throw HRESULTError{ hr };
-	}
+    export void ThrowIfFailed(HRESULT hr)
+    {
+        if(FAILED(hr))
+            throw xk::Exception<TypedD3DModule, xk::UnknownException>{ hr };
+    }
 
 	/// <summary>
 	/// Forwards a function which creates or gets an COM object which would require querying it's IID
