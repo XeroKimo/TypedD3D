@@ -68,6 +68,11 @@
     <None Include="gsl\string_span" />
     <None Include="gsl\util" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExceptionHierarchy\ExceptionHierarchy\ExceptionHierarchy.vcxproj">
+      <Project>{bb10395f-ced5-4f0d-bc01-8740a181207d}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
