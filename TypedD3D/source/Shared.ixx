@@ -216,6 +216,8 @@ namespace TypedD3D
         using interface_type = Base::interface_type;
 
     public:
+        template<class Ty2>
+        using traits_template_type = Traits<Ty2>;
         using traits_type = Traits<Ty>;
 
     public:

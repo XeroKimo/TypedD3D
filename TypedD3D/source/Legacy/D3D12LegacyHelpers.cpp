@@ -5,7 +5,6 @@
 //
 //*********************************************************
 
-#include "span_tuple.h"
 #include <functional>
 #include <type_traits>
 #include <d3d12.h>

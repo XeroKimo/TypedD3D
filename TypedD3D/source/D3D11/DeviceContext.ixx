@@ -1,5 +1,5 @@
 module;
-#include "span_tuple.h"
+
 #include "gsl/pointers"
 #include <d3d11_4.h>
 #include <tuple>
@@ -8,6 +8,8 @@ module;
 #include <vector>
 #include <utility>
 #include <wrl/client.h>
+#include <span>
+#include <cassert>
 
 export module TypedD3D11:DeviceContext;
 import :Constants;
@@ -47,6 +49,103 @@ namespace TypedD3D::D3D11
 		Wrapper<ID3D11BlendState> blendState;
 		std::array<FLOAT, 4> blendFactor;
 		UINT sampleMask;
+	};
+
+	class IASetVertexBufferData 
+	{
+		UINT count;
+		ID3D11Buffer* const* bufferView;
+		const UINT* strideView;
+		const UINT* offsetView;
+	public:
+		template<UINT Count>
+		IASetVertexBufferData(std::span<ID3D11Buffer*, Count> buffers, std::span<UINT, Count> strides, std::span<UINT, Count> offsets) :
+			count{ Count },
+			bufferView{ buffers.data() },
+			strideView{ strides.data() },
+			offsetView{ offsets.data() }
+		{
+			if constexpr(Count == std::dynamic_extent)
+			{
+				assert(buffers.size() == strides.size() && buffers.size() == offsets.size());
+			}
+		}
+
+		IASetVertexBufferData(UINT count, ID3D11Buffer*const * buffers, const UINT* strides, const UINT* offsets) :
+			count{ count },
+			bufferView{ buffers },
+			strideView{ strides },
+			offsetView{ offsets }
+		{
+		}
+
+	public:
+		UINT GetCount() const noexcept { return count; }
+		ID3D11Buffer* const* GetBuffers() const noexcept { return bufferView; }
+		const UINT* GetStrides() const noexcept { return strideView; }
+		const UINT* GetOffsets() const noexcept { return offsetView; }
+	};
+
+	class SOSetTargetsData
+	{
+		UINT count;
+		ID3D11Buffer* const* bufferView;
+		const UINT* offsetView;
+	public:
+		template<UINT Count>
+		SOSetTargetsData(std::span<ID3D11Buffer*, Count> buffers, std::span<UINT, Count> offsets) :
+			count{ Count },
+			bufferView{ buffers.data() },
+			offsetView{ offsets.data() }
+		{
+			if constexpr(Count == std::dynamic_extent)
+			{
+				assert(buffers.size() == offsets.size());
+			}
+		}
+
+		SOSetTargetsData(UINT count, ID3D11Buffer*const * buffers, const UINT* offsets) :
+			count{ count },
+			bufferView{ buffers },
+			offsetView{ offsets }
+		{
+		}
+
+	public:
+		UINT GetCount() const noexcept { return count; }
+		ID3D11Buffer* const* GetBuffers() const noexcept { return bufferView; }
+		const UINT* GetOffsets() const noexcept { return offsetView; }
+	};
+
+	class CSSetUnorderedAccessViewsData
+	{
+		UINT count;
+		ID3D11Buffer* const* bufferView;
+		const UINT* pUAVInitialCounts;
+	public:
+		template<UINT Count>
+		CSSetUnorderedAccessViewsData(std::span<ID3D11Buffer*, Count> buffers, std::span<UINT, Count> pUAVInitialCounts) :
+			count{ Count },
+			bufferView{ buffers.data() },
+			pUAVInitialCounts{ pUAVInitialCounts.data() }
+		{
+			if constexpr(Count == std::dynamic_extent)
+			{
+				assert(buffers.size() == pUAVInitialCounts.size());
+			}
+		}
+
+		CSSetUnorderedAccessViewsData(UINT count, ID3D11Buffer* const* buffers, const UINT* pUAVInitialCounts) :
+			count{ count },
+			bufferView{ buffers },
+			pUAVInitialCounts{ pUAVInitialCounts }
+		{
+		}
+
+	public:
+		UINT GetCount() const noexcept { return count; }
+		ID3D11Buffer* const* GetBuffers() const noexcept { return bufferView; }
+		const UINT* GetInitialCounts() const noexcept { return pUAVInitialCounts; }
 	};
 
 	template<class Ty>
@@ -172,25 +271,25 @@ namespace TypedD3D::D3D11
 
 			void IASetVertexBuffers(
 				UINT StartSlot,
-				xk::dynamic_extent_span_tuple<Wrapper<ID3D11Buffer>, const Stride, const Offset> vertexBuffers)
+				ID3D11Buffer* buffer,
+				UINT stride,
+				UINT offset)
 			{
-				std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer * []>(vertexBuffers.size());
-				for(size_t i = 0; i < vertexBuffers.size(); i++)
-				{
-					rawBuffers[i] = get<0>(vertexBuffers)[i].Get();
-				}
+				IASetVertexBuffers(
+					StartSlot,
+					{1, &buffer, &stride, &offset});
+			}
 
-				std::unique_ptr<std::underlying_type_t<Stride>[]> strides = std::make_unique< std::underlying_type_t<Stride>[]>(vertexBuffers.size());
-				std::memcpy(strides.get(), vertexBuffers.data<1>(), vertexBuffers.size_bytes<1>());
-
-				std::unique_ptr<std::underlying_type_t<Offset>[]> offsets = std::make_unique< std::underlying_type_t<Offset>[]>(vertexBuffers.size());
-				std::memcpy(offsets.get(), vertexBuffers.data<2>(), vertexBuffers.size_bytes<2>());
+			void IASetVertexBuffers(
+				UINT StartSlot,
+				IASetVertexBufferData data)
+			{
 				Get().IASetVertexBuffers(
 					StartSlot,
-					static_cast<UINT>(vertexBuffers.size()),
-					rawBuffers.get(),
-					strides.get(),
-					offsets.get());
+					data.GetCount(),
+					data.GetBuffers(),
+					data.GetStrides(),
+					data.GetOffsets());
 			}
 
 			void IASetIndexBuffer(
@@ -376,15 +475,9 @@ namespace TypedD3D::D3D11
 				Get().OMSetDepthStencilState(optDepthStencilState.Get(), StencilRef);
 			}
 
-			void SOSetTargets(
-				xk::dynamic_extent_span_tuple<Wrapper<ID3D11Buffer>, const Offset> ppSOTargets)
+			void SOSetTargets(SOSetTargetsData ppSOTargets)
 			{
-				std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer * []>(ppSOTargets.size());
-				for(size_t i = 0; i < ppSOTargets.size(); i++)
-				{
-					rawBuffers[i] = get<0>(ppSOTargets)[i].Get();
-				}
-				Get().SOSetTargets(static_cast<UINT>(ppSOTargets.size()), rawBuffers.get(), ppSOTargets.data<1>());
+				Get().SOSetTargets(ppSOTargets.GetCount(), ppSOTargets.GetBuffers(), ppSOTargets.GetOffsets());
 			}
 
 			void DrawAuto()
@@ -660,14 +753,17 @@ namespace TypedD3D::D3D11
 
 			void CSSetUnorderedAccessViews(
 				UINT StartSlot,
-				xk::dynamic_extent_span_tuple<Wrapper<ID3D11UnorderedAccessView>, const UINT> ppUnorderedAccessViews)
+				CSSetUnorderedAccessViewsData data)
 			{
-				std::unique_ptr<ID3D11UnorderedAccessView* []> rawBuffers = std::make_unique<ID3D11UnorderedAccessView * []>(ppUnorderedAccessViews.size());
-				for(size_t i = 0; i < ppUnorderedAccessViews.size(); i++)
-				{
-					rawBuffers[i] = get<0>(ppUnorderedAccessViews[i]).Get();
-				}
-				Get().CSSetUnorderedAccessViews(StartSlot, static_cast<UINT>(ppUnorderedAccessViews.size()), rawBuffers.get(), ppUnorderedAccessViews.data<1>());
+				Get().CSSetUnorderedAccessViews(StartSlot, data.GetCount(), data.GetBuffers(), data.GetInitialCounts());
+			}
+
+			void CSSetUnorderedAccessViews(
+				UINT StartSlot,
+				ID3D11Buffer* data,
+				UINT initialCounts)
+			{
+				CSSetUnorderedAccessViews(StartSlot, { 1, &data, &initialCounts });
 			}
 
 			void CSSetShader(
