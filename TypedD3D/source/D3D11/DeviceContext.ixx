@@ -49,6 +49,33 @@ namespace TypedD3D::D3D11
 		UINT sampleMask;
 	};
 
+	export struct IASetVertexBufferData
+	{
+		UINT count;
+		ID3D11Buffer** bufferView;
+		UINT* strideView;
+		UINT* offsetView;
+
+	public:
+		IASetVertexBufferData(UINT count, ID3D11Buffer** buffers, UINT* strides, UINT* offsets) :
+			count{ count },
+			bufferView{ buffers },
+			strideView{ strides },
+			offsetView{ offsets }
+		{
+		}
+
+
+		template<UINT Count>
+		IASetVertexBufferData(std::span<ID3D11Buffer*, Count> buffers, std::span<UINT*, Count> strides, std::span<UINT*, Count> offsets) :
+			count{ Count },
+			bufferView{ buffers.data() },
+			strideView{ strides.data() },
+			offsetView{ offsets.data() }
+		{
+		}
+	};
+
 	template<class Ty>
 	struct D3D11DeviceContextTraits;
 
@@ -172,25 +199,29 @@ namespace TypedD3D::D3D11
 
 			void IASetVertexBuffers(
 				UINT StartSlot,
-				xk::dynamic_extent_span_tuple<Wrapper<ID3D11Buffer>, const Stride, const Offset> vertexBuffers)
+				Wrapper<ID3D11Buffer> buffer,
+				UINT stride,
+				UINT offset)
 			{
-				std::unique_ptr<ID3D11Buffer* []> rawBuffers = std::make_unique<ID3D11Buffer * []>(vertexBuffers.size());
-				for(size_t i = 0; i < vertexBuffers.size(); i++)
-				{
-					rawBuffers[i] = get<0>(vertexBuffers)[i].Get();
-				}
-
-				std::unique_ptr<std::underlying_type_t<Stride>[]> strides = std::make_unique< std::underlying_type_t<Stride>[]>(vertexBuffers.size());
-				std::memcpy(strides.get(), vertexBuffers.data<1>(), vertexBuffers.size_bytes<1>());
-
-				std::unique_ptr<std::underlying_type_t<Offset>[]> offsets = std::make_unique< std::underlying_type_t<Offset>[]>(vertexBuffers.size());
-				std::memcpy(offsets.get(), vertexBuffers.data<2>(), vertexBuffers.size_bytes<2>());
+				ID3D11Buffer* b = buffer.Get();
 				Get().IASetVertexBuffers(
 					StartSlot,
-					static_cast<UINT>(vertexBuffers.size()),
-					rawBuffers.get(),
-					strides.get(),
-					offsets.get());
+					1,
+					&b,
+					&stride,
+					&offset);
+			}
+
+			void IASetVertexBuffers(
+				UINT StartSlot,
+				IASetVertexBufferData data)
+			{
+				Get().IASetVertexBuffers(
+					StartSlot,
+					data.count,
+					data.bufferView,
+					data.strideView,
+					data.offsetView);
 			}
 
 			void IASetIndexBuffer(
