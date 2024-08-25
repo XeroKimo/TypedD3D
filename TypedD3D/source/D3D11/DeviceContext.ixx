@@ -77,6 +77,7 @@ namespace TypedD3D::D3D11
 			strideView{ strides },
 			offsetView{ offsets }
 		{
+
 		}
 
 	public:
@@ -271,6 +272,14 @@ namespace TypedD3D::D3D11
 
 			void IASetVertexBuffers(
 				UINT StartSlot,
+				IASetVertexBufferData<1> data)
+			{
+				IASetVertexBuffers(StartSlot, IASetVertexBufferData<0>{ data });
+			}
+
+			template<UINT Count>
+			void IASetVertexBuffers(
+				UINT StartSlot,
 				ID3D11Buffer* buffer,
 				UINT stride,
 				UINT offset)
@@ -282,7 +291,7 @@ namespace TypedD3D::D3D11
 
 			void IASetVertexBuffers(
 				UINT StartSlot,
-				IASetVertexBufferData data)
+				IASetVertexBufferData<0> data)
 			{
 				Get().IASetVertexBuffers(
 					StartSlot,
