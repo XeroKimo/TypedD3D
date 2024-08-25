@@ -1,6 +1,5 @@
 module;
 
-#include "span_tuple.h"
 #include <d3d12.h>
 #include <wrl/client.h>
 #include <vector>
@@ -644,6 +643,36 @@ namespace TypedD3D::D3D12
 		};
 	};
 
+	class SetEventOnMultipleFenceCompletionData
+	{
+		UINT count;
+		ID3D12Fence* const* fenceViews;
+		UINT64* fenceValues;
+
+	public:
+		template<UINT Count>
+		SetEventOnMultipleFenceCompletionData(std::span<ID3D12Fence*, Count> fences, std::span<UINT64, Count> fenceValues) :
+			count{ Count },
+			fenceViews{ fences.data() },
+			fenceValues{ fenceValues.data() }
+		{
+
+		}
+
+		SetEventOnMultipleFenceCompletionData(UINT count, ID3D12Fence*const* fences, UINT64* fenceValues) :
+			count{ count },
+			fenceViews{ fences },
+			fenceValues{ fenceValues }
+		{
+
+		}
+
+	public:
+		UINT GetCount() const noexcept { return count; }
+		ID3D12Fence* const* GetFences() const noexcept { return fenceViews; }
+		const UINT64* GetFenceValues() const noexcept { return fenceValues; }
+	};
+
 	template<>
 	struct DeviceTraits<ID3D12Device1>
 	{
@@ -668,17 +697,15 @@ namespace TypedD3D::D3D12
 			}
 
 			void SetEventOnMultipleFenceCompletion(
-				xk::dynamic_extent_span_tuple<const ID3D12Fence*, const FenceValue> fences,
+				SetEventOnMultipleFenceCompletionData data,
 				D3D12_MULTIPLE_FENCE_WAIT_FLAGS Flags,
 				HANDLE hEvent)
 			{
-				std::unique_ptr<std::underlying_type_t<FenceValue>[]> fenceValues = std::make_unique< std::underlying_type_t<FenceValue>[]>(fences.size());
-				std::memcpy(fenceValues.get(), fences.data<1>(), fences.size_bytes<1>());
 
 				ThrowIfFailed(Get().SetEventOnMultipleFenceCompletion(
-					fences.data<0>(),
-					fenceValues.get(),
-					static_cast<UINT>(fences.size()),
+					data.GetFences(),
+					data.GetFenceValues(),
+					data.GetCount(),
 					Flags,
 					hEvent));
 			}

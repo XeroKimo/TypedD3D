@@ -1,5 +1,4 @@
 module;
-#include "span_tuple.h"
 #include <memory>
 #include <d3d12.h>
 #include <array>

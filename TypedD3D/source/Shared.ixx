@@ -10,11 +10,6 @@ export module TypedD3D.Shared;
 
 namespace TypedD3D
 {
-    export enum class Stride : UINT {};
-    export enum class Offset : UINT {};
-
-    export enum class FenceValue : UINT64 {};
-
     using Microsoft::WRL::ComPtr;
 
     export template<class To, class From>
