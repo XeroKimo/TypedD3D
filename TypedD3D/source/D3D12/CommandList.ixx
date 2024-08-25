@@ -762,6 +762,36 @@ namespace TypedD3D::D3D12
 		};
 	};
 
+	export class WriteBufferImmediateData
+	{
+		UINT count;
+		D3D12_WRITEBUFFERIMMEDIATE_PARAMETER* parameters;
+		D3D12_WRITEBUFFERIMMEDIATE_MODE* modes = nullptr;
+
+	public:
+		template<UINT Count>
+		WriteBufferImmediateData(std::span<D3D12_WRITEBUFFERIMMEDIATE_PARAMETER, Count> parameters, std::optional<std::span<D3D12_WRITEBUFFERIMMEDIATE_MODE, Count>> modes) :
+			count{ Count },
+			parameters{ parameters.data() },
+			modes{ modes.value_or({}).data() }
+		{
+
+		}
+
+		WriteBufferImmediateData(UINT count, D3D12_WRITEBUFFERIMMEDIATE_PARAMETER* parameters, D3D12_WRITEBUFFERIMMEDIATE_MODE* optionalModes) :
+			count{ count },
+			parameters{ parameters },
+			modes{ optionalModes }
+		{
+
+		}
+
+	public:
+		UINT GetCount() const noexcept { return count; }
+		const D3D12_WRITEBUFFERIMMEDIATE_PARAMETER* GetParameters() const noexcept { return parameters; }
+		const D3D12_WRITEBUFFERIMMEDIATE_MODE* GetModes() const noexcept { return modes; }
+	};
+
 	template<>
 	struct CommandListTraits<ID3D12GraphicsCommandList2>
 	{
@@ -778,10 +808,14 @@ namespace TypedD3D::D3D12
 			using derived_self = DerivedSelf;
 
 		public:
-			void WriteBufferImmediate(
-				xk::dynamic_extent_span_tuple<D3D12_WRITEBUFFERIMMEDIATE_PARAMETER, xk::optional<D3D12_WRITEBUFFERIMMEDIATE_MODE>> pParams)
+			void WriteBufferImmediate(WriteBufferImmediateData data)
 			{
-				Get().WriteBufferImmediate(static_cast<UINT>(pParams.size()), pParams.data<0>(), pParams.data<1>());
+				Get().WriteBufferImmediate(data.GetCount(), data.GetParameters(), data.GetModes());
+			}
+
+			void WriteBufferImmediate(D3D12_WRITEBUFFERIMMEDIATE_PARAMETER parameters, std::optional<D3D12_WRITEBUFFERIMMEDIATE_MODE> modes)
+			{
+				Get().WriteBufferImmediate({ 1, &parameters, modes ? std::optional{ std::span{1, &modes.value()} } : std::optional{ std::nullopt } });
 			}
 
 		private:
