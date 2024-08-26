@@ -6,6 +6,7 @@ module;
 #include <memory>
 #include <dxgi1_6.h>
 #include <cassert>
+#include <span>
 
 export module TypedD3D12:Device;
 export import TypedD3D.Shared;
@@ -647,7 +648,7 @@ namespace TypedD3D::D3D12
 	{
 		UINT count;
 		ID3D12Fence* const* fenceViews;
-		UINT64* fenceValues;
+		const UINT64* fenceValues;
 
 	public:
 		template<UINT Count>
@@ -671,6 +672,36 @@ namespace TypedD3D::D3D12
 		UINT GetCount() const noexcept { return count; }
 		ID3D12Fence* const* GetFences() const noexcept { return fenceViews; }
 		const UINT64* GetFenceValues() const noexcept { return fenceValues; }
+	};
+
+	class SetResidencyPriorityData
+	{
+		UINT count;
+		ID3D12Pageable* const* pageables;
+		const D3D12_RESIDENCY_PRIORITY* priorities;
+
+	public:
+		template<UINT Count>
+		SetResidencyPriorityData(std::span<ID3D12Pageable*, Count> pageables, std::span<D3D12_RESIDENCY_PRIORITY, Count> priorities) :
+			count{ Count },
+			pageables{ pageables.data() },
+			priorities{ priorities.data() }
+		{
+
+		}
+
+		SetResidencyPriorityData(UINT count, ID3D12Pageable* const* pageables, D3D12_RESIDENCY_PRIORITY* priorities) :
+			count{ count },
+			pageables{ pageables },
+			priorities{ priorities }
+		{
+
+		}
+
+	public:
+		UINT GetCount() const noexcept { return count; }
+		ID3D12Pageable* const* GetPageables() const noexcept { return pageables; }
+		const D3D12_RESIDENCY_PRIORITY* GetPriorities() const noexcept { return priorities; }
 	};
 
 	template<>
@@ -710,15 +741,17 @@ namespace TypedD3D::D3D12
 					hEvent));
 			}
 
-			void SetResidencyPriority(
-				std::span<ID3D12Pageable*> ppObjects,
-				std::span<const D3D12_RESIDENCY_PRIORITY> priorities)
+			void SetResidencyPriority(SetResidencyPriorityData data)
 			{
-				assert(ppObjects.size() == priorities.size());
 				ThrowIfFailed(Get().SetResidencyPriority(
-					static_cast<UINT>(ppObjects.size()),
-					ppObjects.data(),
-					priorities.data()));
+					data.GetCount(),
+					data.GetPageables(),
+					data.GetPriorities()));
+			}
+
+			void SetResidencyPriority(ID3D12Pageable* page, D3D12_RESIDENCY_PRIORITY priority)
+			{
+				SetResidencyPriority({ 1, &page, &priority });
 			}
 
 
