@@ -56,23 +56,6 @@ void D3D11HelloWorld()
         },
         nullptr,
         nullptr);
-    TypedD3D::Array<TypedD3D::Wrapper<ID3D11Device>, 4> fa{};
-    TypedD3D::Array<TypedD3D::Wrapper<ID3D11Device>, 4> fc{fa};
-    fc = fa;
-    TypedD3D::Span<TypedD3D::Wrapper<ID3D11Device>, 4> fb{ fa };
-    TypedD3D::Span<TypedD3D::Wrapper<ID3D11Device>, 4> fd{ fb };
-    fd = fb;
-    fd = fa;
-
-    TypedD3D::Vector<TypedD3D::Wrapper<ID3D11Device>> vd;
-    vd.push_back(fa[0]);
-    vd.push_back(fa[1]);
-    vd.push_back(fa[2]);
-    vd.push_back(fa[3]);
-    vd.pop_back();
-    vd[0] = fa[0];
-    vd.clear();
-    std::array<ID3D11Device*, 4> aab = static_cast<std::array<ID3D11Device*, 4>>(fa);
 
     UINT backBuffer = 0;
     MSG msg;

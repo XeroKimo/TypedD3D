@@ -329,13 +329,6 @@ namespace TypedD3D::D3D11
 				Get().IASetInputLayout(pInputLayout.Get());
 			}
 
-			void IASetVertexBuffers(
-				UINT StartSlot,
-				IASetVertexBufferData<1> data)
-			{
-				IASetVertexBuffers(StartSlot, IASetVertexBufferData<0>{ data });
-			}
-
 			template<UINT Count>
 			void IASetVertexBuffers(
 				UINT StartSlot,
@@ -361,7 +354,7 @@ namespace TypedD3D::D3D11
 
 			void IASetVertexBuffers(
 				UINT StartSlot,
-				IASetVertexBufferData<0> data)
+				IASetVertexBufferData data)
 			{
 				Get().IASetVertexBuffers(
 					StartSlot,
