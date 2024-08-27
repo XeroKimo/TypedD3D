@@ -244,7 +244,7 @@ namespace TypedD3D::D3D11
 				Wrapper<ID3D11PixelShader> optPixelShader,
 				ID3D11ClassInstance* optClassInstances)
 			{
-				PSSetShader(optPixelShader.Get(), std::span{ &optClassInstances, 1 });
+				PSSetShader(optPixelShader.Get(), std::span{ &optClassInstances, optClassInstances ? size_t{1} : size_t{0} });
 			}
 
 			void PSSetSamplers(
@@ -272,7 +272,7 @@ namespace TypedD3D::D3D11
 				Wrapper<ID3D11VertexShader> optVertexShader,
 				ID3D11ClassInstance* optClassInstances)
 			{
-				VSSetShader(optVertexShader.Get(), std::span{ &optClassInstances, 1 });
+				VSSetShader(optVertexShader.Get(), std::span{ &optClassInstances, optClassInstances ? size_t{1} : size_t{0} });
 			}
 
 			void DrawIndexed(
@@ -416,7 +416,7 @@ namespace TypedD3D::D3D11
 				Wrapper<ID3D11GeometryShader> optGeometryShader,
 				ID3D11ClassInstance* optClassInstances)
 			{
-				GSSetShader(optGeometryShader.Get(), std::span{ &optClassInstances, 1 });
+				GSSetShader(optGeometryShader.Get(), std::span{ &optClassInstances, optClassInstances ? size_t{1} : size_t{0} });
 			}
 
 			void IASetPrimitiveTopology(
@@ -512,29 +512,29 @@ namespace TypedD3D::D3D11
 			}
 
 			void OMSetRenderTargets(
-				Span<Wrapper<ID3D11RenderTargetView>> ppRenderTargetViews,
+				Span<Wrapper<ID3D11RenderTargetView>> optRenderTargetViews,
 				Wrapper<ID3D11DepthStencilView> optDepthStencilView)
 			{
-				Get().OMSetRenderTargets(static_cast<UINT>(ppRenderTargetViews.size()), ppRenderTargetViews.data(), optDepthStencilView.Get());
+				Get().OMSetRenderTargets(static_cast<UINT>(optRenderTargetViews.size()), optRenderTargetViews.data(), optDepthStencilView.Get());
 			}
 
 			void OMSetRenderTargets(
-				Wrapper<ID3D11RenderTargetView> ppRenderTargetViews,
+				Wrapper<ID3D11RenderTargetView> optRenderTargetViews,
 				Wrapper<ID3D11DepthStencilView> optDepthStencilView)
 			{
-				OMSetRenderTargets(Span<Wrapper<ID3D11RenderTargetView>>{ ppRenderTargetViews.GetAddressOf(), 1 }, optDepthStencilView);
+				OMSetRenderTargets(Span<Wrapper<ID3D11RenderTargetView>>{ optRenderTargetViews.GetAddressOf(), optRenderTargetViews.Get() ? size_t{ 1 } : size_t{ 0 } }, optDepthStencilView);
 			}
 
 			void OMSetRenderTargetsAndUnorderedAccessViews(
-				Span<Wrapper<ID3D11RenderTargetView>> ppRenderTargetViews,
+				Span<Wrapper<ID3D11RenderTargetView>> optRenderTargetViews,
 				Wrapper<ID3D11DepthStencilView> optDepthStencilView,
 				UINT UAVStartSlot,
 				Span<Wrapper<ID3D11UnorderedAccessView>> ppUnorderedAccessViews,
 				const UINT* pUAVInitialCounts)
 			{
 				Get().OMSetRenderTargetsAndUnorderedAccessViews(
-					static_cast<UINT>(ppRenderTargetViews.size()),
-					ppRenderTargetViews.data(),
+					static_cast<UINT>(optRenderTargetViews.size()),
+					optRenderTargetViews.data(),
 					optDepthStencilView.Get(),
 					UAVStartSlot,
 					static_cast<UINT>(ppUnorderedAccessViews.size()),
@@ -775,7 +775,7 @@ namespace TypedD3D::D3D11
 				Wrapper<ID3D11HullShader> optHullShader,
 				ID3D11ClassInstance* optClassInstances)
 			{
-				HSSetShader(optHullShader.Get(), std::span{ &optClassInstances, 1 });
+				HSSetShader(optHullShader.Get(), std::span{ &optClassInstances, optClassInstances ? size_t{1} : size_t{0} });
 			}
 
 			void HSSetSamplers(
@@ -831,7 +831,7 @@ namespace TypedD3D::D3D11
 				Wrapper<ID3D11DomainShader> optDomainShader,
 				ID3D11ClassInstance* optClassInstances)
 			{
-				DSSetShader(optDomainShader.Get(), std::span{ &optClassInstances, 1 });
+				DSSetShader(optDomainShader.Get(), std::span{ &optClassInstances, optClassInstances ? size_t{1} : size_t{0} });
 			}
 
 			void DSSetSamplers(
@@ -910,7 +910,7 @@ namespace TypedD3D::D3D11
 				Wrapper<ID3D11ComputeShader> optComputeShader,
 				ID3D11ClassInstance* optClassInstances)
 			{
-				CSSetShader(optComputeShader.Get(), std::span{&optClassInstances, 1});
+				CSSetShader(optComputeShader.Get(), std::span{ &optClassInstances, optClassInstances ? size_t{1} : size_t{0} });
 			}
 
 			void CSSetSamplers(
