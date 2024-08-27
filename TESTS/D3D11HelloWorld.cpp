@@ -7,7 +7,8 @@
 #include <d3d11_4.h>
 #include <memory>
 #include <cassert>
-#include "span_tuple.h"
+#include <array>
+
 import TypedD3D11;
 import TypedDXGI;
 #undef CreateWindow
@@ -63,14 +64,6 @@ void D3D11HelloWorld()
 
     TypedD3D::Wrapper<ID3D11RenderTargetView> rtv;
     rtv = device->CreateRenderTargetView(swapChain->GetBuffer<ID3D11Resource>(0), nullptr);
-    //TypedD3D::IUnknownWrapper<ID3D11RenderTargetView, TypedD3D::UntaggedTraits> rtv3;
-    //TypedD3D::Wrapper<ID3D11RenderTargetView> rtv2;
-    //TypedD3D::ElementReference<TypedD3D::Wrapper<ID3D11RenderTargetView>> t{ *rtv.GetAddressOf() };
-
-    //t = rtv;
-    //t = std::move(rtv);
-    //rtv = std::move(t);
-    //t.Swap(rtv);
 
 
     ComPtr<ID3DBlob> vertexBlob;
