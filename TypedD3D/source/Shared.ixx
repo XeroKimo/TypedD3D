@@ -658,6 +658,20 @@ namespace TypedD3D
 		{
 
 		}
+
+		explicit(Extent != std::dynamic_extent)
+		Span(pointer* p, size_t count) :
+			m_span{ p, count }
+		{
+
+		}
+
+		explicit(Extent != std::dynamic_extent)
+		Span(Vector<Ty>& arr) :
+			m_span{ arr.data(), arr.size() }
+		{
+
+		}
 	public:
 		ElementReference<Ty> operator[](size_t index)
 		{

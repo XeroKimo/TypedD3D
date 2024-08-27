@@ -228,6 +228,24 @@ namespace TypedD3D::D3D11
             }
 
             Wrapper<ID3D11InputLayout> CreateInputLayout(
+                D3D11_INPUT_ELEMENT_DESC inputElementDescs,
+                ID3DBlob& pShaderBytecodeWithInputSignature)
+            {
+                return CreateInputLayout(inputElementDescs, pShaderBytecodeWithInputSignature.GetBufferPointer(), pShaderBytecodeWithInputSignature.GetBufferSize());
+            }
+
+            Wrapper<ID3D11InputLayout> CreateInputLayout(
+                D3D11_INPUT_ELEMENT_DESC inputElementDescs,
+                const void* pShaderBytecodeWithInputSignature,
+                SIZE_T BytecodeLength)
+            {
+                return CreateInputLayout(
+                    std::span{ &inputElementDescs, 1 },
+                    pShaderBytecodeWithInputSignature,
+                    BytecodeLength);
+            }
+
+            Wrapper<ID3D11InputLayout> CreateInputLayout(
                 std::span<const D3D11_INPUT_ELEMENT_DESC> inputElementDescs,
                 const void* pShaderBytecodeWithInputSignature,
                 SIZE_T BytecodeLength)
@@ -288,6 +306,54 @@ namespace TypedD3D::D3D11
             }
 
             Wrapper<ID3D11GeometryShader> CreateGeometryShaderWithStreamOutput(
+                ID3DBlob& pShaderBytecode,
+                std::span<const D3D11_SO_DECLARATION_ENTRY> pSODeclaration,
+                UINT pBufferStrides,
+                UINT RasterizedStream,
+                ID3D11ClassLinkage* optClassLinkage)
+            {
+                return CreateGeometryShaderWithStreamOutput(
+                    pShaderBytecode.GetBufferPointer(),
+                    pShaderBytecode.GetBufferSize(),
+                    pSODeclaration,
+                    pBufferStrides,
+                    RasterizedStream,
+                    optClassLinkage);
+            }
+
+            Wrapper<ID3D11GeometryShader> CreateGeometryShaderWithStreamOutput(
+                ID3DBlob& pShaderBytecode,
+                D3D11_SO_DECLARATION_ENTRY pSODeclaration,
+                std::span<const UINT> pBufferStrides,
+                UINT RasterizedStream,
+                ID3D11ClassLinkage* optClassLinkage)
+            {
+                return CreateGeometryShaderWithStreamOutput(
+                    pShaderBytecode.GetBufferPointer(),
+                    pShaderBytecode.GetBufferSize(),
+                    pSODeclaration,
+                    pBufferStrides,
+                    RasterizedStream,
+                    optClassLinkage);
+            }
+
+            Wrapper<ID3D11GeometryShader> CreateGeometryShaderWithStreamOutput(
+                ID3DBlob& pShaderBytecode,
+                D3D11_SO_DECLARATION_ENTRY pSODeclaration,
+                UINT pBufferStrides,
+                UINT RasterizedStream,
+                ID3D11ClassLinkage* optClassLinkage)
+            {
+                return CreateGeometryShaderWithStreamOutput(
+                    pShaderBytecode.GetBufferPointer(),
+                    pShaderBytecode.GetBufferSize(),
+                    pSODeclaration,
+                    pBufferStrides,
+                    RasterizedStream,
+                    optClassLinkage);
+            }
+
+            Wrapper<ID3D11GeometryShader> CreateGeometryShaderWithStreamOutput(
                 const void* pShaderBytecode,
                 SIZE_T BytecodeLength,
                 std::span<const D3D11_SO_DECLARATION_ENTRY> pSODeclaration,
@@ -304,6 +370,57 @@ namespace TypedD3D::D3D11
                     pSODeclaration.size(),
                     pBufferStrides.data(),
                     pBufferStrides.size(),
+                    RasterizedStream,
+                    optClassLinkage);
+            }
+
+            Wrapper<ID3D11GeometryShader> CreateGeometryShaderWithStreamOutput(
+                const void* pShaderBytecode,
+                SIZE_T BytecodeLength,
+                D3D11_SO_DECLARATION_ENTRY pSODeclaration,
+                std::span<const UINT> pBufferStrides,
+                UINT RasterizedStream,
+                ID3D11ClassLinkage* optClassLinkage)
+            {
+                return CreateGeometryShaderWithStreamOutput(
+                    pShaderBytecode,
+                    BytecodeLength,
+                    std::span{ &pSODeclaration, 1 },
+                    pBufferStrides,
+                    RasterizedStream,
+                    optClassLinkage);
+            }
+
+            Wrapper<ID3D11GeometryShader> CreateGeometryShaderWithStreamOutput(
+                const void* pShaderBytecode,
+                SIZE_T BytecodeLength,
+                std::span<const D3D11_SO_DECLARATION_ENTRY> pSODeclaration,
+                UINT pBufferStrides,
+                UINT RasterizedStream,
+                ID3D11ClassLinkage* optClassLinkage)
+            {
+                return CreateGeometryShaderWithStreamOutput(
+                    pShaderBytecode,
+                    BytecodeLength,
+                    pSODeclaration,
+                    std::span{ &pBufferStrides, 1 },
+                    RasterizedStream,
+                    optClassLinkage);
+            }
+
+            Wrapper<ID3D11GeometryShader> CreateGeometryShaderWithStreamOutput(
+                const void* pShaderBytecode,
+                SIZE_T BytecodeLength,
+                D3D11_SO_DECLARATION_ENTRY pSODeclaration,
+                UINT pBufferStrides,
+                UINT RasterizedStream,
+                ID3D11ClassLinkage* optClassLinkage)
+            {
+                return CreateGeometryShaderWithStreamOutput(
+                    pShaderBytecode,
+                    BytecodeLength,
+                    std::span{ &pSODeclaration, 1 },
+                    std::span{ &pBufferStrides, 1 },
                     RasterizedStream,
                     optClassLinkage);
             }

@@ -56,6 +56,23 @@ void D3D11HelloWorld()
         },
         nullptr,
         nullptr);
+    TypedD3D::Array<TypedD3D::Wrapper<ID3D11Device>, 4> fa{};
+    TypedD3D::Array<TypedD3D::Wrapper<ID3D11Device>, 4> fc{fa};
+    fc = fa;
+    TypedD3D::Span<TypedD3D::Wrapper<ID3D11Device>, 4> fb{ fa };
+    TypedD3D::Span<TypedD3D::Wrapper<ID3D11Device>, 4> fd{ fb };
+    fd = fb;
+    fd = fa;
+
+    TypedD3D::Vector<TypedD3D::Wrapper<ID3D11Device>> vd;
+    vd.push_back(fa[0]);
+    vd.push_back(fa[1]);
+    vd.push_back(fa[2]);
+    vd.push_back(fa[3]);
+    vd.pop_back();
+    vd[0] = fa[0];
+    vd.clear();
+    std::array<ID3D11Device*, 4> aab = static_cast<std::array<ID3D11Device*, 4>>(fa);
 
     UINT backBuffer = 0;
     MSG msg;
@@ -63,6 +80,15 @@ void D3D11HelloWorld()
 
     TypedD3D::Wrapper<ID3D11RenderTargetView> rtv;
     rtv = device->CreateRenderTargetView(swapChain->GetBuffer<ID3D11Resource>(0), nullptr);
+    //TypedD3D::IUnknownWrapper<ID3D11RenderTargetView, TypedD3D::UntaggedTraits> rtv3;
+    //TypedD3D::Wrapper<ID3D11RenderTargetView> rtv2;
+    //TypedD3D::ElementReference<TypedD3D::Wrapper<ID3D11RenderTargetView>> t{ *rtv.GetAddressOf() };
+
+    //t = rtv;
+    //t = std::move(rtv);
+    //rtv = std::move(t);
+    //t.Swap(rtv);
+
 
     ComPtr<ID3DBlob> vertexBlob;
     ComPtr<ID3DBlob> errorBlob;
