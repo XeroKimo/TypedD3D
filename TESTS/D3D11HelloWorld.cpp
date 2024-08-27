@@ -180,7 +180,7 @@ void D3D11HelloWorld()
         else
         {
             deviceContext->ClearRenderTargetView(rtv, std::array{ 0.f, 0.3f, 0.7f, 1.f });
-            deviceContext->OMSetRenderTargets(std::span(&rtv, 1), nullptr);
+            deviceContext->OMSetRenderTargets(rtv, nullptr);
 
             deviceContext->IASetInputLayout(inputLayout);
             deviceContext->RSSetViewports(std::span(&viewport, 1));

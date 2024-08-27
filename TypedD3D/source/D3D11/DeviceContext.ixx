@@ -208,28 +208,28 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
 			{
-				Get().VSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.get());
+				Get().VSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
 			}
 
 			void VSSetConstantBuffers(
 				UINT StartSlot,
 				Wrapper<ID3D11Buffer> ppConstantBuffers)
 			{
-				VSSetConstantBuffers(StartSlot, Span{ ppConstantBuffers.GetAddressOf(), 1 });
+				VSSetConstantBuffers(StartSlot, Span<Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
 			}
 
 			void PSSetShaderResources(
 				UINT StartSlot,
 				Span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
 			{
-				Get().PSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.get());
+				Get().PSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.data());
 			}
 
 			void PSSetShaderResources(
 				UINT StartSlot,
 				Wrapper<ID3D11ShaderResourceView> ppShaderResourceViews)
 			{
-				PSSetShaderResources(StartSlot, Span{ ppShaderResourceViews.GetAddressOf(), 1 });
+				PSSetShaderResources(StartSlot, Span<Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
 			}
 
 			void PSSetShader(
@@ -250,14 +250,14 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Span<Wrapper<ID3D11SamplerState>> ppSamplers)
 			{
-				Get().PSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.get());
+				Get().PSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
 			}
 
 			void PSSetSamplers(
 				UINT StartSlot,
 				Wrapper<ID3D11SamplerState> ppSamplers)
 			{
-				PSSetSamplers(StartSlot, Span{ ppSamplers.GetAddressOf(), 1 });
+				PSSetSamplers(StartSlot, Span<Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
 			}
 
 			void VSSetShader(
@@ -312,14 +312,14 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
 			{
-				Get().PSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.get());
+				Get().PSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
 			}
 
 			void PSSetConstantBuffers(
 				UINT StartSlot,
 				Wrapper<ID3D11Buffer> ppConstantBuffers)
 			{
-				PSSetConstantBuffers(StartSlot, Span{ ppConstantBuffers.GetAddressOf(), 1 });
+				PSSetConstantBuffers(StartSlot, Span<Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
 			}
 
 			void IASetInputLayout(
@@ -393,14 +393,14 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
 			{
-				Get().GSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.get());
+				Get().GSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
 			}
 
 			void GSSetConstantBuffers(
 				UINT StartSlot,
 				Wrapper<ID3D11Buffer> ppConstantBuffers)
 			{
-				GSSetConstantBuffers(StartSlot, Span{ ppConstantBuffers.GetAddressOf(), 1 });
+				GSSetConstantBuffers(StartSlot, Span<Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
 			}
 
 			void GSSetShader(
@@ -427,28 +427,28 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
 			{
-				Get().VSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.get());
+				Get().VSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.data());
 			}
 
 			void VSSetShaderResources(
 				UINT StartSlot,
 				Wrapper<ID3D11ShaderResourceView> ppShaderResourceViews)
 			{
-				VSSetShaderResources(StartSlot, Span{ ppShaderResourceViews.GetAddressOf(), 1 });
+				VSSetShaderResources(StartSlot, Span<Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
 			}
 
 			void VSSetSamplers(
 				UINT StartSlot,
 				Span<Wrapper<ID3D11SamplerState>> ppSamplers)
 			{
-				Get().VSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.get());
+				Get().VSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
 			}
 
 			void VSSetSamplers(
 				UINT StartSlot,
 				Wrapper<ID3D11SamplerState> ppSamplers)
 			{
-				VSSetSamplers(StartSlot, Span{ ppSamplers.GetAddressOf(), 1 });
+				VSSetSamplers(StartSlot, Span<Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
 			}
 
 			void Begin(
@@ -485,42 +485,42 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
 			{
-				Get().GSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.get());
+				Get().GSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.data());
 			}
 
 			void GSSetShaderResources(
 				UINT StartSlot,
 				Wrapper<ID3D11ShaderResourceView> ppShaderResourceViews)
 			{
-				GSSetShaderResources(StartSlot, Span{ ppShaderResourceViews.GetAddressOf(), 1 });
+				GSSetShaderResources(StartSlot, Span<Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
 			}
 
 			void GSSetSamplers(
 				UINT StartSlot,
 				Span<Wrapper<ID3D11SamplerState>> ppSamplers)
 			{
-				Get().GSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.get());
+				Get().GSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
 			}
 
 			void GSSetSamplers(
 				UINT StartSlot,
 				Wrapper<ID3D11SamplerState> ppSamplers)
 			{
-				GSSetSamplers(StartSlot, Span{ ppSamplers.GetAddressOf(), 1 });
+				GSSetSamplers(StartSlot, Span<Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
 			}
 
 			void OMSetRenderTargets(
 				Span<Wrapper<ID3D11RenderTargetView>> ppRenderTargetViews,
 				Wrapper<ID3D11DepthStencilView> optDepthStencilView)
 			{
-				Get().OMSetRenderTargets(static_cast<UINT>(ppRenderTargetViews.size()), ppRenderTargetViews.get(), optDepthStencilView.Get());
+				Get().OMSetRenderTargets(static_cast<UINT>(ppRenderTargetViews.size()), ppRenderTargetViews.data(), optDepthStencilView.Get());
 			}
 
 			void OMSetRenderTargets(
 				Wrapper<ID3D11RenderTargetView> ppRenderTargetViews,
 				Wrapper<ID3D11DepthStencilView> optDepthStencilView)
 			{
-				OMSetRenderTargets(Span{ ppRenderTargetViews.GetAddressOf(), 1 }, optDepthStencilView);
+				OMSetRenderTargets(Span<Wrapper<ID3D11RenderTargetView>>{ ppRenderTargetViews.GetAddressOf(), 1 }, optDepthStencilView);
 			}
 
 			void OMSetRenderTargetsAndUnorderedAccessViews(
@@ -532,7 +532,7 @@ namespace TypedD3D::D3D11
 			{
 				Get().OMSetRenderTargetsAndUnorderedAccessViews(
 					static_cast<UINT>(ppRenderTargetViews.size()),
-					ppRenderTargetViews.get(),
+					ppRenderTargetViews.data(),
 					optDepthStencilView.Get(),
 					UAVStartSlot,
 					static_cast<UINT>(ppUnorderedAccessViews.size()),
@@ -752,14 +752,14 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
 			{
-				Get().HSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.get());
+				Get().HSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.data());
 			}
 
 			void HSSetShaderResources(
 				UINT StartSlot,
 				Wrapper<ID3D11ShaderResourceView> ppShaderResourceViews)
 			{
-				HSSetShaderResources(StartSlot, Span{ ppShaderResourceViews.GetAddressOf(), 1 });
+				HSSetShaderResources(StartSlot, Span<Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
 			}
 
 			void HSSetShader(
@@ -773,49 +773,49 @@ namespace TypedD3D::D3D11
 				Wrapper<ID3D11HullShader> optHullShader,
 				ID3D11ClassInstance* optClassInstances)
 			{
-				HSSetShader(optHullShader.Get(), std::span{ &optClassInstances, 1 }));
+				HSSetShader(optHullShader.Get(), std::span{ &optClassInstances, 1 });
 			}
 
 			void HSSetSamplers(
 				UINT StartSlot,
 				Span<Wrapper<ID3D11SamplerState>> ppSamplers)
 			{
-				Get().HSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.get());
+				Get().HSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
 			}
 
 			void HSSetSamplers(
 				UINT StartSlot,
 				Wrapper<ID3D11SamplerState> ppSamplers)
 			{
-				HSSetSamplers(StartSlot, Span{ ppSamplers.GetAddressOf(), 1 });
+				HSSetSamplers(StartSlot, Span<Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
 			}
 
 			void HSSetConstantBuffers(
 				UINT StartSlot,
 				Span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
 			{
-				Get().HSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.get());
+				Get().HSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
 			}
 
 			void HSSetConstantBuffers(
 				UINT StartSlot,
 				Wrapper<ID3D11Buffer> ppConstantBuffers)
 			{
-				HSSetConstantBuffers(StartSlot, Span{ ppConstantBuffers.GetAddressOf(), 1 });
+				HSSetConstantBuffers(StartSlot, Span<Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
 			}
 
 			void DSSetShaderResources(
 				UINT StartSlot,
 				Span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
 			{
-				Get().DSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.get());
+				Get().DSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.data());
 			}
 
 			void DSSetShaderResources(
 				UINT StartSlot,
 				Wrapper<ID3D11ShaderResourceView> ppShaderResourceViews)
 			{
-				DSSetShaderResources(StartSlot, Span{ ppShaderResourceViews.GetAddressOf(), 1 });
+				DSSetShaderResources(StartSlot, Span<Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
 			}
 
 			void DSSetShader(
@@ -836,42 +836,42 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Span<Wrapper<ID3D11SamplerState>> ppSamplers)
 			{
-				Get().DSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.get());
+				Get().DSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
 			}
 
 			void DSSetSamplers(
 				UINT StartSlot,
 				Wrapper<ID3D11SamplerState> ppSamplers)
 			{
-				DSSetSamplers(StartSlot, Span{ ppSamplers.GetAddressOf(), 1 });
+				DSSetSamplers(StartSlot, Span<Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
 			}
 
 			void DSSetConstantBuffers(
 				UINT StartSlot,
 				Span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
 			{
-				Get().DSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.get());
+				Get().DSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
 			}
 			
 			void DSSetConstantBuffers(
 				UINT StartSlot,
 				Wrapper<ID3D11Buffer> ppConstantBuffers)
 			{
-				DSSetConstantBuffers(StartSlot, Span{ ppConstantBuffers.GetAddressOf(), 1 });
+				DSSetConstantBuffers(StartSlot, Span<Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
 			}
 
 			void CSSetShaderResources(
 				UINT StartSlot,
 				Span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
 			{
-				Get().CSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.get());
+				Get().CSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.data());
 			}
 
 			void CSSetShaderResources(
 				UINT StartSlot,
 				Wrapper<ID3D11ShaderResourceView> ppShaderResourceViews)
 			{
-				CSSetShaderResources(StartSlot, Span{ ppShaderResourceViews.GetAddressOf(), 1 });
+				CSSetShaderResources(StartSlot, Span<Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
 			}
 
 			void CSSetUnorderedAccessViews(
@@ -915,28 +915,28 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Span<Wrapper<ID3D11SamplerState>> ppSamplers)
 			{
-				Get().CSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.get());
+				Get().CSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
 			}
 
 			void CSSetSamplers(
 				UINT StartSlot,
 				Wrapper<ID3D11SamplerState> ppSamplers)
 			{
-				CSSetSamplers(StartSlot, Span{ ppSamplers.GetAddressOf(), 1 });
+				CSSetSamplers(StartSlot, Span<Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
 			}
 
 			void CSSetConstantBuffers(
 				UINT StartSlot,
 				Span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
 			{
-				Get().CSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.get());
+				Get().CSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
 			}
 
 			void CSSetConstantBuffers(
 				UINT StartSlot,
 				Wrapper<ID3D11Buffer> ppConstantBuffers)
 			{
-				CSSetConstantBuffers(StartSlot, Span{ ppConstantBuffers.GetAddressOf(), 1 });
+				CSSetConstantBuffers(StartSlot, Span<Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
 			}
 
 			std::vector<Wrapper<ID3D11Buffer>> VSGetConstantBuffers(
