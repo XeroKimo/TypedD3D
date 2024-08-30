@@ -51,7 +51,10 @@ namespace TypedD3D::D3D11
 		UINT sampleMask;
 	};
 
-	class IASetVertexBufferData 
+	template<class Ty, class Ty2, size_t Extent>
+	concept BoundedRandomAccessContainer = std::ranges::contiguous_range<Ty> && std::same_as<typename Ty::value_type, Ty2> && (std::extent_v<Ty> == Extent);
+
+	export class IASetVertexBuffersData 
 	{
 		UINT count;
 		ID3D11Buffer* const* bufferView;
@@ -59,7 +62,7 @@ namespace TypedD3D::D3D11
 		const UINT* offsetView;
 	public:
 		template<UINT Count>
-		IASetVertexBufferData(std::span<ID3D11Buffer*, Count> buffers, std::span<UINT, Count> strides, std::span<UINT, Count> offsets) :
+		IASetVertexBuffersData(std::span<ID3D11Buffer*, Count> buffers, std::span<UINT, Count> strides, std::span<UINT, Count> offsets) :
 			count{ buffers.size() },
 			bufferView{ buffers.data() },
 			strideView{ strides.data() },
@@ -72,8 +75,8 @@ namespace TypedD3D::D3D11
 		}
 
 		template<UINT Count>
-		IASetVertexBufferData(Span<Wrapper<ID3D11Buffer>, Count> buffers, std::span<UINT, Count> strides, std::span<UINT, Count> offsets) :
-			count{ buffers.size() },
+		IASetVertexBuffersData(Span<Wrapper<ID3D11Buffer>, Count> buffers, std::span<UINT, Count> strides, std::span<UINT, Count> offsets) :
+			count{ static_cast<UINT>(buffers.size()) },
 			bufferView{ buffers.data() },
 			strideView{ strides.data() },
 			offsetView{ offsets.data() }
@@ -84,7 +87,29 @@ namespace TypedD3D::D3D11
 			}
 		}
 
-		IASetVertexBufferData(UINT count, ID3D11Buffer*const * buffers, const UINT* strides, const UINT* offsets) :
+		IASetVertexBuffersData(Span<Wrapper<ID3D11Buffer>> buffers, std::span<UINT> strides, std::span<UINT> offsets) :
+			count{ static_cast<UINT>(buffers.size()) },
+			bufferView{ buffers.data() },
+			strideView{ strides.data() },
+			offsetView{ offsets.data() }
+		{
+			assert(buffers.size() == strides.size() && buffers.size() == offsets.size());
+		}
+
+		//template<size_t Count, BoundedRandomAccessContainer<ID3D11Buffer*, Count> Ty1, BoundedRandomAccessContainer<UINT, Count> Ty2, BoundedRandomAccessContainer<UINT, Count> Ty3>
+		//IASetVertexBuffersData(Ty1& buffers, Ty2& strides, Ty3& offsets) :
+		//	count{ buffers.size() },
+		//	bufferView{ buffers.data() },
+		//	strideView{ strides.data() },
+		//	offsetView{ offsets.data() }
+		//{
+		//	//if constexpr(Count == std::dynamic_extent)
+		//	//{
+		//	//	assert(buffers.size() == strides.size() && buffers.size() == offsets.size());
+		//	//}
+		//}
+
+		IASetVertexBuffersData(UINT count, ID3D11Buffer*const * buffers, const UINT* strides, const UINT* offsets) :
 			count{ count },
 			bufferView{ buffers },
 			strideView{ strides },
@@ -354,7 +379,7 @@ namespace TypedD3D::D3D11
 
 			void IASetVertexBuffers(
 				UINT StartSlot,
-				IASetVertexBufferData data)
+				IASetVertexBuffersData data)
 			{
 				Get().IASetVertexBuffers(
 					StartSlot,
@@ -388,7 +413,7 @@ namespace TypedD3D::D3D11
 				UINT StartVertexLocation,
 				UINT StartInstanceLocation)
 			{
-				Get().DrawIndexedInstanced(VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
+				Get().DrawInstanced(VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
 			}
 
 			void GSSetConstantBuffers(

@@ -711,6 +711,9 @@ namespace TypedD3D
 		std::span<pointer, Extent> ToUntyped() const { return m_span; }
 	};
 
+	template<class Ty, size_t Extent>
+	Span(Array<Ty, Extent>&) -> Span<Ty, Extent>;
+
 	export template<class Ty>
 		struct UntaggedTraits;
 
