@@ -23,6 +23,7 @@
     <ClInclude Include="span_tuple.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\build.cpp" />
     <ClCompile Include="source\D3D11\D3D11Constants.ixx" />
     <ClCompile Include="source\D3D11\D3D11Device.ixx" />
     <ClCompile Include="source\D3D11\DeviceContext.ixx" />
@@ -69,6 +70,9 @@
     <None Include="gsl\util" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ExceptionHierarchy\ExceptionHierarchy\ExceptionHierarchy.vcxproj">
+      <Project>{bb10395f-ced5-4f0d-bc01-8740a181207d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\ExceptionHierarchy\ExceptionHierarchy\ExceptionHierarchy.vcxproj">
       <Project>{bb10395f-ced5-4f0d-bc01-8740a181207d}</Project>
     </ProjectReference>
