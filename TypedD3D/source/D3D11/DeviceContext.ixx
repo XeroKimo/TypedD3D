@@ -716,6 +716,13 @@ namespace TypedD3D::D3D11
 				Get().ClearRenderTargetView(pRenderTargetView.get().Get(), ColorRGBA.data());
 			}
 
+			void ClearRenderTargetView(
+				gsl::not_null<Wrapper<ID3D11RenderTargetView>> pRenderTargetView,
+				std::array<const FLOAT, 4> ColorRGBA)
+			{
+				ClearRenderTargetView(pRenderTargetView, std::span{ ColorRGBA });
+			}
+
 			void ClearUnorderedAccessViewUint(
 				gsl::not_null<Wrapper<ID3D11UnorderedAccessView>> pUnorderedAccessView,
 				std::span<const UINT, 4> Values)
