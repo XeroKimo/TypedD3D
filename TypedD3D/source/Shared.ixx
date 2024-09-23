@@ -315,6 +315,8 @@ namespace TypedD3D
 			return lh.impl.ptr != rh.impl.ptr;
 		}
 
+		operator bool() const { return impl.ptr != nullptr; }
+
 	public:
 		pointer Detach() { return impl.ptr.Detach(); }
 

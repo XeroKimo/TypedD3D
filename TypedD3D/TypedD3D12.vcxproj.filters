@@ -104,7 +104,7 @@
     <ClCompile Include="source\Legacy\DXGILegacyHelpers.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\build.cpp">
+    <ClCompile Include="build.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

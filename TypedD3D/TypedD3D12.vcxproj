@@ -23,7 +23,7 @@
     <ClInclude Include="span_tuple.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\build.cpp" />
+    <ClCompile Include="build.cpp" />
     <ClCompile Include="source\D3D11\D3D11Constants.ixx" />
     <ClCompile Include="source\D3D11\D3D11Device.ixx" />
     <ClCompile Include="source\D3D11\DeviceContext.ixx" />
