@@ -271,7 +271,7 @@ namespace TypedD3D
 		}
 
 	public:
-		IUnknownWrapper& operator=(IUnknownWrapper& other) = default;
+		IUnknownWrapper& operator=(const IUnknownWrapper& other) = default;
 		IUnknownWrapper& operator=(IUnknownWrapper&& other) noexcept = default;
 
 		IUnknownWrapper& operator=(std::nullptr_t)
@@ -281,7 +281,7 @@ namespace TypedD3D
 		}
 
 		template<class OtherTy>
-		IUnknownWrapper& operator=(IUnknownWrapper<OtherTy, Traits>& other)
+		IUnknownWrapper& operator=(const IUnknownWrapper<OtherTy, Traits>& other)
 		{
 			impl.ptr = other;
 			return *this;
