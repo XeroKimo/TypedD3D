@@ -4,6 +4,7 @@
 // Licensed under the MIT License (MIT).
 //
 //*********************************************************
+module;
 
 #include <functional>
 #include <type_traits>
