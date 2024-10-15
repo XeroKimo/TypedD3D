@@ -39,7 +39,7 @@ namespace TypedD3D::D3D11
             UINT DataSize,
             const void* pData)
         {
-            return InternalGet().GetPrivateData(guid, DataSize, pData);
+            return InternalGet().SetPrivateData(guid, DataSize, pData);
         }
 
         //TODO: Figure out how this works to update to a more modern API
