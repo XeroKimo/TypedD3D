@@ -59,7 +59,7 @@ namespace TypedD3D
 
 		public:
 			template<std::derived_from<ID3D11Resource> Ty = ID3D11Resource>
-			Wrapper<Ty> GetResource()
+			Wrapper<Ty> GetResource() const
 			{
 				Microsoft::WRL::ComPtr<ID3D11Resource> resource;
 				Get().GetResource(&resource);
@@ -69,6 +69,9 @@ namespace TypedD3D
 		private:
 			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
 			reference Get() { return *ToDerived().derived_self::Get(); }
+
+			const derived_self& ToDerived() const { return static_cast<const derived_self&>(*this); }
+			reference Get() const { return *ToDerived().derived_self::Get(); }
 		};
 	};
 
