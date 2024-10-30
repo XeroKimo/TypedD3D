@@ -367,9 +367,9 @@ namespace TypedD3D::D3D11
                     pShaderBytecode,
                     BytecodeLength,
                     pSODeclaration.data(),
-                    pSODeclaration.size(),
+                    static_cast<UINT>(pSODeclaration.size()),
                     pBufferStrides.data(),
-                    pBufferStrides.size(),
+                    static_cast<UINT>(pBufferStrides.size()),
                     RasterizedStream,
                     optClassLinkage);
             }
@@ -536,7 +536,7 @@ namespace TypedD3D::D3D11
             Wrapper<DeviceContextTy> CreateDeferredContext(
                 UINT ContextFlags)
             {
-                return UnknownObjectForwardFunction<DeviceContextTy>(&value_type::CreateDeferredContext, Get(), &ContextFlags);
+                return UnknownObjectForwardFunction<DeviceContextTy>(&value_type::CreateDeferredContext, Get(), ContextFlags);
             }
 
               //TODO: Figure out how this works to update to a more modern API

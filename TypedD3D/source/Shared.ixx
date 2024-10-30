@@ -90,7 +90,12 @@ namespace TypedD3D
 	{
 		ComPtr<Unknown> unknown;
 
-		ThrowIfFailed(std::invoke(function, args..., IID_PPV_ARGS(&unknown)));
+		if constexpr(requires() { { std::invoke(function, args..., IID_PPV_ARGS(&unknown)) } -> std::convertible_to<HRESULT>; })
+			ThrowIfFailed(std::invoke(function, args..., IID_PPV_ARGS(&unknown)));
+		else if constexpr(requires() { { std::invoke(function, args..., IID_PPV_ARGS(&unknown)) } -> std::same_as<void>; })
+			std::invoke(function, args..., IID_PPV_ARGS(&unknown));
+		else
+			static_assert(false, "Forward function has some different return type that isn't handled properly");
 
 		return unknown;
 	}
@@ -111,7 +116,12 @@ namespace TypedD3D
 	{
 		ComPtr<Unknown> unknown;
 
-		ThrowIfFailed(std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)));
+		if constexpr(requires() { { std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)) } -> std::convertible_to<HRESULT>; })
+			ThrowIfFailed(std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)));
+		else if constexpr(requires() { { std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)) } -> std::same_as<void>; })
+			std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown));
+		else
+			static_assert(false, "Forward function has some different return type that isn't handled properly");
 
 		return unknown;
 	}
@@ -131,7 +141,12 @@ namespace TypedD3D
 	{
 		ComPtr<Unknown> unknown;
 
-		ThrowIfFailed(std::invoke(function, args..., &unknown));
+		if constexpr(requires() { { std::invoke(function, args..., &unknown) } -> std::convertible_to<HRESULT>; })
+			ThrowIfFailed(std::invoke(function, args..., &unknown));
+		else if constexpr(requires() { { std::invoke(function, args..., &unknown) } -> std::same_as<void>; })
+			std::invoke(function, args..., &unknown);
+		else
+			static_assert(false, "Forward function has some different return type that isn't handled properly");
 
 		return unknown;
 	}
@@ -152,7 +167,12 @@ namespace TypedD3D
 	{
 		ComPtr<Unknown> unknown;
 
-		ThrowIfFailed(std::invoke(function, obj, args..., &unknown));
+		if constexpr(requires() { { std::invoke(function, obj, args..., &unknown) } -> std::convertible_to<HRESULT>; })
+			ThrowIfFailed(std::invoke(function, obj, args..., &unknown));
+		else if constexpr(requires() { { std::invoke(function, obj, args..., &unknown) } -> std::same_as<void>; })
+			std::invoke(function, obj, args..., &unknown);
+		else
+			static_assert(false, "Forward function has some different return type that isn't handled properly");
 
 		return unknown;
 	}
@@ -283,7 +303,7 @@ namespace TypedD3D
 		template<class OtherTy>
 		IUnknownWrapper& operator=(const IUnknownWrapper<OtherTy, Traits>& other)
 		{
-			impl.ptr = other;
+			impl.ptr = other.impl.ptr;
 			return *this;
 		}
 
