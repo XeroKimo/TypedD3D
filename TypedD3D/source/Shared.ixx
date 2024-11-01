@@ -10,6 +10,35 @@ module;
 #include <vector>
 
 export module TypedD3D.Shared;
+import xk.Exceptions;
+
+namespace TypedD3D
+{
+    export class ErrorModule
+    {
+    public:
+        using exception_tag = xk::ErrorModuleTag;
+    };
+}
+
+namespace xk
+{
+    template<>
+    struct ExceptionData<TypedD3D::ErrorModule>
+    {
+        HRESULT result;
+		std::string what;
+
+		ExceptionData(HRESULT result, std::string context) :
+			result{ result },
+			what{ std::format("HRESULT: {:x}. {}", result, context) }
+		{
+			
+		}
+
+		std::string_view What() const noexcept { return what; }
+    };
+}
 
 namespace TypedD3D
 {
@@ -31,35 +60,19 @@ namespace TypedD3D
 		return to;
 	}
 
-	export template<class To, class From>
-		To* Cast(From* from)
-	{
-		To* to;
-		from->QueryInterface(&to);
-		return to;
-	}
+    export template<class To, class From>
+    To* Cast(From* from)
+    {
+        To* to;
+        from->QueryInterface(&to);
+        return to;
+    }
 
-	export class HRESULTError : public std::runtime_error
-	{
-	private:
-		HRESULT errorCode;
-
-	public:
-		HRESULTError(HRESULT result) :
-			std::runtime_error{ std::format("HRESULT Error {:x}", result) },
-			errorCode{ result }
-		{
-
-		}
-
-		HRESULT ErrorCode() const noexcept { return errorCode; }
-	};
-
-	export void ThrowIfFailed(HRESULT hr)
-	{
-		if(FAILED(hr))
-			throw HRESULTError{ hr };
-	}
+    export void ThrowIfFailed(HRESULT hr, std::string context = "")
+    {
+        if(FAILED(hr))
+			throw xk::Exception<ErrorModule>{ { hr, context } };
+    }
 
 	/// <summary>
 	/// Forwards a function which creates or gets an COM object which would require querying it's IID
@@ -76,7 +89,12 @@ namespace TypedD3D
 	{
 		ComPtr<Unknown> unknown;
 
-		ThrowIfFailed(std::invoke(function, args..., IID_PPV_ARGS(&unknown)));
+		if constexpr(requires() { { std::invoke(function, args..., IID_PPV_ARGS(&unknown)) } -> std::convertible_to<HRESULT>; })
+			ThrowIfFailed(std::invoke(function, args..., IID_PPV_ARGS(&unknown)));
+		else if constexpr(requires() { { std::invoke(function, args..., IID_PPV_ARGS(&unknown)) } -> std::same_as<void>; })
+			std::invoke(function, args..., IID_PPV_ARGS(&unknown));
+		else
+			static_assert(false, "Forward function has some different return type that isn't handled properly");
 
 		return unknown;
 	}
@@ -97,7 +115,12 @@ namespace TypedD3D
 	{
 		ComPtr<Unknown> unknown;
 
-		ThrowIfFailed(std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)));
+		if constexpr(requires() { { std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)) } -> std::convertible_to<HRESULT>; })
+			ThrowIfFailed(std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)));
+		else if constexpr(requires() { { std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)) } -> std::same_as<void>; })
+			std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown));
+		else
+			static_assert(false, "Forward function has some different return type that isn't handled properly");
 
 		return unknown;
 	}
@@ -117,7 +140,12 @@ namespace TypedD3D
 	{
 		ComPtr<Unknown> unknown;
 
-		ThrowIfFailed(std::invoke(function, args..., &unknown));
+		if constexpr(requires() { { std::invoke(function, args..., &unknown) } -> std::convertible_to<HRESULT>; })
+			ThrowIfFailed(std::invoke(function, args..., &unknown));
+		else if constexpr(requires() { { std::invoke(function, args..., &unknown) } -> std::same_as<void>; })
+			std::invoke(function, args..., &unknown);
+		else
+			static_assert(false, "Forward function has some different return type that isn't handled properly");
 
 		return unknown;
 	}
@@ -138,7 +166,12 @@ namespace TypedD3D
 	{
 		ComPtr<Unknown> unknown;
 
-		ThrowIfFailed(std::invoke(function, obj, args..., &unknown));
+		if constexpr(requires() { { std::invoke(function, obj, args..., &unknown) } -> std::convertible_to<HRESULT>; })
+			ThrowIfFailed(std::invoke(function, obj, args..., &unknown));
+		else if constexpr(requires() { { std::invoke(function, obj, args..., &unknown) } -> std::same_as<void>; })
+			std::invoke(function, obj, args..., &unknown);
+		else
+			static_assert(false, "Forward function has some different return type that isn't handled properly");
 
 		return unknown;
 	}
@@ -257,7 +290,7 @@ namespace TypedD3D
 		}
 
 	public:
-		IUnknownWrapper& operator=(IUnknownWrapper& other) = default;
+		IUnknownWrapper& operator=(const IUnknownWrapper& other) = default;
 		IUnknownWrapper& operator=(IUnknownWrapper&& other) noexcept = default;
 
 		IUnknownWrapper& operator=(std::nullptr_t)
@@ -267,9 +300,9 @@ namespace TypedD3D
 		}
 
 		template<class OtherTy>
-		IUnknownWrapper& operator=(IUnknownWrapper<OtherTy, Traits>& other)
+		IUnknownWrapper& operator=(const IUnknownWrapper<OtherTy, Traits>& other)
 		{
-			impl.ptr = other;
+			impl.ptr = other.impl.ptr;
 			return *this;
 		}
 
@@ -300,6 +333,8 @@ namespace TypedD3D
 		{
 			return lh.impl.ptr != rh.impl.ptr;
 		}
+
+		operator bool() const { return impl.ptr != nullptr; }
 
 	public:
 		pointer Detach() { return impl.ptr.Detach(); }
@@ -523,8 +558,8 @@ namespace TypedD3D
 	class Array
 	{
 	public:
-		using value_type = Ty::value_type;
-		using pointer = Ty::pointer;
+		using value_type = Ty::pointer;
+		using pointer = Ty::pointer*;
 		using reference = Ty::reference;
 
 	public:
@@ -533,8 +568,17 @@ namespace TypedD3D
 		using traits_type = Ty::traits_type;
 
 	public:
-		std::array<pointer, Extent> _values;
+		std::array<value_type, Extent> _values;
 
+		Array() = default;
+
+		template<std::same_as<Ty>... Ty2>
+		Array(Ty2... values) :
+			_values{ values.Get()... }
+		{
+
+		}
+		
 	public:
 		ElementReference<Ty> operator[](size_t index)
 		{
@@ -546,7 +590,7 @@ namespace TypedD3D
 			return { _values[index] };
 		}
 
-		explicit operator std::array<pointer, Extent>() const { return _values; }
+		explicit operator std::array<value_type, Extent>() const { return _values; }
 	public:
 		ElementReference<Ty> at(size_t index) { return { _values.at(index) }; }
 		ElementReference<Ty> front() { return { _values.front() }; }
@@ -555,13 +599,13 @@ namespace TypedD3D
 		ConstElementReference<Ty> at(size_t index) const { return { _values.at(index) }; }
 		ConstElementReference<Ty> front() const { return { _values.front() }; }
 		ConstElementReference<Ty> back() const { return { _values.back() }; }
-		pointer* data() noexcept { return _values.data(); }
-		const pointer* data() const noexcept { return _values.data(); }
+		pointer data() noexcept { return _values.data(); }
+		const pointer data() const noexcept { return _values.data(); }
 		size_t size() const noexcept { return _values.size(); }
 		bool empty() const noexcept { return _values.empty(); }
 		bool max_size() const noexcept { return _values.max_size(); }
 
-		std::array<pointer, Extent> ToUntyped() const { return _values; }
+		std::array<value_type, Extent> ToUntyped() const { return _values; }
 	};
 
 	export template<class Ty, class Allocator = std::allocator<typename Ty::pointer>>
@@ -569,8 +613,8 @@ namespace TypedD3D
 	class Vector
 	{
 	public:
-		using value_type = Ty::value_type;
-		using pointer = Ty::pointer;
+		using value_type = Ty::pointer;
+		using pointer = Ty::pointer*;
 		using reference = Ty::reference;
 
 	public:
@@ -579,7 +623,7 @@ namespace TypedD3D
 		using traits_type = Ty::traits_type;
 
 	private:
-		std::vector<pointer, Allocator> _values;
+		std::vector<value_type, Allocator> _values;
 
 	public:
 		Vector() = default;
@@ -602,7 +646,7 @@ namespace TypedD3D
 			return { _values[index] };
 		}
 
-		explicit operator std::vector<pointer, Allocator>() const { return _values; }
+		explicit operator std::vector<value_type, Allocator>() const { return _values; }
 	public:
 		ElementReference<Ty> at(size_t index) { return { _values.at(index) }; }
 		ElementReference<Ty> front() { return { _values.front() }; }
@@ -611,8 +655,8 @@ namespace TypedD3D
 		ConstElementReference<Ty> at(size_t index) const { return { _values.at(index) }; }
 		ConstElementReference<Ty> front() const { return { _values.front() }; }
 		ConstElementReference<Ty> back() const { return { _values.back() }; }
-		pointer* data() noexcept { return _values.data(); }
-		const pointer* data() const noexcept { return _values.data(); }
+		pointer data() noexcept { return _values.data(); }
+		const pointer data() const noexcept { return _values.data(); }
 		size_t size() const noexcept { return _values.size(); }
 		bool empty() const noexcept { return _values.empty(); }
 		bool max_size() const noexcept { return _values.max_size(); }
@@ -636,8 +680,8 @@ namespace TypedD3D
 	class Span
 	{
 	public:
-		using value_type = Ty::value_type;
-		using pointer = Ty::pointer;
+		using value_type = Ty::pointer;
+		using pointer = Ty::pointer*;
 		using reference = Ty::reference;
 
 	public:
@@ -646,7 +690,7 @@ namespace TypedD3D
 		using traits_type = Ty::traits_type;
 
 	private:
-		std::span<pointer, Extent> m_span;
+		std::span<value_type, Extent> m_span;
 
 	public:
 		Span() requires (Extent == std::dynamic_extent) = default;
@@ -660,7 +704,7 @@ namespace TypedD3D
 		}
 
 		explicit(Extent != std::dynamic_extent)
-		Span(pointer* p, size_t count) :
+		Span(pointer p, size_t count) :
 			m_span{ p, count }
 		{
 
@@ -689,13 +733,16 @@ namespace TypedD3D
 
 		ConstElementReference<Ty> front() const { return { m_span.front() }; }
 		ConstElementReference<Ty> back() const { return { m_span.back() }; }
-		pointer* data() noexcept { return m_span.data(); }
-		const pointer* data() const noexcept { return m_span.data(); }
+		pointer data() noexcept { return m_span.data(); }
+		const pointer data() const noexcept { return m_span.data(); }
 		size_t size() const noexcept { return m_span.size(); }
 
 
 		std::span<pointer, Extent> ToUntyped() const { return m_span; }
 	};
+
+	template<class Ty, size_t Extent>
+	Span(Array<Ty, Extent>&) -> Span<Ty, Extent>;
 
 	export template<class Ty>
 		struct UntaggedTraits;

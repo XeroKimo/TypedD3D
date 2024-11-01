@@ -1,6 +1,9 @@
 # Requirements
 - C++20
 - VS2022 for now as I'm rather new to making libraries
+- Git
+
+In order to build, you must pull with submodules included.
 
 # TypedD3D
 TypedD3D is a C++ wrapper library for DirectX family related of APIs that is meant to provide stronger typing (D3D12), and a API the reflects more modern practices. This means removing out params, make non-optional pointer params be references etc. 

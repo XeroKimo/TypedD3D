@@ -2,6 +2,7 @@ module;
 
 #include <d3d11_4.h>
 #include <concepts>
+#include <wrl/client.h>
 
 export module TypedD3D11:ResourceViews;
 import :DeviceChild;
@@ -57,16 +58,20 @@ namespace TypedD3D
 			using derived_self = DerivedSelf;
 
 		public:
-			Wrapper<ID3D11Resource> GetResource()
+			template<std::derived_from<ID3D11Resource> Ty = ID3D11Resource>
+			Wrapper<Ty> GetResource() const
 			{
 				Microsoft::WRL::ComPtr<ID3D11Resource> resource;
 				Get().GetResource(&resource);
-				return Wrapper<ID3D11Resource>(resource);
+				return Wrapper<Ty>(TypedD3D::Cast<Ty>(resource));
 			}
 
 		private:
 			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
 			reference Get() { return *ToDerived().derived_self::Get(); }
+
+			const derived_self& ToDerived() const { return static_cast<const derived_self&>(*this); }
+			reference Get() const { return *ToDerived().derived_self::Get(); }
 		};
 	};
 
