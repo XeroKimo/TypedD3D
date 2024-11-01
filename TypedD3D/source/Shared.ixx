@@ -14,30 +14,29 @@ import xk.Exceptions;
 
 namespace TypedD3D
 {
-    export class TypedD3DModule
+    export class ErrorModule
     {
     public:
-        using exception_tag = xk::ExceptionModuleTag;
+        using exception_tag = xk::ErrorModuleTag;
     };
 }
 
 namespace xk
 {
     template<>
-    class ExceptionImpl<TypedD3D::TypedD3DModule>
+    struct ExceptionData<TypedD3D::ErrorModule>
     {
-    private:
         HRESULT result;
+		std::string what;
 
-    public:
-        ExceptionImpl(HRESULT result) :
-            result{ result }
-        {
+		ExceptionData(HRESULT result, std::string context) :
+			result{ result },
+			what{ std::format("HRESULT: {:x}. {}", result, context) }
+		{
+			
+		}
 
-        }
-
-    public:
-        HRESULT ErrorCode() const noexcept { return result; }
+		std::string_view What() const noexcept { return what; }
     };
 }
 
@@ -69,10 +68,10 @@ namespace TypedD3D
         return to;
     }
 
-    export void ThrowIfFailed(HRESULT hr)
+    export void ThrowIfFailed(HRESULT hr, std::string context = "")
     {
         if(FAILED(hr))
-            throw xk::Exception<TypedD3DModule, xk::UnknownException>{ hr };
+			throw xk::Exception<ErrorModule>{ { hr, context } };
     }
 
 	/// <summary>
