@@ -14,19 +14,19 @@ namespace TypedD3D::D3D12
     template<class Ty>
     concept PipelineTypeTag = std::same_as<Ty, D3D12_GRAPHICS_PIPELINE_STATE_DESC> || std::same_as<Ty, D3D12_COMPUTE_PIPELINE_STATE_DESC>;
 
-    template<class>
-    constexpr TraitTags PiplineStateTypeToEnum;
+    template<class Ty>
+    struct PiplineStateTypeToTrait;
 
     template<>
-    constexpr TraitTags PiplineStateTypeToEnum<D3D12_GRAPHICS_PIPELINE_STATE_DESC> = TraitTags::Graphics;
+    struct PiplineStateTypeToTrait<D3D12_GRAPHICS_PIPELINE_STATE_DESC> { template<class Ty> using type = GraphicsTraits<Ty>; };
 
     template<>
-    constexpr TraitTags PiplineStateTypeToEnum<D3D12_COMPUTE_PIPELINE_STATE_DESC> = TraitTags::Compute;
+    struct PiplineStateTypeToTrait<D3D12_COMPUTE_PIPELINE_STATE_DESC> { template<class Ty> using type = ComputeTraits<Ty>; };
 
     template<class Ty>
-    using PipelineState_t = IUnknownWrapper<ID3D12PipelineState, TraitTagToTypeMapper<PiplineStateTypeToEnum<Ty>>::template type>;
+    using PipelineState_t = IUnknownWrapper<ID3D12PipelineState, PiplineStateTypeToTrait<Ty>::template type>;
 
-    template<TraitTags Type>
+    //template<TraitTags Type>
     struct PipelineTraits
     {
         using value_type = ID3D12PipelineState;
@@ -53,9 +53,13 @@ namespace TypedD3D::D3D12
         };
     };
 
+    template<>
+    struct GraphicsTraits<ID3D12PipelineState> : PipelineTraits
+    {
+    };
 
-    template<TraitTags Tag>
-    struct TaggedTraits<ID3D12PipelineState, Tag> : PipelineTraits<Tag>
+    template<>
+    struct ComputeTraits<ID3D12PipelineState> : PipelineTraits
     {
     };
 

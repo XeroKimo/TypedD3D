@@ -99,37 +99,37 @@ namespace TypedD3D::D3D12
     concept Descriptor_Heap_Flag_Compatible = is_descriptor_heap_flag_compatible<Type, HeapFlags>::value;
 
     template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType>
-    constexpr TraitTags HeapTypeToTraitTag;
+    struct HeapTypeToTrait;
 
     template<>
-    constexpr TraitTags HeapTypeToTraitTag<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV> = TraitTags::CBV_SRV_UAV;
+    struct HeapTypeToTrait<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV> { template<class Ty> using type = CBV_SRV_UAVTraits<Ty>; };
 
     template<>
-    constexpr TraitTags HeapTypeToTraitTag<D3D12_DESCRIPTOR_HEAP_TYPE_DSV> = TraitTags::DSV;
+    struct HeapTypeToTrait<D3D12_DESCRIPTOR_HEAP_TYPE_DSV> { template<class Ty> using type = DSVTraits<Ty>; };
 
     template<>
-    constexpr TraitTags HeapTypeToTraitTag<D3D12_DESCRIPTOR_HEAP_TYPE_RTV> = TraitTags::RTV;
+    struct HeapTypeToTrait<D3D12_DESCRIPTOR_HEAP_TYPE_RTV> { template<class Ty> using type = RTVTraits<Ty>; };
 
     template<>
-    constexpr TraitTags HeapTypeToTraitTag<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER> = TraitTags::Sampler;
+    struct HeapTypeToTrait<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER> { template<class Ty> using type = SamplerTraits<Ty>; };
 
-    template<TraitTags>
-    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitTagToHeapType;
-
-    template<>
-    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitTagToHeapType<TraitTags::CBV_SRV_UAV> = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    template<template<class> class Ty>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitToHeapType;
 
     template<>
-    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitTagToHeapType<TraitTags::DSV> = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitToHeapType<CBV_SRV_UAVTraits> = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 
     template<>
-    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitTagToHeapType<TraitTags::RTV> = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitToHeapType<DSVTraits> = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 
     template<>
-    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitTagToHeapType<TraitTags::Sampler> = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitToHeapType<RTVTraits> = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 
-    template<class Ty, D3D12_DESCRIPTOR_HEAP_TYPE HeapType>
-    struct ShaderVisibleTraits;
+    template<>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitToHeapType<SamplerTraits> = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+
+    //template<class Ty, D3D12_DESCRIPTOR_HEAP_TYPE HeapType>
+    //struct ShaderVisibleTraits;
 
     template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
     struct HeapTraitMapper;    
@@ -138,14 +138,14 @@ namespace TypedD3D::D3D12
     struct HeapTraitMapper<HeapType, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>
     {
         template<class Ty>
-        using type = TaggedTraits<Ty, HeapTypeToTraitTag<HeapType>>;
+        using type = HeapTypeToTrait<HeapType>::template type<Ty>;
     };
     
     template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType>
     struct HeapTraitMapper<HeapType, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>
     {
         template<class Ty>
-        using type = ShaderVisibleTraits<Ty, HeapType>;
+        using type = ShaderVisibleTraits<IUnknownWrapper<ID3D12DescriptorHeap, HeapTypeToTrait<HeapType>::template type>>;
     };
 
     template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
@@ -179,42 +179,50 @@ namespace TypedD3D::D3D12
         };
     };
 
-    template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType>
-    struct ShaderVisibleTraits<ID3D12DescriptorHeap, HeapType> : DescriptorHeapTraits<HeapType, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>
-    {
+    template<>
+    struct CBV_SRV_UAVTraits<ID3D12DescriptorHeap> : DescriptorHeapTraits<TraitToHeapType<CBV_SRV_UAVTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> {};
 
-    };
+    template<>
+    struct DSVTraits<ID3D12DescriptorHeap> : DescriptorHeapTraits<TraitToHeapType<DSVTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> {};
 
-    template<TraitTags Tag>
-    concept IsDescriptorHeapTag = (Tag == TraitTags::DSV)
-        || (Tag == TraitTags::RTV)
-        || (Tag == TraitTags::Sampler)
-        || (Tag == TraitTags::CBV_SRV_UAV);
+    template<>
+    struct RTVTraits<ID3D12DescriptorHeap> : DescriptorHeapTraits<TraitToHeapType<RTVTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> {};
 
-    template<TraitTags Tag>
-        requires IsDescriptorHeapTag<Tag>
-    struct TaggedTraits<ID3D12DescriptorHeap, Tag> : public DescriptorHeapTraits<TraitTagToHeapType<Tag>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>
-    {
+    template<>
+    struct SamplerTraits<ID3D12DescriptorHeap> : DescriptorHeapTraits<TraitToHeapType<SamplerTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> {};
 
-    };
+    template<>
+    struct ShaderVisibleTraits<CBV_SRV_UAV<ID3D12DescriptorHeap>> : DescriptorHeapTraits<TraitToHeapType<CBV_SRV_UAVTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> {};
+
+    template<>
+    struct ShaderVisibleTraits<Sampler<ID3D12DescriptorHeap>> : DescriptorHeapTraits<TraitToHeapType<SamplerTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> {};
 
     export template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
     using DescriptorHeap_t = IUnknownWrapper<ID3D12DescriptorHeap, HeapTraitMapper<Type, HeapFlags>::template type>;
 
-    template<class Ty>
-    struct ShadeVisibleMapper;
+    template<>
+    struct CBV_SRV_UAVMapper<::D3D12_CPU_DESCRIPTOR_HANDLE> { using type = CPU_DESCRIPTOR_HANDLE<TraitToHeapType<CBV_SRV_UAVTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>; };
 
     template<>
-    struct ShaderVisibleMapper<CBV_SRV_UAV<ID3D12DescriptorHeap>>
-    {
-        using type = DescriptorHeap_t<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
-    };
+    struct DSVMapper<::D3D12_CPU_DESCRIPTOR_HANDLE> { using type = CPU_DESCRIPTOR_HANDLE<TraitToHeapType<DSVTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>; };
 
     template<>
-    struct ShaderVisibleMapper<Sampler<ID3D12DescriptorHeap>>
-    {
-        using type = DescriptorHeap_t<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
-    };
+    struct RTVMapper<::D3D12_CPU_DESCRIPTOR_HANDLE> { using type = CPU_DESCRIPTOR_HANDLE<TraitToHeapType<RTVTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>; };
+
+    template<>
+    struct SamplerMapper<::D3D12_CPU_DESCRIPTOR_HANDLE> { using type = CPU_DESCRIPTOR_HANDLE<TraitToHeapType<SamplerTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>; };
+
+    template<>
+    struct CBV_SRV_UAVMapper<::D3D12_GPU_DESCRIPTOR_HANDLE> { using type = GPU_DESCRIPTOR_HANDLE<TraitToHeapType<CBV_SRV_UAVTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>; };
+
+    template<>
+    struct DSVMapper<::D3D12_GPU_DESCRIPTOR_HANDLE> { using type = GPU_DESCRIPTOR_HANDLE<TraitToHeapType<DSVTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>; };
+
+    template<>
+    struct RTVMapper<::D3D12_GPU_DESCRIPTOR_HANDLE> { using type = GPU_DESCRIPTOR_HANDLE<TraitToHeapType<RTVTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>; };
+
+    template<>
+    struct SamplerMapper<::D3D12_GPU_DESCRIPTOR_HANDLE> { using type = GPU_DESCRIPTOR_HANDLE<TraitToHeapType<SamplerTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>; };
 
     template<>
     struct ShaderVisibleMapper<CBV_SRV_UAV<::D3D12_GPU_DESCRIPTOR_HANDLE>>
@@ -227,24 +235,6 @@ namespace TypedD3D::D3D12
     {
         using type = GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
     };
-
-    template<TraitTags Tag>
-        requires IsDescriptorHeapTag<Tag>
-    struct TaggedWrapperMapper<::D3D12_CPU_DESCRIPTOR_HANDLE, Tag>
-    {
-        using type = CPU_DESCRIPTOR_HANDLE<TraitTagToHeapType<Tag>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    template<TraitTags Tag>
-        requires IsDescriptorHeapTag<Tag>
-    struct TaggedWrapperMapper<::D3D12_GPU_DESCRIPTOR_HANDLE, Tag>
-    {
-        using type = GPU_DESCRIPTOR_HANDLE<TraitTagToHeapType<Tag>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-
-    export template<class Ty>
-    using ShaderVisible = ShaderVisibleMapper<Ty>::type;
 
     namespace Aliases
     {

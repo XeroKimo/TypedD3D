@@ -10,43 +10,43 @@ import :Wrappers;
 
 namespace TypedD3D::D3D12
 {
-	export template<D3D12_COMMAND_LIST_TYPE Tag>
-	constexpr TraitTags CommandListTypeToTraitTag;
+	export template<D3D12_COMMAND_LIST_TYPE Type>
+	struct CommandListTypeToTrait;
 
 	template<>
-	constexpr TraitTags CommandListTypeToTraitTag<D3D12_COMMAND_LIST_TYPE_DIRECT> = TraitTags::Direct;
+	struct CommandListTypeToTrait<D3D12_COMMAND_LIST_TYPE_DIRECT> { template<class Ty> using type = DirectTraits<Ty>; };
 
 	template<>
-	constexpr TraitTags CommandListTypeToTraitTag<D3D12_COMMAND_LIST_TYPE_COMPUTE> = TraitTags::Compute;
+	struct CommandListTypeToTrait<D3D12_COMMAND_LIST_TYPE_COMPUTE> { template<class Ty> using type = ComputeTraits<Ty>; };
 
 	template<>
-	constexpr TraitTags CommandListTypeToTraitTag<D3D12_COMMAND_LIST_TYPE_COPY> = TraitTags::Copy;
+	struct CommandListTypeToTrait<D3D12_COMMAND_LIST_TYPE_COPY> { template<class Ty> using type = CopyTraits<Ty>; };
 
 	template<>
-	constexpr TraitTags CommandListTypeToTraitTag<D3D12_COMMAND_LIST_TYPE_BUNDLE> = TraitTags::Bundle;
+	struct CommandListTypeToTrait<D3D12_COMMAND_LIST_TYPE_BUNDLE> { template<class Ty> using type = BundleTraits<Ty>; };
 
-	export template<TraitTags Tag>
-	constexpr D3D12_COMMAND_LIST_TYPE TraitTagToCommandListType;
-
-	template<>
-	constexpr D3D12_COMMAND_LIST_TYPE TraitTagToCommandListType<TraitTags::Direct> = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	export template<template<class> class Trait>
+	constexpr D3D12_COMMAND_LIST_TYPE TraitToCommandListType;
 
 	template<>
-	constexpr D3D12_COMMAND_LIST_TYPE TraitTagToCommandListType<TraitTags::Compute> = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+	constexpr D3D12_COMMAND_LIST_TYPE TraitToCommandListType<DirectTraits> = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
 	template<>
-	constexpr D3D12_COMMAND_LIST_TYPE TraitTagToCommandListType< TraitTags::Copy> = D3D12_COMMAND_LIST_TYPE_COPY;
+	constexpr D3D12_COMMAND_LIST_TYPE TraitToCommandListType<ComputeTraits> = D3D12_COMMAND_LIST_TYPE_COMPUTE;
 
 	template<>
-	constexpr D3D12_COMMAND_LIST_TYPE TraitTagToCommandListType<TraitTags::Bundle> = D3D12_COMMAND_LIST_TYPE_BUNDLE;
+	constexpr D3D12_COMMAND_LIST_TYPE TraitToCommandListType<CopyTraits> = D3D12_COMMAND_LIST_TYPE_COPY;
+
+	template<>
+	constexpr D3D12_COMMAND_LIST_TYPE TraitToCommandListType<BundleTraits> = D3D12_COMMAND_LIST_TYPE_BUNDLE;
 
 	export template<D3D12_COMMAND_LIST_TYPE Type>
-	using CommandAllocator_t = IUnknownWrapper<ID3D12CommandAllocator, TraitTagToTypeMapper<CommandListTypeToTraitTag<Type>>::template type>;
+	using CommandAllocator_t = IUnknownWrapper<ID3D12CommandAllocator, CommandListTypeToTrait<Type>::template type>;
 
-	template<TraitTags Type>
+	template<D3D12_COMMAND_LIST_TYPE Type>
 	struct CommandAllocatorTraits
 	{
-		static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = TraitTagToCommandListType<Type>;
+		static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
 
 		using value_type = ID3D12CommandAllocator;
 		using pointer = ID3D12CommandAllocator*;
@@ -69,18 +69,17 @@ namespace TypedD3D::D3D12
 		};
 	};
 
-	template<TraitTags Tag>
-		requires (Tag == TraitTags::Direct) ||
-		(Tag == TraitTags::Compute) ||
-		(Tag == TraitTags::Copy) ||
-		(Tag == TraitTags::Bundle)
-		struct TaggedTraits<ID3D12CommandAllocator, Tag> : CommandAllocatorTraits<Tag>
-	{
-		static constexpr TraitTags tag_value = Tag;
-	};
+	template<>
+	struct DirectTraits<ID3D12CommandAllocator> : public CommandAllocatorTraits<D3D12_COMMAND_LIST_TYPE_DIRECT> {};
 
-	export template<D3D12_COMMAND_LIST_TYPE Type>
-	using CommandAllocator_t = IUnknownWrapper<ID3D12CommandAllocator, GetTraitTagType<CommandListTypeToTraitTag<Type>>>;
+	template<>
+	struct ComputeTraits<ID3D12CommandAllocator> : public CommandAllocatorTraits<D3D12_COMMAND_LIST_TYPE_COMPUTE> {};
+
+	template<>
+	struct CopyTraits<ID3D12CommandAllocator> : public CommandAllocatorTraits<D3D12_COMMAND_LIST_TYPE_COPY> {};
+
+	template<>
+	struct BundleTraits<ID3D12CommandAllocator> : public CommandAllocatorTraits<D3D12_COMMAND_LIST_TYPE_BUNDLE> {};
 
 	namespace Aliases
 	{

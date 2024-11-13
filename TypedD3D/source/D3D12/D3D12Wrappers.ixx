@@ -3,99 +3,141 @@ import TypedD3D.Shared;
 
 namespace TypedD3D::D3D12
 {
-    export enum class TraitTags
+    template<class Ty>
+    struct DirectTraits;
+
+    template<class Ty>
+    struct ComputeTraits;
+
+    template<class Ty>
+    struct CopyTraits;
+
+    template<class Ty>
+    struct BundleTraits;
+
+    template<class Ty>
+    struct CBV_SRV_UAVTraits;
+
+    template<class Ty>
+    struct SamplerTraits;
+
+    template<class Ty>
+    struct RTVTraits;
+
+    template<class Ty>
+    struct DSVTraits;
+
+    template<class Ty>
+    struct GraphicsTraits;
+
+    template<class Ty>
+    struct RenderPassTraits;
+
+    template<class Ty>
+    struct ShaderVisibleTraits;
+
+    template<class Ty>
+    struct DirectMapper
     {
-        Direct,
-        Compute,
-        Copy,
-        Bundle,
-        CBV_SRV_UAV,
-        Sampler,
-        RTV,
-        DSV,
-        Graphics,
-        Render_Pass
-    };
-
-    export template<class Ty, TraitTags Tag>
-    struct TaggedTraits;
-
-    template<class Ty>
-    using DirectTraits = TaggedTraits<Ty, TraitTags::Direct>;
-
-    template<class Ty>
-    using ComputeTraits = TaggedTraits<Ty, TraitTags::Compute>;
-
-    template<class Ty>
-    using CopyTraits = TaggedTraits<Ty, TraitTags::Copy>;
-
-    template<class Ty>
-    using BundleTraits = TaggedTraits<Ty, TraitTags::Bundle>;
-
-    template<class Ty>
-    using CBV_SRV_UAVTraits = TaggedTraits<Ty, TraitTags::CBV_SRV_UAV>;
-
-    template<class Ty>
-    using SamplerTraits = TaggedTraits<Ty, TraitTags::Sampler>;
-
-    template<class Ty>
-    using RTVTraits = TaggedTraits<Ty, TraitTags::RTV>;
-
-    template<class Ty>
-    using DSVTraits = TaggedTraits<Ty, TraitTags::DSV>;
-
-    template<class Ty>
-    using GraphicsTraits = TaggedTraits<Ty, TraitTags::Graphics>;
-
-    template<class Ty>
-    using RenderPassTraits = TaggedTraits<Ty, TraitTags::Render_Pass>;
-
-    export template<TraitTags Tag>
-    struct TraitTagToTypeMapper
-    {
-        template<class Ty>
-        using type = TaggedTraits<Ty, Tag>;
-    };
-    
-    export template<TraitTags Tag>
-    using GetTraitTagType = TraitTagToTypeMapper<Tag>::template type;
-
-    template<class Ty, TraitTags Tag>
-    struct TaggedWrapperMapper
-    {
-        using type = IUnknownWrapper<Ty, TraitTagToTypeMapper<Tag>::type>;
+        using type = IUnknownWrapper<Ty, DirectTraits>;
     };
 
     template<class Ty>
-    struct ShaderVisibleMapper;
+    struct ComputeMapper
+    {
+        using type = IUnknownWrapper<Ty, ComputeTraits>;
+    };
+
+    template<class Ty>
+    struct CopyMapper
+    {
+        using type = IUnknownWrapper<Ty, CopyTraits>;
+    };
+
+    template<class Ty>
+    struct BundleMapper
+    {
+        using type = IUnknownWrapper<Ty, BundleTraits>;
+    };
+
+    template<class Ty>
+    struct CBV_SRV_UAVMapper;
+
+    template<class Ty>
+    struct CBV_SRV_UAVMapper
+    {
+        using type = IUnknownWrapper<Ty, CBV_SRV_UAVTraits>;
+    };
+
+    template<class Ty>
+    struct SamplerMapper;
+
+    template<class Ty>
+    struct SamplerMapper
+    {
+        using type = IUnknownWrapper<Ty, SamplerTraits>;
+    };
+
+    template<class Ty>
+    struct RTVMapper
+    {
+        using type = IUnknownWrapper<Ty, RTVTraits>;
+    };
+
+    template<class Ty>
+    struct DSVMapper
+    {
+        using type = IUnknownWrapper<Ty, DSVTraits>;
+    };
+
+    template<class Ty>
+    struct GraphicsMapper
+    {
+        using type = IUnknownWrapper<Ty, GraphicsTraits>;
+    };
+
+    template<class Ty>
+    struct RenderPassMapper
+    {
+        using type = IUnknownWrapper<Ty, RenderPassTraits>;
+    };
+
+    template<class Ty>
+    struct ShaderVisibleMapper
+    {
+        using type = IUnknownWrapper<Ty, ShaderVisibleTraits>;
+    };
 
     export template<class Ty>
     using Wrapper = TypedD3D::Wrapper<Ty>;
 
     export template<class Ty>
-    using Direct = TaggedWrapperMapper<Ty, TraitTags::Direct>::type;
+    using Direct = DirectMapper<Ty>::type;
 
     export template<class Ty>
-    using Compute = TaggedWrapperMapper<Ty, TraitTags::Compute>::type;
+    using Compute = ComputeMapper<Ty>::type;
 
     export template<class Ty>
-    using Copy = TaggedWrapperMapper<Ty, TraitTags::Copy>::type;
+    using Copy = CopyMapper<Ty>::type;
 
     export template<class Ty>
-    using Bundle = TaggedWrapperMapper<Ty, TraitTags::Bundle>::type;
+    using Bundle = BundleMapper<Ty>::type;
 
     export template<class Ty>
-    using CBV_SRV_UAV = TaggedWrapperMapper<Ty, TraitTags::CBV_SRV_UAV>::type;
+    using CBV_SRV_UAV = CBV_SRV_UAVMapper<Ty>::type;
 
     export template<class Ty>
-    using Sampler = TaggedWrapperMapper<Ty, TraitTags::Sampler>::type;
+    using Sampler = SamplerMapper<Ty>::type;
 
     export template<class Ty>
-    using RTV = TaggedWrapperMapper<Ty, TraitTags::RTV>::type;
+    using RTV = RTVMapper<Ty>::type;
 
     export template<class Ty>
-    using DSV = TaggedWrapperMapper<Ty, TraitTags::DSV>::type;
+    using DSV = DSVMapper<Ty>::type;
 
     export template<class Ty>
-    using Graphics = TaggedWrapperMapper<Ty, TraitTags::Graphics>::type;
+    using Graphics = GraphicsMapper<Ty>::type;
+
+    export template<class Ty>
+    using ShaderVisible = ShaderVisibleMapper<Ty>::type;
 }

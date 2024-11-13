@@ -132,10 +132,10 @@ namespace TypedD3D::D3D12
 		};
 	};
 
-	template<TraitTags Type>
+	template<D3D12_COMMAND_LIST_TYPE Type>
 	struct CommandQueueTraits
 	{
-		static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = TraitTagToCommandListType<Type>;
+		static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
 
 		using value_type = ID3D12CommandQueue;
 		using pointer = ID3D12CommandQueue*;
@@ -187,20 +187,20 @@ namespace TypedD3D::D3D12
 		};
 	};
 
+	template<>
+	class DirectTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<DirectTraits>> {};
 
+	template<>
+	class ComputeTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<ComputeTraits>> {};
 
-	template<std::derived_from<ID3D12CommandQueue> Ty, TraitTags Tag>
-		requires (Tag == TraitTags::Direct) ||
-	(Tag == TraitTags::Compute) ||
-		(Tag == TraitTags::Copy) ||
-		(Tag == TraitTags::Bundle)
-		struct TaggedTraits<Ty, Tag> : CommandQueueTraits<Tag>
-	{
-		static constexpr TraitTags tag_value = Tag;
-	};
+	template<>
+	class CopyTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<CopyTraits>> {};
+
+	template<>
+	class BundleTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<BundleTraits>> {};
 
 	template<D3D12_COMMAND_LIST_TYPE Type>
-	using D3D12CommandQueue_t = IUnknownWrapper<ID3D12CommandQueue, GetTraitTagType<CommandListTypeToTraitTag<Type>>>;
+	using D3D12CommandQueue_t = IUnknownWrapper<ID3D12CommandQueue, CommandListTypeToTrait<Type>::template type>;
 
 	namespace Aliases
 	{
