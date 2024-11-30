@@ -188,16 +188,16 @@ namespace TypedD3D::D3D12
 	};
 
 	template<>
-	class DirectTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<DirectTraits>> {};
+	struct DirectTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<DirectTraits>> {};
 
 	template<>
-	class ComputeTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<ComputeTraits>> {};
+	struct ComputeTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<ComputeTraits>> {};
 
 	template<>
-	class CopyTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<CopyTraits>> {};
+	struct CopyTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<CopyTraits>> {};
 
 	template<>
-	class BundleTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<BundleTraits>> {};
+	struct BundleTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<BundleTraits>> {};
 
 	template<D3D12_COMMAND_LIST_TYPE Type>
 	using D3D12CommandQueue_t = IUnknownWrapper<ID3D12CommandQueue, CommandListTypeToTrait<Type>::template type>;
