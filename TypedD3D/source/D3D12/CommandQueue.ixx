@@ -153,9 +153,9 @@ namespace TypedD3D::D3D12
 			using derived_self = DerivedSelf;
 
 		public:
-			template<size_t Extents>
+			template<std::convertible_to<list_value_type> ListTy, size_t Extents>
 			void ExecuteCommandLists(
-				std::span<list_value_type, Extents> commandLists)
+				std::span<ListTy, Extents> commandLists)
 			{
 				if constexpr(Extents == std::dynamic_extent)
 				{

@@ -33,7 +33,7 @@ namespace TypedD3D::D3D12
     template<class Ty>
     struct RenderPassTraits;
 
-    template<class Ty>
+    template<class Ty, template<class> class WrappedTraitTy>
     struct ShaderVisibleTraits;
 
     template<class Ty>
@@ -61,16 +61,10 @@ namespace TypedD3D::D3D12
     };
 
     template<class Ty>
-    struct CBV_SRV_UAVMapper;
-
-    template<class Ty>
     struct CBV_SRV_UAVMapper
     {
         using type = IUnknownWrapper<Ty, CBV_SRV_UAVTraits>;
     };
-
-    template<class Ty>
-    struct SamplerMapper;
 
     template<class Ty>
     struct SamplerMapper
@@ -103,9 +97,15 @@ namespace TypedD3D::D3D12
     };
 
     template<class Ty>
-    struct ShaderVisibleMapper
+    struct ShaderVisibleMapper;
+
+    template<class Ty, template<class> class WrapperTraitTy>
+    struct ShaderVisibleMapper<IUnknownWrapper<Ty, WrapperTraitTy>>
     {
-        using type = IUnknownWrapper<Ty, ShaderVisibleTraits>;
+        template<class Ty>
+        using Trait = ShaderVisibleTraits<Ty, WrapperTraitTy>;
+
+        using type = IUnknownWrapper<Ty, Trait>;
     };
 
     export template<class Ty>

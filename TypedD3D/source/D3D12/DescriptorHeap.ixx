@@ -145,7 +145,7 @@ namespace TypedD3D::D3D12
     struct HeapTraitMapper<HeapType, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>
     {
         template<class Ty>
-        using type = ShaderVisibleTraits<IUnknownWrapper<ID3D12DescriptorHeap, HeapTypeToTrait<HeapType>::template type>>;
+        using type = ShaderVisibleTraits<ID3D12DescriptorHeap, HeapTypeToTrait<HeapType>::template type>;
     };
 
     template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
@@ -192,10 +192,10 @@ namespace TypedD3D::D3D12
     struct SamplerTraits<ID3D12DescriptorHeap> : DescriptorHeapTraits<TraitToHeapType<SamplerTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> {};
 
     template<>
-    struct ShaderVisibleTraits<CBV_SRV_UAV<ID3D12DescriptorHeap>> : DescriptorHeapTraits<TraitToHeapType<CBV_SRV_UAVTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> {};
+    struct ShaderVisibleTraits<ID3D12DescriptorHeap, CBV_SRV_UAVTraits> : DescriptorHeapTraits<TraitToHeapType<CBV_SRV_UAVTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> {};
 
     template<>
-    struct ShaderVisibleTraits<Sampler<ID3D12DescriptorHeap>> : DescriptorHeapTraits<TraitToHeapType<SamplerTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> {};
+    struct ShaderVisibleTraits<ID3D12DescriptorHeap, SamplerTraits> : DescriptorHeapTraits<TraitToHeapType<SamplerTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> {};
 
     export template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
     using DescriptorHeap_t = IUnknownWrapper<ID3D12DescriptorHeap, HeapTraitMapper<Type, HeapFlags>::template type>;
