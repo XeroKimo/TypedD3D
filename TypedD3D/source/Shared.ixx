@@ -14,35 +14,38 @@ import xk.Exceptions;
 
 namespace TypedD3D
 {
-    export class ErrorModule
-    {
-    public:
-        using exception_tag = xk::ErrorModuleTag;
-    };
+	export class ErrorModule
+	{
+	public:
+		using exception_tag = xk::ErrorModuleTag;
+	};
 }
 
 namespace xk
 {
-    template<>
-    struct ExceptionData<TypedD3D::ErrorModule>
-    {
-        HRESULT result;
+	template<>
+	struct ExceptionData<TypedD3D::ErrorModule>
+	{
+		HRESULT result;
 		std::string what;
 
 		ExceptionData(HRESULT result, std::string context) :
 			result{ result },
 			what{ std::format("HRESULT: {:x}. {}", result, context) }
 		{
-			
+
 		}
 
 		std::string_view What() const noexcept { return what; }
-    };
+	};
 }
 
 namespace TypedD3D
 {
 	using Microsoft::WRL::ComPtr;
+
+	template<class T>
+	concept AlwaysFalse = false;
 
 	export template<class To, class From>
 		ComPtr<To> Cast(const ComPtr<From>& from)
@@ -60,19 +63,19 @@ namespace TypedD3D
 		return to;
 	}
 
-    export template<class To, class From>
-    To* Cast(From* from)
-    {
-        To* to;
-        from->QueryInterface(&to);
-        return to;
-    }
+	export template<class To, class From>
+		To* Cast(From* from)
+	{
+		To* to;
+		from->QueryInterface(&to);
+		return to;
+	}
 
-    export void ThrowIfFailed(HRESULT hr, std::string context = "")
-    {
-        if(FAILED(hr))
+	export void ThrowIfFailed(HRESULT hr, std::string context = "")
+	{
+		if (FAILED(hr))
 			throw xk::Exception<ErrorModule>{ { hr, context } };
-    }
+	}
 
 	/// <summary>
 	/// Forwards a function which creates or gets an COM object which would require querying it's IID
@@ -89,12 +92,15 @@ namespace TypedD3D
 	{
 		ComPtr<Unknown> unknown;
 
-		if constexpr(requires() { { std::invoke(function, args..., IID_PPV_ARGS(&unknown)) } -> std::convertible_to<HRESULT>; })
+		constexpr bool invocableHRESULT = requires() { { std::invoke(function, args..., IID_PPV_ARGS(&unknown)) } -> std::convertible_to<HRESULT>; };
+		constexpr bool invocableVoid = requires() { { std::invoke(function, args..., IID_PPV_ARGS(&unknown)) } -> std::same_as<void>; };
+
+		if constexpr (invocableHRESULT)
 			ThrowIfFailed(std::invoke(function, args..., IID_PPV_ARGS(&unknown)));
-		else if constexpr(requires() { { std::invoke(function, args..., IID_PPV_ARGS(&unknown)) } -> std::same_as<void>; })
+		else if constexpr (invocableVoid)
 			std::invoke(function, args..., IID_PPV_ARGS(&unknown));
 		else
-			static_assert(false, "Forward function has some different return type that isn't handled properly");
+			static_assert(std::invocable<Func, Args..., const IID&, void**> && AlwaysFalse<Func>, "Forward function has some different return type that isn't handled properly");
 
 		return unknown;
 	}
@@ -115,12 +121,15 @@ namespace TypedD3D
 	{
 		ComPtr<Unknown> unknown;
 
-		if constexpr(requires() { { std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)) } -> std::convertible_to<HRESULT>; })
+		constexpr bool invocableHRESULT = requires() { { std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)) } -> std::convertible_to<HRESULT>; };
+		constexpr bool invocableVoid = requires() { { std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)) } -> std::same_as<void>; };
+
+		if constexpr (invocableHRESULT)
 			ThrowIfFailed(std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)));
-		else if constexpr(requires() { { std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)) } -> std::same_as<void>; })
+		else if constexpr (invocableVoid)
 			std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown));
 		else
-			static_assert(false, "Forward function has some different return type that isn't handled properly");
+			static_assert(std::invocable<Func, Args..., const IID&, void**> && AlwaysFalse<Func>, "Forward function has some different return type that isn't handled properly");
 
 		return unknown;
 	}
@@ -140,12 +149,15 @@ namespace TypedD3D
 	{
 		ComPtr<Unknown> unknown;
 
-		if constexpr(requires() { { std::invoke(function, args..., &unknown) } -> std::convertible_to<HRESULT>; })
+		constexpr bool invocableHRESULT = requires() { { std::invoke(function, args..., &unknown) } -> std::convertible_to<HRESULT>; };
+		constexpr bool invocableVoid = requires() { { std::invoke(function, args..., &unknown) } -> std::same_as<void>; };
+
+		if constexpr (invocableHRESULT)
 			ThrowIfFailed(std::invoke(function, args..., &unknown));
-		else if constexpr(requires() { { std::invoke(function, args..., &unknown) } -> std::same_as<void>; })
+		else if constexpr (invocableVoid)
 			std::invoke(function, args..., &unknown);
 		else
-			static_assert(false, "Forward function has some different return type that isn't handled properly");
+			static_assert(std::invocable<Func, Args..., const IID&, void**> && AlwaysFalse<Func>, "Forward function has some different return type that isn't handled properly");
 
 		return unknown;
 	}
@@ -166,18 +178,21 @@ namespace TypedD3D
 	{
 		ComPtr<Unknown> unknown;
 
-		if constexpr(requires() { { std::invoke(function, obj, args..., &unknown) } -> std::convertible_to<HRESULT>; })
+		constexpr bool invocableHRESULT = requires() { { std::invoke(function, obj, args..., &unknown) } -> std::convertible_to<HRESULT>; };
+		constexpr bool invocableVoid = requires() { { std::invoke(function, obj, args..., &unknown) } -> std::same_as<void>; };
+
+		if constexpr (invocableHRESULT)
 			ThrowIfFailed(std::invoke(function, obj, args..., &unknown));
-		else if constexpr(requires() { { std::invoke(function, obj, args..., &unknown) } -> std::same_as<void>; })
+		else if constexpr (invocableVoid)
 			std::invoke(function, obj, args..., &unknown);
 		else
-			static_assert(false, "Forward function has some different return type that isn't handled properly");
+			static_assert(std::invocable<Func, Args..., const IID&, void**> && AlwaysFalse<Func>, "Forward function has some different return type that isn't handled properly");
 
 		return unknown;
 	}
 
 	export template<class Ty>
-	constexpr bool is_unknown_wrapper = false;
+		constexpr bool is_unknown_wrapper = false;
 
 	export template<class Ty, template<class> class Traits>
 		class IUnknownWrapper
@@ -428,7 +443,7 @@ namespace TypedD3D
 
 			Ref& operator=(std::nullptr_t) requires (!IsConst)
 			{
-				if(ptr)
+				if (ptr)
 					ptr->Release();
 				ptr = nullptr;
 
@@ -437,17 +452,17 @@ namespace TypedD3D
 
 			Ref& operator=(const Ty& other) requires (!IsConst)
 			{
-				if(ptr)
+				if (ptr)
 					ptr->Release();
 				ptr = other.Get();
-				if(ptr)
+				if (ptr)
 					ptr->AddRef();
 				return *this;
 			}
 
 			Ref& operator=(Ty&& other) noexcept requires (!IsConst)
 			{
-				if(ptr)
+				if (ptr)
 					ptr->Release();
 				ptr = other.Detach();
 				return *this;
@@ -455,17 +470,17 @@ namespace TypedD3D
 
 			Ref& operator=(const Ref& other) requires (!IsConst)
 			{
-				if(ptr)
+				if (ptr)
 					ptr->Release();
 				ptr = other.Get();
-				if(ptr)
+				if (ptr)
 					ptr->AddRef();
 				return *this;
 			}
 
 			Ref& operator=(Ref&& other) noexcept requires (!IsConst)
 			{
-				if(ptr)
+				if (ptr)
 					ptr->Release();
 				ptr = std::exchange(other.ptr, nullptr);
 				return *this;
@@ -533,7 +548,7 @@ namespace TypedD3D
 
 		void Attach(pointer p) requires (!IsConst)
 		{
-			if(ref.ptr)
+			if (ref.ptr)
 				ref.ptr->Release();
 
 			ref.ptr = p;
@@ -546,10 +561,10 @@ namespace TypedD3D
 	};
 
 	export template<class Ty>
-	using ElementReference = ElementReferenceT<Ty, false>;
+		using ElementReference = ElementReferenceT<Ty, false>;
 
 	export template<class Ty>
-	using ConstElementReference = ElementReferenceT<Ty, true>;
+		using ConstElementReference = ElementReferenceT<Ty, true>;
 
 
 
@@ -578,7 +593,7 @@ namespace TypedD3D
 		{
 
 		}
-		
+
 	public:
 		ElementReference<Ty> operator[](size_t index)
 		{
@@ -629,7 +644,7 @@ namespace TypedD3D
 		Vector() = default;
 		Vector(std::initializer_list<Ty> list)
 		{
-			for(Ty v : list)
+			for (Ty v : list)
 			{
 				push_back(v);
 			}
@@ -704,14 +719,14 @@ namespace TypedD3D
 		}
 
 		explicit(Extent != std::dynamic_extent)
-		Span(pointer p, size_t count) :
+			Span(pointer p, size_t count) :
 			m_span{ p, count }
 		{
 
 		}
 
 		explicit(Extent != std::dynamic_extent)
-		Span(Vector<Ty>& arr) :
+			Span(Vector<Ty>& arr) :
 			m_span{ arr.data(), arr.size() }
 		{
 
@@ -820,11 +835,11 @@ namespace TypedD3D
 	export template<class IDXGIObj>
 		auto GetDescription(IDXGIObj& obj)
 	{
-		if constexpr(HasDesc3<IDXGIObj>)
+		if constexpr (HasDesc3<IDXGIObj>)
 			return GetDescriptionHelper<&IDXGIObj::GetDesc3>::GetDescription(obj);
-		else if constexpr(HasDesc2<IDXGIObj>)
+		else if constexpr (HasDesc2<IDXGIObj>)
 			return GetDescriptionHelper<&IDXGIObj::GetDesc2>::GetDescription(obj);
-		else if constexpr(HasDesc1<IDXGIObj>)
+		else if constexpr (HasDesc1<IDXGIObj>)
 			return GetDescriptionHelper<&IDXGIObj::GetDesc1>::GetDescription(obj);
 		else
 			return GetDescriptionHelper<&IDXGIObj::GetDesc>::GetDescription(obj);
