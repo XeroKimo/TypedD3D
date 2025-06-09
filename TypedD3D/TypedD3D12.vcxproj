@@ -73,9 +73,9 @@
     <ProjectReference Include="..\ExceptionHierarchy\ExceptionHierarchy\ExceptionHierarchy.vcxproj">
       <Project>{bb10395f-ced5-4f0d-bc01-8740a181207d}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\ExceptionHierarchy\ExceptionHierarchy\ExceptionHierarchy.vcxproj">
+    <!--<ProjectReference Include="..\..\ExceptionHierarchy\ExceptionHierarchy\ExceptionHierarchy.vcxproj">
       <Project>{bb10395f-ced5-4f0d-bc01-8740a181207d}</Project>
-    </ProjectReference>
+    </ProjectReference>-->
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -269,8 +269,8 @@ void D3D12HelloWorld()
     commandList->ResourceBarrier(std::span(&barrier, 1));
     commandList->Close();
     TypedD3D12::Direct<ID3D12CommandList> a = commandList;
-    std::array submitList = std::to_array<TypedD3D12::Direct<ID3D12CommandList>>({ commandList });
-    commandQueue->ExecuteCommandLists(std::span(submitList));
+    TypedD3D::Array<TypedD3D12::Direct<ID3D12CommandList>, 1> submitList{ commandList };
+    commandQueue->ExecuteCommandLists(TypedD3D::Span(submitList));
 
     TypedD3D::Helpers::D3D12::FlushCommandQueue(*commandQueue.Get(), *fence.Get(), fenceValue, syncEvent);
 

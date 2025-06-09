@@ -587,7 +587,7 @@ namespace TypedD3D
 
 		Array() = default;
 
-		template<std::same_as<Ty>... Ty2>
+		template<std::convertible_to<Ty>... Ty2>
 		Array(Ty2... values) :
 			_values{ values.Get()... }
 		{

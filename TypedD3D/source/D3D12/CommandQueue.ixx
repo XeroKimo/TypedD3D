@@ -155,30 +155,9 @@ namespace TypedD3D::D3D12
 		public:
 			template<std::convertible_to<list_value_type> ListTy, size_t Extents>
 			void ExecuteCommandLists(
-				std::span<ListTy, Extents> commandLists)
+				Span<ListTy, Extents> commandLists)
 			{
-				if constexpr(Extents == std::dynamic_extent)
-				{
-					std::unique_ptr<ID3D12CommandList* []> submitList = std::make_unique<ID3D12CommandList * []>(commandLists.size());
-
-					for(size_t i = 0; i < commandLists.size(); i++)
-					{
-						submitList[i] = commandLists[i].Get();
-					}
-
-					Get().ExecuteCommandLists(static_cast<UINT>(commandLists.size()), submitList.get());
-				}
-				else
-				{
-					std::array<ID3D12CommandList*, Extents> submitList;
-
-					for(size_t i = 0; i < commandLists.size(); i++)
-					{
-						submitList[i] = commandLists[i].Get();
-					}
-
-					Get().ExecuteCommandLists(static_cast<UINT>(commandLists.size()), submitList.data());
-				}
+				Get().ExecuteCommandLists(static_cast<UINT>(commandLists.size()), commandLists.data());
 			}
 
 		private:
