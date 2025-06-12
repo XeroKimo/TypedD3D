@@ -32,6 +32,7 @@
     <ClCompile Include="source\D3D11\ResourceViews.ixx" />
     <ClCompile Include="source\D3D11\Shaders.ixx" />
     <ClCompile Include="source\D3D11\States.ixx" />
+    <ClCompile Include="source\D3D12Extensions.ixx" />
     <ClCompile Include="source\D3D12\CommandAllocator.ixx" />
     <ClCompile Include="source\D3D12\CommandList.ixx" />
     <ClCompile Include="source\D3D12\CommandQueue.ixx" />

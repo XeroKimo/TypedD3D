@@ -1,39 +1,44 @@
+module;
+
+#include <concepts>
+#include <d3d12.h>
+
 export module TypedD3D12:Wrappers; 
 import TypedD3D.Shared;
 
 namespace TypedD3D::D3D12
 {
-    template<class Ty>
+    export template<class Ty>
     struct DirectTraits;
 
-    template<class Ty>
+	export template<class Ty>
     struct ComputeTraits;
 
-    template<class Ty>
+	export template<class Ty>
     struct CopyTraits;
 
-    template<class Ty>
+	export template<class Ty>
     struct BundleTraits;
 
-    template<class Ty>
+	export template<class Ty>
     struct CBV_SRV_UAVTraits;
 
-    template<class Ty>
+	export template<class Ty>
     struct SamplerTraits;
 
-    template<class Ty>
+	export template<class Ty>
     struct RTVTraits;
 
-    template<class Ty>
+	export template<class Ty>
     struct DSVTraits;
 
-    template<class Ty>
+	export template<class Ty>
     struct GraphicsTraits;
 
-    template<class Ty>
+	export template<class Ty>
     struct RenderPassTraits;
 
-    template<class Ty, template<class> class WrappedTraitTy>
+	export template<class Ty>
     struct ShaderVisibleTraits;
 
     template<class Ty>
@@ -97,13 +102,16 @@ namespace TypedD3D::D3D12
     };
 
     template<class Ty>
-    struct ShaderVisibleMapper;
+	struct ShaderVisibleMapper
+	{
+		using type = Ty;
+	};
 
-    template<class Ty, template<class> class WrapperTraitTy>
+    template<std::derived_from<IUnknown> Ty, template<class> class WrapperTraitTy>
     struct ShaderVisibleMapper<IUnknownWrapper<Ty, WrapperTraitTy>>
     {
         template<class Ty>
-        using Trait = ShaderVisibleTraits<Ty, WrapperTraitTy>;
+        using Trait = ShaderVisibleTraits<IUnknownWrapper<Ty, WrapperTraitTy>>;
 
         using type = IUnknownWrapper<Ty, Trait>;
     };

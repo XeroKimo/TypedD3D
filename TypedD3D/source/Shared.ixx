@@ -192,13 +192,29 @@ namespace TypedD3D
 	}
 
 	export template<class Ty>
-		constexpr bool is_unknown_wrapper = false;
+	constexpr bool is_unknown_wrapper = false;
 
-	export template<class Ty, template<class> class Traits>
-		class IUnknownWrapper
+	template<class Ty>
+	struct GetTraitTemplate : std::false_type {};
+
+	template<template<class> class Trait, class Ty>
+	struct GetTraitTemplate<Trait<Ty>> : std::true_type
 	{
-		template<class OtherTy, template<class> class OtherTrait>
-		friend class IUnknownWrapper;
+		template<class T>
+		using type = Trait<T>;
+	};
+
+	template<class Ty>
+	concept IsTrait = (GetTraitTemplate<Ty>::value == true);
+
+	template<class A, class B, class Ty>
+	concept IsSameTrait = std::same_as<typename GetTraitTemplate<A>::template type<Ty>, typename GetTraitTemplate<B>::template type<Ty>>;
+
+	export template<class Ty, IsTrait Traits>
+	class IUnknownWrapperImpl
+	{
+		template<class OtherTy, IsTrait OtherTrait>
+		friend class IUnknownWrapperImpl;
 
 	public:
 		using value_type = Ty;
@@ -207,8 +223,8 @@ namespace TypedD3D
 
 	public:
 		template<class Ty2>
-		using traits_template_type = Traits<Ty2>;
-		using traits_type = Traits<Ty>;
+		using traits_template_type = GetTraitTemplate<Traits>::template type<Ty2>;
+		using traits_type = Traits;
 
 	private:
 		struct Impl;
@@ -251,100 +267,88 @@ namespace TypedD3D
 		Impl impl;
 
 	public:
-		IUnknownWrapper() = default;
-		IUnknownWrapper(const IUnknownWrapper& other) = default;
-		IUnknownWrapper(IUnknownWrapper&& other) noexcept = default;
+		IUnknownWrapperImpl() = default;
+		IUnknownWrapperImpl(const IUnknownWrapperImpl& other) = default;
+		IUnknownWrapperImpl(IUnknownWrapperImpl&& other) noexcept = default;
 
-		template<class OtherTy>
-		IUnknownWrapper(const IUnknownWrapper<OtherTy, Traits>& other) : impl{ other.impl.ptr }
+		template<class OtherTy, class OtherTraits>
+			requires IsSameTrait<Traits, OtherTraits, Ty>
+		IUnknownWrapperImpl(const IUnknownWrapperImpl<OtherTy, OtherTraits>& other) : impl{ other.impl.ptr }
 		{
 		}
 
-		template<class OtherTy>
-		IUnknownWrapper(IUnknownWrapper<OtherTy, Traits>&& other) noexcept : impl{ std::move(other).impl.ptr }
+		template<class OtherTy, class OtherTraits>
+			requires IsSameTrait<Traits, OtherTraits, Ty>
+		IUnknownWrapperImpl(IUnknownWrapperImpl<OtherTy, OtherTraits>&& other) noexcept : impl{ std::move(other).impl.ptr }
 		{
 		}
 
-		//This is here in case of using mappers as Mapper<A>::type, and OtherMapper<A>::type is not seen as the
-		//same type for template template classes, despite Mapper<A>::type<B> is the same as OtherMapper<A>::type<B>
-		template<class OtherTy, template<class> class OtherTraits>
-			requires std::same_as<OtherTraits<Ty>, Traits<Ty>>
-		IUnknownWrapper(const IUnknownWrapper<OtherTy, OtherTraits>& other) : impl{ other.impl.ptr }
-		{
-		}
-
-		template<class OtherTy, template<class> class OtherTraits>
-			requires std::same_as<OtherTraits<Ty>, Traits<Ty>>
-		IUnknownWrapper(IUnknownWrapper<OtherTy, OtherTraits>&& other) noexcept : impl{ std::move(other).impl.ptr }
-		{
-		}
-
-		IUnknownWrapper(std::nullptr_t) {};
+		IUnknownWrapperImpl(std::nullptr_t) {};
 
 		template<class U>
-		IUnknownWrapper(U* obj) : impl{ obj }
+		IUnknownWrapperImpl(U* obj) : impl{ obj }
 		{
 		}
 
-		IUnknownWrapper(const Microsoft::WRL::ComPtr<Ty>& other) : impl{ other }
+		IUnknownWrapperImpl(const Microsoft::WRL::ComPtr<Ty>& other) : impl{ other }
 		{
 		}
 
-		IUnknownWrapper(Microsoft::WRL::ComPtr<Ty>&& other) noexcept : impl{ std::move(other) }
-		{
-		}
-
-		template<class OtherTy>
-		IUnknownWrapper(const Microsoft::WRL::ComPtr<OtherTy>& other) : impl{ other }
+		IUnknownWrapperImpl(Microsoft::WRL::ComPtr<Ty>&& other) noexcept : impl{ std::move(other) }
 		{
 		}
 
 		template<class OtherTy>
-		IUnknownWrapper(Microsoft::WRL::ComPtr<OtherTy>&& other) noexcept : impl{ std::move(other) }
+		IUnknownWrapperImpl(const Microsoft::WRL::ComPtr<OtherTy>& other) : impl{ other }
+		{
+		}
+
+		template<class OtherTy>
+		IUnknownWrapperImpl(Microsoft::WRL::ComPtr<OtherTy>&& other) noexcept : impl{ std::move(other) }
 		{
 		}
 
 	public:
-		IUnknownWrapper& operator=(const IUnknownWrapper& other) = default;
-		IUnknownWrapper& operator=(IUnknownWrapper&& other) noexcept = default;
+		IUnknownWrapperImpl& operator=(const IUnknownWrapperImpl& other) = default;
+		IUnknownWrapperImpl& operator=(IUnknownWrapperImpl&& other) noexcept = default;
 
-		IUnknownWrapper& operator=(std::nullptr_t)
+		IUnknownWrapperImpl& operator=(std::nullptr_t)
 		{
 			impl.ptr = nullptr;
 			return *this;
 		}
 
 		template<class OtherTy>
-		IUnknownWrapper& operator=(const IUnknownWrapper<OtherTy, Traits>& other)
+		IUnknownWrapperImpl& operator=(const IUnknownWrapperImpl<OtherTy, Traits>& other)
 		{
 			impl.ptr = other.impl.ptr;
 			return *this;
 		}
 
 		template<class OtherTy>
-		IUnknownWrapper& operator=(IUnknownWrapper<OtherTy, Traits>&& other) noexcept
+		IUnknownWrapperImpl& operator=(IUnknownWrapperImpl<OtherTy, Traits>&& other) noexcept
 		{
 			impl.ptr = std::move(other).impl.ptr;
 			return *this;
 		}
 
 	public:
-		friend bool operator==(const IUnknownWrapper& lh, std::nullptr_t)
+		friend bool operator==(const IUnknownWrapperImpl& lh, std::nullptr_t)
 		{
 			return lh.impl.ptr == nullptr;
 		}
-		friend bool operator!=(const IUnknownWrapper& lh, std::nullptr_t)
+		friend bool operator!=(const IUnknownWrapperImpl& lh, std::nullptr_t)
 		{
 			return lh.impl.ptr != nullptr;
 		}
 
 		template<class OtherTy>
-		friend bool operator==(const IUnknownWrapper& lh, const IUnknownWrapper<OtherTy, Traits>& rh)
+		friend bool operator==(const IUnknownWrapperImpl& lh, const IUnknownWrapperImpl<OtherTy, Traits>& rh)
 		{
 			return lh.impl.ptr == rh.impl.ptr;
 		}
 		template<class OtherTy>
-		friend bool operator!=(const IUnknownWrapper& lh, const IUnknownWrapper<OtherTy, Traits>& rh)
+		friend bool operator!=(const IUnknownWrapperImpl& lh, const IUnknownWrapperImpl<OtherTy, Traits>& rh)
 		{
 			return lh.impl.ptr != rh.impl.ptr;
 		}
@@ -362,7 +366,7 @@ namespace TypedD3D
 		pointer Get() { return impl.ptr.Get(); }
 		pointer Get() const { return impl.ptr.Get(); }
 
-		void Swap(IUnknownWrapper& other) noexcept
+		void Swap(IUnknownWrapperImpl& other) noexcept
 		{
 			impl.ptr.Swap(other.impl.ptr);
 		}
@@ -372,49 +376,52 @@ namespace TypedD3D
 		const interface_type* operator->() const { return &impl; }
 		Microsoft::WRL::ComPtr<value_type> AsComPtr() const { return impl.ptr; }
 
-		template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, template<class> class Traits>
-		friend IUnknownWrapper<DerivedTy, Traits> Cast(const IUnknownWrapper<Ty, Traits>& other) noexcept;
+		template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, class Traits>
+		friend IUnknownWrapperImpl<DerivedTy, typename GetTraitTemplate<Traits>::template type<DerivedTy>> Cast(const IUnknownWrapperImpl<Ty, Traits>& other) noexcept;
 
-		template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, template<class> class Traits>
-		friend IUnknownWrapper<DerivedTy, Traits> Cast(IUnknownWrapper<Ty, Traits>&& other) noexcept;
+		template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, class Traits>
+		friend IUnknownWrapperImpl<DerivedTy, typename GetTraitTemplate<Traits>::template type<DerivedTy>> Cast(IUnknownWrapperImpl<Ty, Traits>&& other) noexcept;
 
-		template<class DerivedTy, std::derived_from<IUnknown> CastTy, template<class> class Traits>
-			requires is_unknown_wrapper<DerivedTy>
-		friend DerivedTy Cast(const IUnknownWrapper<CastTy, Traits>& other) noexcept;
+		template<class DerivedTy, std::derived_from<IUnknown> Ty, class Traits>
+			requires is_unknown_wrapper<DerivedTy> && IsSameTrait<typename DerivedTy::traits_type, Traits, Ty>
+		friend DerivedTy Cast(const IUnknownWrapperImpl<Ty, Traits>& other) noexcept;
 
-		template<class DerivedTy, std::derived_from<IUnknown> CastTy, template<class> class Traits>
-			requires is_unknown_wrapper<DerivedTy>
-		friend DerivedTy Cast(IUnknownWrapper<CastTy, Traits>&& other) noexcept;
+		template<class DerivedTy, std::derived_from<IUnknown> Ty, class Traits>
+			requires is_unknown_wrapper<DerivedTy> && IsSameTrait<typename DerivedTy::traits_type, Traits, Ty>
+		friend DerivedTy Cast(IUnknownWrapperImpl<Ty, Traits>&& other) noexcept;
 	};
 
+	export template<class Ty, class Traits>
+	constexpr bool is_unknown_wrapper<IUnknownWrapperImpl<Ty, Traits>> = true;
+
 	export template<class Ty, template<class> class Traits>
-		constexpr bool is_unknown_wrapper<IUnknownWrapper<Ty, Traits>> = true;
+	using IUnknownWrapper = IUnknownWrapperImpl<Ty, Traits<Ty>>;
 
-
-	export template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, template<class> class Traits>
-		IUnknownWrapper<DerivedTy, Traits> Cast(const IUnknownWrapper<Ty, Traits>& other) noexcept
+	
+	export template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, class Traits>
+	IUnknownWrapperImpl<DerivedTy, typename GetTraitTemplate<Traits>::template type<DerivedTy>> Cast(const IUnknownWrapperImpl<Ty, Traits>& other) noexcept
 	{
-		return IUnknownWrapper<DerivedTy, Traits>(Cast<DerivedTy>(other.impl.ptr));
+		return { Cast<DerivedTy>(other.impl.ptr) };
 	}
 
-	export template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, template<class> class Traits>
-		IUnknownWrapper<DerivedTy, Traits> Cast(IUnknownWrapper<Ty, Traits>&& other) noexcept
+	export template<std::derived_from<IUnknown> DerivedTy, std::derived_from<IUnknown> Ty, class Traits>
+	IUnknownWrapperImpl<DerivedTy, typename GetTraitTemplate<Traits>::template type<DerivedTy>> Cast(IUnknownWrapperImpl<Ty, Traits>&& other) noexcept
 	{
-		return IUnknownWrapper<DerivedTy, Traits>(Cast<DerivedTy>(std::move(other.impl.ptr)));
+		return { Cast<DerivedTy>(std::move(other.impl.ptr)) };
 	}
 
-	export template<class DerivedTy, std::derived_from<IUnknown> CastTy, template<class> class Traits>
-		requires is_unknown_wrapper<DerivedTy>
-	DerivedTy Cast(const IUnknownWrapper<CastTy, Traits>& other) noexcept
+	export template<class DerivedTy, std::derived_from<IUnknown> Ty, class Traits>
+		requires is_unknown_wrapper<DerivedTy> && IsSameTrait<typename DerivedTy::traits_type, Traits, Ty>
+	DerivedTy Cast(const IUnknownWrapperImpl<Ty, Traits>& other) noexcept
 	{
-		return DerivedTy(TypedD3D::Cast<typename DerivedTy::value_type>(other.impl.ptr));
+		return { Cast<typename DerivedTy::value_type>(other.impl.ptr) };
 	}
 
-	export template<class DerivedTy, std::derived_from<IUnknown> CastTy, template<class> class Traits>
-		requires is_unknown_wrapper<DerivedTy>
-	DerivedTy Cast(IUnknownWrapper<CastTy, Traits>&& other) noexcept
+	export template<class DerivedTy, std::derived_from<IUnknown> Ty, class Traits>
+		requires is_unknown_wrapper<DerivedTy> && IsSameTrait<typename DerivedTy::traits_type, Traits, Ty>
+	DerivedTy Cast(IUnknownWrapperImpl<Ty, Traits>&& other) noexcept
 	{
-		return DerivedTy(TypedD3D::Cast<typename DerivedTy::value_type>(std::move(other.impl.ptr)));
+		return { Cast<typename DerivedTy::value_type>(std::move(other.impl.ptr)) };
 	}
 
 	export template<class Ty, bool IsConst>
@@ -554,8 +561,10 @@ namespace TypedD3D
 			ref.ptr = p;
 		}
 
-		operator Ty() const& { return Ty{ ref.ptr }; }
-		operator Ty()&& { return Ty{ std::exchange(ref.ptr, nullptr) }; }
+		template<class OtherTy>
+			requires std::convertible_to<Ty, OtherTy>
+		operator OtherTy() const& { return OtherTy{ ref.ptr }; }
+
 		interface_type* operator->() { return &ref; }
 		interface_type* operator->() const { return &ref; }
 	};
@@ -591,7 +600,26 @@ namespace TypedD3D
 		Array(Ty2... values) :
 			_values{ values.Get()... }
 		{
+			for (value_type p : _values)
+			{
+				if (p)
+				{
+					auto foo = p->AddRef();
+					int i = 0;
+				}
+			}
+		}
 
+		~Array()
+		{
+			for (value_type p : _values)
+			{
+				if (p)
+				{
+					auto foo = p->Release();
+					int i = 0;
+				}
+			}
 		}
 
 	public:
@@ -647,6 +675,18 @@ namespace TypedD3D
 			for (Ty v : list)
 			{
 				push_back(v);
+
+				if(v)
+					v.Get()->AddRef();
+			}
+		}
+
+		~Vector()
+		{
+			for (value_type v : _values)
+			{
+				if (v)
+					v->Release();
 			}
 		}
 

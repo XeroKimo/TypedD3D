@@ -172,6 +172,13 @@ namespace TypedD3D::D3D12
 				Get().ClearRenderTargetView(RenderTargetView.Get(), colorRGBA.data(), static_cast<UINT>(rects.size()), rects.data());
 			}
 
+			void ClearRenderTargetView(
+				RTV<::D3D12_CPU_DESCRIPTOR_HANDLE> RenderTargetView,
+				std::array<const float, 4> colorRGBA)
+			{
+				ClearRenderTargetView(RenderTargetView.Get(), std::span<const float, 4>{ colorRGBA }, std::span<const D3D12_RECT>{});
+			}
+
 			void ClearState(ID3D12PipelineState* pPipelineState)
 			{
 				Get().ClearState(pPipelineState);

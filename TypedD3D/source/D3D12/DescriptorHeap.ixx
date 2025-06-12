@@ -128,8 +128,35 @@ namespace TypedD3D::D3D12
     template<>
     constexpr D3D12_DESCRIPTOR_HEAP_TYPE TraitToHeapType<SamplerTraits> = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
 
-    //template<class Ty, D3D12_DESCRIPTOR_HEAP_TYPE HeapType>
-    //struct ShaderVisibleTraits;
+    template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType>
+    struct HeapTypeToWrapper;
+
+    template<>
+    struct HeapTypeToWrapper<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV> { template<class Ty> using type = CBV_SRV_UAV<Ty>; };
+
+    template<>
+    struct HeapTypeToWrapper<D3D12_DESCRIPTOR_HEAP_TYPE_DSV> { template<class Ty> using type = DSV<Ty>; };
+
+    template<>
+    struct HeapTypeToWrapper<D3D12_DESCRIPTOR_HEAP_TYPE_RTV> { template<class Ty> using type = RTV<Ty>; };
+
+    template<>
+    struct HeapTypeToWrapper<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER> { template<class Ty> using type = Sampler<Ty>; };
+
+    template<template<class> class Ty>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE WrapperToHeapType;
+
+    template<>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE WrapperToHeapType<CBV_SRV_UAV> = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+
+    template<>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE WrapperToHeapType<DSV> = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+
+    template<>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE WrapperToHeapType<RTV> = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+
+    template<>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE WrapperToHeapType<Sampler> = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
 
     template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
     struct HeapTraitMapper;    
@@ -145,7 +172,7 @@ namespace TypedD3D::D3D12
     struct HeapTraitMapper<HeapType, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>
     {
         template<class Ty>
-        using type = ShaderVisibleTraits<ID3D12DescriptorHeap, HeapTypeToTrait<HeapType>::template type>;
+        using type = ShaderVisibleTraits<typename HeapTypeToWrapper<HeapType>::template type<Ty>>;
     };
 
     template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
@@ -192,10 +219,10 @@ namespace TypedD3D::D3D12
     struct SamplerTraits<ID3D12DescriptorHeap> : DescriptorHeapTraits<TraitToHeapType<SamplerTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> {};
 
     template<>
-    struct ShaderVisibleTraits<ID3D12DescriptorHeap, CBV_SRV_UAVTraits> : DescriptorHeapTraits<TraitToHeapType<CBV_SRV_UAVTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> {};
+    struct ShaderVisibleTraits<CBV_SRV_UAV<ID3D12DescriptorHeap>> : DescriptorHeapTraits<TraitToHeapType<CBV_SRV_UAVTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> {};
 
     template<>
-    struct ShaderVisibleTraits<ID3D12DescriptorHeap, SamplerTraits> : DescriptorHeapTraits<TraitToHeapType<SamplerTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> {};
+    struct ShaderVisibleTraits<Sampler<ID3D12DescriptorHeap>> : DescriptorHeapTraits<TraitToHeapType<SamplerTraits>, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> {};
 
     export template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
     using DescriptorHeap_t = IUnknownWrapper<ID3D12DescriptorHeap, HeapTraitMapper<Type, HeapFlags>::template type>;
@@ -235,6 +262,21 @@ namespace TypedD3D::D3D12
     {
         using type = GPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
     };
+
+
+
+
+	static_assert(std::same_as<ShaderVisible<Sampler<ID3D12DescriptorHeap>>, IUnknownWrapperImpl<ID3D12DescriptorHeap, ShaderVisibleTraits<Sampler<ID3D12DescriptorHeap>>>>);
+	static_assert(std::same_as<typename ShaderVisible<Sampler<ID3D12DescriptorHeap>>::traits_type, ShaderVisibleTraits<Sampler<ID3D12DescriptorHeap>>>);
+
+	static_assert(std::convertible_to<CBV_SRV_UAVTraits<ID3D12DescriptorHeap>, HeapTraitMapper<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>::template type<ID3D12DescriptorHeap>>);
+	static_assert(std::same_as<DSVTraits<ID3D12DescriptorHeap>, HeapTraitMapper<D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>::template type<ID3D12DescriptorHeap>>);
+	static_assert(std::same_as<RTVTraits<ID3D12DescriptorHeap>, HeapTraitMapper<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>::template type<ID3D12DescriptorHeap>>);
+	static_assert(std::same_as<SamplerTraits<ID3D12DescriptorHeap>, HeapTraitMapper<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>::template type<ID3D12DescriptorHeap>>);
+
+	static_assert(std::same_as<ShaderVisibleTraits<CBV_SRV_UAV<ID3D12DescriptorHeap>>, HeapTraitMapper<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>::template type<ID3D12DescriptorHeap>>);
+	static_assert(std::same_as<ShaderVisibleTraits<Sampler<ID3D12DescriptorHeap>>, HeapTraitMapper<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>::template type<ID3D12DescriptorHeap>>);
+
 
     namespace Aliases
     {

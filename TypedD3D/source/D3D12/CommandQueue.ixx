@@ -13,7 +13,7 @@ import TypedD3D.Shared;
 
 namespace TypedD3D::D3D12
 {
-	struct ClockCalibrationData
+	export struct ClockCalibrationData
 	{
 		UINT64 gpuTimestamp;
 		UINT64 cpuTimestamp;
@@ -132,8 +132,8 @@ namespace TypedD3D::D3D12
 		};
 	};
 
-	template<D3D12_COMMAND_LIST_TYPE Type>
-	struct CommandQueueTraits
+	export template<D3D12_COMMAND_LIST_TYPE Type>
+		struct CommandQueueTraits
 	{
 		static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
 
@@ -178,8 +178,8 @@ namespace TypedD3D::D3D12
 	template<>
 	struct BundleTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<BundleTraits>> {};
 
-	template<D3D12_COMMAND_LIST_TYPE Type>
-	using D3D12CommandQueue_t = IUnknownWrapper<ID3D12CommandQueue, CommandListTypeToTrait<Type>::template type>;
+	export template<D3D12_COMMAND_LIST_TYPE Type>
+		using D3D12CommandQueue_t = IUnknownWrapper<ID3D12CommandQueue, CommandListTypeToTrait<Type>::template type>;
 
 	namespace Aliases
 	{
