@@ -92,8 +92,6 @@ namespace TypedD3D::D3D12
 				return Get().Signal(&Fence, Value);
 			}
 
-			HRESULT Reset() { Get().Reset(); }
-
 			void UpdateTileMappings(
 				ID3D12Resource& pResource,
 				UINT NumResourceRegions,
@@ -175,16 +173,12 @@ namespace TypedD3D::D3D12
 	template<>
 	struct CopyTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<CopyTraits>> {};
 
-	template<>
-	struct BundleTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<BundleTraits>> {};
-
 	export template<D3D12_COMMAND_LIST_TYPE Type>
 		using D3D12CommandQueue_t = IUnknownWrapper<ID3D12CommandQueue, CommandListTypeToTrait<Type>::template type>;
 
 	namespace Aliases
 	{
 		export using D3D12DirectCommandQueue = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
-		export using D3D12BundleCommandQueue = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
 		export using D3D12ComputeCommandQueue = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
 		export using D3D12CopyCommandQueue = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COPY>;
 	}
