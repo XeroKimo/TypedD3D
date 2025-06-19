@@ -13,6 +13,7 @@ module;
 export module TypedD3D12:CommandList;
 import :CommandAllocator;
 import :DescriptorHeap;
+import :DeviceChild;
 import TypedD3D.Shared;
 
 
@@ -94,7 +95,7 @@ namespace TypedD3D::D3D12
 		using const_reference = const ID3D12CommandList&;
 
 		template<class DerivedSelf>
-		class Interface
+		class Interface : public DeviceChildTraits::Interface<DerivedSelf>
 		{
 		private:
 			using derived_self = DerivedSelf;

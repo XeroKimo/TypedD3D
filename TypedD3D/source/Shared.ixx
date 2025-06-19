@@ -561,6 +561,8 @@ namespace TypedD3D
 			ref.ptr = p;
 		}
 
+		Ty ToWrapper() const { return Ty{ ref.ptr }; }
+
 		template<class OtherTy>
 			requires std::convertible_to<Ty, OtherTy>
 		operator OtherTy() const& { return OtherTy{ ref.ptr }; }
@@ -592,9 +594,30 @@ namespace TypedD3D
 		using traits_type = Ty::traits_type;
 
 	public:
-		std::array<value_type, Extent> _values;
+		std::array<value_type, Extent> _values{};
 
 		Array() = default;
+
+		Array(const Array& other) :
+			_values{ other._values }
+		{
+			for (value_type p : _values)
+			{
+				if (p)
+				{
+					auto foo = p->AddRef();
+					int i = 0;
+				}
+			}
+		}
+
+		Array(Array&& other) noexcept
+		{
+			for (size_t i = 0; i < Extent; i++)
+			{
+				std::swap(other._values[i], _values[i]);
+			}
+		}
 
 		template<std::convertible_to<Ty>... Ty2>
 		Array(Ty2... values) :
@@ -620,6 +643,20 @@ namespace TypedD3D
 					int i = 0;
 				}
 			}
+		}
+
+		Array& operator=(const Array& other)
+		{
+			Array temp{ other };
+			_values.swap(temp._values);
+			return *this;
+		}
+
+		Array& operator=(Array&& other) noexcept
+		{
+			Array temp{ std::move(other) };
+			_values.swap(temp._values);
+			return *this;
 		}
 
 	public:
@@ -670,6 +707,24 @@ namespace TypedD3D
 
 	public:
 		Vector() = default;
+		Vector(const Vector& other) :
+			_values{ other._values }
+		{
+			for (Ty v : _values)
+			{
+				if (v)
+					v.Get()->AddRef();
+			}
+		}
+
+		Vector(Vector&& other) noexcept
+		{
+			for (size_t i = 0; i < _values.size(); i++)
+			{
+				std::swap(other._values[i], _values[i]);
+			}
+		}
+
 		Vector(std::initializer_list<Ty> list)
 		{
 			for (Ty v : list)
@@ -688,6 +743,20 @@ namespace TypedD3D
 				if (v)
 					v->Release();
 			}
+		}
+
+		Vector& operator=(const Vector& other)
+		{
+			Array temp{ other };
+			_values.swap(temp._values);
+			return *this;
+		}
+
+		Vector& operator=(Vector&& other) noexcept
+		{
+			Array temp{ std::move(other) };
+			_values.swap(temp._values);
+			return *this;
 		}
 
 	public:
