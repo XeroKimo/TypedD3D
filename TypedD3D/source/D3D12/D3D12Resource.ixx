@@ -74,6 +74,63 @@ namespace TypedD3D
             reference Get() { return *ToDerived().derived_self::Get(); }
         };
     };
+
+    template<>
+    struct UntaggedTraits<ID3D12Resource1>
+    {
+        using value_type = ID3D12Resource1;
+        using pointer = ID3D12Resource1*;
+        using const_pointer = const ID3D12Resource1*;
+        using reference = ID3D12Resource1&;
+        using const_reference = const ID3D12Resource1&;
+
+        template<class DerivedSelf>
+        class Interface : public UntaggedTraits<ID3D12Resource>::Interface<DerivedSelf>
+        {
+        private:
+            using derived_self = DerivedSelf;
+
+		public:
+			//TODO: Figure out how this works to update to a more modern API
+			HRESULT GetProtectedResourceSession(
+				REFIID riid,
+				_COM_Outptr_opt_  void** ppProtectedSession)
+			{
+				return Get().GetProtectedResourceSession(riid, ppProtectedSession);
+			}
+
+        private:
+            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+            reference Get() { return *ToDerived().derived_self::Get(); }
+        };
+    };
+
+    template<>
+    struct UntaggedTraits<ID3D12Resource2>
+    {
+        using value_type = ID3D12Resource2;
+        using pointer = ID3D12Resource2*;
+        using const_pointer = const ID3D12Resource2*;
+        using reference = ID3D12Resource2&;
+        using const_reference = const ID3D12Resource2&;
+
+        template<class DerivedSelf>
+        class Interface : public UntaggedTraits<ID3D12Resource>::Interface<DerivedSelf>
+        {
+        private:
+            using derived_self = DerivedSelf;
+
+		public:
+			D3D12_RESOURCE_DESC1 GetDesc1()
+			{
+				return Get().GetDesc1();
+			}
+
+        private:
+            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+            reference Get() { return *ToDerived().derived_self::Get(); }
+        };
+    };
 }
 
 namespace TypedD3D::D3D12
@@ -81,5 +138,7 @@ namespace TypedD3D::D3D12
     namespace Aliases
     {
         export using D3D12Resource = IUnknownWrapper<ID3D12Resource, UntaggedTraits>;
+        export using D3D12Resource1 = IUnknownWrapper<ID3D12Resource1, UntaggedTraits>;
+        export using D3D12Resource2 = IUnknownWrapper<ID3D12Resource2, UntaggedTraits>;
     }
 }

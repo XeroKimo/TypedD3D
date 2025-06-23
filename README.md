@@ -67,8 +67,8 @@ Compatible with CBV_SRV_UAV and Sampler compatible classes </br>
 Various interfaces like the command lists and command queues only work when they have the same type, so I provide tagged wrappers for interfaces like those. Command lists also have their interfaces restricted based on what kind of command list was created based on [microsoft's document](https://docs.microsoft.com/en-us/windows/win32/direct3d12/recording-command-lists-and-bundles#command-list-api-restrictions), so they no longer have to constantly be referred which commands are available for what type of list.
   
 ## DX12 Implemented Types
-- ID3D12Device up to ID3D12Device5
-- ID3D12CommandList up to ID3D12GraphicsCommandList5
+- ID3D12Device up to ID3D12Device10
+- ID3D12CommandList up to ID3D12GraphicsCommandList7
 - ID3D12CommandAllocator
 - ID3D12CommandQueue
 - ID3D12DescriptorHeap*

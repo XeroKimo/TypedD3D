@@ -279,14 +279,14 @@ namespace TypedD3D::D3D12
 				return Helpers::D3D12::CreateComputePipelineState(Get(), pDesc);
 			}
 
-			template<D3D12_COMMAND_LIST_TYPE Type>
-			CommandList_t<ID3D12GraphicsCommandList, Type> CreateCommandList(
+			template<D3D12_COMMAND_LIST_TYPE Type, std::derived_from<ID3D12CommandList> ListTy = ID3D12GraphicsCommandList>
+			CommandList_t<ListTy, Type> CreateCommandList(
 				CommandAllocator_t<Type> pCommandAllocator,
 				UINT nodeMask = 0,
 				ID3D12PipelineState* optInitialState = nullptr)
 			{
-				using command_list_type = CommandList_t<ID3D12GraphicsCommandList, Type>;
-				return Helpers::D3D12::CreateCommandList<ID3D12GraphicsCommandList>(Get(), Type, *pCommandAllocator.Get(), nodeMask, optInitialState);
+				using command_list_type = CommandList_t<ListTy, Type>;
+				return Helpers::D3D12::CreateCommandList<ListTy>(Get(), Type, *pCommandAllocator.Get(), nodeMask, optInitialState);
 			}
 
 			template<D3D12_FEATURE Feature>
@@ -854,12 +854,12 @@ namespace TypedD3D::D3D12
 			using derived_self = DerivedSelf;
 
 		public:
-			template<D3D12_COMMAND_LIST_TYPE Type>
-			CommandList_t<ID3D12GraphicsCommandList, Type> CreateCommandList1(
+			template<D3D12_COMMAND_LIST_TYPE Type, std::derived_from<ID3D12CommandList> ListTy = ID3D12GraphicsCommandList>
+			CommandList_t<ListTy, Type> CreateCommandList1(
 				UINT nodeMask,
 				D3D12_COMMAND_LIST_FLAGS flags)
 			{
-				return Helpers::D3D12::CreateCommandList(Get(), Type, flags, nodeMask);
+				return Helpers::D3D12::CreateCommandList<ListTy>(Get(), Type, flags, nodeMask);
 			}
 
 			ComPtr<ID3D12ProtectedResourceSession> CreateProtectedResourceSession(
@@ -1065,6 +1065,340 @@ namespace TypedD3D::D3D12
 		};
 	};
 
+	template<>
+	struct DeviceTraits<ID3D12Device6>
+	{
+		using base_value_type = ID3D12Device5;
+		using value_type = ID3D12Device6;
+		using pointer = ID3D12Device6*;
+		using const_pointer = const ID3D12Device6*;
+		using reference = ID3D12Device6&;
+		using const_reference = const ID3D12Device6&;
+
+		template<class DerivedSelf>
+		class Interface : public DeviceTraits<base_value_type>::Interface<DerivedSelf>
+		{
+		private:
+			using derived_self = DerivedSelf;
+
+		public:
+		//TODO: Figure out how this works to update to a more modern API
+			HRESULT SetBackgroundProcessingMode(
+				D3D12_BACKGROUND_PROCESSING_MODE Mode,
+				D3D12_MEASUREMENTS_ACTION MeasurementsAction,
+				_In_opt_  HANDLE hEventToSignalUponCompletion,
+				_Out_opt_  BOOL* pbFurtherMeasurementsDesired)
+			{
+				return Get().SetBackgroundProcessingMode(
+					Mode,
+					MeasurementsAction,
+					hEventToSignalUponCompletion,
+					pbFurtherMeasurementsDesired);
+			}
+
+		private:
+			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+			reference Get() { return *ToDerived().derived_self::Get(); }
+		};
+	};
+
+	template<>
+	struct DeviceTraits<ID3D12Device7>
+	{
+		using base_value_type = ID3D12Device6;
+		using value_type = ID3D12Device7;
+		using pointer = ID3D12Device7*;
+		using const_pointer = const ID3D12Device7*;
+		using reference = ID3D12Device7&;
+		using const_reference = const ID3D12Device7&;
+
+		template<class DerivedSelf>
+		class Interface : public DeviceTraits<base_value_type>::Interface<DerivedSelf>
+		{
+		private:
+			using derived_self = DerivedSelf;
+
+		public:
+			//TODO: Figure out how this works to update to a more modern API
+			HRESULT AddToStateObject(
+				const D3D12_STATE_OBJECT_DESC* pAddition,
+				ID3D12StateObject* pStateObjectToGrowFrom,
+				REFIID riid,
+				_COM_Outptr_  void** ppNewStateObject)
+			{
+				return Get().AddToStateObject(
+					pAddition,
+					pStateObjectToGrowFrom,
+					riid,
+					ppNewStateObject);
+			}
+
+			//TODO: Figure out how this works to update to a more modern API
+			HRESULT CreateProtectedResourceSession1(
+				const D3D12_PROTECTED_RESOURCE_SESSION_DESC1* pDesc,
+				REFIID riid,
+				void** ppSession)
+			{
+				return Get().CreateProtectedResourceSession1(
+					pDesc,
+					riid,
+					ppSession);
+			}
+
+		private:
+			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+			reference Get() { return *ToDerived().derived_self::Get(); }
+		};
+	};
+
+	template<>
+	struct DeviceTraits<ID3D12Device8>
+	{
+		using base_value_type = ID3D12Device7;
+		using value_type = ID3D12Device8;
+		using pointer = ID3D12Device8*;
+		using const_pointer = const ID3D12Device8*;
+		using reference = ID3D12Device8&;
+		using const_reference = const ID3D12Device8&;
+
+		template<class DerivedSelf>
+		class Interface : public DeviceTraits<base_value_type>::Interface<DerivedSelf>
+		{
+		private:
+			using derived_self = DerivedSelf;
+
+		public:
+#if defined(_MSC_VER) || !defined(_WIN32)
+			D3D12_RESOURCE_ALLOCATION_INFO GetResourceAllocationInfo2(
+				UINT visibleMask,
+				UINT numResourceDescs,
+				const D3D12_RESOURCE_DESC1* pResourceDescs,
+				D3D12_RESOURCE_ALLOCATION_INFO1* pResourceAllocationInfo1)
+			{
+				return Get().GetResourceAllocationInfo2(visibleMask,
+					numResourceDescs,
+					pResourceDescs,
+					pResourceAllocationInfo1);
+			}
+#else
+			D3D12_RESOURCE_ALLOCATION_INFO* STDMETHODCALLTYPE GetResourceAllocationInfo2(
+				D3D12_RESOURCE_ALLOCATION_INFO* RetVal,
+				UINT visibleMask,
+				UINT numResourceDescs,
+				const D3D12_RESOURCE_DESC1* pResourceDescs,
+				D3D12_RESOURCE_ALLOCATION_INFO1* pResourceAllocationInfo1)
+			{
+				return Get().GetResourceAllocationInfo2(RetVal,
+					visibleMask,
+					numResourceDescs,
+					pResourceDescs,
+					pResourceAllocationInfo1);
+			}
+#endif
+
+			TypedD3D::Wrapper<ID3D12Resource> CreateCommittedResource2(
+				const D3D12_HEAP_PROPERTIES& pHeapProperties,
+				D3D12_HEAP_FLAGS HeapFlags,
+				const D3D12_RESOURCE_DESC1& pDesc,
+				D3D12_RESOURCE_STATES InitialResourceState,
+				const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+				ID3D12ProtectedResourceSession* pProtectedSession)
+			{
+				return IIDToObjectForwardFunction<ID3D12Resource>(&value_type::CreateCommittedResource2, Get(),
+					&pHeapProperties,
+					HeapFlags,
+					&pDesc,
+					InitialResourceState,
+					pOptimizedClearValue,
+					pProtectedSession);
+			}
+
+			TypedD3D::Wrapper<ID3D12Resource> CreatePlacedResource1(
+				ID3D12Heap& pHeap,
+				UINT64 HeapOffset,
+				const D3D12_RESOURCE_DESC& pDesc,
+				D3D12_RESOURCE_STATES InitialState,
+				const D3D12_CLEAR_VALUE* pOptimizedClearValue)
+			{
+				return IIDToObjectForwardFunction<ID3D12Resource>(&value_type::CreatePlacedResource1, Get(),
+					&pHeap,
+					HeapOffset,
+					&pDesc,
+					InitialState,
+					pOptimizedClearValue);
+			}
+
+			void CreateSamplerFeedbackUnorderedAccessView(
+				ID3D12Resource* pTargetedResource,
+				ID3D12Resource* pFeedbackResource,
+				D3D12_CPU_DESCRIPTOR_HANDLE DestDescriptor)
+			{
+				Get().CreateSamplerFeedbackUnorderedAccessView(
+					pTargetedResource,
+					pFeedbackResource,
+					DestDescriptor);
+			}
+
+			void GetCopyableFootprints1(
+				const D3D12_RESOURCE_DESC1& pResourceDesc,
+				UINT FirstSubresource,
+				UINT NumSubresources,
+				UINT64 BaseOffset,
+				D3D12_PLACED_SUBRESOURCE_FOOTPRINT* pLayouts,
+				UINT* pNumRows,
+				UINT64* pRowSizeInBytes,
+				UINT64* pTotalBytes)
+			{
+				Get().GetCopyableFootprints1(
+					&pResourceDesc,
+					FirstSubresource,
+					NumSubresources,
+					BaseOffset,
+					pLayouts,
+					pNumRows,
+					pRowSizeInBytes,
+					pTotalBytes);
+			}
+
+		private:
+			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+			reference Get() { return *ToDerived().derived_self::Get(); }
+		};
+	};
+
+	template<>
+	struct DeviceTraits<ID3D12Device9>
+	{
+		using base_value_type = ID3D12Device8;
+		using value_type = ID3D12Device9;
+		using pointer = ID3D12Device9*;
+		using const_pointer = const ID3D12Device9*;
+		using reference = ID3D12Device9&;
+		using const_reference = const ID3D12Device9&;
+
+		template<class DerivedSelf>
+		class Interface : public DeviceTraits<base_value_type>::Interface<DerivedSelf>
+		{
+		private:
+			using derived_self = DerivedSelf;
+
+		public:
+			ComPtr<ID3D12ShaderCacheSession> CreateShaderCacheSession(
+				const D3D12_SHADER_CACHE_SESSION_DESC& pDesc)
+			{
+				return IIDToObjectForwardFunction<ID3D12ShaderCacheSession>(&value_type::CreateShaderCacheSession, Get(), &pDesc);
+			}
+
+			HRESULT ShaderCacheControl(
+				D3D12_SHADER_CACHE_KIND_FLAGS Kinds,
+				D3D12_SHADER_CACHE_CONTROL_FLAGS Control)
+			{
+				return Get().ShaderCacheControl(Kinds, Control);
+			}
+
+			template<D3D12_COMMAND_LIST_TYPE Type>
+			D3D12CommandQueue_t<Type> CreateCommandQueue1(
+				D3D12_COMMAND_QUEUE_PRIORITY priority,
+				D3D12_COMMAND_QUEUE_FLAGS flags,
+				UINT nodeMask,
+				REFIID CreatorID)
+			{
+				using queue_type = D3D12CommandQueue_t<Type>;
+
+				D3D12_COMMAND_QUEUE_DESC desc
+				{
+					.Type = Type,
+					.Priority = priority,
+					.Flags = flags,
+					.NodeMask = nodeMask
+				};
+
+				return IIDToObjectForwardFunction<ID3D12CommandQueue>(&value_type::CreateCommandQueue1, Get(), &desc, CreatorID);
+			}
+
+		private:
+			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+			reference Get() { return *ToDerived().derived_self::Get(); }
+		};
+	};
+
+	template<>
+	struct DeviceTraits<ID3D12Device10>
+	{
+		using base_value_type = ID3D12Device9;
+		using value_type = ID3D12Device10;
+		using pointer = ID3D12Device10*;
+		using const_pointer = const ID3D12Device10*;
+		using reference = ID3D12Device10&;
+		using const_reference = const ID3D12Device10&;
+
+		template<class DerivedSelf>
+		class Interface : public DeviceTraits<base_value_type>::Interface<DerivedSelf>
+		{
+		private:
+			using derived_self = DerivedSelf;
+
+		public:
+			TypedD3D::Wrapper<ID3D12Resource2> CreateCommittedResource3(
+				const D3D12_HEAP_PROPERTIES& pHeapProperties,
+				D3D12_HEAP_FLAGS HeapFlags,
+				const D3D12_RESOURCE_DESC1& pDesc,
+				D3D12_BARRIER_LAYOUT InitialLayout,
+				const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+				ID3D12ProtectedResourceSession* pProtectedSession,
+				std::span<DXGI_FORMAT> CastableFormats)
+			{
+				return IIDToObjectForwardFunction<ID3D12Resource2>(&value_type::CreateCommittedResource3, Get(),
+					&pHeapProperties,
+					HeapFlags,
+					&pDesc,
+					InitialLayout,
+					pOptimizedClearValue,
+					pProtectedSession,
+					static_cast<UINT32>(CastableFormats.size()),
+					CastableFormats.data());
+			}
+
+			TypedD3D::Wrapper<ID3D12Resource2> CreatePlacedResource2(
+				ID3D12Heap& pHeap,
+				UINT64 HeapOffset,
+				const D3D12_RESOURCE_DESC1& pDesc,
+				D3D12_BARRIER_LAYOUT InitialLayout,
+				const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+				std::span<DXGI_FORMAT> CastableFormats)
+			{
+				return IIDToObjectForwardFunction<ID3D12Resource2>(&value_type::CreatePlacedResource2, Get(),
+					&pHeap,
+					HeapOffset,
+					pDesc,
+					InitialLayout,
+					pOptimizedClearValue,
+					static_cast<UINT32>(CastableFormats.size()),
+					CastableFormats.data());
+			}
+
+			TypedD3D::Wrapper<ID3D12Resource1> CreateReservedResource2(
+				const D3D12_RESOURCE_DESC& pDesc,
+				D3D12_BARRIER_LAYOUT InitialLayout,
+				const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+				ID3D12ProtectedResourceSession* pProtectedSession,
+				std::span<DXGI_FORMAT> CastableFormats)
+			{
+				return IIDToObjectForwardFunction<ID3D12Resource1>(&value_type::CreateReservedResource2, Get(),
+					pDesc,
+					InitialLayout,
+					pOptimizedClearValue,
+					pProtectedSession,
+					static_cast<UINT32>(CastableFormats.size()),
+					CastableFormats.data());
+			}
+
+		private:
+			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
+			reference Get() { return *ToDerived().derived_self::Get(); }
+		};
+	};
+
 	namespace Aliases
 	{
 		export using Device = Device_t<ID3D12Device>;
@@ -1073,6 +1407,11 @@ namespace TypedD3D::D3D12
 		export using Device3 = Device_t<ID3D12Device3>;
 		export using Device4 = Device_t<ID3D12Device4>;
 		export using Device5 = Device_t<ID3D12Device5>;
+		export using Device6 = Device_t<ID3D12Device6>;
+		export using Device7 = Device_t<ID3D12Device7>;
+		export using Device8 = Device_t<ID3D12Device8>;
+		export using Device9 = Device_t<ID3D12Device9>;
+		export using Device10 = Device_t<ID3D12Device10>;
 	}
 
 	export template<class DeviceTy = Aliases::Device>

@@ -106,35 +106,6 @@ namespace TypedD3D
 	}
 
 	/// <summary>
-	/// Forwards a function which creates or gets an COM object which would require querying it's IID
-	/// </summary>
-	/// <typeparam name="Unknown"></typeparam>
-	/// <typeparam name="Func"></typeparam>
-	/// <typeparam name="Obj"></typeparam>
-	/// <typeparam name="...Args"></typeparam>
-	/// <param name="function">Member Function who's last 2 parameters is IID riid and void** ppv</param>
-	/// <param name="obj">Object which the member function will be called with</param>
-	/// <param name="...args">All arguments not including the IID and void**</param>
-	/// <returns></returns>
-	export template<class Unknown, class Func, class Obj, class... Args>
-		ComPtr<Unknown> IIDToObjectForwardFunction(Func&& function, Obj&& obj, Args&&... args)
-	{
-		ComPtr<Unknown> unknown;
-
-		constexpr bool invocableHRESULT = requires() { { std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)) } -> std::convertible_to<HRESULT>; };
-		constexpr bool invocableVoid = requires() { { std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)) } -> std::same_as<void>; };
-
-		if constexpr (invocableHRESULT)
-			ThrowIfFailed(std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown)));
-		else if constexpr (invocableVoid)
-			std::invoke(function, obj, args..., IID_PPV_ARGS(&unknown));
-		else
-			static_assert(std::invocable<Func, Args..., const IID&, void**> && AlwaysFalse<Func>, "Forward function has some different return type that isn't handled properly");
-
-		return unknown;
-	}
-
-	/// <summary>
 	/// Forwards a function which creates or gets an COM object
 	/// </summary>
 	/// <typeparam name="Unknown"></typeparam>
@@ -156,35 +127,6 @@ namespace TypedD3D
 			ThrowIfFailed(std::invoke(function, args..., &unknown));
 		else if constexpr (invocableVoid)
 			std::invoke(function, args..., &unknown);
-		else
-			static_assert(std::invocable<Func, Args..., const IID&, void**> && AlwaysFalse<Func>, "Forward function has some different return type that isn't handled properly");
-
-		return unknown;
-	}
-
-	/// <summary>
-	/// Forwards a function which creates or gets an COM object
-	/// </summary>
-	/// <typeparam name="Unknown"></typeparam>
-	/// <typeparam name="Func"></typeparam>
-	/// <typeparam name="Obj"></typeparam>
-	/// <typeparam name="...Args"></typeparam>
-	/// <param name="function">Member Function who's last parameter inherits IUnknown</param>
-	/// <param name="obj">Object which the member function will be called with</param>
-	/// <param name="...args">All arguments not including the IUnknown param</param>
-	/// <returns></returns>
-	export template<class Unknown, class Func, class Obj, class... Args>
-		ComPtr<Unknown> UnknownObjectForwardFunction(Func&& function, Obj&& obj, Args&&... args)
-	{
-		ComPtr<Unknown> unknown;
-
-		constexpr bool invocableHRESULT = requires() { { std::invoke(function, obj, args..., &unknown) } -> std::convertible_to<HRESULT>; };
-		constexpr bool invocableVoid = requires() { { std::invoke(function, obj, args..., &unknown) } -> std::same_as<void>; };
-
-		if constexpr (invocableHRESULT)
-			ThrowIfFailed(std::invoke(function, obj, args..., &unknown));
-		else if constexpr (invocableVoid)
-			std::invoke(function, obj, args..., &unknown);
 		else
 			static_assert(std::invocable<Func, Args..., const IID&, void**> && AlwaysFalse<Func>, "Forward function has some different return type that isn't handled properly");
 
