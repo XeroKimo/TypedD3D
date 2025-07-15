@@ -61,7 +61,7 @@ namespace TypedD3D::D3D11
 		const UINT* strideView;
 		const UINT* offsetView;
 	public:
-		template<UINT Count>
+		template<size_t Count>
 		IASetVertexBuffersData(std::span<ID3D11Buffer*, Count> buffers, std::span<UINT, Count> strides, std::span<UINT, Count> offsets) :
 			count{ buffers.size() },
 			bufferView{ buffers.data() },
@@ -74,8 +74,8 @@ namespace TypedD3D::D3D11
 			}
 		}
 
-		template<UINT Count>
-		IASetVertexBuffersData(Span<Wrapper<ID3D11Buffer>, Count> buffers, std::span<UINT, Count> strides, std::span<UINT, Count> offsets) :
+		template<size_t Count>
+		IASetVertexBuffersData(Span<const Wrapper<ID3D11Buffer>, Count> buffers, std::span<UINT, Count> strides, std::span<UINT, Count> offsets) :
 			count{ static_cast<UINT>(buffers.size()) },
 			bufferView{ buffers.data() },
 			strideView{ strides.data() },
@@ -87,13 +87,21 @@ namespace TypedD3D::D3D11
 			}
 		}
 
-		IASetVertexBuffersData(Span<Wrapper<ID3D11Buffer>> buffers, std::span<UINT> strides, std::span<UINT> offsets) :
+		IASetVertexBuffersData(Span<const Wrapper<ID3D11Buffer>> buffers, std::span<UINT> strides, std::span<UINT> offsets) :
 			count{ static_cast<UINT>(buffers.size()) },
 			bufferView{ buffers.data() },
 			strideView{ strides.data() },
 			offsetView{ offsets.data() }
 		{
 			assert(buffers.size() == strides.size() && buffers.size() == offsets.size());
+		}
+
+		IASetVertexBuffersData(const IAGetVertexBufferData& data) :
+			count{ static_cast<UINT>(data.buffers.size()) },
+			bufferView{ data.buffers.data() },
+			strideView{ data.strides.data() },
+			offsetView{ data.offsets.data() }
+		{
 		}
 
 		//template<size_t Count, BoundedRandomAccessContainer<ID3D11Buffer*, Count> Ty1, BoundedRandomAccessContainer<UINT, Count> Ty2, BoundedRandomAccessContainer<UINT, Count> Ty3>
@@ -131,9 +139,9 @@ namespace TypedD3D::D3D11
 		ID3D11Buffer* const* bufferView;
 		const UINT* offsetView;
 	public:
-		template<UINT Count>
-		SOSetTargetsData(std::span<ID3D11Buffer*, Count> buffers, std::span<UINT, Count> offsets) :
-			count{ buffers.size() },
+		template<size_t Count>
+		SOSetTargetsData(std::span<ID3D11Buffer* const, Count> buffers, std::span<UINT, Count> offsets) :
+			count{ static_cast<UINT>(buffers.size()) },
 			bufferView{ buffers.data() },
 			offsetView{ offsets.data() }
 		{
@@ -143,9 +151,9 @@ namespace TypedD3D::D3D11
 			}
 		}
 
-		template<UINT Count>
-		SOSetTargetsData(Span<Wrapper<ID3D11Buffer>, Count> buffers, std::span<UINT, Count> offsets) :
-			count{ buffers.size() },
+		template<size_t Count>
+		SOSetTargetsData(Span<const Wrapper<ID3D11Buffer>, Count> buffers, std::span<UINT, Count> offsets) :
+			count{ static_cast<UINT>(buffers.size()) },
 			bufferView{ buffers.data() },
 			offsetView{ offsets.data() }
 		{
@@ -187,7 +195,7 @@ namespace TypedD3D::D3D11
 		}
 
 		template<UINT Count>
-		CSSetUnorderedAccessViewsData(Span<Wrapper<ID3D11UnorderedAccessView>, Count> buffers, std::span<UINT, Count> pUAVInitialCounts) :
+		CSSetUnorderedAccessViewsData(Span<const Wrapper<ID3D11UnorderedAccessView>, Count> buffers, std::span<UINT, Count> pUAVInitialCounts) :
 			count{ buffers.size() },
 			bufferView{ buffers.data() },
 			pUAVInitialCounts{ pUAVInitialCounts.data() }
@@ -655,7 +663,7 @@ namespace TypedD3D::D3D11
 
 			std::vector<D3D11_VIEWPORT> RSGetViewports()
 			{
-				UINT numViewports;
+				UINT numViewports = 0;
 				Get().RSGetViewports(&numViewports, nullptr);
 
 				std::vector<D3D11_VIEWPORT> output(numViewports);
@@ -666,7 +674,7 @@ namespace TypedD3D::D3D11
 
 			std::vector<D3D11_RECT> RSGetScissorRects()
 			{
-				UINT numRects;
+				UINT numRects = 0;
 				Get().RSGetScissorRects(&numRects, nullptr);
 
 				std::vector<D3D11_RECT> output(numRects);
@@ -676,7 +684,7 @@ namespace TypedD3D::D3D11
 			}
 
 			void OMSetRenderTargets(
-				Span<Wrapper<ID3D11RenderTargetView>> optRenderTargetViews,
+				Span<const Wrapper<ID3D11RenderTargetView>> optRenderTargetViews,
 				Wrapper<ID3D11DepthStencilView> optDepthStencilView)
 			{
 				Get().OMSetRenderTargets(static_cast<UINT>(optRenderTargetViews.size()), optRenderTargetViews.data(), optDepthStencilView.Get());
@@ -686,14 +694,14 @@ namespace TypedD3D::D3D11
 				Wrapper<ID3D11RenderTargetView> optRenderTargetViews,
 				Wrapper<ID3D11DepthStencilView> optDepthStencilView)
 			{
-				OMSetRenderTargets(Span<Wrapper<ID3D11RenderTargetView>>{ optRenderTargetViews.GetAddressOf(), optRenderTargetViews.Get() ? size_t{ 1 } : size_t{ 0 } }, optDepthStencilView);
+				OMSetRenderTargets(Span<const Wrapper<ID3D11RenderTargetView>>{ optRenderTargetViews.GetAddressOf(), optRenderTargetViews.Get() ? size_t{ 1 } : size_t{ 0 } }, optDepthStencilView);
 			}
 
 			void OMSetRenderTargetsAndUnorderedAccessViews(
-				Span<Wrapper<ID3D11RenderTargetView>> optRenderTargetViews,
+				Span<const Wrapper<ID3D11RenderTargetView>> optRenderTargetViews,
 				Wrapper<ID3D11DepthStencilView> optDepthStencilView,
 				UINT UAVStartSlot,
-				Span<Wrapper<ID3D11UnorderedAccessView>> ppUnorderedAccessViews,
+				Span<const Wrapper<ID3D11UnorderedAccessView>> ppUnorderedAccessViews,
 				const UINT* pUAVInitialCounts)
 			{
 				Get().OMSetRenderTargetsAndUnorderedAccessViews(
@@ -783,7 +791,7 @@ namespace TypedD3D::D3D11
 
 			void VSSetConstantBuffers(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
+				Span<const Wrapper<ID3D11Buffer>> ppConstantBuffers)
 			{
 				Get().VSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
 			}
@@ -792,12 +800,12 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11Buffer> ppConstantBuffers)
 			{
-				VSSetConstantBuffers(StartSlot, Span<Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
+				VSSetConstantBuffers(StartSlot, Span<const Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
 			}
 
 			void VSSetShaderResources(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
+				Span<const Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
 			{
 				Get().VSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.data());
 			}
@@ -806,12 +814,12 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11ShaderResourceView> ppShaderResourceViews)
 			{
-				VSSetShaderResources(StartSlot, Span<Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
+				VSSetShaderResources(StartSlot, Span<const Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
 			}
 
 			void VSSetSamplers(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11SamplerState>> ppSamplers)
+				Span<const Wrapper<ID3D11SamplerState>> ppSamplers)
 			{
 				Get().VSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
 			}
@@ -820,7 +828,7 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11SamplerState> ppSamplers)
 			{
-				VSSetSamplers(StartSlot, Span<Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
+				VSSetSamplers(StartSlot, Span<const Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
 			}
 
 			Vector<Wrapper<ID3D11Buffer>> VSGetConstantBuffers(
@@ -873,7 +881,7 @@ namespace TypedD3D::D3D11
 
 			void HSSetShaderResources(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
+				Span<const Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
 			{
 				Get().HSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.data());
 			}
@@ -882,7 +890,7 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11ShaderResourceView> ppShaderResourceViews)
 			{
-				HSSetShaderResources(StartSlot, Span<Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
+				HSSetShaderResources(StartSlot, Span<const Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
 			}
 
 			void HSSetShader(
@@ -901,7 +909,7 @@ namespace TypedD3D::D3D11
 
 			void HSSetSamplers(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11SamplerState>> ppSamplers)
+				Span<const Wrapper<ID3D11SamplerState>> ppSamplers)
 			{
 				Get().HSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
 			}
@@ -910,12 +918,12 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11SamplerState> ppSamplers)
 			{
-				HSSetSamplers(StartSlot, Span<Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
+				HSSetSamplers(StartSlot, Span<const Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
 			}
 
 			void HSSetConstantBuffers(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
+				Span<const Wrapper<ID3D11Buffer>> ppConstantBuffers)
 			{
 				Get().HSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
 			}
@@ -924,7 +932,7 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11Buffer> ppConstantBuffers)
 			{
-				HSSetConstantBuffers(StartSlot, Span<Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
+				HSSetConstantBuffers(StartSlot, Span<const Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
 			}
 
 			Vector<Wrapper<ID3D11ShaderResourceView>> HSGetShaderResources(
@@ -976,7 +984,7 @@ namespace TypedD3D::D3D11
 
 			void DSSetShaderResources(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
+				Span<const Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
 			{
 				Get().DSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.data());
 			}
@@ -985,7 +993,7 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11ShaderResourceView> ppShaderResourceViews)
 			{
-				DSSetShaderResources(StartSlot, Span<Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
+				DSSetShaderResources(StartSlot, Span<const Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
 			}
 
 			void DSSetShader(
@@ -1004,7 +1012,7 @@ namespace TypedD3D::D3D11
 
 			void DSSetSamplers(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11SamplerState>> ppSamplers)
+				Span<const Wrapper<ID3D11SamplerState>> ppSamplers)
 			{
 				Get().DSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
 			}
@@ -1013,12 +1021,12 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11SamplerState> ppSamplers)
 			{
-				DSSetSamplers(StartSlot, Span<Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
+				DSSetSamplers(StartSlot, Span<const Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
 			}
 
 			void DSSetConstantBuffers(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
+				Span<const Wrapper<ID3D11Buffer>> ppConstantBuffers)
 			{
 				Get().DSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
 			}
@@ -1027,7 +1035,7 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11Buffer> ppConstantBuffers)
 			{
-				DSSetConstantBuffers(StartSlot, Span<Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
+				DSSetConstantBuffers(StartSlot, Span<const Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
 			}
 
 			Vector<Wrapper<ID3D11ShaderResourceView>> DSGetShaderResources(
@@ -1080,7 +1088,7 @@ namespace TypedD3D::D3D11
 
 			void GSSetConstantBuffers(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
+				Span<const Wrapper<ID3D11Buffer>> ppConstantBuffers)
 			{
 				Get().GSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
 			}
@@ -1089,7 +1097,7 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11Buffer> ppConstantBuffers)
 			{
-				GSSetConstantBuffers(StartSlot, Span<Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
+				GSSetConstantBuffers(StartSlot, Span<const Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
 			}
 
 			void GSSetShader(
@@ -1108,7 +1116,7 @@ namespace TypedD3D::D3D11
 
 			void GSSetShaderResources(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
+				Span<const Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
 			{
 				Get().GSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.data());
 			}
@@ -1117,12 +1125,12 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11ShaderResourceView> ppShaderResourceViews)
 			{
-				GSSetShaderResources(StartSlot, Span<Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
+				GSSetShaderResources(StartSlot, Span<const Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
 			}
 
 			void GSSetSamplers(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11SamplerState>> ppSamplers)
+				Span<const Wrapper<ID3D11SamplerState>> ppSamplers)
 			{
 				Get().GSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
 			}
@@ -1131,7 +1139,7 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11SamplerState> ppSamplers)
 			{
-				GSSetSamplers(StartSlot, Span<Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
+				GSSetSamplers(StartSlot, Span<const Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
 			}
 
 			Vector<Wrapper<ID3D11Buffer>> GSGetConstantBuffers(
@@ -1183,7 +1191,7 @@ namespace TypedD3D::D3D11
 
 			void PSSetShaderResources(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
+				Span<const Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
 			{
 				Get().PSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.data());
 			}
@@ -1192,7 +1200,7 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11ShaderResourceView> ppShaderResourceViews)
 			{
-				PSSetShaderResources(StartSlot, Span<Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
+				PSSetShaderResources(StartSlot, Span<const Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
 			}
 
 			void PSSetShader(
@@ -1211,7 +1219,7 @@ namespace TypedD3D::D3D11
 
 			void PSSetSamplers(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11SamplerState>> ppSamplers)
+				Span<const Wrapper<ID3D11SamplerState>> ppSamplers)
 			{
 				Get().PSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
 			}
@@ -1220,12 +1228,12 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11SamplerState> ppSamplers)
 			{
-				PSSetSamplers(StartSlot, Span<Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
+				PSSetSamplers(StartSlot, Span<const Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
 			}
 
 			void PSSetConstantBuffers(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
+				Span<const Wrapper<ID3D11Buffer>> ppConstantBuffers)
 			{
 				Get().PSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
 			}
@@ -1234,7 +1242,7 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11Buffer> ppConstantBuffers)
 			{
-				PSSetConstantBuffers(StartSlot, Span<Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
+				PSSetConstantBuffers(StartSlot, Span<const Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
 			}
 
 			Vector<Wrapper<ID3D11ShaderResourceView>> PSGetShaderResources(
@@ -1286,7 +1294,7 @@ namespace TypedD3D::D3D11
 
 			void CSSetShaderResources(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
+				Span<const Wrapper<ID3D11ShaderResourceView>> ppShaderResourceViews)
 			{
 				Get().CSSetShaderResources(StartSlot, static_cast<UINT>(ppShaderResourceViews.size()), ppShaderResourceViews.data());
 			}
@@ -1295,7 +1303,7 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11ShaderResourceView> ppShaderResourceViews)
 			{
-				CSSetShaderResources(StartSlot, Span<Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
+				CSSetShaderResources(StartSlot, Span<const Wrapper<ID3D11ShaderResourceView>>{ ppShaderResourceViews.GetAddressOf(), 1 });
 			}
 
 			void CSSetUnorderedAccessViews(
@@ -1337,7 +1345,7 @@ namespace TypedD3D::D3D11
 
 			void CSSetSamplers(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11SamplerState>> ppSamplers)
+				Span<const Wrapper<ID3D11SamplerState>> ppSamplers)
 			{
 				Get().CSSetSamplers(StartSlot, static_cast<UINT>(ppSamplers.size()), ppSamplers.data());
 			}
@@ -1346,12 +1354,12 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11SamplerState> ppSamplers)
 			{
-				CSSetSamplers(StartSlot, Span<Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
+				CSSetSamplers(StartSlot, Span<const Wrapper<ID3D11SamplerState>>{ ppSamplers.GetAddressOf(), 1 });
 			}
 
 			void CSSetConstantBuffers(
 				UINT StartSlot,
-				Span<Wrapper<ID3D11Buffer>> ppConstantBuffers)
+				Span<const Wrapper<ID3D11Buffer>> ppConstantBuffers)
 			{
 				Get().CSSetConstantBuffers(StartSlot, static_cast<UINT>(ppConstantBuffers.size()), ppConstantBuffers.data());
 			}
@@ -1360,7 +1368,7 @@ namespace TypedD3D::D3D11
 				UINT StartSlot,
 				Wrapper<ID3D11Buffer> ppConstantBuffers)
 			{
-				CSSetConstantBuffers(StartSlot, Span<Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
+				CSSetConstantBuffers(StartSlot, Span<const Wrapper<ID3D11Buffer>>{ ppConstantBuffers.GetAddressOf(), 1 });
 			}
 
 			Vector<Wrapper<ID3D11ShaderResourceView>> CSGetShaderResources(

@@ -336,6 +336,9 @@ namespace TypedD3D
 	export template<class Ty, class Traits>
 	constexpr bool is_unknown_wrapper<IUnknownWrapperImpl<Ty, Traits>> = true;
 
+	export template<class Ty, class Traits>
+	constexpr bool is_unknown_wrapper<const IUnknownWrapperImpl<Ty, Traits>> = true;
+
 	export template<class Ty, template<class> class Traits>
 	using IUnknownWrapper = IUnknownWrapperImpl<Ty, Traits<Ty>>;
 
@@ -635,6 +638,7 @@ namespace TypedD3D
 	class Vector
 	{
 	public:
+		using wrapper_type = Ty;
 		using value_type = Ty::pointer;
 		using pointer = Ty::pointer*;
 		using reference = Ty::reference;
@@ -689,14 +693,14 @@ namespace TypedD3D
 
 		Vector& operator=(const Vector& other)
 		{
-			Array temp{ other };
+			Vector temp{ other };
 			_values.swap(temp._values);
 			return *this;
 		}
 
 		Vector& operator=(Vector&& other) noexcept
 		{
-			Array temp{ std::move(other) };
+			Vector temp{ std::move(other) };
 			_values.swap(temp._values);
 			return *this;
 		}
@@ -721,8 +725,8 @@ namespace TypedD3D
 		ConstElementReference<Ty> at(size_t index) const { return { _values.at(index) }; }
 		ConstElementReference<Ty> front() const { return { _values.front() }; }
 		ConstElementReference<Ty> back() const { return { _values.back() }; }
-		pointer data() noexcept { return _values.data(); }
-		const pointer data() const noexcept { return _values.data(); }
+		auto data() noexcept { return _values.data(); }
+		const auto data() const noexcept { return _values.data(); }
 		size_t size() const noexcept { return _values.size(); }
 		bool empty() const noexcept { return _values.empty(); }
 		bool max_size() const noexcept { return _values.max_size(); }
@@ -738,15 +742,16 @@ namespace TypedD3D
 		void resize(size_t count, const Ty& value) noexcept { _values.resize(count, value.Get()); }
 		void clear() { _values.clear(); }
 
-		std::vector<pointer, Allocator> ToUntyped() const { return _values; }
+		std::vector<value_type, Allocator> ToUntyped() const { return _values; }
 	};
 
 	export template<class Ty, size_t Extent = std::dynamic_extent>
 		requires is_unknown_wrapper<Ty>
 	class Span
 	{
+
 	public:
-		using value_type = Ty::pointer;
+		using value_type = std::conditional_t<std::is_const_v<Ty>, const typename Ty::pointer, typename Ty::pointer>;
 		using pointer = Ty::pointer*;
 		using reference = Ty::reference;
 
@@ -775,10 +780,10 @@ namespace TypedD3D
 		{
 
 		}
-
+		template<class Range>
 		explicit(Extent != std::dynamic_extent)
-			Span(Vector<Ty>& arr) :
-			m_span{ arr.data(), arr.size() }
+		Span(Range&& range) :
+			m_span{ range.data(), range.size() }
 		{
 
 		}
@@ -799,8 +804,7 @@ namespace TypedD3D
 
 		ConstElementReference<Ty> front() const { return { m_span.front() }; }
 		ConstElementReference<Ty> back() const { return { m_span.back() }; }
-		pointer data() noexcept { return m_span.data(); }
-		const pointer data() const noexcept { return m_span.data(); }
+		auto data() const noexcept { return m_span.data(); }
 		size_t size() const noexcept { return m_span.size(); }
 
 
@@ -809,6 +813,12 @@ namespace TypedD3D
 
 	template<class Ty, size_t Extent>
 	Span(Array<Ty, Extent>&) -> Span<Ty, Extent>;
+
+	template<class Range>
+	Span(Range&&) -> Span<typename Range::wrapper_type>;
+
+	template<class Range>
+	Span(const Range&) -> Span<const typename Range::wrapper_type>;
 
 	export template<class Ty>
 		struct UntaggedTraits;
