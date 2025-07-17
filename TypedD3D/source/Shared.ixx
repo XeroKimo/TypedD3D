@@ -277,22 +277,31 @@ namespace TypedD3D
 	public:
 		friend bool operator==(const IUnknownWrapperImpl& lh, std::nullptr_t)
 		{
-			return lh.impl.ptr == nullptr;
+			//I dunno why, but for some reason in certain scenarios, the comparison of ComPtrs in this function instead calls ComPtr::operator Details::BoolType()
+			//instead of ComPtr::operator==, so I'll just manually compare pointers instead.
+			return lh.impl.ptr.Get() == nullptr;
 		}
 		friend bool operator!=(const IUnknownWrapperImpl& lh, std::nullptr_t)
 		{
-			return lh.impl.ptr != nullptr;
+			//I dunno why, but for some reason in certain scenarios, the comparison of ComPtrs in this function instead calls ComPtr::operator Details::BoolType()
+			//instead of ComPtr::operator==, so I'll just manually compare pointers instead.
+			return lh.impl.ptr.Get() != nullptr;
 		}
 
-		template<class OtherTy>
-		friend bool operator==(const IUnknownWrapperImpl& lh, const IUnknownWrapperImpl<OtherTy, Traits>& rh)
+		template<class OtherTy, IsSameTrait<Traits, Ty> OtherTraits>
+		friend bool operator==(const IUnknownWrapperImpl& lh, const IUnknownWrapperImpl<OtherTy, OtherTraits>& rh)
 		{
-			return lh.impl.ptr == rh.impl.ptr;
+			//I dunno why, but for some reason in certain scenarios, the comparison of ComPtrs in this function instead calls ComPtr::operator Details::BoolType()
+			//instead of ComPtr::operator==, so I'll just manually compare pointers instead.
+			return lh.impl.ptr.Get() == rh.impl.ptr.Get();
 		}
-		template<class OtherTy>
-		friend bool operator!=(const IUnknownWrapperImpl& lh, const IUnknownWrapperImpl<OtherTy, Traits>& rh)
+
+		template<class OtherTy, IsSameTrait<Traits, Ty> OtherTraits>
+		friend bool operator!=(const IUnknownWrapperImpl& lh, const IUnknownWrapperImpl<OtherTy, OtherTraits>& rh)
 		{
-			return lh.impl.ptr != rh.impl.ptr;
+			//I dunno why, but for some reason in certain scenarios, the comparison of ComPtrs in this function instead calls ComPtr::operator Details::BoolType()
+			//instead of ComPtr::operator==, so I'll just manually compare pointers instead.
+			return lh.impl.ptr.Get() != rh.impl.ptr.Get();
 		}
 
 		operator bool() const { return impl.ptr != nullptr; }
