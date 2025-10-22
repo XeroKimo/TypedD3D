@@ -76,7 +76,7 @@ namespace TypedD3D
 	};
 
 	export template<class Ty>
-		requires std::derived_from<Ty, ID3D11View> && (!std::same_as<ID3D11View, Ty>)
+		requires (std::derived_from<Ty, ID3D11View> && (!std::same_as<ID3D11View, Ty>))
 	struct UntaggedTraits<Ty>
 	{
 		using value_type = Ty;

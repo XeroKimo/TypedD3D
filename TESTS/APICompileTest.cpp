@@ -264,7 +264,7 @@ void D3D11()
 	deviceContext->IAGetPrimitiveTopology();
 	Wrapper<ID3D11InputLayout> layout = deviceContext->IAGetInputLayout();
 
-	deviceContext->OMSetRenderTargets(nullptr, nullptr);
+	//deviceContext->OMSetRenderTargets(nullptr, nullptr);
 	deviceContext->OMSetRenderTargets(Span<Wrapper<ID3D11RenderTargetView>>{}, nullptr);
 	deviceContext->OMSetRenderTargetsAndUnorderedAccessViews({}, nullptr, {}, {}, nullptr);
 	deviceContext->OMSetBlendState({}, {}, {});

@@ -146,7 +146,12 @@ namespace TypedD3D::D3D11
 #pragma endregion
 
     template<class Ty>
-    struct DeviceTraits;
+    struct DeviceTraits
+    {
+        using unknown_type = Ty;
+        template<class DerivedSelf>
+        using Interface = Ty*;
+    };
 
     template<>
     struct DeviceTraits<ID3D11Device>
@@ -156,6 +161,8 @@ namespace TypedD3D::D3D11
         using const_pointer = const ID3D11Device*;
         using reference = ID3D11Device&;
         using const_reference = const ID3D11Device&;
+
+        using unknown_type = ID3D11Device;
 
         template<class DerivedSelf>
         class Interface

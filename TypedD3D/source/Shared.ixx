@@ -830,7 +830,22 @@ namespace TypedD3D
 	Span(const Range&) -> Span<const typename Range::wrapper_type>;
 
 	export template<class Ty>
-		struct UntaggedTraits;
+		struct UntaggedTraits
+	{
+		using unknown_type = Ty;
+
+		template<class Derived>
+		using Interface = Ty*;
+	};
+
+	//template<std::derived_from<IUnknown> Ty>
+	//struct UntaggedTraits<Ty>
+	//{
+	//	using unknown_type = Ty;
+
+	//	template<class Derived>
+	//	using Interface = Ty*;
+	//};
 
 	export template<class Ty>
 		struct WrapperMapper;
