@@ -66,17 +66,30 @@ void D3D11HelloWorld()
 	TypedD3D::WeakWrapper<TypedD3D::UntaggedTraits<ID3D11Device>> testDevice{ device.Get() };
 
 	TypedD3D::WeakWrapper<TypedD3D::UntaggedTraits<ID3D11Debug>> debugDevice = TypedD3D::Cast<ID3D11Debug>(testDevice);
+	TypedD3D::TestArray<TypedD3D::StrongWrapper<TypedD3D::UntaggedTraits<ID3D11Device>>, 2> arr{ testDevice, testDevice };
+	//testDevice->CheckCounterInfo();
+	//arr[0]->CheckCounterInfo();
+	arr[0] = testDevice;
+	arr[0] = nullptr;
+	arr[0] = std::move(testDevice);
+	testDevice = std::move(arr)[0];
+	testDevice = arr[1];
+	arr[1] = nullptr;
+	arr[0] == arr[1];
+	//TypedD3D::StrongWrapper<TypedD3D::UntaggedTraits<ID3D11Device>> fafda = std::move(arr[1]);
+
 	//TypedD3D::StrongWrapper<TypedD3D::UntaggedTraits<ID3D11Debug>> debugDevice = TypedD3D::Cast<ID3D11Debug>(testDevice);
 	//ComPtr<ID3D11Debug> debugDevice = TypedD3D::Cast<ID3D11Debug>(device.AsComPtr());
 	{
+		//TypedD3D::TestArray<TypedD3D::StrongWrapper<TypedD3D::UntaggedTraits<ID3D11Device>>, 2> arr2{ std::move(arr) };
 		//TypedD3D::WeakWrapper<TypedD3D::UntaggedTraits<ID3D11Device5>> testDevice5 = TypedD3D::Cast<ID3D11Device5>(testDevice);
 		static_assert(std::same_as<TypedD3D::UntaggedTraits<ID3D11Device>::Interface<int>, TypedD3D::StrongWrapper<TypedD3D::UntaggedTraits<ID3D11Device>>::interface_type<int>>);
 		static_assert(!std::same_as<TypedD3D::UntaggedTraits<ID3D11Device>::Interface<int>, ID3D11Device*>);
 		static_assert(std::same_as<TypedD3D::UntaggedTraits<ID3D11Device5>::Interface<int>, ID3D11Device5*>);
 		TypedD3D::StrongWrapper<TypedD3D::UntaggedTraits<ID3D11Device>> testDevice2{ device.Get() };
 		//TypedD3D::StrongWrapper<TypedD3D::UntaggedTraits<ID3D11Device>> testDevice4{ testDevice2 };
-		TypedD3D::StrongWrapper<TypedD3D::UntaggedTraits<ID3D11Device5>> testDevice3 = TypedD3D::Cast<ID3D11Device5>(testDevice2);
-		testDevice3->QueryInterface<ID3D11Device>(nullptr);
+		TypedD3D::StrongWrapper<TypedD3D::UntaggedTraits<ID3D11Device>> testDevice3 = TypedD3D::Cast<ID3D11Device5>(testDevice2);
+		//testDevice3->QueryInterface<ID3D11Device>(nullptr);
 		//TypedD3D::Wrapper<IDXGISwapChain1> swapChain1 = swapChain;
 
 		UINT backBuffer = 0;

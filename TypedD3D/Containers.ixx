@@ -4,6 +4,7 @@ module;
 #include <Unknwn.h>
 #include <utility>
 #include <d3d11.h>
+#include <algorithm>
 
 export module TypedD3D.Containers;
 
@@ -13,6 +14,7 @@ namespace TypedD3D
 	struct LiftType
 	{
 		using type = Ty;
+		using concrete_type = Ty;
 	};
 
 	template<template<class> class Outer, class Inner>
@@ -20,6 +22,9 @@ namespace TypedD3D
 	{
 		template<class Ty>
 		using type = Outer<Ty>;
+
+		template<class Ty>
+		using concrete_type = Outer<Inner>;
 	};
 
 	template<class Ty>
@@ -37,11 +42,31 @@ namespace TypedD3D
 	template<class Ty>
 	using InnerType = InnerTypeImpl<Ty>::type;
 
-	template<class Ty>
+	export template<class Ty>
 	concept IUnknownTrait = requires()
 	{
 		typename Ty::template Interface<void>;
 	} && std::derived_from<InnerType<Ty>, IUnknown> && std::same_as<typename LiftType<Ty>::template type<InnerType<Ty>>, Ty>;
+
+	export template<class Ty>
+		concept IUnknownWrapperTest = requires(Ty t, Ty::unknown_type* ptr)
+	{
+		typename Ty::unknown_type;
+		typename Ty::trait_type;
+		{ t.Attach(ptr) } -> std::same_as<void>;
+		{ t.Detach() } -> std::same_as<typename Ty::unknown_type*>;
+		{ t.Get() } -> std::same_as<typename Ty::unknown_type*>;
+	};
+
+	export template<class Ty>
+	concept IUnknownWeakWrapper = requires(Ty t)
+	{
+		{ t.Acquire() } -> std::convertible_to<ULONG>;
+		{ t.Release() } -> std::convertible_to<ULONG>;
+	} && IUnknownWrapperTest<Ty>;
+
+	template<class Ty, class Ty2>
+	concept SameTraitAs = std::same_as<typename LiftType<Ty>::template type<InnerType<Ty>>, typename LiftType<Ty2>::template type<InnerType<Ty>>>;
 
 	export template<IUnknownTrait Trait>
 	class InterfaceProxy : public Trait::template Interface<InterfaceProxy<Trait>>
@@ -66,6 +91,12 @@ namespace TypedD3D
 	private:
 		unknown_type* Get() const noexcept { return ptr; }
 	};
+
+	export template<IUnknownTrait Trait>
+	class WeakWrapper;
+
+	export template<IUnknownTrait Trait>
+	class StrongWrapper;
 
 	export template<IUnknownTrait Trait>
 	class WeakWrapper
@@ -102,15 +133,31 @@ namespace TypedD3D
 
 		}
 		~WeakWrapper() = default;
+
+	public:
 		WeakWrapper(std::nullptr_t) noexcept {}
 		WeakWrapper(unknown_type* ptr) noexcept : ptr{ ptr } {}
 
-		WeakWrapper& operator=(const WeakWrapper&) noexcept = default;
-		WeakWrapper& operator=(WeakWrapper&& other) noexcept
+		WeakWrapper(StrongWrapper<Trait> other) noexcept;
+
+		template<IUnknownTrait Trait2>
+		WeakWrapper(StrongWrapper<Trait2> other) noexcept;
+
+	public:
+		WeakWrapper& operator=(WeakWrapper other) noexcept
 		{
 			ptr = std::exchange(other.ptr, nullptr);
 			return *this;
 		}
+
+		template<IUnknownTrait Trait2>
+		WeakWrapper& operator=(WeakWrapper<Trait2> other) noexcept
+		{
+			ptr = std::exchange(other.ptr, nullptr);
+			return *this;
+		}
+
+	public:
 		WeakWrapper& operator=(std::nullptr_t) noexcept
 		{
 			ptr = nullptr;
@@ -122,6 +169,12 @@ namespace TypedD3D
 			return *this;
 		}
 
+		WeakWrapper& operator=(StrongWrapper<Trait> other);
+
+		template<IUnknownTrait Trait2>
+		WeakWrapper& operator=(StrongWrapper<Trait2> other);
+
+	public:
 		bool operator==(std::nullptr_t) const noexcept
 		{
 			return ptr == nullptr;
@@ -144,6 +197,7 @@ namespace TypedD3D
 			return this->ptr == ptr;
 		}
 
+	public:
 		InterfaceProxy<Trait> operator->() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, unknown_type*>) { return ptr; }
 		InterfaceProxy<Trait> operator*() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, unknown_type*>) { return ptr; }
 
@@ -208,6 +262,7 @@ namespace TypedD3D
 		}
 
 		template<IUnknownTrait Trait2>
+			requires SameTraitAs<Trait, Trait2>
 		StrongWrapper(const StrongWrapper<Trait2>& other) noexcept : ptr{ other.ptr }
 		{
 			if(ptr)
@@ -215,15 +270,19 @@ namespace TypedD3D
 		}
 
 		template<IUnknownTrait Trait2>
+			requires SameTraitAs<Trait, Trait2>
 		StrongWrapper(StrongWrapper<Trait2>&& other) noexcept : ptr{ std::exchange(other.ptr, nullptr) }
 		{
 
 		}
+
 		~StrongWrapper()
 		{
 			if(ptr)
 				Release();
 		}
+
+	public:
 		StrongWrapper(std::nullptr_t) noexcept {}
 		StrongWrapper(unknown_type* ptr) noexcept : ptr{ ptr }
 		{
@@ -231,86 +290,35 @@ namespace TypedD3D
 				Acquire();
 		}
 
-		StrongWrapper(const WeakWrapper<Trait>& other) noexcept : ptr{ other.Get() }
-		{
-			if(ptr)
-				Acquire();
-		}
-		StrongWrapper(WeakWrapper<Trait>&& other) noexcept : ptr{ other.Detach() }
+		StrongWrapper(WeakWrapper<Trait> other) noexcept : ptr{ other.Get() }
 		{
 			if(ptr)
 				Acquire();
 		}
 
 		template<IUnknownTrait Trait2>
-		StrongWrapper(const WeakWrapper<Trait2>& other) noexcept : ptr{ other.Get() }
+			//requires CommonTrait<Trait, Trait2>
+		StrongWrapper(WeakWrapper<Trait2> other) noexcept : ptr{ other.Get() }
 		{
 			if(ptr)
 				Acquire();
 		}
 
-		template<IUnknownTrait Trait2>
-		StrongWrapper(WeakWrapper<Trait2>&& other) noexcept : ptr{ other.Detach() }
-		{
-			if(ptr)
-				Acquire();
-		}
-
+	public:
 		StrongWrapper& operator=(StrongWrapper other) noexcept
 		{
-			swap(*this, other);
-			return *this;
-		}
-		StrongWrapper& operator=(StrongWrapper&& other) noexcept
-		{
-			auto temp = std::move(other);
-			swap(*this, temp);
+			Attach(other.Detach());
 			return *this;
 		}
 
 		template<IUnknownTrait Trait2>
 		StrongWrapper& operator=(StrongWrapper<Trait2> other) noexcept
 		{
-			StrongWrapper temp{ std::move(other) };
-			swap(*this, temp);
-			return *this;
-		}
-		template<IUnknownTrait Trait2>
-		StrongWrapper& operator=(StrongWrapper<Trait2>&& other) noexcept
-		{
-			StrongWrapper temp = std::move(other);
-			swap(*this, temp);
+			Attach(other.Detach());
 			return *this;
 		}
 
-		StrongWrapper& operator=(WeakWrapper<Trait> other) noexcept
-		{
-			StrongWrapper temp{ std::move(other) };
-			swap(*this, other);
-			return *this;
-		}
-		StrongWrapper& operator=(WeakWrapper<Trait>&& other) noexcept
-		{
-			StrongWrapper temp{ std::move(other) };
-			swap(*this, temp);
-			return *this;
-		}
-
-		template<IUnknownTrait Trait2>
-		StrongWrapper& operator=(WeakWrapper<Trait2> other) noexcept
-		{
-			StrongWrapper temp{ std::move(other) };
-			swap(*this, temp);
-			return *this;
-		}
-		template<IUnknownTrait Trait2>
-		StrongWrapper& operator=(WeakWrapper<Trait2>&& other) noexcept
-		{
-			StrongWrapper temp = std::move(other);
-			swap(*this, temp);
-			return *this;
-		}
-
+	public:
 		StrongWrapper& operator=(std::nullptr_t) noexcept
 		{
 			StrongWrapper temp;
@@ -323,7 +331,26 @@ namespace TypedD3D
 			swap(*this, temp);
 			return *this;
 		}
+		StrongWrapper& operator=(WeakWrapper<Trait> other) noexcept
+		{
+			if(other)
+				other.Acquire();
 
+			Attach(other.Detach());
+			return *this;
+		}
+
+		template<IUnknownTrait Trait2>
+		StrongWrapper& operator=(WeakWrapper<Trait2> other) noexcept
+		{
+			if(other)
+				other.Acquire();
+
+			Attach(other.Detach());
+			return *this;
+		}
+
+	public:
 		bool operator==(std::nullptr_t) const noexcept
 		{
 			return ptr == nullptr;
@@ -346,6 +373,7 @@ namespace TypedD3D
 			return this->ptr == ptr;
 		}
 
+	public:
 		InterfaceProxy<Trait> operator->() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, unknown_type*>) { return ptr; }
 		InterfaceProxy<Trait> operator*() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, unknown_type*>) { return ptr; }
 
@@ -353,8 +381,6 @@ namespace TypedD3D
 		unknown_type& operator*() const noexcept { return *ptr; }
 
 		explicit operator bool() const noexcept { return ptr; }
-
-		operator WeakWrapper<Trait>() const noexcept { return { Get() }; }
 
 		friend void swap(StrongWrapper& lh, StrongWrapper& rh) noexcept
 		{
@@ -448,5 +474,230 @@ namespace TypedD3D
 		StrongWrapper<Trait<To>> out;
 		ptr.Get()->QueryInterface<To>(OutPtr{ out });
 		return out;
+	}
+
+	export template<class Wrapper>
+	class ElementReference
+	{
+	public:
+		using unknown_type = Wrapper::unknown_type;
+		using trait_type = Wrapper::trait_type;
+		template<class Derived>
+		using interface_type = trait_type::template Interface<Derived>;
+
+	private:
+		unknown_type*& ptr = nullptr;
+
+	public:
+		ElementReference(const ElementReference&) = delete;
+		ElementReference(ElementReference&&) = delete;
+
+	public:
+		ElementReference(unknown_type*& ptr) : ptr{ ptr }
+		{
+
+		}
+
+	public:
+		ElementReference& operator=(const ElementReference&) = delete;
+		ElementReference& operator=(ElementReference&&) = delete;
+
+	public:
+		ElementReference& operator=(const Wrapper& other) noexcept
+		{
+			Wrapper temp{ other };
+			unknown_type* temp2 = ptr;
+			ptr = temp.Detach();
+			temp.Attach(temp2);
+			return *this;
+		}
+
+		ElementReference& operator=(Wrapper&& other) noexcept
+		{
+			Wrapper temp{ std::move(other) };
+			unknown_type* temp2 = ptr;
+			ptr = temp.Detach();
+			temp.Attach(temp2);
+			return *this;
+		}
+
+	public:
+		bool operator==(std::nullptr_t) const
+		{
+			return ptr == nullptr;
+		}
+
+		bool operator==(unknown_type* rh) const
+		{
+			return ptr == rh;
+		}
+
+		bool operator==(const Wrapper& rh) const
+		{
+			return ptr == rh.Get();
+		}
+	public:
+		operator Wrapper() const noexcept { return { ptr }; }
+
+		InterfaceProxy<trait_type> operator->() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<trait_type>>, unknown_type*>) { return ptr; }
+		InterfaceProxy<trait_type> operator*() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<trait_type>>, unknown_type*>) { return ptr; }
+
+		unknown_type* operator->() const noexcept { return ptr; }
+		unknown_type& operator*() const noexcept { return *ptr; }
+
+		explicit operator bool() const noexcept { return ptr; }
+
+	public:
+		unknown_type* Get() const noexcept { return ptr; }
+
+		void Attach(unknown_type* ptr) noexcept
+		{
+			if(this->ptr)
+				this->ptr->Release();
+			this->ptr = ptr;
+		}
+
+		unknown_type* Detach() noexcept
+		{
+			return std::exchange(ptr, nullptr);
+		}
+
+		ULONG Acquire() noexcept requires IUnknownWeakWrapper<Wrapper>
+		{
+			return ptr->AddRef();
+		}
+
+		ULONG Release() noexcept requires IUnknownWeakWrapper<Wrapper>
+		{
+			return ptr->Release();
+		}
+
+	private:
+		ULONG Acquire() noexcept
+		{
+			return ptr->AddRef();
+		}
+		ULONG Release() noexcept
+		{
+			return ptr->Release();
+		}
+	};
+
+	template<class Wrapper>
+	WeakWrapper(ElementReference<Wrapper>) -> WeakWrapper<typename Wrapper::trait_type>;
+
+	template<class Wrapper>
+	StrongWrapper(ElementReference<Wrapper>) -> StrongWrapper<typename Wrapper::trait_type>;
+
+
+	export template<class Wrapper, std::size_t N>
+	class TestArray
+	{
+		using unknown_type = Wrapper::unknown_type;
+
+		std::array<unknown_type*, N> values = {};
+
+	public:
+		TestArray() = default;
+		TestArray(const TestArray& other) noexcept : values{ other.values }
+		{
+			if constexpr(!IUnknownWeakWrapper<Wrapper>)
+			{
+				Acquire();
+			}
+		}
+		TestArray(TestArray&& other) noexcept : values{ other.values }
+		{
+			std::ranges::fill(other.values, nullptr);
+		}
+
+		template<class... Wrappers>
+			requires (std::convertible_to<Wrappers, Wrapper> && ...) && (sizeof...(Wrappers) <= N)
+		TestArray(Wrappers... wrap) noexcept : values{ wrap.Get()... }
+		{
+			if constexpr(!IUnknownWeakWrapper<Wrapper>)
+			{
+				Acquire();
+			}
+		}
+
+		~TestArray()
+		{
+			if constexpr(!IUnknownWeakWrapper<Wrapper>)
+			{
+				Release();
+			}
+		}
+
+		TestArray& operator=(const TestArray& other) noexcept
+		{
+			auto temp = other;
+			std::swap(values, temp.values);
+			return *this;
+		}
+
+		TestArray& operator=(TestArray&& other) noexcept
+		{
+			auto temp = std::move(other);
+			std::swap(values, temp.values);
+			return *this;
+		}
+
+		ElementReference<Wrapper> operator[](std::size_t i)& { return values[i]; }
+		Wrapper operator[](std::size_t i)&& 
+		{
+			Wrapper out;
+			out.Attach(std::exchange(values[i], nullptr));
+			return out; 
+		}
+
+	private:
+		void Acquire()
+		{
+			for(unknown_type* ptr : values)
+			{
+				if(ptr)
+					ptr->AddRef();
+			}
+		}
+
+		void Release()
+		{
+			for(unknown_type* ptr : values)
+			{
+				if(ptr)
+					ptr->Release();
+			}
+		}
+	};
+
+	template<IUnknownTrait Trait>
+	WeakWrapper<Trait>::WeakWrapper(StrongWrapper<Trait> other) noexcept :
+		ptr{ other.Get() }
+	{
+
+	}
+
+	template<IUnknownTrait Trait>
+	template<IUnknownTrait Trait2>
+	WeakWrapper<Trait>::WeakWrapper(StrongWrapper<Trait2> other) noexcept :
+		ptr{ other.Get() }
+	{
+
+	}
+
+	template<IUnknownTrait Trait>
+	WeakWrapper<Trait>& WeakWrapper<Trait>::operator=(StrongWrapper<Trait> other)
+	{
+		ptr = other.Get();
+		return *this;
+	}
+
+	template<IUnknownTrait Trait>
+	template<IUnknownTrait Trait2>
+	WeakWrapper<Trait>& WeakWrapper<Trait>::operator=(StrongWrapper<Trait2> other)
+	{
+		ptr = other.Get();
+		return *this;
 	}
 }
