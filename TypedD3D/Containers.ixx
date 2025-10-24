@@ -678,6 +678,72 @@ namespace TypedD3D
 		return Cast<To>(Wrapper<Trait<From>>{ ptr });
 	}
 
+	export template<IUnknownWrapperTest Wrapper, bool IsConst>
+	class ContiguousIterator
+	{
+		using unknown_type = Wrapper::unknown_type;
+
+	private:
+		std::conditional_t<IsConst, unknown_type* const, unknown_type*>* ptr = nullptr;
+
+	public:
+		ContiguousIterator() = default;
+		ContiguousIterator(std::conditional_t<IsConst, unknown_type* const, unknown_type*>* ptr) : ptr{ ptr }
+		{
+
+		}
+
+	public:
+		ContiguousIterator& operator++()
+		{
+			++ptr;
+			return *this;
+		}
+		ContiguousIterator operator++(int)
+		{
+			return ptr++;
+		}
+		ContiguousIterator& operator--()
+		{
+			--ptr;
+			return *this;
+		}
+		ContiguousIterator operator--(int)
+		{
+			return ptr--;
+		}
+
+		ContiguousIterator operator+(std::size_t i) const
+		{
+			return ptr + i;
+		}
+
+		ContiguousIterator& operator+=(std::size_t i)
+		{
+			ptr += i;
+			return *this;
+		}
+
+		ContiguousIterator operator-(std::size_t i) const
+		{
+			return ptr + i;
+		}
+
+		ContiguousIterator& operator-=(std::size_t i)
+		{
+			ptr += i;
+			return *this;
+		}
+
+		bool operator==(const ContiguousIterator& other) const
+		{
+			return ptr == other.ptr;
+		}
+
+		ElementReferenceTest<Wrapper, IsConst> operator*() const { return *ptr; }
+		ElementReferenceTest<Wrapper, IsConst> operator->() const { return *ptr; }
+	};
+
 
 	export template<IUnknownWrapperTest Wrapper, std::size_t N>
 	class TestArray
@@ -741,43 +807,49 @@ namespace TypedD3D
 			return values[i];
 		}
 
-		ElementReferenceTest<Wrapper, false> At(std::size_t i) & { return values.at(i); }
-		ElementReferenceTest<Wrapper, true> At(std::size_t i) const& { return values.at(i); }
-		Wrapper At(std::size_t i)&&
+		ElementReferenceTest<Wrapper, false> at(std::size_t i) & { return values.at(i); }
+		ElementReferenceTest<Wrapper, true> at(std::size_t i) const& { return values.at(i); }
+		Wrapper at(std::size_t i)&&
 		{
 			Wrapper out;
 			out.Attach(std::exchange(values.at(i), nullptr));
 			return out;
 		}
-		Wrapper At(std::size_t i) const&&
+		Wrapper at(std::size_t i) const&&
 		{
 			return values.at(i);
 		}
 
-		ElementReferenceTest<Wrapper, false> Front()& { return values.front(); }
-		ElementReferenceTest<Wrapper, true> Front() const& { return values.front(); }
+		ElementReferenceTest<Wrapper, false> front()& { return values.front(); }
+		ElementReferenceTest<Wrapper, true> front() const& { return values.front(); }
 
-		Wrapper Front()&& 
+		Wrapper front()&&
 		{
 			Wrapper out;
 			out.Attach(std::exchange(values.front(), nullptr));
 			return out;
 		}
-		Wrapper Front() const&& { return values.front(); }
+		Wrapper front() const&& { return values.front(); }
 
-		ElementReferenceTest<Wrapper, false> Back()& { return values.back(); }
-		ElementReferenceTest<Wrapper, true> Back() const& { return values.back(); }
+		ElementReferenceTest<Wrapper, false> back()& { return values.back(); }
+		ElementReferenceTest<Wrapper, true> back() const& { return values.back(); }
 
-		Wrapper Back()&&
+		Wrapper back()&&
 		{
 			Wrapper out;
 			out.Attach(std::exchange(values.back(), nullptr));
 			return out;
 		}
-		Wrapper Back() const&& { return values.back(); }
+		Wrapper back() const&& { return values.back(); }
 
-		auto Data() { return values.data(); }
-		const auto Data() const { return values.data(); }
+		auto data() { return values.data(); }
+		const auto data() const { return values.data(); }
+
+		ContiguousIterator<Wrapper, false> begin() { return &values[0]; }
+		ContiguousIterator<Wrapper, false> end() { return &values[values.size()]; }
+
+		ContiguousIterator<Wrapper, true> begin() const { return &values[0]; }
+		ContiguousIterator<Wrapper, true> end() const { return &values[values.size()]; }
 
 	private:
 		void Acquire()
