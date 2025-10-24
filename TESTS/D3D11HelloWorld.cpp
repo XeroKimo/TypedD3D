@@ -74,11 +74,13 @@ void D3D11HelloWorld()
 	arr[0] = nullptr;
 	arr[0] = std::move(testDevice);
 	testDevice = std::move(arr)[0];
-	testDevice = arr[1];
-	arr[1] = nullptr;
-	arr[0] == arr[1];
+	testDevice = std::move(arr2)[1];
 
-	arr2[0] = arr[1];
+	//testDevice = arr[1];
+	//arr[1] = nullptr;
+	//arr[0] == arr[1];
+
+	//arr2[0] = arr[1];
 	//arr2[0] == arr[0];
 	//TypedD3D::StrongWrapper<TypedD3D::UntaggedTraits<ID3D11Device>> fafda = std::move(arr[1]);
 
