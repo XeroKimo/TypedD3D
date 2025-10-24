@@ -226,9 +226,9 @@ namespace TypedD3D
 			return this->ptr == ptr.Get();
 		}
 
-		template<class OtherTrait>
-			requires std::equality_comparable_with<unknown_type*, typename OtherTrait::unknown_type*>
-		bool operator==(const WeakWrapper<OtherTrait>& ptr) const noexcept
+		template<IUnknownWrapperTest Wrapper>
+			requires ConvertibleTraitTo<typename Wrapper::trait_type, trait_type>
+		bool operator==(const Wrapper& ptr) const noexcept
 		{
 			return this->ptr == ptr.Get();
 		}
@@ -419,9 +419,9 @@ namespace TypedD3D
 			return this->ptr == ptr.Get();
 		}
 
-		template<class OtherTrait>
-			requires std::equality_comparable_with<unknown_type*, typename OtherTrait::unknown_type*>
-		bool operator==(const StrongWrapper<OtherTrait>& ptr) const noexcept
+		template<IUnknownWrapperTest Wrapper>
+			requires ConvertibleTraitTo<typename Wrapper::trait_type, trait_type>
+		bool operator==(const Wrapper& ptr) const noexcept
 		{
 			return this->ptr == ptr.Get();
 		}
@@ -486,12 +486,6 @@ namespace TypedD3D
 		operator void** () noexcept { return &ptr; }
 		operator Wrapper::unknown_type** () noexcept { return &ptr; }
 	};
-
-	template<IUnknownTrait Trait1, IUnknownTrait Trait2>
-	bool operator==(const StrongWrapper<Trait1>& lh, const WeakWrapper<Trait2> rh) noexcept
-	{
-		return lh.Get() == rh.Get();
-	}
 
 	export template<class To, class From, template<class> class Trait>
 	WeakWrapper<Trait<To>> Cast(WeakWrapper<Trait<From>> ptr) noexcept
@@ -684,7 +678,8 @@ namespace TypedD3D
 		return Cast<To>(Wrapper<Trait<From>>{ ptr });
 	}
 
-	export template<class Wrapper, std::size_t N>
+
+	export template<IUnknownWrapperTest Wrapper, std::size_t N>
 	class TestArray
 	{
 		using unknown_type = Wrapper::unknown_type;
