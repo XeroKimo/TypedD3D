@@ -67,6 +67,7 @@ void D3D11HelloWorld()
 
 	TypedD3D::WeakWrapper<TypedD3D::UntaggedTraits<ID3D11Debug>> debugDevice = TypedD3D::Cast<ID3D11Debug>(testDevice);
 	TypedD3D::TestArray<TypedD3D::StrongWrapper<TypedD3D::UntaggedTraits<ID3D11Device>>, 2> arr{ testDevice, testDevice };
+	const auto& arr2 = arr;
 	//testDevice->CheckCounterInfo();
 	//arr[0]->CheckCounterInfo();
 	arr[0] = testDevice;
@@ -76,6 +77,9 @@ void D3D11HelloWorld()
 	testDevice = arr[1];
 	arr[1] = nullptr;
 	arr[0] == arr[1];
+
+	arr2[0] = arr[1];
+	//arr2[0] == arr[0];
 	//TypedD3D::StrongWrapper<TypedD3D::UntaggedTraits<ID3D11Device>> fafda = std::move(arr[1]);
 
 	//TypedD3D::StrongWrapper<TypedD3D::UntaggedTraits<ID3D11Debug>> debugDevice = TypedD3D::Cast<ID3D11Debug>(testDevice);

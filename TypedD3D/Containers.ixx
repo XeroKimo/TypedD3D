@@ -476,7 +476,7 @@ namespace TypedD3D
 		return out;
 	}
 
-	export template<class Wrapper>
+	export template<IUnknownWrapperTest Wrapper, bool IsConst>
 	class ElementReference
 	{
 	public:
@@ -486,14 +486,14 @@ namespace TypedD3D
 		using interface_type = trait_type::template Interface<Derived>;
 
 	private:
-		unknown_type*& ptr = nullptr;
+		std::conditional_t<IsConst, unknown_type* const, unknown_type*>& ptr = nullptr;
 
 	public:
 		ElementReference(const ElementReference&) = delete;
 		ElementReference(ElementReference&&) = delete;
 
 	public:
-		ElementReference(unknown_type*& ptr) : ptr{ ptr }
+		ElementReference(std::conditional_t<IsConst, unknown_type* const, unknown_type*>& ptr) : ptr{ ptr }
 		{
 
 		}
@@ -503,7 +503,7 @@ namespace TypedD3D
 		ElementReference& operator=(ElementReference&&) = delete;
 
 	public:
-		ElementReference& operator=(const Wrapper& other) noexcept
+		ElementReference& operator=(const Wrapper& other) noexcept requires (!IsConst)
 		{
 			Wrapper temp{ other };
 			unknown_type* temp2 = ptr;
@@ -512,7 +512,7 @@ namespace TypedD3D
 			return *this;
 		}
 
-		ElementReference& operator=(Wrapper&& other) noexcept
+		ElementReference& operator=(Wrapper&& other) noexcept requires (!IsConst)
 		{
 			Wrapper temp{ std::move(other) };
 			unknown_type* temp2 = ptr;
@@ -537,7 +537,8 @@ namespace TypedD3D
 			return ptr == rh.Get();
 		}
 
-		bool operator==(const ElementReference& rh) const
+		template<bool OtherConst>
+		bool operator==(const ElementReference<Wrapper, OtherConst>& rh) const
 		{
 			return ptr == rh.Get();
 		}
@@ -555,14 +556,18 @@ namespace TypedD3D
 	public:
 		unknown_type* Get() const noexcept { return ptr; }
 
-		void Attach(unknown_type* ptr) noexcept
+		void Attach(unknown_type* ptr) noexcept requires (!IsConst)
 		{
-			if(this->ptr)
-				this->ptr->Release();
+			if constexpr(!IUnknownWeakWrapper<Wrapper>)
+			{
+				if(this->ptr)
+					this->ptr->Release();
+			}
+
 			this->ptr = ptr;
 		}
 
-		unknown_type* Detach() noexcept
+		unknown_type* Detach() noexcept requires (!IsConst)
 		{
 			return std::exchange(ptr, nullptr);
 		}
@@ -588,11 +593,11 @@ namespace TypedD3D
 		}
 	};
 
-	template<class Wrapper>
-	WeakWrapper(ElementReference<Wrapper>) -> WeakWrapper<typename Wrapper::trait_type>;
+	template<class Wrapper, bool IsConst>
+	WeakWrapper(ElementReference<Wrapper, IsConst>) -> WeakWrapper<typename Wrapper::trait_type>;
 
-	template<class Wrapper>
-	StrongWrapper(ElementReference<Wrapper>) -> StrongWrapper<typename Wrapper::trait_type>;
+	template<class Wrapper, bool IsConst>
+	StrongWrapper(ElementReference<Wrapper, IsConst>) -> StrongWrapper<typename Wrapper::trait_type>;
 
 
 	export template<class Wrapper, std::size_t N>
@@ -648,12 +653,17 @@ namespace TypedD3D
 			return *this;
 		}
 
-		ElementReference<Wrapper> operator[](std::size_t i)& { return values[i]; }
+		ElementReference<Wrapper, false> operator[](std::size_t i) & { return values[i]; }
+		ElementReference<Wrapper, true> operator[](std::size_t i) const& { return values[i]; }
 		Wrapper operator[](std::size_t i)&& 
 		{
 			Wrapper out;
 			out.Attach(std::exchange(values[i], nullptr));
 			return out; 
+		}
+		Wrapper operator[](std::size_t i) const&& 
+		{
+			return values[i];
 		}
 
 	private:
