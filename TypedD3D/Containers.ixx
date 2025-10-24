@@ -536,6 +536,11 @@ namespace TypedD3D
 		{
 			return ptr == rh.Get();
 		}
+
+		bool operator==(const ElementReference& rh) const
+		{
+			return ptr == rh.Get();
+		}
 	public:
 		operator Wrapper() const noexcept { return { ptr }; }
 
