@@ -6,6 +6,8 @@ module;
 #include <d3d11.h>
 #include <algorithm>
 #include <array>
+#include <span>
+#include <vector>
 
 export module TypedD3D.Containers;
 
@@ -50,7 +52,7 @@ namespace TypedD3D
 	} && std::derived_from<InnerType<Ty>, IUnknown> && std::same_as<typename LiftType<Ty>::template type<InnerType<Ty>>, Ty>;
 
 	export template<class Ty>
-		concept IUnknownWrapperTest = requires(Ty t, Ty::unknown_type* ptr)
+		concept IUnknownWrapperTest = requires(std::remove_const_t<Ty> t, Ty::unknown_type* ptr)
 	{
 		typename Ty::unknown_type;
 		typename Ty::trait_type;
@@ -735,10 +737,17 @@ namespace TypedD3D
 			return *this;
 		}
 
+		size_t operator-(const ContiguousIterator& other) const
+		{
+			return ptr - other.ptr;
+		}
+
 		bool operator==(const ContiguousIterator& other) const
 		{
 			return ptr == other.ptr;
 		}
+
+		auto Raw() const { return ptr; }
 
 		ElementReferenceTest<Wrapper, IsConst> operator*() const { return *ptr; }
 		ElementReferenceTest<Wrapper, IsConst> operator->() const { return *ptr; }
@@ -851,6 +860,180 @@ namespace TypedD3D
 		ContiguousIterator<Wrapper, true> begin() const { return &values[0]; }
 		ContiguousIterator<Wrapper, true> end() const { return &values[values.size()]; }
 
+		size_t size() const { return values.size(); }
+
+	private:
+		void Acquire()
+		{
+			for(unknown_type* ptr : values)
+			{
+				if(ptr)
+					ptr->AddRef();
+			}
+		}
+
+		void Release()
+		{
+			for(unknown_type* ptr : values)
+			{
+				if(ptr)
+					ptr->Release();
+			}
+		}
+	};	
+	
+	template<IUnknownWrapperTest Wrapper, std::convertible_to<Wrapper>... Tys>
+	TestArray(Wrapper, Tys...) -> TestArray<Wrapper, sizeof...(Tys) + 1>;
+	
+	template<IUnknownWrapperTest Wrapper, std::convertible_to<Wrapper>... Tys>
+	TestArray(ElementReferenceTest<Wrapper, false>, Tys...) -> TestArray<Wrapper, sizeof...(Tys) + 1>;
+	
+	template<IUnknownWrapperTest Wrapper, std::convertible_to<Wrapper>... Tys>
+	TestArray(ElementReferenceTest<Wrapper, true>, Tys...) -> TestArray<Wrapper, sizeof...(Tys) + 1>;
+
+	export template<IUnknownWrapperTest Wrapper>
+	class TestVector
+	{
+		using unknown_type = Wrapper::unknown_type;
+
+		std::vector<unknown_type*> values = {};
+
+	public:
+		TestVector() = default;
+		TestVector(const TestVector& other) noexcept : values{ other.values }
+		{
+			if constexpr(!IUnknownWeakWrapper<Wrapper>)
+			{
+				Acquire();
+			}
+		}
+		TestVector(TestVector&& other) noexcept : values{ std::move(other).values }
+		{
+		}
+
+		TestVector(std::initializer_list<Wrapper> list)
+		{
+			for(Wrapper w : list)
+			{
+				values.push_back(w.Detach());
+			}
+		}
+
+		template<class... Wrappers>
+			requires (std::convertible_to<Wrappers, Wrapper> && ...) && (sizeof...(Wrappers) <= N)
+		TestVector(Wrappers&&... wrap) noexcept : values{ Wrapper{std::forward<Wrappers>(wrap)}.Detach()... }
+		{
+		}
+
+		~TestVector()
+		{
+			if constexpr(!IUnknownWeakWrapper<Wrapper>)
+			{
+				Release();
+			}
+		}
+
+		TestVector& operator=(const TestVector& other) noexcept
+		{
+			auto temp = other;
+			std::swap(values, temp.values);
+			return *this;
+		}
+
+		TestVector& operator=(TestVector&& other) noexcept
+		{
+			auto temp = std::move(other);
+			std::swap(values, temp.values);
+			return *this;
+		}
+
+		ElementReferenceTest<Wrapper, false> operator[](std::size_t i) & { return values[i]; }
+		ElementReferenceTest<Wrapper, true> operator[](std::size_t i) const& { return values[i]; }
+		Wrapper operator[](std::size_t i)&& 
+		{
+			Wrapper out;
+			out.Attach(std::exchange(values[i], nullptr));
+			return out;
+		}
+		Wrapper operator[](std::size_t i) const&& 
+		{
+			return values[i];
+		}
+
+		ElementReferenceTest<Wrapper, false> at(std::size_t i) & { return values.at(i); }
+		ElementReferenceTest<Wrapper, true> at(std::size_t i) const& { return values.at(i); }
+		Wrapper at(std::size_t i)&&
+		{
+			Wrapper out;
+			out.Attach(std::exchange(values.at(i), nullptr));
+			return out;
+		}
+		Wrapper at(std::size_t i) const&&
+		{
+			return values.at(i);
+		}
+
+		ElementReferenceTest<Wrapper, false> front()& { return values.front(); }
+		ElementReferenceTest<Wrapper, true> front() const& { return values.front(); }
+
+		Wrapper front()&&
+		{
+			Wrapper out;
+			out.Attach(std::exchange(values.front(), nullptr));
+			return out;
+		}
+		Wrapper front() const&& { return values.front(); }
+
+		ElementReferenceTest<Wrapper, false> back()& { return values.back(); }
+		ElementReferenceTest<Wrapper, true> back() const& { return values.back(); }
+
+		Wrapper back()&&
+		{
+			Wrapper out;
+			out.Attach(std::exchange(values.back(), nullptr));
+			return out;
+		}
+		Wrapper back() const&& { return values.back(); }
+
+		auto data() { return values.data(); }
+		const auto data() const { return values.data(); }
+
+		ContiguousIterator<Wrapper, false> begin() { return &values[0]; }
+		ContiguousIterator<Wrapper, false> end() { return &values[values.size()]; }
+
+		ContiguousIterator<Wrapper, true> begin() const { return &values[0]; }
+		ContiguousIterator<Wrapper, true> end() const { return &values[values.size()]; }
+
+		size_t size() const { return values.size(); }
+
+		void push_back(Wrapper p)
+		{
+			values.push_back(p.Detach());
+		}
+
+		void pop_back()
+		{
+			Wrapper p;
+			p.Attach(values.back());
+			values.pop_back();
+		}
+
+		void resize(size_t newSize)
+		{
+			if(!empty())
+			{
+				for(size_t i = size() - 1; i >= newSize; i++)
+				{
+					Wrapper w;
+					w.Attach(values[i]);
+				}
+			}
+
+			values.resize(newSize);
+		}
+
+		bool empty() const { return values.empty(); }
+
 	private:
 		void Acquire()
 		{
@@ -871,4 +1054,177 @@ namespace TypedD3D
 		}
 	};
 
+
+	template<IUnknownWrapperTest Wrapper, std::convertible_to<Wrapper>... Tys>
+	TestVector(Wrapper, Tys...) -> TestVector<Wrapper>;
+
+	template<IUnknownWrapperTest Wrapper, std::convertible_to<Wrapper>... Tys>
+	TestVector(ElementReferenceTest<Wrapper, false>, Tys...) -> TestVector<Wrapper>;
+
+	template<IUnknownWrapperTest Wrapper, std::convertible_to<Wrapper>... Tys>
+	TestVector(ElementReferenceTest<Wrapper, true>, Tys...) -> TestVector<Wrapper>;
+
+	export template<IUnknownWrapperTest Wrapper, std::size_t N = std::dynamic_extent>
+	class TestSpan
+	{
+		using unknown_type = Wrapper::unknown_type;
+
+		std::span<std::conditional_t<std::is_const_v<Wrapper>, unknown_type* const, unknown_type*>, N> values = {};
+
+	public:
+		TestSpan() = default;
+		TestSpan(const TestSpan&) = default;
+		TestSpan(TestSpan&&) noexcept = default;
+
+		TestSpan(unknown_type** v, size_t count) requires (N == std::dynamic_extent) :
+			values{ v, count }
+		{
+
+		}
+
+		TestSpan(ContiguousIterator<Wrapper, std::is_const_v<Wrapper>> begin, ContiguousIterator<Wrapper, std::is_const_v<Wrapper>> end) requires (N == std::dynamic_extent) :
+			values{ begin.Raw(), end - begin }
+		{
+
+		}
+
+		TestSpan(ContiguousIterator<Wrapper, std::is_const_v<Wrapper>> begin, size_t count) requires (N == std::dynamic_extent) :
+			values{ begin.Raw(), count }
+		{
+
+		}
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent)
+		TestSpan(const TestSpan<std::remove_const_t<Wrapper>, OtherN>& v) :
+			values{ v.data(), v.size() }
+		{
+
+		}
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent)
+		TestSpan(TestArray<std::remove_const_t<Wrapper>, OtherN>& v) : values{ v.data(), v.size() }
+		{
+
+		}
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent)
+		TestSpan(const TestArray<std::remove_const_t<Wrapper>, OtherN>& v) : values{ v.data(), v.size() }
+		{
+
+		}
+
+		TestSpan(TestVector<std::remove_const_t<Wrapper>>& v) : values{ v.data(), v.size() }
+		{
+
+		}
+
+		TestSpan(const TestVector<std::remove_const_t<Wrapper>>& v) : values{ v.data(), v.size() }
+		{
+
+		}
+
+		TestSpan& operator=(const TestSpan&) = default;
+		TestSpan& operator=(TestSpan&&) noexcept = default;
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent)
+		TestSpan& operator=(const TestSpan<std::remove_const_t<Wrapper>, OtherN>& v)
+		{
+			values = decltype(values){ v.data(), v.size() };
+			return *this;
+		}
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent)
+		TestSpan& operator=(TestArray<std::remove_const_t<Wrapper>, OtherN>& v)
+		{
+			values = decltype(values){ v.data(), v.size() };
+			return *this;
+		}
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent)
+		TestSpan& operator=(const TestArray<std::remove_const_t<Wrapper>, OtherN>& v)
+		{
+			values = decltype(values){ v.data(), v.size() };
+			return *this;
+		}
+
+		TestSpan& operator=(TestVector<std::remove_const_t<Wrapper>>& v)
+		{
+			values = decltype(values){ v.data(), v.size() };
+			return *this;
+		}
+
+		TestSpan& operator=(const TestVector<std::remove_const_t<Wrapper>>& v)
+		{
+			values = decltype(values){ v.data(), v.size() };
+			return *this;
+		}
+
+		ElementReferenceTest<Wrapper, false> operator[](std::size_t i) & { return values[i]; }
+		ElementReferenceTest<Wrapper, true> operator[](std::size_t i) const& { return values[i]; }
+		Wrapper operator[](std::size_t i)&& 
+		{
+			Wrapper out;
+			out.Attach(std::exchange(values[i], nullptr));
+			return out;
+		}
+		Wrapper operator[](std::size_t i) const&& 
+		{
+			return values[i];
+		}
+
+		ElementReferenceTest<Wrapper, false> at(std::size_t i) & { return values.at(i); }
+		ElementReferenceTest<Wrapper, true> at(std::size_t i) const& { return values.at(i); }
+		Wrapper at(std::size_t i)&&
+		{
+			Wrapper out;
+			out.Attach(std::exchange(values.at(i), nullptr));
+			return out;
+		}
+		Wrapper at(std::size_t i) const&&
+		{
+			return values.at(i);
+		}
+
+		ElementReferenceTest<Wrapper, false> front()& { return values.front(); }
+		ElementReferenceTest<Wrapper, true> front() const& { return values.front(); }
+
+		Wrapper front()&&
+		{
+			Wrapper out;
+			out.Attach(std::exchange(values.front(), nullptr));
+			return out;
+		}
+		Wrapper front() const&& { return values.front(); }
+
+		ElementReferenceTest<Wrapper, false> back()& { return values.back(); }
+		ElementReferenceTest<Wrapper, true> back() const& { return values.back(); }
+
+		Wrapper back()&&
+		{
+			Wrapper out;
+			out.Attach(std::exchange(values.back(), nullptr));
+			return out;
+		}
+		Wrapper back() const&& { return values.back(); }
+
+		auto data() { return values.data(); }
+		const auto data() const { return values.data(); }
+
+		ContiguousIterator<Wrapper, false> begin() { return &values[0]; }
+		ContiguousIterator<Wrapper, false> end() { return &values[values.size()]; }
+
+		ContiguousIterator<Wrapper, true> begin() const { return &values[0]; }
+		ContiguousIterator<Wrapper, true> end() const { return &values[values.size()]; }
+
+		size_t size() const { return values.size(); }
+	};
+
+	template<IUnknownWrapperTest Wrapper, std::size_t N>
+	TestSpan(TestArray<Wrapper, N>) -> TestSpan<Wrapper, N>;
 }

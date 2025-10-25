@@ -193,6 +193,8 @@ static void ContainersTest()
 	strongArr[0] = Cast<ID3D11Device5>(strongArr[1]);
 	const TestArray<StrongWrapper<UntaggedTraits<ID3D11Device>>, 2>& strongArr3 = strong;
 	TestArray<StrongWrapper<UntaggedTraits<ID3D11Device>>, 2>& strongArr4 = strongArr2;
+	TestArray strongArr5{ strong, strong };
+	TestArray strongArr6{ strongArr[0], strong };
 	strongArr[0] = raw;
 	strongArr[0] = Cast<ID3D11Device5>(raw);
 	strongArr2[0] = raw;
@@ -278,4 +280,61 @@ static void ContainersTest()
 
 	strong == weak;
 	weak == strong;
+
+	for(StrongWrapper<UntaggedTraits<ID3D11Device5>> values : strongArr)
+	{
+
+	}
+
+	for(auto values : strongArr)
+	{
+
+	}
+
+	TestSpan s = strongArr;
+	TestSpan s2 = s;
+	TestSpan<const StrongWrapper<UntaggedTraits<ID3D11Device5>>, 2> s3 = strongArr;
+	TestSpan<const StrongWrapper<UntaggedTraits<ID3D11Device5>>, 2> s4 = s2;
+	TestSpan s5{ s2.begin(), s2.end() };
+	TestSpan s6{ s2.begin(), s2.size() };
+	s = s2;
+	s = strongArr;
+	s3 = s;
+	s3 = s4;
+	s3 = strongArr;
+
+	TestSpan<StrongWrapper<UntaggedTraits<ID3D11Device5>>> s7 = strongArr;
+	TestSpan<StrongWrapper<UntaggedTraits<ID3D11Device5>>> s8 = s7;
+	TestSpan<StrongWrapper<UntaggedTraits<ID3D11Device5>>> s9 = s2;
+
+	TestVector v{ strong, strong };
+	TestVector v2{ strongArr[0], strong };
+	TestVector v3{ strong, strongArr[0] };
+
+	v.empty();
+	v.size();
+	s.size();
+	v.push_back(nullptr);
+	v.pop_back();
+
+
+	for(StrongWrapper<UntaggedTraits<ID3D11Device5>> values : s)
+	{
+
+	}
+
+	for(auto values : s)
+	{
+
+	}
+
+	for(StrongWrapper<UntaggedTraits<ID3D11Device5>> values : v)
+	{
+
+	}
+
+	for(auto values : v)
+	{
+
+	}
 }
