@@ -16,33 +16,30 @@ namespace TypedD3D
         using reference = ID3D11Resource&;
         using const_reference = const ID3D11Resource&;
 
-        template<class DerivedSelf>
-        class Interface : public D3D11::DeviceChildInterface<DerivedSelf>
+        template<class Derived>
+        class Interface : public UntaggedTraits<ID3D11DeviceChild>
         {
-        private:
-            using derived_self = DerivedSelf;
-
         public:
             D3D11_RESOURCE_DIMENSION GetType()
             {
                 D3D11_RESOURCE_DIMENSION pResourceDimension;
-                Get().GetType(&pResourceDimension);
+                Self().GetType(&pResourceDimension);
                 return pResourceDimension;
             }
 
             void SetEvictionPriority(UINT EvictionPriority)
             {
-                Get().SetEvictionPriority(EvictionPriority);
+                Self().SetEvictionPriority(EvictionPriority);
             }
 
             UINT GetEvictionPriority()
             {
-                return Get().GetEvictionPriority();
+                return Self().GetEvictionPriority();
             }
 
         private:
-            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-            reference Get() { return *ToDerived().derived_self::Get(); }
+            using InterfaceBase<UntaggedTraits<Derived>>::Self;
+            using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
         };
     };
 
@@ -55,23 +52,20 @@ namespace TypedD3D
         using reference = ID3D11Buffer&;
         using const_reference = const ID3D11Buffer&;
 
-        template<class DerivedSelf>
-        class Interface : public UntaggedTraits<ID3D11Resource>::Interface<DerivedSelf>
+        template<class Derived>
+        class Interface : public UntaggedTraits<ID3D11Resource>::Interface<Derived>
         {
-        private:
-            using derived_self = DerivedSelf;
-
         public:
             D3D11_BUFFER_DESC GetDesc()
             {
                 D3D11_BUFFER_DESC pDesc;
-                Get().GetDesc(&pDesc);
+                Self().GetDesc(&pDesc);
                 return pDesc;
             }
 
         private:
-            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-            reference Get() { return *ToDerived().derived_self::Get(); }
+            using InterfaceBase<UntaggedTraits<Derived>>::Self;
+            using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
         };
     };
 
@@ -84,23 +78,23 @@ namespace TypedD3D
         using reference = ID3D11Texture1D&;
         using const_reference = const ID3D11Texture1D&;
 
-        template<class DerivedSelf>
-        class Interface : public UntaggedTraits<ID3D11Resource>::Interface<DerivedSelf>
+        template<class Derived>
+        class Interface : public UntaggedTraits<ID3D11Resource>::Interface<Derived>
         {
         private:
-            using derived_self = DerivedSelf;
+            using derived_self = Derived;
 
         public:
             D3D11_TEXTURE1D_DESC GetDesc()
             {
                 D3D11_TEXTURE1D_DESC pDesc;
-                Get().GetDesc(&pDesc);
+                Self().GetDesc(&pDesc);
                 return pDesc;
             }
 
         private:
-            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-            reference Get() { return *ToDerived().derived_self::Get(); }
+            using InterfaceBase<UntaggedTraits<Derived>>::Self;
+            using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
         };
     };
 
@@ -113,23 +107,23 @@ namespace TypedD3D
         using reference = ID3D11Texture2D&;
         using const_reference = const ID3D11Texture2D&;
 
-        template<class DerivedSelf>
-        class Interface : public UntaggedTraits<ID3D11Resource>::Interface<DerivedSelf>
+        template<class Derived>
+        class Interface : public UntaggedTraits<ID3D11Resource>::Interface<Derived>
         {
         private:
-            using derived_self = DerivedSelf;
+            using derived_self = Derived;
 
         public:
             D3D11_TEXTURE2D_DESC GetDesc()
             {
                 D3D11_TEXTURE2D_DESC pDesc;
-                Get().GetDesc(&pDesc);
+                Self().GetDesc(&pDesc);
                 return pDesc;
             }
 
         private:
-            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-            reference Get() { return *ToDerived().derived_self::Get(); }
+            using InterfaceBase<UntaggedTraits<Derived>>::Self;
+            using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
         };
     };
 
@@ -142,23 +136,22 @@ namespace TypedD3D
         using reference = ID3D11Texture3D&;
         using const_reference = const ID3D11Texture3D&;
 
-        template<class DerivedSelf>
-        class Interface : public UntaggedTraits<ID3D11Resource>::Interface<DerivedSelf>
+        template<class Derived>
+        class Interface : public UntaggedTraits<ID3D11Resource>::Interface<Derived>
         {
         private:
-            using derived_self = DerivedSelf;
 
         public:
             D3D11_TEXTURE3D_DESC GetDesc()
             {
                 D3D11_TEXTURE3D_DESC pDesc;
-                Get().GetDesc(&pDesc);
+                Self().GetDesc(&pDesc);
                 return pDesc;
             }
 
         private:
-            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-            reference Get() { return *ToDerived().derived_self::Get(); }
+            using InterfaceBase<UntaggedTraits<Derived>>::Self;
+            using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
         };
     };
 }

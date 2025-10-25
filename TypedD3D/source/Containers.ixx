@@ -9,7 +9,7 @@ module;
 #include <span>
 #include <vector>
 
-export module TypedD3D.Containers;
+export module TypedD3D.Shared:Containers;
 
 namespace TypedD3D
 {
@@ -26,7 +26,6 @@ namespace TypedD3D
 		template<class Ty>
 		using type = Outer<Ty>;
 
-		template<class Ty>
 		using concrete_type = Outer<Inner>;
 	};
 
@@ -45,14 +44,17 @@ namespace TypedD3D
 	template<class Ty>
 	using InnerType = InnerTypeImpl<Ty>::type;
 
-	export template<class Ty>
-	concept IUnknownTrait = requires()
-	{
-		typename Ty::template Interface<void>;
-	} && std::derived_from<InnerType<Ty>, IUnknown> && std::same_as<typename LiftType<Ty>::template type<InnerType<Ty>>, Ty>;
+	template<class Ty, class NewInner>
+	using ReplaceInnerType = LiftType<Ty>::template type<NewInner>;
+
+	template<class Ty, template<class> class NewOuter>
+	using ReplaceOuterType = NewOuter<InnerType<Ty>>;
 
 	export template<class Ty>
-		concept IUnknownWrapperTest = requires(std::remove_const_t<Ty> t, Ty::unknown_type* ptr)
+	concept IUnknownTrait = std::derived_from<InnerType<Ty>, IUnknown>;
+
+	export template<class Ty>
+	concept IUnknownWrapper = requires(std::remove_const_t<Ty> t, Ty::unknown_type* ptr)
 	{
 		typename Ty::unknown_type;
 		typename Ty::trait_type;
@@ -66,7 +68,7 @@ namespace TypedD3D
 	{
 		{ t.Acquire() } -> std::convertible_to<ULONG>;
 		{ t.Release() } -> std::convertible_to<ULONG>;
-	} && IUnknownWrapperTest<Ty>;
+	} && IUnknownWrapper<Ty>;
 
 	template<class Ty, class Ty2>
 	concept SameTraitAs = std::same_as<typename LiftType<Ty>::template type<InnerType<Ty>>, typename LiftType<Ty2>::template type<InnerType<Ty>>>;
@@ -75,9 +77,9 @@ namespace TypedD3D
 	concept ConvertibleTraitTo = SameTraitAs<From, To> && std::convertible_to<InnerType<From>*, InnerType<To>*>;
 
 	export template<IUnknownTrait Trait>
-	class InterfaceProxy : public Trait::template Interface<InterfaceProxy<Trait>>
+	class InterfaceProxy : public Trait::template Interface<InnerType<Trait>>
 	{
-		using unknown_type = Trait::unknown_type;
+		using unknown_type = InnerType<Trait>;
 		using trait_type = Trait;
 		template<class Derived>
 		using interface_type = trait_type::template Interface<Derived>;
@@ -93,9 +95,9 @@ namespace TypedD3D
 
 	public:
 		auto operator->() noexcept { return this; }
-		unknown_type* operator&() const { return ptr; }
-	private:
+		unknown_type* operator&() const noexcept { return ptr; }
 		unknown_type* Get() const noexcept { return ptr; }
+		operator unknown_type& () const noexcept { return *ptr; }
 	};
 
 	export template<IUnknownTrait Trait>
@@ -108,7 +110,7 @@ namespace TypedD3D
 	class WeakWrapper
 	{
 	public:
-		using unknown_type = Trait::unknown_type;
+		using unknown_type = InnerType<Trait>;
 		using trait_type = Trait;
 		template<class Derived>
 		using interface_type = trait_type::template Interface<Derived>;
@@ -146,14 +148,14 @@ namespace TypedD3D
 		WeakWrapper(std::nullptr_t) noexcept {}
 		WeakWrapper(unknown_type* ptr) noexcept : ptr{ ptr } {}
 
-		template<IUnknownWrapperTest Wrapper>
+		template<IUnknownWrapper Wrapper>
 			requires ConvertibleTraitTo<typename Wrapper::trait_type, trait_type>
 		WeakWrapper(const Wrapper& other) noexcept : ptr{ other.Get() }
 		{
 
 		}
 
-		template<IUnknownWrapperTest Wrapper>
+		template<IUnknownWrapper Wrapper>
 			requires ConvertibleTraitTo<typename Wrapper::trait_type, trait_type>
 		WeakWrapper(Wrapper&& other) noexcept : ptr{ other.Detach() }
 		{
@@ -191,7 +193,7 @@ namespace TypedD3D
 			return *this;
 		}
 
-		template<IUnknownWrapperTest Wrapper>
+		template<IUnknownWrapper Wrapper>
 			requires ConvertibleTraitTo<typename Wrapper::trait_type, trait_type>
 		WeakWrapper& operator=(const Wrapper& other)
 		{
@@ -199,7 +201,7 @@ namespace TypedD3D
 			return *this;
 		}
 
-		template<IUnknownWrapperTest Wrapper>
+		template<IUnknownWrapper Wrapper>
 			requires ConvertibleTraitTo<typename Wrapper::trait_type, trait_type>
 		WeakWrapper& operator=(Wrapper&& other) noexcept
 		{
@@ -228,7 +230,7 @@ namespace TypedD3D
 			return this->ptr == ptr.Get();
 		}
 
-		template<IUnknownWrapperTest Wrapper>
+		template<IUnknownWrapper Wrapper>
 			requires ConvertibleTraitTo<typename Wrapper::trait_type, trait_type>
 		bool operator==(const Wrapper& ptr) const noexcept
 		{
@@ -276,7 +278,7 @@ namespace TypedD3D
 	class StrongWrapper
 	{
 	public:
-		using unknown_type = Trait::unknown_type;
+		using unknown_type = InnerType<Trait>;
 		using trait_type = Trait;
 		template<class Derived>
 		using interface_type = trait_type::template Interface<Derived>;
@@ -328,7 +330,7 @@ namespace TypedD3D
 				Acquire();
 		}
 
-		template<IUnknownWrapperTest Wrapper>
+		template<IUnknownWrapper Wrapper>
 			requires ConvertibleTraitTo<typename Wrapper::trait_type, trait_type>
 		StrongWrapper(const Wrapper& other) noexcept : ptr{ other.Get() }
 		{
@@ -339,7 +341,7 @@ namespace TypedD3D
 			}
 		}
 
-		template<IUnknownWrapperTest Wrapper>
+		template<IUnknownWrapper Wrapper>
 			requires ConvertibleTraitTo<typename Wrapper::trait_type, trait_type>
 		StrongWrapper(Wrapper&& other) noexcept : ptr{ other.Detach() }
 		{
@@ -379,7 +381,7 @@ namespace TypedD3D
 			return *this;
 		}
 
-		template<IUnknownWrapperTest Wrapper>
+		template<IUnknownWrapper Wrapper>
 			requires ConvertibleTraitTo<typename Wrapper::trait_type, trait_type>
 		StrongWrapper& operator=(const Wrapper& other)
 		{
@@ -392,7 +394,7 @@ namespace TypedD3D
 			return *this;
 		}
 
-		template<IUnknownWrapperTest Wrapper>
+		template<IUnknownWrapper Wrapper>
 			requires ConvertibleTraitTo<typename Wrapper::trait_type, trait_type>
 		StrongWrapper& operator=(Wrapper&& other) noexcept
 		{
@@ -421,7 +423,7 @@ namespace TypedD3D
 			return this->ptr == ptr.Get();
 		}
 
-		template<IUnknownWrapperTest Wrapper>
+		template<IUnknownWrapper Wrapper>
 			requires ConvertibleTraitTo<typename Wrapper::trait_type, trait_type>
 		bool operator==(const Wrapper& ptr) const noexcept
 		{
@@ -468,7 +470,7 @@ namespace TypedD3D
 		}
 	};
 
-	template<class Wrapper>
+	export template<class Wrapper>
 	class OutPtr
 	{
 		Wrapper::unknown_type* ptr;
@@ -485,7 +487,7 @@ namespace TypedD3D
 			wrapper.Attach(ptr);
 		}
 
-		operator void** () noexcept { return &ptr; }
+		operator void** () noexcept { return reinterpret_cast<void**>(&ptr); }
 		operator Wrapper::unknown_type** () noexcept { return &ptr; }
 	};
 
@@ -525,7 +527,7 @@ namespace TypedD3D
 		return out;
 	}
 
-	export template<IUnknownWrapperTest Wrapper, bool IsConst>
+	export template<IUnknownWrapper Wrapper, bool IsConst>
 	class ElementReferenceTest
 	{
 	public:
@@ -608,7 +610,7 @@ namespace TypedD3D
 			return ptr == rh.Get();
 		}
 
-		template<IUnknownWrapperTest OtherWrapper>
+		template<IUnknownWrapper OtherWrapper>
 		bool operator==(const OtherWrapper& rh) const
 		{
 			return ptr == rh.Get();
@@ -680,7 +682,7 @@ namespace TypedD3D
 		return Cast<To>(Wrapper<Trait<From>>{ ptr });
 	}
 
-	export template<IUnknownWrapperTest Wrapper, bool IsConst>
+	export template<IUnknownWrapper Wrapper, bool IsConst>
 	class ContiguousIterator
 	{
 		using unknown_type = Wrapper::unknown_type;
@@ -754,34 +756,34 @@ namespace TypedD3D
 	};
 
 
-	export template<IUnknownWrapperTest Wrapper, std::size_t N>
-	class TestArray
+	export template<IUnknownWrapper Wrapper, std::size_t N>
+	class Array
 	{
 		using unknown_type = Wrapper::unknown_type;
 
 		std::array<unknown_type*, N> values = {};
 
 	public:
-		TestArray() = default;
-		TestArray(const TestArray& other) noexcept : values{ other.values }
+		Array() = default;
+		Array(const Array& other) noexcept : values{ other.values }
 		{
 			if constexpr(!IUnknownWeakWrapper<Wrapper>)
 			{
 				Acquire();
 			}
 		}
-		TestArray(TestArray&& other) noexcept : values{ other.values }
+		Array(Array&& other) noexcept : values{ other.values }
 		{
 			std::ranges::fill(other.values, nullptr);
 		}
 
 		template<class... Wrappers>
 			requires (std::convertible_to<Wrappers, Wrapper> && ...) && (sizeof...(Wrappers) <= N)
-		TestArray(Wrappers&&... wrap) noexcept : values{ Wrapper{std::forward<Wrappers>(wrap)}.Detach()... }
+		Array(Wrappers&&... wrap) noexcept : values{ Wrapper{std::forward<Wrappers>(wrap)}.Detach()... }
 		{
 		}
 
-		~TestArray()
+		~Array()
 		{
 			if constexpr(!IUnknownWeakWrapper<Wrapper>)
 			{
@@ -789,14 +791,14 @@ namespace TypedD3D
 			}
 		}
 
-		TestArray& operator=(const TestArray& other) noexcept
+		Array& operator=(const Array& other) noexcept
 		{
 			auto temp = other;
 			std::swap(values, temp.values);
 			return *this;
 		}
 
-		TestArray& operator=(TestArray&& other) noexcept
+		Array& operator=(Array&& other) noexcept
 		{
 			auto temp = std::move(other);
 			std::swap(values, temp.values);
@@ -882,36 +884,36 @@ namespace TypedD3D
 		}
 	};	
 	
-	template<IUnknownWrapperTest Wrapper, std::convertible_to<Wrapper>... Tys>
-	TestArray(Wrapper, Tys...) -> TestArray<Wrapper, sizeof...(Tys) + 1>;
+	template<IUnknownWrapper Wrapper, std::convertible_to<Wrapper>... Tys>
+	Array(Wrapper, Tys...) -> Array<Wrapper, sizeof...(Tys) + 1>;
 	
-	template<IUnknownWrapperTest Wrapper, std::convertible_to<Wrapper>... Tys>
-	TestArray(ElementReferenceTest<Wrapper, false>, Tys...) -> TestArray<Wrapper, sizeof...(Tys) + 1>;
+	template<IUnknownWrapper Wrapper, std::convertible_to<Wrapper>... Tys>
+	Array(ElementReferenceTest<Wrapper, false>, Tys...) -> Array<Wrapper, sizeof...(Tys) + 1>;
 	
-	template<IUnknownWrapperTest Wrapper, std::convertible_to<Wrapper>... Tys>
-	TestArray(ElementReferenceTest<Wrapper, true>, Tys...) -> TestArray<Wrapper, sizeof...(Tys) + 1>;
+	template<IUnknownWrapper Wrapper, std::convertible_to<Wrapper>... Tys>
+	Array(ElementReferenceTest<Wrapper, true>, Tys...) -> Array<Wrapper, sizeof...(Tys) + 1>;
 
-	export template<IUnknownWrapperTest Wrapper>
-	class TestVector
+	export template<IUnknownWrapper Wrapper>
+	class Vector
 	{
 		using unknown_type = Wrapper::unknown_type;
 
 		std::vector<unknown_type*> values = {};
 
 	public:
-		TestVector() = default;
-		TestVector(const TestVector& other) noexcept : values{ other.values }
+		Vector() = default;
+		Vector(const Vector& other) noexcept : values{ other.values }
 		{
 			if constexpr(!IUnknownWeakWrapper<Wrapper>)
 			{
 				Acquire();
 			}
 		}
-		TestVector(TestVector&& other) noexcept : values{ std::move(other).values }
+		Vector(Vector&& other) noexcept : values{ std::move(other).values }
 		{
 		}
 
-		TestVector(std::initializer_list<Wrapper> list)
+		Vector(std::initializer_list<Wrapper> list)
 		{
 			for(Wrapper w : list)
 			{
@@ -921,11 +923,11 @@ namespace TypedD3D
 
 		template<class... Wrappers>
 			requires (std::convertible_to<Wrappers, Wrapper> && ...) && (sizeof...(Wrappers) <= N)
-		TestVector(Wrappers&&... wrap) noexcept : values{ Wrapper{std::forward<Wrappers>(wrap)}.Detach()... }
+		Vector(Wrappers&&... wrap) noexcept : values{ Wrapper{std::forward<Wrappers>(wrap)}.Detach()... }
 		{
 		}
 
-		~TestVector()
+		~Vector()
 		{
 			if constexpr(!IUnknownWeakWrapper<Wrapper>)
 			{
@@ -933,14 +935,14 @@ namespace TypedD3D
 			}
 		}
 
-		TestVector& operator=(const TestVector& other) noexcept
+		Vector& operator=(const Vector& other) noexcept
 		{
 			auto temp = other;
 			std::swap(values, temp.values);
 			return *this;
 		}
 
-		TestVector& operator=(TestVector&& other) noexcept
+		Vector& operator=(Vector&& other) noexcept
 		{
 			auto temp = std::move(other);
 			std::swap(values, temp.values);
@@ -1055,40 +1057,40 @@ namespace TypedD3D
 	};
 
 
-	template<IUnknownWrapperTest Wrapper, std::convertible_to<Wrapper>... Tys>
-	TestVector(Wrapper, Tys...) -> TestVector<Wrapper>;
+	template<IUnknownWrapper Wrapper, std::convertible_to<Wrapper>... Tys>
+	Vector(Wrapper, Tys...) -> Vector<Wrapper>;
 
-	template<IUnknownWrapperTest Wrapper, std::convertible_to<Wrapper>... Tys>
-	TestVector(ElementReferenceTest<Wrapper, false>, Tys...) -> TestVector<Wrapper>;
+	template<IUnknownWrapper Wrapper, std::convertible_to<Wrapper>... Tys>
+	Vector(ElementReferenceTest<Wrapper, false>, Tys...) -> Vector<Wrapper>;
 
-	template<IUnknownWrapperTest Wrapper, std::convertible_to<Wrapper>... Tys>
-	TestVector(ElementReferenceTest<Wrapper, true>, Tys...) -> TestVector<Wrapper>;
+	template<IUnknownWrapper Wrapper, std::convertible_to<Wrapper>... Tys>
+	Vector(ElementReferenceTest<Wrapper, true>, Tys...) -> Vector<Wrapper>;
 
-	export template<IUnknownWrapperTest Wrapper, std::size_t N = std::dynamic_extent>
-	class TestSpan
+	export template<IUnknownWrapper Wrapper, std::size_t N = std::dynamic_extent>
+	class Span
 	{
 		using unknown_type = Wrapper::unknown_type;
 
 		std::span<std::conditional_t<std::is_const_v<Wrapper>, unknown_type* const, unknown_type*>, N> values = {};
 
 	public:
-		TestSpan() = default;
-		TestSpan(const TestSpan&) = default;
-		TestSpan(TestSpan&&) noexcept = default;
+		Span() = default;
+		Span(const Span&) = default;
+		Span(Span&&) noexcept = default;
 
-		TestSpan(unknown_type** v, size_t count) requires (N == std::dynamic_extent) :
+		Span(unknown_type** v, size_t count) requires (N == std::dynamic_extent) :
 			values{ v, count }
 		{
 
 		}
 
-		TestSpan(ContiguousIterator<Wrapper, std::is_const_v<Wrapper>> begin, ContiguousIterator<Wrapper, std::is_const_v<Wrapper>> end) requires (N == std::dynamic_extent) :
+		Span(ContiguousIterator<Wrapper, std::is_const_v<Wrapper>> begin, ContiguousIterator<Wrapper, std::is_const_v<Wrapper>> end) requires (N == std::dynamic_extent) :
 			values{ begin.Raw(), end - begin }
 		{
 
 		}
 
-		TestSpan(ContiguousIterator<Wrapper, std::is_const_v<Wrapper>> begin, size_t count) requires (N == std::dynamic_extent) :
+		Span(ContiguousIterator<Wrapper, std::is_const_v<Wrapper>> begin, size_t count) requires (N == std::dynamic_extent) :
 			values{ begin.Raw(), count }
 		{
 
@@ -1096,7 +1098,7 @@ namespace TypedD3D
 
 		template<size_t OtherN>
 			requires (OtherN == N || N == std::dynamic_extent)
-		TestSpan(const TestSpan<std::remove_const_t<Wrapper>, OtherN>& v) :
+		Span(const Span<std::remove_const_t<Wrapper>, OtherN>& v) :
 			values{ v.data(), v.size() }
 		{
 
@@ -1104,34 +1106,34 @@ namespace TypedD3D
 
 		template<size_t OtherN>
 			requires (OtherN == N || N == std::dynamic_extent)
-		TestSpan(TestArray<std::remove_const_t<Wrapper>, OtherN>& v) : values{ v.data(), v.size() }
+		Span(Array<std::remove_const_t<Wrapper>, OtherN>& v) : values{ v.data(), v.size() }
 		{
 
 		}
 
 		template<size_t OtherN>
 			requires (OtherN == N || N == std::dynamic_extent)
-		TestSpan(const TestArray<std::remove_const_t<Wrapper>, OtherN>& v) : values{ v.data(), v.size() }
+		Span(const Array<std::remove_const_t<Wrapper>, OtherN>& v) : values{ v.data(), v.size() }
 		{
 
 		}
 
-		TestSpan(TestVector<std::remove_const_t<Wrapper>>& v) : values{ v.data(), v.size() }
+		Span(Vector<std::remove_const_t<Wrapper>>& v) : values{ v.data(), v.size() }
 		{
 
 		}
 
-		TestSpan(const TestVector<std::remove_const_t<Wrapper>>& v) : values{ v.data(), v.size() }
+		Span(const Vector<std::remove_const_t<Wrapper>>& v) : values{ v.data(), v.size() }
 		{
 
 		}
 
-		TestSpan& operator=(const TestSpan&) = default;
-		TestSpan& operator=(TestSpan&&) noexcept = default;
+		Span& operator=(const Span&) = default;
+		Span& operator=(Span&&) noexcept = default;
 
 		template<size_t OtherN>
 			requires (OtherN == N || N == std::dynamic_extent)
-		TestSpan& operator=(const TestSpan<std::remove_const_t<Wrapper>, OtherN>& v)
+		Span& operator=(const Span<std::remove_const_t<Wrapper>, OtherN>& v)
 		{
 			values = decltype(values){ v.data(), v.size() };
 			return *this;
@@ -1139,7 +1141,7 @@ namespace TypedD3D
 
 		template<size_t OtherN>
 			requires (OtherN == N || N == std::dynamic_extent)
-		TestSpan& operator=(TestArray<std::remove_const_t<Wrapper>, OtherN>& v)
+		Span& operator=(Array<std::remove_const_t<Wrapper>, OtherN>& v)
 		{
 			values = decltype(values){ v.data(), v.size() };
 			return *this;
@@ -1147,19 +1149,19 @@ namespace TypedD3D
 
 		template<size_t OtherN>
 			requires (OtherN == N || N == std::dynamic_extent)
-		TestSpan& operator=(const TestArray<std::remove_const_t<Wrapper>, OtherN>& v)
+		Span& operator=(const Array<std::remove_const_t<Wrapper>, OtherN>& v)
 		{
 			values = decltype(values){ v.data(), v.size() };
 			return *this;
 		}
 
-		TestSpan& operator=(TestVector<std::remove_const_t<Wrapper>>& v)
+		Span& operator=(Vector<std::remove_const_t<Wrapper>>& v)
 		{
 			values = decltype(values){ v.data(), v.size() };
 			return *this;
 		}
 
-		TestSpan& operator=(const TestVector<std::remove_const_t<Wrapper>>& v)
+		Span& operator=(const Vector<std::remove_const_t<Wrapper>>& v)
 		{
 			values = decltype(values){ v.data(), v.size() };
 			return *this;
@@ -1225,6 +1227,6 @@ namespace TypedD3D
 		size_t size() const { return values.size(); }
 	};
 
-	template<IUnknownWrapperTest Wrapper, std::size_t N>
-	TestSpan(TestArray<Wrapper, N>) -> TestSpan<Wrapper, N>;
+	template<IUnknownWrapper Wrapper, std::size_t N>
+	Span(Array<Wrapper, N>) -> Span<Wrapper, N>;
 }

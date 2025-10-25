@@ -37,7 +37,8 @@ namespace TypedD3D::D3D11
 	};
 
 	template<class Ty>
-	concept StateObject = std::same_as<Ty, ID3D11DepthStencilState> ||
+	concept StateObject = 
+		std::same_as<Ty, ID3D11DepthStencilState> ||
 		std::same_as<Ty, ID3D11SamplerState> ||
 		std::same_as<Ty, ID3D11BlendState> ||
 		std::same_as<Ty, ID3D11RasterizerState>;
@@ -54,23 +55,20 @@ namespace TypedD3D
 		using reference = Ty&;
 		using const_reference = const Ty&;
 
-		template<class DerivedSelf>
-		class Interface : public D3D11::DeviceChildInterface<DerivedSelf>
+		template<class Derived>
+		class Interface : public UntaggedTraits<ID3D11DeviceChild>::Interface<Derived>, public InterfaceBase<UntaggedTraits<Derived>>
 		{
-		private:
-			using derived_self = DerivedSelf;
-
 		public:
 			typename D3D11::ViewToStateDesc<value_type>::type GetDesc()
 			{
 				typename D3D11::ViewToStateDesc<value_type>::type description;
-				Get().GetDesc(&description);
+				Self().GetDesc(&description);
 				return description;
 			}
 
 		private:
-			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-			reference Get() { return *ToDerived().derived_self::Get(); }
+			using InterfaceBase<UntaggedTraits<Derived>>::Self;
+			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
 		};
 	};
 }

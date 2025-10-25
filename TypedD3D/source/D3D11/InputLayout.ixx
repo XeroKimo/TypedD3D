@@ -17,8 +17,8 @@ namespace TypedD3D
         using reference = ID3D11InputLayout&;
         using const_reference = const ID3D11InputLayout&;
 
-        template<class DerivedSelf>
-        class Interface : public D3D11::DeviceChildInterface<DerivedSelf>
+        template<class Derived>
+        class Interface : public UntaggedTraits<ID3D11DeviceChild>::Interface<Derived>
         {
 
         };

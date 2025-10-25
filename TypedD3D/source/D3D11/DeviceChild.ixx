@@ -2,56 +2,82 @@ module;
 
 #include <concepts>
 #include <d3d11_4.h>
-#include <wrl/client.h>
+
 
 export module TypedD3D11:DeviceChild;
 import TypedD3D.Shared;
 
-namespace TypedD3D::D3D11
+namespace TypedD3D
 {
-    template<class WrapperTy>
-    class DeviceChildInterface
+    template<DerivedFromExcept<ID3D11DeviceChild, 
+        ID3D11VertexShader,
+        ID3D11DomainShader,
+        ID3D11HullShader,
+        ID3D11GeometryShader,
+        ID3D11PixelShader,
+        ID3D11ComputeShader,
+        ID3D11DepthStencilState,
+        ID3D11SamplerState,
+        ID3D11BlendState,
+        ID3D11RasterizerState,
+        ID3D11View> 
+    Ty>
+    struct UntaggedTraits<Ty>
     {
-    private:
-        using device_type = ID3D11DeviceChild;
-        using wrapper_type = WrapperTy;
-    public:
-        template<std::derived_from<ID3D11Device> DeviceTy = ID3D11Device>
-        Wrapper<DeviceTy> GetDevice()
-        {
-            Microsoft::WRL::ComPtr<ID3D11Device> device;
-            InternalGet().GetDevice(&device);
-            return Wrapper<DeviceTy>(Cast<DeviceTy>(device));
-        }
+        template<class Derived>
+        using Interface = Ty*;
+    };
 
-        //TODO: Figure out how this works to update to a more modern API
-        HRESULT GetPrivateData(
-            REFGUID guid,
-            UINT* pDataSize,
-            void* pData)
+    template<>
+    struct UntaggedTraits<ID3D11DeviceChild>
+    {
+        template<class Derived>
+        struct Interface : public InterfaceBase<UntaggedTraits<Derived>>
         {
-            return InternalGet().GetPrivateData(guid, pDataSize, pData);
-        }
+        private:
+            using unknown_type = ID3D11DeviceChild;
+            using derived_type = Derived;
 
-        //TODO: Figure out how this works to update to a more modern API
-        HRESULT SetPrivateData(
-            REFGUID guid,
-            UINT DataSize,
-            const void* pData)
-        {
-            return InternalGet().SetPrivateData(guid, DataSize, pData);
-        }
+        public:
+            template<std::derived_from<ID3D11Device> DeviceTy = ID3D11Device>
+            Wrapper<DeviceTy> GetDevice()
+            {
+                ID3D11Device* device;
+                Self().GetDevice(&device);
+                Wrapper<DeviceTy> out;
+                out.Attach(device);
+                return Cast<DeviceTy>(std::move(device));
+            }
 
-        //TODO: Figure out how this works to update to a more modern API
-        HRESULT SetPrivateDataInterface(
-            REFGUID guid,
-            const IUnknown* pData)
-        {
-            return InternalGet().SetPrivateDataInterface(guid, pData);
-        }
+            //TODO: Figure out how this works to update to a more modern API
+            HRESULT GetPrivateData(
+                REFGUID guid,
+                UINT* pDataSize,
+                void* pData)
+            {
+                return Self().GetPrivateData(guid, pDataSize, pData);
+            }
 
-    private:
-        wrapper_type& ToDerived() { return static_cast<wrapper_type&>(*this); }
-        device_type& InternalGet() { return *ToDerived().Get(); }
+            //TODO: Figure out how this works to update to a more modern API
+            HRESULT SetPrivateData(
+                REFGUID guid,
+                UINT DataSize,
+                const void* pData)
+            {
+                return Self().SetPrivateData(guid, DataSize, pData);
+            }
+
+            //TODO: Figure out how this works to update to a more modern API
+            HRESULT SetPrivateDataInterface(
+                REFGUID guid,
+                const IUnknown* pData)
+            {
+                return Self().SetPrivateDataInterface(guid, pData);
+            }
+
+        private:
+            using InterfaceBase<UntaggedTraits<Derived>>::Self;
+            using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+        };
     };
 }

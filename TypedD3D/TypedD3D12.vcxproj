@@ -24,7 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="build.cpp" />
-    <ClCompile Include="Containers.ixx" />
+    <ClCompile Include="source\Containers.ixx" />
     <ClCompile Include="source\D3D11\D3D11Constants.ixx" />
     <ClCompile Include="source\D3D11\D3D11Device.ixx" />
     <ClCompile Include="source\D3D11\DeviceContext.ixx" />

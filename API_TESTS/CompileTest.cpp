@@ -1,24 +1,24 @@
 #include "pch.h"
 #include <d3d11_4.h>
 #include <concepts>
-import TypedD3D.Containers;
+import TypedD3D.Shared;
 import TypedD3D11;
 
 using namespace TypedD3D;
 
 static void ContainersTest()
 {
-	static_assert(IUnknownWrapperTest<WeakWrapper<UntaggedTraits<ID3D11Device>>>);
-	static_assert(IUnknownWrapperTest<ElementReferenceTest<WeakWrapper<UntaggedTraits<ID3D11Device>>, false>>);
-	static_assert(IUnknownWrapperTest<ElementReferenceTest<WeakWrapper<UntaggedTraits<ID3D11Device>>, true>>);
+	static_assert(IUnknownWrapper<WeakWrapper<UntaggedTraits<ID3D11Device>>>);
+	static_assert(IUnknownWrapper<ElementReferenceTest<WeakWrapper<UntaggedTraits<ID3D11Device>>, false>>);
+	static_assert(IUnknownWrapper<ElementReferenceTest<WeakWrapper<UntaggedTraits<ID3D11Device>>, true>>);
 
 	static_assert(IUnknownWeakWrapper<WeakWrapper<UntaggedTraits<ID3D11Device>>>);
 	static_assert(IUnknownWeakWrapper<ElementReferenceTest<WeakWrapper<UntaggedTraits<ID3D11Device>>, false>>);
 	static_assert(IUnknownWeakWrapper<ElementReferenceTest<WeakWrapper<UntaggedTraits<ID3D11Device>>, true>>);
 
-	static_assert(IUnknownWrapperTest<StrongWrapper<UntaggedTraits<ID3D11Device>>>);
-	static_assert(IUnknownWrapperTest<ElementReferenceTest<StrongWrapper<UntaggedTraits<ID3D11Device>>, false>>);
-	static_assert(IUnknownWrapperTest<ElementReferenceTest<StrongWrapper<UntaggedTraits<ID3D11Device>>, true>>);
+	static_assert(IUnknownWrapper<StrongWrapper<UntaggedTraits<ID3D11Device>>>);
+	static_assert(IUnknownWrapper<ElementReferenceTest<StrongWrapper<UntaggedTraits<ID3D11Device>>, false>>);
+	static_assert(IUnknownWrapper<ElementReferenceTest<StrongWrapper<UntaggedTraits<ID3D11Device>>, true>>);
 
 	static_assert(std::constructible_from<StrongWrapper<UntaggedTraits<ID3D11Device>>, WeakWrapper<UntaggedTraits<ID3D11Device>>>);
 	static_assert(std::constructible_from<WeakWrapper<UntaggedTraits<ID3D11Device>>, StrongWrapper<UntaggedTraits<ID3D11Device>>>);
@@ -134,11 +134,11 @@ static void ContainersTest()
 	StrongWrapper<UntaggedTraits<ID3D11Device>> strong5 = weak;
 	StrongWrapper<UntaggedTraits<ID3D11Device>> strong6 = weak2;
 
-	TestArray<WeakWrapper<UntaggedTraits<ID3D11Device5>>, 2> weakArr = { raw, raw };
-	TestArray<WeakWrapper<UntaggedTraits<ID3D11Device>>, 2> weakArr2 = { weakArr[0], raw };
+	Array<WeakWrapper<UntaggedTraits<ID3D11Device5>>, 2> weakArr = { raw, raw };
+	Array<WeakWrapper<UntaggedTraits<ID3D11Device>>, 2> weakArr2 = { weakArr[0], raw };
 	weakArr[0] = Cast<ID3D11Device5>(weakArr[1]);
-	const TestArray<WeakWrapper<UntaggedTraits<ID3D11Device>>, 2>& weakArr3 = weak;
-	TestArray<WeakWrapper<UntaggedTraits<ID3D11Device>>, 2>& weakArr4 = weakArr2;
+	const Array<WeakWrapper<UntaggedTraits<ID3D11Device>>, 2>& weakArr3 = weak;
+	Array<WeakWrapper<UntaggedTraits<ID3D11Device>>, 2>& weakArr4 = weakArr2;
 	weakArr[0] = raw;
 	weakArr[0] = Cast<ID3D11Device5>(raw);
 	weakArr2[0] = raw;
@@ -188,13 +188,13 @@ static void ContainersTest()
 	weakArr3[0]->CheckCounterInfo();
 	(*weakArr3[0]).CheckCounterInfo();
 
-	TestArray<StrongWrapper<UntaggedTraits<ID3D11Device5>>, 2> strongArr = { raw, raw };
-	TestArray<StrongWrapper<UntaggedTraits<ID3D11Device>>, 2> strongArr2 = { strongArr[0], strongArr[1] };
+	Array<StrongWrapper<UntaggedTraits<ID3D11Device5>>, 2> strongArr = { raw, raw };
+	Array<StrongWrapper<UntaggedTraits<ID3D11Device>>, 2> strongArr2 = { strongArr[0], strongArr[1] };
 	strongArr[0] = Cast<ID3D11Device5>(strongArr[1]);
-	const TestArray<StrongWrapper<UntaggedTraits<ID3D11Device>>, 2>& strongArr3 = strong;
-	TestArray<StrongWrapper<UntaggedTraits<ID3D11Device>>, 2>& strongArr4 = strongArr2;
-	TestArray strongArr5{ strong, strong };
-	TestArray strongArr6{ strongArr[0], strong };
+	const Array<StrongWrapper<UntaggedTraits<ID3D11Device>>, 2>& strongArr3 = strong;
+	Array<StrongWrapper<UntaggedTraits<ID3D11Device>>, 2>& strongArr4 = strongArr2;
+	Array strongArr5{ strong, strong };
+	Array strongArr6{ strongArr[0], strong };
 	strongArr[0] = raw;
 	strongArr[0] = Cast<ID3D11Device5>(raw);
 	strongArr2[0] = raw;
@@ -291,25 +291,25 @@ static void ContainersTest()
 
 	}
 
-	TestSpan s = strongArr;
-	TestSpan s2 = s;
-	TestSpan<const StrongWrapper<UntaggedTraits<ID3D11Device5>>, 2> s3 = strongArr;
-	TestSpan<const StrongWrapper<UntaggedTraits<ID3D11Device5>>, 2> s4 = s2;
-	TestSpan s5{ s2.begin(), s2.end() };
-	TestSpan s6{ s2.begin(), s2.size() };
+	Span s = strongArr;
+	Span s2 = s;
+	Span<const StrongWrapper<UntaggedTraits<ID3D11Device5>>, 2> s3 = strongArr;
+	Span<const StrongWrapper<UntaggedTraits<ID3D11Device5>>, 2> s4 = s2;
+	Span s5{ s2.begin(), s2.end() };
+	Span s6{ s2.begin(), s2.size() };
 	s = s2;
 	s = strongArr;
 	s3 = s;
 	s3 = s4;
 	s3 = strongArr;
 
-	TestSpan<StrongWrapper<UntaggedTraits<ID3D11Device5>>> s7 = strongArr;
-	TestSpan<StrongWrapper<UntaggedTraits<ID3D11Device5>>> s8 = s7;
-	TestSpan<StrongWrapper<UntaggedTraits<ID3D11Device5>>> s9 = s2;
+	Span<StrongWrapper<UntaggedTraits<ID3D11Device5>>> s7 = strongArr;
+	Span<StrongWrapper<UntaggedTraits<ID3D11Device5>>> s8 = s7;
+	Span<StrongWrapper<UntaggedTraits<ID3D11Device5>>> s9 = s2;
 
-	TestVector v{ strong, strong };
-	TestVector v2{ strongArr[0], strong };
-	TestVector v3{ strong, strongArr[0] };
+	Vector v{ strong, strong };
+	Vector v2{ strongArr[0], strong };
+	Vector v3{ strong, strongArr[0] };
 
 	v.empty();
 	v.size();

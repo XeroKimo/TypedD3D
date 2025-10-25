@@ -2,7 +2,7 @@ module;
 
 #include <d3d11_4.h>
 #include <concepts>
-#include <wrl/client.h>
+
 
 export module TypedD3D11:ResourceViews;
 import :DeviceChild;
@@ -51,27 +51,24 @@ namespace TypedD3D
 		using reference = ID3D11View&;
 		using const_reference = const ID3D11View&;
 
-		template<class DerivedSelf>
-		class Interface : public D3D11::DeviceChildInterface<DerivedSelf>
+		template<class Derived>
+		class Interface : public UntaggedTraits<ID3D11DeviceChild>::Interface<Derived>
 		{
 		private:
-			using derived_self = DerivedSelf;
+			using derived_self = Derived;
 
 		public:
 			template<std::derived_from<ID3D11Resource> Ty = ID3D11Resource>
 			Wrapper<Ty> GetResource() const
 			{
-				Microsoft::WRL::ComPtr<ID3D11Resource> resource;
-				Get().GetResource(&resource);
-				return Wrapper<Ty>(TypedD3D::Cast<Ty>(resource));
+				Wrapper<ID3D11Resource> resource;
+				Self().GetResource(OutPtr{ resource });
+				return Cast<Ty>(std::move(resource));
 			}
 
 		private:
-			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-			reference Get() { return *ToDerived().derived_self::Get(); }
-
-			const derived_self& ToDerived() const { return static_cast<const derived_self&>(*this); }
-			reference Get() const { return *ToDerived().derived_self::Get(); }
+			using InterfaceBase<UntaggedTraits<Derived>>::Self;
+			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
 		};
 	};
 
@@ -85,23 +82,23 @@ namespace TypedD3D
 		using reference = Ty&;
 		using const_reference = const Ty&;
 
-		template<class DerivedSelf>
-		class Interface : public UntaggedTraits<ID3D11View>::Interface<DerivedSelf>
+		template<class Derived>
+		class Interface : public UntaggedTraits<ID3D11View>::Interface<Derived>, public InterfaceBase<UntaggedTraits<Derived>>
 		{
 		private:
-			using derived_self = DerivedSelf;
+			using derived_self = Derived;
 
 		public:
 			typename D3D11::ViewToResourceDesc<value_type>::type GetDesc()
 			{
 				typename D3D11::ViewToResourceDesc<value_type>::type description;
-				Get().GetDesc(&description);
+				Self().GetDesc(&description);
 				return description;
 			}
 
 		private:
-			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-			reference Get() { return *ToDerived().derived_self::Get(); }
+			using InterfaceBase<UntaggedTraits<Derived>>::Self;
+			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
 		};
 	};
 }

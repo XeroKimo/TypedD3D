@@ -1,13 +1,12 @@
-#include <wrl/client.h>
+
 #include <d3d11_4.h>
 #include <dxgi1_6.h>
 
 import TypedD3D11;
-import TypedD3D12;
-import TypedDXGI;
+//import TypedD3D12;
+//import TypedDXGI;
 
 using namespace TypedD3D;
-using namespace Microsoft::WRL;
 
 void D3D11()
 {
@@ -31,51 +30,47 @@ void D3D11()
 	Wrapper<ID3D11DepthStencilView> dsv = device->CreateDepthStencilView(resource, nullptr);
 	{
 		ID3DBlob* temp = nullptr;
-		Wrapper<ID3D11InputLayout> layout = device->CreateInputLayout(D3D11_INPUT_ELEMENT_DESC{}, *temp);
-		layout = device->CreateInputLayout(std::span<D3D11_INPUT_ELEMENT_DESC>{}, *temp);
-		layout = device->CreateInputLayout(D3D11_INPUT_ELEMENT_DESC{}, nullptr, {});
-		layout = device->CreateInputLayout(std::span<D3D11_INPUT_ELEMENT_DESC>{}, nullptr, {});
+		Wrapper<ID3D11InputLayout> layout = device->CreateInputLayout(D3D11_INPUT_ELEMENT_DESC{}, temp);
+		layout = device->CreateInputLayout(std::span<D3D11_INPUT_ELEMENT_DESC>{}, temp);
+		layout = device->CreateInputLayout(D3D11_INPUT_ELEMENT_DESC{}, temp->GetBufferPointer(), {});
+		layout = device->CreateInputLayout(std::span<D3D11_INPUT_ELEMENT_DESC>{}, temp->GetBufferPointer(), {});
 
-		Wrapper<ID3D11VertexShader> vs = device->CreateVertexShader(*temp, nullptr);
-		vs = device->CreateVertexShader(nullptr, {}, nullptr);
+		Wrapper<ID3D11VertexShader> vs = device->CreateVertexShader(temp, nullptr);
+		vs = device->CreateVertexShader(temp->GetBufferPointer(), {}, nullptr);
 
-		Wrapper<ID3D11GeometryShader> gs = device->CreateGeometryShader(*temp, nullptr);
-		gs = device->CreateGeometryShader(nullptr, {}, nullptr);
-		gs = device->CreateGeometryShaderWithStreamOutput(*temp, D3D11_SO_DECLARATION_ENTRY{}, UINT{}, UINT{}, nullptr);
-		gs = device->CreateGeometryShaderWithStreamOutput(*temp, std::span<D3D11_SO_DECLARATION_ENTRY>{}, UINT{}, UINT{}, nullptr);
-		gs = device->CreateGeometryShaderWithStreamOutput(*temp, D3D11_SO_DECLARATION_ENTRY{}, std::span<UINT>{}, UINT{}, nullptr);
-		gs = device->CreateGeometryShaderWithStreamOutput(*temp, std::span<D3D11_SO_DECLARATION_ENTRY>{}, std::span<UINT>{}, UINT{}, nullptr);
-		gs = device->CreateGeometryShaderWithStreamOutput(nullptr, {}, D3D11_SO_DECLARATION_ENTRY{}, UINT{}, UINT{}, nullptr);
-		gs = device->CreateGeometryShaderWithStreamOutput(nullptr, {}, std::span<D3D11_SO_DECLARATION_ENTRY>{}, UINT{}, UINT{}, nullptr);
-		gs = device->CreateGeometryShaderWithStreamOutput(nullptr, {}, D3D11_SO_DECLARATION_ENTRY{}, std::span<UINT>{}, UINT{}, nullptr);
-		gs = device->CreateGeometryShaderWithStreamOutput(nullptr, {}, std::span<D3D11_SO_DECLARATION_ENTRY>{}, std::span<UINT>{}, UINT{}, nullptr);
+		Wrapper<ID3D11GeometryShader> gs = device->CreateGeometryShader(temp, nullptr);
+		gs = device->CreateGeometryShader(temp->GetBufferPointer(), {}, nullptr);
+		gs = device->CreateGeometryShaderWithStreamOutput(temp, std::span<D3D11_SO_DECLARATION_ENTRY>{}, std::span<UINT>{}, UINT{}, nullptr);
+		gs = device->CreateGeometryShaderWithStreamOutput(temp->GetBufferPointer(), {}, std::span<D3D11_SO_DECLARATION_ENTRY>{}, std::span<UINT>{}, UINT{}, nullptr);
 
-		Wrapper<ID3D11PixelShader> ps = device->CreatePixelShader(*temp, nullptr);
-		ps = device->CreatePixelShader(nullptr, {}, nullptr);
+		Wrapper<ID3D11PixelShader> ps = device->CreatePixelShader(temp, nullptr);
+		ps = device->CreatePixelShader(temp->GetBufferPointer(), {}, nullptr);
 
-		Wrapper<ID3D11HullShader> hs = device->CreateHullShader(*temp, nullptr);
-		hs = device->CreateHullShader(nullptr, {}, nullptr);
+		Wrapper<ID3D11HullShader> hs = device->CreateHullShader(temp, nullptr);
+		hs = device->CreateHullShader(temp->GetBufferPointer(), {}, nullptr);
 
-		Wrapper<ID3D11DomainShader> ds = device->CreateDomainShader(*temp, nullptr);
-		ds = device->CreateDomainShader(nullptr, {}, nullptr);
+		Wrapper<ID3D11DomainShader> ds = device->CreateDomainShader(temp, nullptr);
+		ds = device->CreateDomainShader(temp->GetBufferPointer(), {}, nullptr);
 
-		Wrapper<ID3D11ComputeShader> cs = device->CreateComputeShader(*temp, nullptr);
-		cs = device->CreateComputeShader(nullptr, {}, nullptr);
+		Wrapper<ID3D11ComputeShader> cs = device->CreateComputeShader(temp, nullptr);
+		cs = device->CreateComputeShader(temp->GetBufferPointer(), {}, nullptr);
 	}
-	ComPtr<ID3D11ClassLinkage> classLink = device->CreateClassLinkage();
+	Wrapper<ID3D11ClassLinkage> classLink = device->CreateClassLinkage();
 	Wrapper<ID3D11BlendState> blendState = device->CreateBlendState({});
 	Wrapper<ID3D11DepthStencilState> depthStencilState = device->CreateDepthStencilState({});
 	Wrapper<ID3D11RasterizerState> rasterizerState = device->CreateRasterizerState({});
 	Wrapper<ID3D11SamplerState> samplerState = device->CreateSamplerState({});
-	ComPtr<ID3D11Query> query = device->CreateQuery({});
-	ComPtr<ID3D11Predicate> predicate = device->CreatePredicate({});
-	ComPtr<ID3D11Counter> counter = device->CreateCounter({});
+	Wrapper<ID3D11Query> query = device->CreateQuery({});
+	Wrapper<ID3D11Predicate> predicate = device->CreatePredicate({});
+	Wrapper<ID3D11Counter> counter = device->CreateCounter({});
 	Wrapper<ID3D11DeviceContext> deferredContext = device->CreateDeferredContext({});
 	HRESULT hr = device->OpenSharedResource({}, {}, {});
 	D3D11_FORMAT_SUPPORT formatSupport = device->CheckFormatSupport({});
 	UINT multisampleQuality = device->CheckMultisampleQualityLevels({}, {});
 	D3D11_COUNTER_INFO counterInfo = device->CheckCounterInfo();
-	hr = device->CheckCounter(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+	D3D11_COUNTER_TYPE counterType;
+	UINT activeCounters;
+	hr = device->CheckCounter({}, counterType, activeCounters, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
 	{
 		auto f = device->CheckFeatureSupport<D3D11_FEATURE_THREADING>();
 		auto f1 = device->CheckFeatureSupport<D3D11_FEATURE_DOUBLES>();
@@ -115,88 +110,100 @@ void D3D11()
 
 	{
 		deviceContext->VSSetShader({}, nullptr);
-		deviceContext->VSSetShader({}, std::span<ID3D11ClassInstance*>{});
-		deviceContext->VSSetConstantBuffers({}, Span<Wrapper<ID3D11Buffer>>{});
+		deviceContext->VSSetShader({}, Span<WrapperView<ID3D11ClassInstance>>{});
+		deviceContext->VSSetConstantBuffers({}, Span<WrapperView<ID3D11Buffer>>{});
 		deviceContext->VSSetConstantBuffers({}, Wrapper<ID3D11Buffer>{});
 		deviceContext->VSSetSamplers({}, Wrapper<ID3D11SamplerState>{});
-		deviceContext->VSSetSamplers({}, Span<Wrapper<ID3D11SamplerState>>{});
+		deviceContext->VSSetSamplers({}, Span<WrapperView<ID3D11SamplerState>>{});
 		deviceContext->VSSetShaderResources({}, Wrapper<ID3D11ShaderResourceView>{});
-		deviceContext->VSSetShaderResources({}, Span<Wrapper<ID3D11ShaderResourceView>>{});
+		deviceContext->VSSetShaderResources({}, Span<WrapperView<ID3D11ShaderResourceView>>{});
 		Vector<Wrapper<ID3D11Buffer>> buffers = deviceContext->VSGetConstantBuffers(0, 0);
 		Vector<Wrapper<ID3D11SamplerState>> samplers = deviceContext->VSGetSamplers(0, 0);
-		std::pair<Wrapper<ID3D11VertexShader>, std::vector<ComPtr<ID3D11ClassInstance>>> shader = deviceContext->VSGetShader(0);
+		UINT numInstances = 256;
+		std::pair<Wrapper<ID3D11VertexShader>, Vector<Wrapper<ID3D11ClassInstance>>> shader = deviceContext->VSGetShader(numInstances);
+		std::pair<Wrapper<ID3D11VertexShader>, UINT> shader2 = deviceContext->VSGetShader({});
 		Vector<Wrapper<ID3D11ShaderResourceView>> resources = deviceContext->VSGetShaderResources(0, 0);
 	}
 	{
 		deviceContext->PSSetShader({}, nullptr);
-		deviceContext->PSSetShader({}, std::span<ID3D11ClassInstance*>{});
-		deviceContext->PSSetConstantBuffers({}, Span<Wrapper<ID3D11Buffer>>{});
+		deviceContext->PSSetShader({}, Span<WrapperView<ID3D11ClassInstance>>{});
+		deviceContext->PSSetConstantBuffers({}, Span<WrapperView<ID3D11Buffer>>{});
 		deviceContext->PSSetConstantBuffers({}, Wrapper<ID3D11Buffer>{});
 		deviceContext->PSSetSamplers({}, Wrapper<ID3D11SamplerState>{});
-		deviceContext->PSSetSamplers({}, Span<Wrapper<ID3D11SamplerState>>{});
+		deviceContext->PSSetSamplers({}, Span<WrapperView<ID3D11SamplerState>>{});
 		deviceContext->PSSetShaderResources({}, Wrapper<ID3D11ShaderResourceView>{});
-		deviceContext->PSSetShaderResources({}, Span<Wrapper<ID3D11ShaderResourceView>>{});
+		deviceContext->PSSetShaderResources({}, Span<WrapperView<ID3D11ShaderResourceView>>{});
 		Vector<Wrapper<ID3D11Buffer>> buffers = deviceContext->PSGetConstantBuffers(0, 0);
 		Vector<Wrapper<ID3D11SamplerState>> samplers = deviceContext->PSGetSamplers(0, 0);
-		std::pair<Wrapper<ID3D11PixelShader>, std::vector<ComPtr<ID3D11ClassInstance>>> shader = deviceContext->PSGetShader(0);
+		UINT numInstances = 256;
+		std::pair<Wrapper<ID3D11PixelShader>, Vector<Wrapper<ID3D11ClassInstance>>> shader = deviceContext->PSGetShader(numInstances);
+		std::pair<Wrapper<ID3D11PixelShader>, UINT> shader2 = deviceContext->PSGetShader({});
 		Vector<Wrapper<ID3D11ShaderResourceView>> resources = deviceContext->PSGetShaderResources(0, 0);
 	}
 	{
 		deviceContext->GSSetShader({}, nullptr);
-		deviceContext->GSSetShader({}, std::span<ID3D11ClassInstance*>{});
-		deviceContext->GSSetConstantBuffers({}, Span<Wrapper<ID3D11Buffer>>{});
+		deviceContext->GSSetShader({}, Span<WrapperView<ID3D11ClassInstance>>{});
+		deviceContext->GSSetConstantBuffers({}, Span<WrapperView<ID3D11Buffer>>{});
 		deviceContext->GSSetConstantBuffers({}, Wrapper<ID3D11Buffer>{});
 		deviceContext->GSSetSamplers({}, Wrapper<ID3D11SamplerState>{});
-		deviceContext->GSSetSamplers({}, Span<Wrapper<ID3D11SamplerState>>{});
+		deviceContext->GSSetSamplers({}, Span<WrapperView<ID3D11SamplerState>>{});
 		deviceContext->GSSetShaderResources({}, Wrapper<ID3D11ShaderResourceView>{});
-		deviceContext->GSSetShaderResources({}, Span<Wrapper<ID3D11ShaderResourceView>>{});
+		deviceContext->GSSetShaderResources({}, Span<WrapperView<ID3D11ShaderResourceView>>{});
 		Vector<Wrapper<ID3D11Buffer>> buffers = deviceContext->GSGetConstantBuffers(0, 0);
 		Vector<Wrapper<ID3D11SamplerState>> samplers = deviceContext->GSGetSamplers(0, 0);
-		std::pair<Wrapper<ID3D11GeometryShader>, std::vector<ComPtr<ID3D11ClassInstance>>> shader = deviceContext->GSGetShader(0);
+		UINT numInstances = 256;
+		std::pair<Wrapper<ID3D11GeometryShader>, Vector<Wrapper<ID3D11ClassInstance>>> shader = deviceContext->GSGetShader(numInstances);
+		std::pair<Wrapper<ID3D11GeometryShader>, UINT> shader2 = deviceContext->GSGetShader({});
 		Vector<Wrapper<ID3D11ShaderResourceView>> resources = deviceContext->GSGetShaderResources(0, 0);
 	}
 	{
 		deviceContext->HSSetShader({}, nullptr);
-		deviceContext->HSSetShader({}, std::span<ID3D11ClassInstance*>{});
-		deviceContext->HSSetConstantBuffers({}, Span<Wrapper<ID3D11Buffer>>{});
+		deviceContext->HSSetShader({}, Span<WrapperView<ID3D11ClassInstance>>{});
+		deviceContext->HSSetConstantBuffers({}, Span<WrapperView<ID3D11Buffer>>{});
 		deviceContext->HSSetConstantBuffers({}, Wrapper<ID3D11Buffer>{});
 		deviceContext->HSSetSamplers({}, Wrapper<ID3D11SamplerState>{});
-		deviceContext->HSSetSamplers({}, Span<Wrapper<ID3D11SamplerState>>{});
+		deviceContext->HSSetSamplers({}, Span<WrapperView<ID3D11SamplerState>>{});
 		deviceContext->HSSetShaderResources({}, Wrapper<ID3D11ShaderResourceView>{});
-		deviceContext->HSSetShaderResources({}, Span<Wrapper<ID3D11ShaderResourceView>>{});
+		deviceContext->HSSetShaderResources({}, Span<WrapperView<ID3D11ShaderResourceView>>{});
 		Vector<Wrapper<ID3D11Buffer>> buffers = deviceContext->HSGetConstantBuffers(0, 0);
 		Vector<Wrapper<ID3D11SamplerState>> samplers = deviceContext->HSGetSamplers(0, 0);
-		std::pair<Wrapper<ID3D11HullShader>, std::vector<ComPtr<ID3D11ClassInstance>>> shader = deviceContext->HSGetShader(0);
+		UINT numInstances = 256;
+		std::pair<Wrapper<ID3D11HullShader>, Vector<Wrapper<ID3D11ClassInstance>>> shader = deviceContext->HSGetShader(numInstances);
+		std::pair<Wrapper<ID3D11HullShader>, UINT> shader2 = deviceContext->HSGetShader({});
 		Vector<Wrapper<ID3D11ShaderResourceView>> resources = deviceContext->HSGetShaderResources(0, 0);
 	}
 	{
 		deviceContext->DSSetShader({}, nullptr);
-		deviceContext->DSSetShader({}, std::span<ID3D11ClassInstance*>{});
-		deviceContext->DSSetConstantBuffers({}, Span<Wrapper<ID3D11Buffer>>{});
+		deviceContext->DSSetShader({}, Span<WrapperView<ID3D11ClassInstance>>{});
+		deviceContext->DSSetConstantBuffers({}, Span<WrapperView<ID3D11Buffer>>{});
 		deviceContext->DSSetConstantBuffers({}, Wrapper<ID3D11Buffer>{});
 		deviceContext->DSSetSamplers({}, Wrapper<ID3D11SamplerState>{});
-		deviceContext->DSSetSamplers({}, Span<Wrapper<ID3D11SamplerState>>{});
+		deviceContext->DSSetSamplers({}, Span<WrapperView<ID3D11SamplerState>>{});
 		deviceContext->DSSetShaderResources({}, Wrapper<ID3D11ShaderResourceView>{});
-		deviceContext->DSSetShaderResources({}, Span<Wrapper<ID3D11ShaderResourceView>>{});
+		deviceContext->DSSetShaderResources({}, Span<WrapperView<ID3D11ShaderResourceView>>{});
 		Vector<Wrapper<ID3D11Buffer>> buffers = deviceContext->DSGetConstantBuffers(0, 0);
 		Vector<Wrapper<ID3D11SamplerState>> samplers = deviceContext->DSGetSamplers(0, 0);
-		std::pair<Wrapper<ID3D11DomainShader>, std::vector<ComPtr<ID3D11ClassInstance>>> shader = deviceContext->DSGetShader(0);
+		UINT numInstances = 256;
+		std::pair<Wrapper<ID3D11DomainShader>, Vector<Wrapper<ID3D11ClassInstance>>> shader = deviceContext->DSGetShader(numInstances);
+		std::pair<Wrapper<ID3D11DomainShader>, UINT> shader2 = deviceContext->DSGetShader({});
 		Vector<Wrapper<ID3D11ShaderResourceView>> resources = deviceContext->DSGetShaderResources(0, 0);
 	}
 	{
 		deviceContext->CSSetShader({}, nullptr);
-		deviceContext->CSSetShader({}, std::span<ID3D11ClassInstance*>{});
-		deviceContext->CSSetConstantBuffers({}, Span<Wrapper<ID3D11Buffer>>{});
+		deviceContext->CSSetShader({}, Span<WrapperView<ID3D11ClassInstance>>{});
+		deviceContext->CSSetConstantBuffers({}, Span<WrapperView<ID3D11Buffer>>{});
 		deviceContext->CSSetConstantBuffers({}, Wrapper<ID3D11Buffer>{});
 		deviceContext->CSSetSamplers({}, Wrapper<ID3D11SamplerState>{});
-		deviceContext->CSSetSamplers({}, Span<Wrapper<ID3D11SamplerState>>{});
+		deviceContext->CSSetSamplers({}, Span<WrapperView<ID3D11SamplerState>>{});
 		deviceContext->CSSetShaderResources({}, Wrapper<ID3D11ShaderResourceView>{});
-		deviceContext->CSSetShaderResources({}, Span<Wrapper<ID3D11ShaderResourceView>>{});
+		deviceContext->CSSetShaderResources({}, Span<WrapperView<ID3D11ShaderResourceView>>{});
 		deviceContext->CSSetUnorderedAccessViews({}, nullptr, {});
 		deviceContext->CSSetUnorderedAccessViews({}, D3D11::CSSetUnorderedAccessViewsData{ {}, nullptr, nullptr });
 		Vector<Wrapper<ID3D11Buffer>> buffers = deviceContext->CSGetConstantBuffers(0, 0);
 		Vector<Wrapper<ID3D11SamplerState>> samplers = deviceContext->CSGetSamplers(0, 0);
-		std::pair<Wrapper<ID3D11ComputeShader>, std::vector<ComPtr<ID3D11ClassInstance>>> shader = deviceContext->CSGetShader(0);
+		UINT numInstances = 256;
+		std::pair<Wrapper<ID3D11ComputeShader>, Vector<Wrapper<ID3D11ClassInstance>>> shader = deviceContext->CSGetShader(numInstances);
+		std::pair<Wrapper<ID3D11ComputeShader>, UINT> shader2 = deviceContext->CSGetShader({});
 		Vector<Wrapper<ID3D11ShaderResourceView>> resources = deviceContext->CSGetShaderResources(0, 0);
 		Vector<Wrapper<ID3D11UnorderedAccessView>> uavs = deviceContext->CSGetUnorderedAccessViews(0, 0);
 	}
@@ -264,8 +271,8 @@ void D3D11()
 	deviceContext->IAGetPrimitiveTopology();
 	Wrapper<ID3D11InputLayout> layout = deviceContext->IAGetInputLayout();
 
-	//deviceContext->OMSetRenderTargets(nullptr, nullptr);
-	deviceContext->OMSetRenderTargets(Span<Wrapper<ID3D11RenderTargetView>>{}, nullptr);
+	deviceContext->OMSetRenderTargets(nullptr, nullptr);
+	deviceContext->OMSetRenderTargets(Span<WrapperView<ID3D11RenderTargetView>>{}, nullptr);
 	deviceContext->OMSetRenderTargetsAndUnorderedAccessViews({}, nullptr, {}, {}, nullptr);
 	deviceContext->OMSetBlendState({}, {}, {});
 	deviceContext->OMSetDepthStencilState({}, {});
