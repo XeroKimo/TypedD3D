@@ -37,8 +37,8 @@ namespace TypedD3D
 	{
 		using BaseTrait = ReplaceInnerType<typename Wrapper::trait_type, BaseType>;
 		using BaseWrapper = ReplaceInnerType<Wrapper, BaseTrait>;
-		static constexpr bool InvokeIID = requires(Wrapper w) { { std::invoke(function, std::forward<Args>(args)..., __uuidof(Wrapper), OutPtr{ w }) } -> std::convertible_to<HRESULT>; };
-		static constexpr bool InvokeVoidIID = requires(Wrapper w) { { std::invoke(function, std::forward<Args>(args)..., __uuidof(Wrapper), OutPtr{ w }) } -> std::same_as<void>; };
+		static constexpr bool InvokeIID = requires(Wrapper w) { { std::invoke(function, std::forward<Args>(args)..., __uuidof(w), OutPtr{ w }) } -> std::convertible_to<HRESULT>; };
+		static constexpr bool InvokeVoidIID = requires(Wrapper w) { { std::invoke(function, std::forward<Args>(args)..., __uuidof(w), OutPtr{ w }) } -> std::same_as<void>; };
 		static constexpr bool InvokeHRESULT = requires(BaseWrapper w) { { std::invoke(function, std::forward<Args>(args)..., OutPtr{ w }) } -> std::convertible_to<HRESULT>; };
 
 		if constexpr(InvokeIID)
@@ -53,22 +53,24 @@ namespace TypedD3D
 			std::invoke(function, std::forward<Args>(args)..., __uuidof(unknown), OutPtr{ unknown });
 			return unknown;
 		}
-
-
-		BaseWrapper unknown;
-		if constexpr(InvokeHRESULT)
+		else if constexpr(InvokeHRESULT)
 		{
+			BaseWrapper unknown;
 			ThrowIfFailed(std::invoke(function, std::forward<Args>(args)..., OutPtr{ unknown }));
+			if constexpr(std::same_as<typename Wrapper::unknown_type, BaseType>)
+				return unknown;
+			else
+				return Cast<typename Wrapper::unknown_type>(std::move(unknown));
 		}
 		else
 		{
+			BaseWrapper unknown;
 			std::invoke(function, std::forward<Args>(args)..., OutPtr{ unknown });
+			if constexpr(std::same_as<typename Wrapper::unknown_type, BaseType>)
+				return unknown;
+			else
+				return Cast<typename Wrapper::unknown_type>(std::move(unknown));
 		}
-
-		if constexpr(std::same_as<typename Wrapper::unknown_type, BaseType>)
-			return unknown;
-		else
-			return Cast<typename Wrapper::unknown_type>(std::move(unknown));
 	}
 
 	export template<IUnknownTrait Trait>
@@ -86,6 +88,13 @@ namespace TypedD3D
 	{
 		template<class Derived>
 		using Interface = ID3DBlob*;
+	};
+
+	template<>
+	struct UntaggedTraits<IUnknown>
+	{
+		template<class Derived>
+		using Interface = IUnknown*;
 	};
 
 	export template<class Ty>

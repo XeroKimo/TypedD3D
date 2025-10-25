@@ -5,11 +5,11 @@ module;
 #include <dxgi1_6.h>
 #include <span>
 #include <d3d12.h>
-#include <wrl/client.h>
+
 export module TypedDXGI:SwapChain;
-struct ID3D12CommandQueue;
+//struct ID3D12CommandQueue;
 import TypedD3D.Shared;
-import TypedD3D12;
+//import TypedD3D12;
 
 struct ID3D11Resource;
 struct ID3D12Resource;
@@ -19,22 +19,12 @@ concept Resource = std::derived_from<Ty, ID3D11Resource> || std::derived_from<Ty
 
 namespace TypedD3D::DXGI
 {
-	using Microsoft::WRL::ComPtr;
+}
 
-	template<class Ty>
-	using SwapChain_t = IUnknownWrapper<Ty, UntaggedTraits>;
-
-	namespace Aliases
-	{
-		export using SwapChain = SwapChain_t<IDXGISwapChain>;
-		export using SwapChain1 = SwapChain_t<IDXGISwapChain1>;
-	}
-
-	template<class Ty>
-	struct SwapChainTraits;
-
+namespace TypedD3D
+{
 	template<>
-	struct SwapChainTraits<IDXGISwapChain>
+	struct UntaggedTraits<IDXGISwapChain>
 	{
 		using value_type = IDXGISwapChain;
 		using pointer = IDXGISwapChain*;
@@ -42,40 +32,37 @@ namespace TypedD3D::DXGI
 		using reference = IDXGISwapChain&;
 		using cosnt_reference = const IDXGISwapChain&;
 
-		template<class DerivedSelf>
-		class Interface
+		template<class Derived>
+		class Interface : public InterfaceBase<UntaggedTraits<Derived>>
 		{
-		private:
-			using derived_self = DerivedSelf;
-
 		public:
 			void Present(UINT SyncInterval, UINT Flags)
 			{
-				ThrowIfFailed(Get().Present(SyncInterval, Flags));
+				ThrowIfFailed(Self().Present(SyncInterval, Flags));
 			}
 
 			template<Resource Ty>
 			Wrapper<Ty> GetBuffer(UINT buffer)
 			{
-				return IIDToObjectForwardFunction<Ty>(&value_type::GetBuffer, Get(), buffer);
+				return ForwardFunction<Wrapper<Ty>>(&value_type::GetBuffer, Self(), buffer);
 			}
 
 			void SetFullscreenState(BOOL Fullscreen, IDXGIOutput* optTarget)
 			{
-				ThrowIfFailed(Get().SetFullscreenState(Fullscreen, optTarget));
+				ThrowIfFailed(Self().SetFullscreenState(Fullscreen, optTarget));
 			}
 
-			std::pair<BOOL, ComPtr<IDXGIOutput>> GetFullscreenState()
+			std::pair<BOOL, Wrapper<IDXGIOutput>> GetFullscreenState()
 			{
-				std::pair<BOOL, ComPtr<IDXGIOutput>> state;
-				Get().GetFullscreenState(&state.first, &state.second);
+				std::pair<BOOL, Wrapper<IDXGIOutput>> state;
+				Self().GetFullscreenState(&state.first, OutPtr{ state.second });
 				return state;
 			}
 
 			DXGI_SWAP_CHAIN_DESC GetDesc()
 			{
 				DXGI_SWAP_CHAIN_DESC desc;
-				Get().GetDesc(&desc);
+				Self().GetDesc(&desc);
 				return desc;
 			}
 
@@ -86,41 +73,41 @@ namespace TypedD3D::DXGI
 				DXGI_FORMAT NewFormat,
 				UINT SwapChainFlags)
 			{
-				ThrowIfFailed(Get().ResizeBuffers(BufferCount, Width, Height, NewFormat, SwapChainFlags));
+				ThrowIfFailed(Self().ResizeBuffers(BufferCount, Width, Height, NewFormat, SwapChainFlags));
 			}
 
 			void ResizeTarget(const DXGI_MODE_DESC& pNewTargetParameters)
 			{
-				ThrowIfFailed(Get().ResizeTarget(&pNewTargetParameters));
+				ThrowIfFailed(Self().ResizeTarget(&pNewTargetParameters));
 			}
 
-			ComPtr<IDXGIOutput> GetContainingOutput()
+			Wrapper<IDXGIOutput> GetContainingOutput()
 			{
-				return UnknownObjectForwardFunction<IDXGIOutput>(&value_type::GetContainingOutput, Get()).value();
+				return ForwardFunction<IDXGIOutput>(&value_type::GetContainingOutput, Self());
 			}
 
 			DXGI_FRAME_STATISTICS GetFrameStatistics()
 			{
 				DXGI_FRAME_STATISTICS stats;
-				Get().GetFrameStatistics(stats);
+				Self().GetFrameStatistics(&stats);
 				return stats;
 			}
 
 			UINT GetLastPresentCount()
 			{
 				UINT LastPresentCount;
-				Get().GetLastPresentCount(&LastPresentCount);
+				Self().GetLastPresentCount(&LastPresentCount);
 				return LastPresentCount;
 			}
 
 		private:
-			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-			reference Get() { return *ToDerived().derived_self::Get(); }
+			using InterfaceBase<UntaggedTraits<Derived>>::Self;
+			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
 		};
 	};
 
 	template<>
-	struct SwapChainTraits<IDXGISwapChain1>
+	struct UntaggedTraits<IDXGISwapChain1>
 	{
 		using value_type = IDXGISwapChain1;
 		using pointer = IDXGISwapChain1*;
@@ -128,79 +115,77 @@ namespace TypedD3D::DXGI
 		using reference = IDXGISwapChain1&;
 		using cosnt_reference = const IDXGISwapChain1&;
 
-		template<class DerivedSelf>
-		class Interface : public SwapChainTraits<IDXGISwapChain>::Interface<DerivedSelf>
+		template<class Derived>
+		class Interface : public UntaggedTraits<IDXGISwapChain>::Interface<Derived>
 		{
-		private:
-			using derived_self = DerivedSelf;
 		public:
 			DXGI_SWAP_CHAIN_DESC1 GetDesc1()
 			{
 				DXGI_SWAP_CHAIN_DESC1 desc;
-				Get().GetDesc1(&desc);
+				Self().GetDesc1(&desc);
 				return desc;
 			}
 
 			DXGI_SWAP_CHAIN_FULLSCREEN_DESC GetFullscreenDesc()
 			{
 				DXGI_SWAP_CHAIN_FULLSCREEN_DESC desc;
-				HRESULT result = Get().GetFullscreenDesc(&desc);
+				HRESULT result = Self().GetFullscreenDesc(&desc);
 				return desc;
 			}
 
 			HWND GetHwnd()
 			{
 				HWND hwnd;
-				Get().GetHwnd(&hwnd);
+				Self().GetHwnd(&hwnd);
 				return hwnd;
 			}
 
 			void GetCoreWindow(REFIID refiid, void** ppUnk)
 			{
-				ThrowIfFailed(Get().GetCoreWindow(refiid, ppUnk));
+				ThrowIfFailed(Self().GetCoreWindow(refiid, ppUnk));
 			}
 
 			void Present1(UINT SyncInterval, UINT PresentFlags, const DXGI_PRESENT_PARAMETERS& pPresentParameters)
 			{
-				ThrowIfFailed(Get().Present1(SyncInterval, PresentFlags, &pPresentParameters));
+				ThrowIfFailed(Self().Present1(SyncInterval, PresentFlags, &pPresentParameters));
 			}
 
 			BOOL IsTemporaryMonoSupported()
 			{
-				return Get().IsTemporaryMonoSupported();
+				return Self().IsTemporaryMonoSupported();
 			}
 
-			ComPtr<IDXGIOutput> GetRestrictToOutput()
+			Wrapper<IDXGIOutput> GetRestrictToOutput()
 			{
-				return UnknownObjectForwardFunction<IDXGIOutput>(&value_type::GetRestrictToOutput, Get()).value();
+				return ForwardFunction<IDXGIOutput>(&value_type::GetRestrictToOutput, Self()).value();
 			}
 
 			void SetBackgroundColor(DXGI_RGBA pColor)
 			{
-				return ThrowIfFailed(Get().SetBackgroundColor(&pColor));
+				return ThrowIfFailed(Self().SetBackgroundColor(&pColor));
 			}
 
 			DXGI_RGBA GetBackgroundColor(DXGI_RGBA* pColor)
 			{
 				DXGI_RGBA color;
-				ThrowIfFailed(Get().GetBackgroundColor(&color));
+				ThrowIfFailed(Self().GetBackgroundColor(&color));
 				return color;
 			}
 
 			void SetRotation(DXGI_MODE_ROTATION Rotation)
 			{
-				ThrowIfFailed(Get().SetRotation(Rotation));
+				ThrowIfFailed(Self().SetRotation(Rotation));
 			}
 
 			DXGI_MODE_ROTATION GetRotation()
 			{
 				DXGI_MODE_ROTATION rotation;
-				ThrowIfFailed(Get().GetRotation(rotation));
+				ThrowIfFailed(Self().GetRotation(rotation));
 				return rotation;
 			}
 		private:
-			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-			reference Get() { return *ToDerived().derived_self::Get(); }
+			using InterfaceBase<UntaggedTraits<Derived>>::Self;
+			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
 		};
 	};
 
@@ -211,7 +196,7 @@ namespace TypedD3D::DXGI
 	};
 
 	template<>
-	struct SwapChainTraits<IDXGISwapChain2>
+	struct UntaggedTraits<IDXGISwapChain2>
 	{
 		using value_type = IDXGISwapChain2;
 		using pointer = IDXGISwapChain2*;
@@ -219,61 +204,61 @@ namespace TypedD3D::DXGI
 		using reference = IDXGISwapChain2&;
 		using cosnt_reference = const IDXGISwapChain2&;
 
-		template<class DerivedSelf>
-		class Interface : public SwapChainTraits<IDXGISwapChain1>::Interface<DerivedSelf>
+		template<class Derived>
+		class Interface : public UntaggedTraits<IDXGISwapChain1>::Interface<Derived>
 		{
 		private:
-			using derived_self = DerivedSelf;
+			using derived_self = Derived;
 
 		public:
 			HRESULT SetSourceSize(SourceSize Size)
 			{
-				return Get().SetSourceSize(Size.Width, Size.Height);
+				return Self().SetSourceSize(Size.Width, Size.Height);
 			}
 
 			SourceSize GetSourceSize()
 			{
 				SourceSize size;
-				ThrowIfFailed(Get().GetSourceSize(&size.Width, &size.Height));
+				ThrowIfFailed(Self().GetSourceSize(&size.Width, &size.Height));
 				return size;
 			}
 
 			void SetMaximumFrameLatency(UINT MaxLatency)
 			{
-				ThrowIfFailed(Get().SetMaximumFrameLatency(&MaxLatency));
+				ThrowIfFailed(Self().SetMaximumFrameLatency(&MaxLatency));
 			}
 
 			UINT STDMETHODCALLTYPE GetMaximumFrameLatency()
 			{
 				UINT latency;
-				ThrowIfFailed(Get().GetMaximumFrameLatency(&latency));
+				ThrowIfFailed(Self().GetMaximumFrameLatency(&latency));
 				return latency;
 			}
 
 			HANDLE GetFrameLatencyWaitableObject()
 			{
-				return Get().GetFrameLatencyWaitableObject();
+				return Self().GetFrameLatencyWaitableObject();
 			}
 
 			void SetMatrixTransform(const DXGI_MATRIX_3X2_F& pMatrix)
 			{
-				ThrowIfFailed(Get().SetMatrixTransform(&pMatrix));
+				ThrowIfFailed(Self().SetMatrixTransform(&pMatrix));
 			}
 
 			DXGI_MATRIX_3X2_F STDMETHODCALLTYPE GetMatrixTransform()
 			{
 				DXGI_MATRIX_3X2_F matrix;
-				ThrowIfFailed(Get().GetMatrixTransform(&matrix));
+				ThrowIfFailed(Self().GetMatrixTransform(&matrix));
 				return matrix;
 			}
 		private:
-			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-			reference Get() { return *ToDerived().derived_self::Get(); }
-		};
+			using InterfaceBase<UntaggedTraits<Derived>>::Self;
+			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+		};									   
 	};
 
 	template<>
-	struct SwapChainTraits<IDXGISwapChain3>
+	struct UntaggedTraits<IDXGISwapChain3>
 	{
 		using value_type = IDXGISwapChain3;
 		using pointer = IDXGISwapChain3*;
@@ -281,68 +266,52 @@ namespace TypedD3D::DXGI
 		using reference = IDXGISwapChain3&;
 		using cosnt_reference = const IDXGISwapChain3&;
 
-		template<class DerivedSelf>
-		class Interface : public SwapChainTraits<IDXGISwapChain2>::Interface<DerivedSelf>
+		template<class Derived>
+		class Interface : public UntaggedTraits<IDXGISwapChain2>::Interface<Derived>
 		{
 		private:
-			using derived_self = DerivedSelf;
+			using derived_self = Derived;
 
 		public:
 			UINT GetCurrentBackBufferIndex()
 			{
-				return Get().GetCurrentBackBufferIndex();
+				return Self().GetCurrentBackBufferIndex();
 			}
 
 			DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG CheckColorSpaceSupport(DXGI_COLOR_SPACE_TYPE ColorSpace)
 			{
 				UINT colorSupport;
-				Get().CheckColorSpaceSupport(ColorSpace, &colorSupport);
+				Self().CheckColorSpaceSupport(ColorSpace, &colorSupport);
 				return static_cast<DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG>(colorSupport);
 			}
 
 			void SetColorSpace1(DXGI_COLOR_SPACE_TYPE ColorSpace)
 			{
-				ThrowIfFailed(Get().SetColorSpace1(ColorSpace));
+				ThrowIfFailed(Self().SetColorSpace1(ColorSpace));
 			}
 
-			template<std::derived_from<ID3D12CommandQueue> QueueTy>
-			void ResizeBuffers1(
-				UINT BufferCount,
-				UINT Width,
-				UINT Height,
-				DXGI_FORMAT Format,
-				UINT SwapChainFlags,
-				std::span<UINT> pCreationNodeMask,
-				std::span<TypedD3D12::Direct<QueueTy>> ppPresentQueue)
-			{
-				std::unique_ptr<IUnknown[]> queues = std::make_unique<IUnknown[]>(ppPresentQueue.size());
+			//template<std::derived_from<ID3D12CommandQueue> QueueTy>
+			//void ResizeBuffers1(
+			//	UINT BufferCount,
+			//	UINT Width,
+			//	UINT Height,
+			//	DXGI_FORMAT Format,
+			//	UINT SwapChainFlags,
+			//	std::span<UINT> pCreationNodeMask,
+			//	std::span<TypedD3D12::Direct<QueueTy>> ppPresentQueue)
+			//{
+			//	std::unique_ptr<IUnknown[]> queues = std::make_unique<IUnknown[]>(ppPresentQueue.size());
 
-				for(size_t i = 0; i < ppPresentQueue.size(); i++)
-				{
-					queues[i] = ppPresentQueue[i].Get();
-				}
+			//	for(size_t i = 0; i < ppPresentQueue.size(); i++)
+			//	{
+			//		queues[i] = ppPresentQueue[i].Get();
+			//	}
 
-				ThrowIfFailed(Get().ResizeBuffers1(BufferCount, Width, Height, Format, SwapChainFlags, pCreationNodeMask.data(), queues.get()));
-			}
+			//	ThrowIfFailed(Self().ResizeBuffers1(BufferCount, Width, Height, Format, SwapChainFlags, pCreationNodeMask.data(), queues.get()));
+			//}
 		private:
-			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-			reference Get() { return *ToDerived().derived_self::Get(); }
+			using InterfaceBase<UntaggedTraits<Derived>>::Self;
+			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
 		};
-	};
-}
-
-namespace TypedD3D
-{
-	template<std::derived_from<IDXGISwapChain> Ty>
-	struct UntaggedTraits<Ty>
-	{
-		using value_type = Ty;
-		using pointer = Ty*;
-		using const_pointer = const Ty*;
-		using reference = Ty&;
-		using cosnt_reference = const Ty&;
-
-		template<class DerivedSelf>
-		using Interface = DXGI::SwapChainTraits<Ty>::template Interface<DerivedSelf>;
 	};
 }

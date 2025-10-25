@@ -2,23 +2,17 @@ module;
 
 #include <concepts>
 #include <dxgi1_6.h>
-#include <wrl/client.h>
+
 #include <utility>
 
 export module TypedDXGI:Adapter;
+import :DXGIObject;
 import TypedD3D.Shared;
 
-namespace TypedD3D::DXGI
+namespace TypedD3D
 {
-	using Microsoft::WRL::ComPtr;
-	export template<std::derived_from<IDXGIAdapter> Ty>
-	using Adapter_t = IUnknownWrapper<Ty, UntaggedTraits>;
-
-	template<class Ty>
-	struct AdapterTraits;
-
 	template<>
-	struct AdapterTraits<IDXGIAdapter>
+	struct UntaggedTraits<IDXGIAdapter> 
 	{
 		using value_type = IDXGIAdapter;
 		using pointer = IDXGIAdapter*;
@@ -27,46 +21,33 @@ namespace TypedD3D::DXGI
 		using cosnt_reference = const IDXGIAdapter&;
 
 		template<class DerivedSelf>
-		class Interface
+		class Interface : public InterfaceBase<UntaggedTraits<DerivedSelf>>
 		{
 			using derived_self = DerivedSelf;
 
 		public:
-			ComPtr<IDXGIOutput> EnumOutputs(UINT Output)
+			Wrapper<IDXGIOutput> EnumOutputs(UINT Output)
 			{
-				return UnknownObjectForwardFunction<IDXGIOutput>(&value_type::EnumOutputs, Get(), Output);
+				return ForwardFunction<Wrapper<IDXGIOutput>>(&value_type::EnumOutputs, Self(), Output);
 			}
 
 			DXGI_ADAPTER_DESC GetDesc()
 			{
 				DXGI_ADAPTER_DESC desc;
-				Get().GetDesc(&desc);
+				Self().GetDesc(&desc);
 				return desc;
 			}
 
 			std::pair<HRESULT, LARGE_INTEGER> CheckInterfaceSupport(REFGUID InterfaceName)
 			{
 				std::pair<HRESULT, LARGE_INTEGER> result;
-				result.first = Get().CheckInterfaceSupport(InterfaceName, &result.second);
+				result.first = Self().CheckInterfaceSupport(InterfaceName, &result.second);
 				return result;
 			}
 
 		private:
-			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-			reference Get() { return *ToDerived().derived_self::Get(); }
+			using InterfaceBase<UntaggedTraits<DerivedSelf>>::Self;
+			using InterfaceBase<UntaggedTraits<DerivedSelf>>::ToDerived;
 		};
-	};
-
-	namespace Aliases
-	{
-		export using DXGIAdapter = Adapter_t<IDXGIAdapter>;
-	}
-}
-
-namespace TypedD3D
-{
-	template<std::derived_from<IDXGIAdapter> Ty>
-	struct UntaggedTraits<Ty> : public DXGI::AdapterTraits<Ty>
-	{
 	};
 }

@@ -336,8 +336,8 @@ namespace TypedD3D
 		{
 			if constexpr(IUnknownWeakWrapper<Wrapper>)
 			{
-				if(other)
-					other.Acquire();
+				if(ptr)
+					Acquire();
 			}
 		}
 
@@ -347,8 +347,8 @@ namespace TypedD3D
 		{
 			if constexpr(IUnknownWeakWrapper<Wrapper>)
 			{
-				if(other)
-					other.Acquire();
+				if(ptr)
+					Acquire();
 			}
 		}
 
@@ -492,7 +492,21 @@ namespace TypedD3D
 	};
 
 	export template<class To, class From, template<class> class Trait>
-	WeakWrapper<Trait<To>> Cast(WeakWrapper<Trait<From>> ptr) noexcept
+	WeakWrapper<Trait<To>> Cast(const WeakWrapper<Trait<From>>& ptr) noexcept
+	{
+		if(!ptr)
+			return {};
+
+		WeakWrapper<Trait<To>> to;
+
+		if(SUCCEEDED(ptr.Get()->QueryInterface<To>(OutPtr{ to })))
+			to->Release();
+
+		return to;
+	}
+
+	export template<class To, class From, template<class> class Trait>
+	WeakWrapper<Trait<To>> Cast(WeakWrapper<Trait<From>>&& ptr) noexcept
 	{
 		if(!ptr)
 			return {};
@@ -585,6 +599,30 @@ namespace TypedD3D
 		}
 
 		ElementReferenceTest& operator=(Wrapper&& other) noexcept
+		{
+			static_assert(!IsConst, "Calling ElementReferece<true>::operator=() is not allowed as it's a const proxy. The function still needs exists to satisfy a concept as to act as if the function is const");
+			Wrapper temp{ std::move(other) };
+			unknown_type* temp2 = ptr;
+			ptr = temp.Detach();
+			temp.Attach(temp2);
+			return *this;
+		}
+
+		template<IUnknownWrapper OtherWrapper>
+			requires ConvertibleTraitTo<typename OtherWrapper::trait_type, trait_type>
+		ElementReferenceTest& operator=(const OtherWrapper& other) noexcept
+		{
+			static_assert(!IsConst, "Calling ElementReferece<true>::operator=() is not allowed as it's a const proxy. The function still needs exists to satisfy a concept as to act as if the function is const");
+			Wrapper temp{ other };
+			unknown_type* temp2 = ptr;
+			ptr = temp.Detach();
+			temp.Attach(temp2);
+			return *this;
+		}
+
+		template<IUnknownWrapper OtherWrapper>
+			requires ConvertibleTraitTo<typename OtherWrapper::trait_type, trait_type>
+		ElementReferenceTest& operator=(OtherWrapper&& other) noexcept
 		{
 			static_assert(!IsConst, "Calling ElementReferece<true>::operator=() is not allowed as it's a const proxy. The function still needs exists to satisfy a concept as to act as if the function is const");
 			Wrapper temp{ std::move(other) };

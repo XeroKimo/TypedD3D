@@ -44,6 +44,7 @@
     <ClCompile Include="source\D3D12\PipelineState.ixx" />
     <ClCompile Include="source\D3D11\DeviceChild.ixx" />
     <ClCompile Include="source\DXGI\Adapter.ixx" />
+    <ClCompile Include="source\DXGI\DXGIObject.ixx" />
     <ClCompile Include="source\DXGI\Factory.ixx" />
     <ClCompile Include="source\DXGI\SwapChain.ixx" />
     <ClCompile Include="source\Legacy\D3D12LegacyHelpers.ixx" />
