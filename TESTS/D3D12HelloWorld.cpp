@@ -315,7 +315,8 @@ void D3D12HelloWorld()
     {
         resources[i] = swapChain->GetBuffer<ID3D12Resource>(i).Get();
     }
-
+    Span<const RTV<D3D12_CPU_DESCRIPTOR_HANDLE>> test;
+    Span<RTV<D3D12_CPU_DESCRIPTOR_HANDLE>> test2;
 
     while(true)
     {
@@ -358,14 +359,16 @@ void D3D12HelloWorld()
                             TypedD3D::Helpers::D3D12::ResourceBarrier(*commandList.Get(), std::span(&beginBarrier, 1), std::span(&endBarrier, 1),
                                 [&](TypedD3D::Direct<ID3D12GraphicsCommandList> commandList)
                                 {
-                                    TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart().Offset(frameData.backBufferIndex, rtvOffset);
+                                    TypedD3D::Array<TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE>, 1> backBufferHandle
+                                    { swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart().Offset(frameData.backBufferIndex, rtvOffset) };
                                     TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> b2;
-                                    b2 = backBufferHandle;
+
+                                    b2 = backBufferHandle[0];
                                     auto color = std::to_array({ 0.f, 0.3f, 0.7f, 1.f });
                                     std::span<const float, 4> f = color;
 
-                                    commandList->ClearRenderTargetView(backBufferHandle, std::to_array({ 0.f, 0.3f, 0.7f, 1.f }));
-                                    commandList->OMSetRenderTargets(std::span<const TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE>>(&backBufferHandle, 1), true, nullptr);
+                                    commandList->ClearRenderTargetView(backBufferHandle[0], std::to_array({ 0.f, 0.3f, 0.7f, 1.f }));
+                                    commandList->OMSetRenderTargets(backBufferHandle, true, nullptr);
 
                                     commandList->SetPipelineState(pipelineState);
                                     commandList->SetGraphicsRootSignature(rootSignature.Get());

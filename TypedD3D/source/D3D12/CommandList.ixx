@@ -95,8 +95,8 @@ namespace TypedD3D::D3D12
 			}
 
 			void ClearUnorderedAccessViewFloat(
-				CBV_SRV_UAV<::D3D12_GPU_DESCRIPTOR_HANDLE> ViewGPUHandleInCurrentHeap,
-				CBV_SRV_UAV<::D3D12_CPU_DESCRIPTOR_HANDLE> ViewCPUHandle,
+				CBV_SRV_UAV<D3D12_GPU_DESCRIPTOR_HANDLE> ViewGPUHandleInCurrentHeap,
+				CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE> ViewCPUHandle,
 				gsl::not_null<WrapperView<ID3D12Resource>> pResource,
 				std::span<const float, 4> values,
 				std::span<const D3D12_RECT> rects)
@@ -105,8 +105,8 @@ namespace TypedD3D::D3D12
 			}
 
 			void ClearUnorderedAccessViewUint(
-				CBV_SRV_UAV<::D3D12_GPU_DESCRIPTOR_HANDLE> ViewGPUHandleInCurrentHeap,
-				CBV_SRV_UAV<::D3D12_CPU_DESCRIPTOR_HANDLE> ViewCPUHandle,
+				CBV_SRV_UAV<D3D12_GPU_DESCRIPTOR_HANDLE> ViewGPUHandleInCurrentHeap,
+				CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE> ViewCPUHandle,
 				gsl::not_null<WrapperView<ID3D12Resource>> pResource,
 				std::span<const UINT, 4> values,
 				std::span<const D3D12_RECT> rects)
@@ -270,31 +270,14 @@ namespace TypedD3D::D3D12
 				Self().OMSetBlendFactor(BlendFactor.data());
 			}
 			
-			//void OMSetRenderTargets(
-			//	Span<const RTV<::D3D12_CPU_DESCRIPTOR_HANDLE>> pRenderTargetDescriptors,
-			//	BOOL RTsSingleHandleToDescriptorRange,
-			//	const DSV<::D3D12_CPU_DESCRIPTOR_HANDLE>* pDepthStencilDescriptor)
-			//{
-			//	const ::D3D12_CPU_DESCRIPTOR_HANDLE* depthStencil = (pDepthStencilDescriptor) ? &pDepthStencilDescriptor->Raw() : nullptr;
-			//
-			//	Self().OMSetRenderTargets(static_cast<UINT>(pRenderTargetDescriptors.size()), pRenderTargetDescriptors.data(), RTsSingleHandleToDescriptorRange, depthStencil);
-			//}
-			 
 			void OMSetRenderTargets(
-				std::span<const RTV<::D3D12_CPU_DESCRIPTOR_HANDLE>> pRenderTargetDescriptors,
+				Span<const RTV<D3D12_CPU_DESCRIPTOR_HANDLE>> pRenderTargetDescriptors,
 				BOOL RTsSingleHandleToDescriptorRange,
-				const DSV<::D3D12_CPU_DESCRIPTOR_HANDLE>* pDepthStencilDescriptor)
+				const DSV<D3D12_CPU_DESCRIPTOR_HANDLE>* pDepthStencilDescriptor)
 			{
-				std::unique_ptr<::D3D12_CPU_DESCRIPTOR_HANDLE[]> renderTargets = std::make_unique<::D3D12_CPU_DESCRIPTOR_HANDLE[]>(pRenderTargetDescriptors.size());
-
-				for(size_t i = 0; i < pRenderTargetDescriptors.size(); i++)
-				{
-					renderTargets[i] = pRenderTargetDescriptors[i].Raw();
-				}
-
-				const ::D3D12_CPU_DESCRIPTOR_HANDLE* depthStencil = (pDepthStencilDescriptor) ? &pDepthStencilDescriptor->Raw() : nullptr;
-
-				Self().OMSetRenderTargets(static_cast<UINT>(pRenderTargetDescriptors.size()), renderTargets.get(), RTsSingleHandleToDescriptorRange, depthStencil);
+				const D3D12_CPU_DESCRIPTOR_HANDLE* depthStencil = (pDepthStencilDescriptor) ? &pDepthStencilDescriptor->Raw() : nullptr;
+			
+				Self().OMSetRenderTargets(static_cast<UINT>(pRenderTargetDescriptors.size()), pRenderTargetDescriptors.data(), RTsSingleHandleToDescriptorRange, depthStencil);
 			}
 			
 			void OMSetStencilRef(UINT StencilRef)
@@ -379,7 +362,7 @@ namespace TypedD3D::D3D12
 				Self().SetComputeRootConstantBufferView(RootParameterIndex, BufferLocation);
 			}
 			
-			void SetComputeRootDescriptorTable(UINT RootParameterIndex, ::D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor)
+			void SetComputeRootDescriptorTable(UINT RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor)
 			{
 				Self().SetComputeRootDescriptorTable(RootParameterIndex, BaseDescriptor);
 			}
@@ -442,7 +425,7 @@ namespace TypedD3D::D3D12
 				Self().SetGraphicsRootConstantBufferView(RootParameterIndex, BufferLocation);
 			}
 			
-			void SetGraphicsRootDescriptorTable(UINT RootParameterIndex, ::D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor)
+			void SetGraphicsRootDescriptorTable(UINT RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor)
 			{
 				Self().SetGraphicsRootDescriptorTable(RootParameterIndex, BaseDescriptor);
 			}
@@ -721,7 +704,7 @@ namespace TypedD3D
 //			}
 //
 //			void ClearDepthStencilView(
-//				DSV<::D3D12_CPU_DESCRIPTOR_HANDLE> DepthStencilView,
+//				DSV<D3D12_CPU_DESCRIPTOR_HANDLE> DepthStencilView,
 //				D3D12_CLEAR_FLAGS ClearFlags,
 //				FLOAT Depth,
 //				UINT8 Stencil,
@@ -731,7 +714,7 @@ namespace TypedD3D
 //			}
 //
 //			void ClearRenderTargetView(
-//				RTV<::D3D12_CPU_DESCRIPTOR_HANDLE> RenderTargetView,
+//				RTV<D3D12_CPU_DESCRIPTOR_HANDLE> RenderTargetView,
 //				std::span<const float, 4> colorRGBA,
 //				std::span<const D3D12_RECT> rects)
 //			{
@@ -739,7 +722,7 @@ namespace TypedD3D
 //			}
 //
 //			void ClearRenderTargetView(
-//				RTV<::D3D12_CPU_DESCRIPTOR_HANDLE> RenderTargetView,
+//				RTV<D3D12_CPU_DESCRIPTOR_HANDLE> RenderTargetView,
 //				std::array<const float, 4> colorRGBA)
 //			{
 //				ClearRenderTargetView(RenderTargetView.Get(), std::span<const float, 4>{ colorRGBA }, std::span<const D3D12_RECT>{});
@@ -751,8 +734,8 @@ namespace TypedD3D
 //			}
 //
 //			void ClearUnorderedAccessViewFloat(
-//				CBV_SRV_UAV<::D3D12_GPU_DESCRIPTOR_HANDLE> ViewGPUHandleInCurrentHeap,
-//				CBV_SRV_UAV<::D3D12_CPU_DESCRIPTOR_HANDLE> ViewCPUHandle,
+//				CBV_SRV_UAV<D3D12_GPU_DESCRIPTOR_HANDLE> ViewGPUHandleInCurrentHeap,
+//				CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE> ViewCPUHandle,
 //				ID3D12Resource& pResource,
 //				std::span<const float, 4> values,
 //				std::span<const D3D12_RECT> rects)
@@ -761,8 +744,8 @@ namespace TypedD3D
 //			}
 //
 //			void ClearUnorderedAccessViewUint(
-//				CBV_SRV_UAV<::D3D12_GPU_DESCRIPTOR_HANDLE> ViewGPUHandleInCurrentHeap,
-//				CBV_SRV_UAV<::D3D12_CPU_DESCRIPTOR_HANDLE> ViewCPUHandle,
+//				CBV_SRV_UAV<D3D12_GPU_DESCRIPTOR_HANDLE> ViewGPUHandleInCurrentHeap,
+//				CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE> ViewCPUHandle,
 //				ID3D12Resource& pResource,
 //				std::span<const UINT, 4> values,
 //				std::span<const D3D12_RECT> rects)
@@ -924,18 +907,18 @@ namespace TypedD3D
 //			}
 //
 //			void OMSetRenderTargets(
-//				std::span<const RTV<::D3D12_CPU_DESCRIPTOR_HANDLE>> pRenderTargetDescriptors,
+//				std::span<const RTV<D3D12_CPU_DESCRIPTOR_HANDLE>> pRenderTargetDescriptors,
 //				BOOL RTsSingleHandleToDescriptorRange,
-//				const DSV<::D3D12_CPU_DESCRIPTOR_HANDLE>* pDepthStencilDescriptor)
+//				const DSV<D3D12_CPU_DESCRIPTOR_HANDLE>* pDepthStencilDescriptor)
 //			{
-//				std::unique_ptr<::D3D12_CPU_DESCRIPTOR_HANDLE[]> renderTargets = std::make_unique<::D3D12_CPU_DESCRIPTOR_HANDLE[]>(pRenderTargetDescriptors.size());
+//				std::unique_ptr<D3D12_CPU_DESCRIPTOR_HANDLE[]> renderTargets = std::make_unique<D3D12_CPU_DESCRIPTOR_HANDLE[]>(pRenderTargetDescriptors.size());
 //
 //				for(size_t i = 0; i < pRenderTargetDescriptors.size(); i++)
 //				{
 //					renderTargets[i] = pRenderTargetDescriptors[i].Get();
 //				}
 //
-//				const ::D3D12_CPU_DESCRIPTOR_HANDLE* depthStencil = (pDepthStencilDescriptor) ? &pDepthStencilDescriptor->Get() : nullptr;
+//				const D3D12_CPU_DESCRIPTOR_HANDLE* depthStencil = (pDepthStencilDescriptor) ? &pDepthStencilDescriptor->Get() : nullptr;
 //
 //				Self().OMSetRenderTargets(static_cast<UINT>(pRenderTargetDescriptors.size()), renderTargets.get(), RTsSingleHandleToDescriptorRange, depthStencil);
 //			}
@@ -1009,7 +992,7 @@ namespace TypedD3D
 //				Self().SetComputeRootConstantBufferView(RootParameterIndex, BufferLocation);
 //			}
 //
-//			void SetComputeRootDescriptorTable(UINT RootParameterIndex, ::D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor)
+//			void SetComputeRootDescriptorTable(UINT RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor)
 //			{
 //				Self().SetComputeRootDescriptorTable(RootParameterIndex, BaseDescriptor);
 //			}
@@ -1072,7 +1055,7 @@ namespace TypedD3D
 //				Self().SetGraphicsRootConstantBufferView(RootParameterIndex, BufferLocation);
 //			}
 //
-//			void SetGraphicsRootDescriptorTable(UINT RootParameterIndex, ::D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor)
+//			void SetGraphicsRootDescriptorTable(UINT RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor)
 //			{
 //				Self().SetGraphicsRootDescriptorTable(RootParameterIndex, BaseDescriptor);
 //			}

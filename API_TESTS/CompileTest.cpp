@@ -1,24 +1,27 @@
 #include "pch.h"
 #include <d3d11_4.h>
 #include <concepts>
+#include <d3d12.h>
+
 import TypedD3D.Shared;
 import TypedD3D11;
+import TypedD3D12;
 
 using namespace TypedD3D;
 
 static void ContainersTest()
 {
 	static_assert(IUnknownWrapper<WeakWrapper<UntaggedTraits<ID3D11Device>>>);
-	static_assert(IUnknownWrapper<ElementReferenceTest<WeakWrapper<UntaggedTraits<ID3D11Device>>, false>>);
-	static_assert(IUnknownWrapper<ElementReferenceTest<WeakWrapper<UntaggedTraits<ID3D11Device>>, true>>);
+	static_assert(IUnknownWrapper<ElementReference<WeakWrapper<UntaggedTraits<ID3D11Device>>, false>>);
+	static_assert(IUnknownWrapper<ElementReference<WeakWrapper<UntaggedTraits<ID3D11Device>>, true>>);
 
 	static_assert(IUnknownWeakWrapper<WeakWrapper<UntaggedTraits<ID3D11Device>>>);
-	static_assert(IUnknownWeakWrapper<ElementReferenceTest<WeakWrapper<UntaggedTraits<ID3D11Device>>, false>>);
-	static_assert(IUnknownWeakWrapper<ElementReferenceTest<WeakWrapper<UntaggedTraits<ID3D11Device>>, true>>);
+	static_assert(IUnknownWeakWrapper<ElementReference<WeakWrapper<UntaggedTraits<ID3D11Device>>, false>>);
+	static_assert(IUnknownWeakWrapper<ElementReference<WeakWrapper<UntaggedTraits<ID3D11Device>>, true>>);
 
 	static_assert(IUnknownWrapper<StrongWrapper<UntaggedTraits<ID3D11Device>>>);
-	static_assert(IUnknownWrapper<ElementReferenceTest<StrongWrapper<UntaggedTraits<ID3D11Device>>, false>>);
-	static_assert(IUnknownWrapper<ElementReferenceTest<StrongWrapper<UntaggedTraits<ID3D11Device>>, true>>);
+	static_assert(IUnknownWrapper<ElementReference<StrongWrapper<UntaggedTraits<ID3D11Device>>, false>>);
+	static_assert(IUnknownWrapper<ElementReference<StrongWrapper<UntaggedTraits<ID3D11Device>>, true>>);
 
 	static_assert(std::constructible_from<StrongWrapper<UntaggedTraits<ID3D11Device>>, WeakWrapper<UntaggedTraits<ID3D11Device>>>);
 	static_assert(std::constructible_from<WeakWrapper<UntaggedTraits<ID3D11Device>>, StrongWrapper<UntaggedTraits<ID3D11Device>>>);
@@ -337,4 +340,26 @@ static void ContainersTest()
 	{
 
 	}
+
+	auto SpanInput = [](Span<StrongWrapper<UntaggedTraits<ID3D11Device5>>>) {};
+	auto SpanInput2 = [](Span<const StrongWrapper<UntaggedTraits<ID3D11Device5>>>) {};
+	SpanInput(strongArr);
+	SpanInput2(strongArr);
+	SpanInput(s);
+	SpanInput2(s);
+	//SpanInput(s3); //Shouldn't compile
+	SpanInput2(s3);
+	SpanInput(s5);
+	SpanInput2(s5);
+
+	Array<RTV<D3D12_CPU_DESCRIPTOR_HANDLE>, 2> cpuHandle;
+	const Array<RTV<D3D12_CPU_DESCRIPTOR_HANDLE>, 2> cpuHandle2;
+
+	auto SpanInput3 = [](Span<RTV<D3D12_CPU_DESCRIPTOR_HANDLE>>) {};
+	auto SpanInput4 = [](Span<const RTV<D3D12_CPU_DESCRIPTOR_HANDLE>>) {};
+	SpanInput3(cpuHandle);
+	SpanInput4(cpuHandle);
+
+	//SpanInput3(cpuHandle2); //shouldn't compile
+	SpanInput4(cpuHandle2);
 }

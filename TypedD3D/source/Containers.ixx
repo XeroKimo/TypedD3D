@@ -42,28 +42,28 @@ namespace TypedD3D
 	};
 
 	export template<class Ty>
-	concept LiftableType = LiftType<Ty>::value;
+	concept LiftableType = LiftType<std::remove_cvref_t<Ty>>::value;
 
 	export template<class Ty>
-	using InnerType = InnerTypeImpl<Ty>::type;
+	using InnerType = InnerTypeImpl<std::remove_cvref_t<Ty>>::type;
 
 	export template<class Ty, class NewInner>
-	using ReplaceInnerType = LiftType<Ty>::template type<NewInner>;
+	using ReplaceInnerType = LiftType<std::remove_cvref_t<Ty>>::template type<NewInner>;
 
 	export template<class Ty, template<class> class NewOuter>
-	using ReplaceOuterType = NewOuter<InnerType<Ty>>;
+	using ReplaceOuterType = NewOuter<InnerType<std::remove_cvref_t<Ty>>>;
 
 	export template<class Ty>
 	concept IUnknownTrait = std::derived_from<InnerType<Ty>, IUnknown>;
 
 	export template<class Ty>
-	concept IUnknownWrapper = requires(std::remove_const_t<Ty> t, Ty::unknown_type* ptr)
+	concept IUnknownWrapper = requires(std::remove_const_t<Ty> t, Ty::inner_type* ptr)
 	{
-		typename Ty::unknown_type;
+		typename Ty::inner_type;
 		typename Ty::trait_type;
 		{ t.Attach(ptr) } -> std::same_as<void>;
-		{ t.Detach() } -> std::same_as<typename Ty::unknown_type*>;
-		{ t.Get() } -> std::same_as<typename Ty::unknown_type*>;
+		{ t.Detach() } -> std::same_as<typename Ty::inner_type*>;
+		{ t.Get() } -> std::same_as<typename Ty::inner_type*>;
 	};
 
 	export template<class Ty>
@@ -82,25 +82,33 @@ namespace TypedD3D
 	export template<IUnknownTrait Trait>
 	class InterfaceProxy : public Trait::template Interface<InnerType<Trait>>
 	{
-		using unknown_type = InnerType<Trait>;
+		using inner_type = InnerType<Trait>;
 		using trait_type = Trait;
 		template<class Derived>
 		using interface_type = trait_type::template Interface<Derived>;
 
 	private:
-		unknown_type* ptr;
+		inner_type* ptr;
 
 		friend Trait::template Interface<InterfaceProxy>;
 	public:
-		InterfaceProxy(unknown_type* ptr) noexcept : ptr{ ptr }
+		InterfaceProxy(inner_type* ptr) noexcept : ptr{ ptr }
 		{
 		}
 
 	public:
 		auto operator->() noexcept { return this; }
-		unknown_type* operator&() const noexcept { return ptr; }
-		unknown_type* Get() const noexcept { return ptr; }
-		operator unknown_type& () const noexcept { return *ptr; }
+		inner_type* operator&() const noexcept { return ptr; }
+		inner_type* Get() const noexcept { return ptr; }
+		operator inner_type& () const noexcept { return *ptr; }
+	};
+
+
+	export template<IUnknownTrait Trait>
+	struct InterfaceBase
+	{
+		InterfaceProxy<Trait>& ToDerived() { return static_cast<InterfaceProxy<Trait>&>(*this); }
+		InnerType<Trait>& Self() { return *ToDerived().InterfaceProxy<Trait>::Get(); }
 	};
 
 	export template<IUnknownTrait Trait>
@@ -113,7 +121,7 @@ namespace TypedD3D
 	class WeakWrapper
 	{
 	public:
-		using unknown_type = InnerType<Trait>;
+		using inner_type = InnerType<Trait>;
 		using trait_type = Trait;
 		template<class Derived>
 		using interface_type = trait_type::template Interface<Derived>;
@@ -122,7 +130,7 @@ namespace TypedD3D
 		friend class WeakWrapper;
 
 	private:
-		unknown_type* ptr = nullptr;
+		inner_type* ptr = nullptr;
 
 	public:
 		WeakWrapper() noexcept = default;
@@ -149,7 +157,7 @@ namespace TypedD3D
 
 	public:
 		WeakWrapper(std::nullptr_t) noexcept {}
-		WeakWrapper(unknown_type* ptr) noexcept : ptr{ ptr } {}
+		WeakWrapper(inner_type* ptr) noexcept : ptr{ ptr } {}
 
 		template<IUnknownWrapper Wrapper>
 			requires ConvertibleTraitTo<typename Wrapper::trait_type, trait_type>
@@ -190,7 +198,7 @@ namespace TypedD3D
 			ptr = nullptr;
 			return *this;
 		}
-		WeakWrapper& operator=(unknown_type* ptr) noexcept
+		WeakWrapper& operator=(inner_type* ptr) noexcept
 		{
 			this->ptr = ptr;
 			return *this;
@@ -223,7 +231,7 @@ namespace TypedD3D
 			return ptr == nullptr;
 		}
 
-		bool operator==(unknown_type* ptr) const noexcept
+		bool operator==(inner_type* ptr) const noexcept
 		{
 			return this->ptr == ptr;
 		}
@@ -241,11 +249,11 @@ namespace TypedD3D
 		}
 
 	public:
-		InterfaceProxy<Trait> operator->() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, unknown_type*>) { return ptr; }
-		InterfaceProxy<Trait> operator*() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, unknown_type*>) { return ptr; }
+		InterfaceProxy<Trait> operator->() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, inner_type*>) { return ptr; }
+		InterfaceProxy<Trait> operator*() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, inner_type*>) { return ptr; }
 
-		unknown_type* operator->() const noexcept { return ptr; }
-		unknown_type& operator*() const noexcept { return *ptr; }
+		inner_type* operator->() const noexcept { return ptr; }
+		inner_type& operator*() const noexcept { return *ptr; }
 		
 		explicit operator bool() const noexcept { return ptr; }
 
@@ -255,14 +263,14 @@ namespace TypedD3D
 		}
 
 	public:
-		unknown_type* Get() const { return ptr; }
+		inner_type* Get() const { return ptr; }
 
-		void Attach(unknown_type* ptr) noexcept
+		void Attach(inner_type* ptr) noexcept
 		{
 			this->ptr = ptr;
 		}
 
-		unknown_type* Detach() noexcept
+		inner_type* Detach() noexcept
 		{
 			return std::exchange(ptr, nullptr);
 		}
@@ -281,7 +289,7 @@ namespace TypedD3D
 	class StrongWrapper
 	{
 	public:
-		using unknown_type = InnerType<Trait>;
+		using inner_type = InnerType<Trait>;
 		using trait_type = Trait;
 		template<class Derived>
 		using interface_type = trait_type::template Interface<Derived>;
@@ -290,7 +298,7 @@ namespace TypedD3D
 		friend class StrongWrapper;
 
 	private:
-		unknown_type* ptr = nullptr;
+		inner_type* ptr = nullptr;
 
 	public:
 		StrongWrapper() noexcept = default;
@@ -327,7 +335,7 @@ namespace TypedD3D
 
 	public:
 		StrongWrapper(std::nullptr_t) noexcept {}
-		StrongWrapper(unknown_type* ptr) noexcept : ptr{ ptr }
+		StrongWrapper(inner_type* ptr) noexcept : ptr{ ptr }
 		{
 			if(ptr)
 				Acquire();
@@ -377,7 +385,7 @@ namespace TypedD3D
 			swap(*this, temp);
 			return *this;
 		}
-		StrongWrapper& operator=(unknown_type* ptr) noexcept
+		StrongWrapper& operator=(inner_type* ptr) noexcept
 		{
 			StrongWrapper temp{ ptr };
 			swap(*this, temp);
@@ -416,7 +424,7 @@ namespace TypedD3D
 			return ptr == nullptr;
 		}
 
-		bool operator==(unknown_type* ptr) const noexcept
+		bool operator==(inner_type* ptr) const noexcept
 		{
 			return this->ptr == ptr;
 		}
@@ -434,11 +442,11 @@ namespace TypedD3D
 		}
 
 	public:
-		InterfaceProxy<Trait> operator->() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, unknown_type*>) { return ptr; }
-		InterfaceProxy<Trait> operator*() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, unknown_type*>) { return ptr; }
+		InterfaceProxy<Trait> operator->() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, inner_type*>) { return ptr; }
+		InterfaceProxy<Trait> operator*() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, inner_type*>) { return ptr; }
 
-		unknown_type* operator->() const noexcept { return ptr; }
-		unknown_type& operator*() const noexcept { return *ptr; }
+		inner_type* operator->() const noexcept { return ptr; }
+		inner_type& operator*() const noexcept { return *ptr; }
 
 		explicit operator bool() const noexcept { return ptr; }
 
@@ -448,16 +456,16 @@ namespace TypedD3D
 		}
 
 	public:
-		unknown_type* Get() const noexcept { return ptr; }
+		inner_type* Get() const noexcept { return ptr; }
 
-		void Attach(unknown_type* ptr) noexcept
+		void Attach(inner_type* ptr) noexcept
 		{
 			if(this->ptr)
 				this->ptr->Release();
 			this->ptr = ptr;
 		}
 
-		unknown_type* Detach() noexcept
+		inner_type* Detach() noexcept
 		{
 			return std::exchange(ptr, nullptr);
 		}
@@ -476,7 +484,7 @@ namespace TypedD3D
 	export template<class Wrapper>
 	class OutPtr
 	{
-		Wrapper::unknown_type* ptr;
+		Wrapper::inner_type* ptr;
 		Wrapper& wrapper;
 
 	public:
@@ -491,7 +499,7 @@ namespace TypedD3D
 		}
 
 		operator void** () noexcept { return reinterpret_cast<void**>(&ptr); }
-		operator Wrapper::unknown_type** () noexcept { return &ptr; }
+		operator Wrapper::inner_type** () noexcept { return &ptr; }
 	};
 
 	export template<class To, class From, template<class> class Trait>
@@ -544,68 +552,71 @@ namespace TypedD3D
 		return out;
 	}
 
+	export template<class Ty, bool IsConst>
+	class ElementReference;
+
 	export template<IUnknownWrapper Wrapper, bool IsConst>
-	class ElementReferenceTest
+	class ElementReference<Wrapper, IsConst>
 	{
 	public:
-		using unknown_type = Wrapper::unknown_type;
+		using inner_type = Wrapper::inner_type;
 		using trait_type = Wrapper::trait_type;
 		template<class Derived>
 		using interface_type = trait_type::template Interface<Derived>;
 
 	private:
-		std::conditional_t<IsConst, unknown_type* const, unknown_type*>& ptr = nullptr;
+		std::conditional_t<IsConst, inner_type* const, inner_type*>& ptr = nullptr;
 
 	public:
-		ElementReferenceTest(const ElementReferenceTest&) = delete;
-		ElementReferenceTest(ElementReferenceTest&&) = delete;
+		ElementReference(const ElementReference&) = delete;
+		ElementReference(ElementReference&&) = delete;
 
 	public:
-		ElementReferenceTest(std::conditional_t<IsConst, unknown_type* const, unknown_type*>& ptr) : ptr{ ptr }
+		ElementReference(std::conditional_t<IsConst, inner_type* const, inner_type*>& ptr) : ptr{ ptr }
 		{
 
 		}
 
 	public:
-		ElementReferenceTest& operator=(const ElementReferenceTest&) = delete;
-		ElementReferenceTest& operator=(ElementReferenceTest&&) = delete;
+		ElementReference& operator=(const ElementReference&) = delete;
+		ElementReference& operator=(ElementReference&&) = delete;
 
 	public:
-		ElementReferenceTest& operator=(std::nullptr_t) noexcept
+		ElementReference& operator=(std::nullptr_t) noexcept
 		{
 			static_assert(!IsConst, "Calling ElementReferece<true>::operator=() is not allowed as it's a const proxy. The function still needs exists to satisfy a concept as to act as if the function is const");
 			Wrapper temp{ nullptr };
-			unknown_type* temp2 = ptr;
+			inner_type* temp2 = ptr;
 			ptr = temp.Detach();
 			temp.Attach(temp2);
 			return *this;
 		}
 
-		ElementReferenceTest& operator=(unknown_type* other) noexcept
+		ElementReference& operator=(inner_type* other) noexcept
 		{
 			static_assert(!IsConst, "Calling ElementReferece<true>::operator=() is not allowed as it's a const proxy. The function still needs exists to satisfy a concept as to act as if the function is const");
 			Wrapper temp{ other };
-			unknown_type* temp2 = ptr;
+			inner_type* temp2 = ptr;
 			ptr = temp.Detach();
 			temp.Attach(temp2);
 			return *this;
 		}
 
-		ElementReferenceTest& operator=(const Wrapper& other) noexcept
+		ElementReference& operator=(const Wrapper& other) noexcept
 		{
 			static_assert(!IsConst, "Calling ElementReferece<true>::operator=() is not allowed as it's a const proxy. The function still needs exists to satisfy a concept as to act as if the function is const");
 			Wrapper temp{ other };
-			unknown_type* temp2 = ptr;
+			inner_type* temp2 = ptr;
 			ptr = temp.Detach();
 			temp.Attach(temp2);
 			return *this;
 		}
 
-		ElementReferenceTest& operator=(Wrapper&& other) noexcept
+		ElementReference& operator=(Wrapper&& other) noexcept
 		{
 			static_assert(!IsConst, "Calling ElementReferece<true>::operator=() is not allowed as it's a const proxy. The function still needs exists to satisfy a concept as to act as if the function is const");
 			Wrapper temp{ std::move(other) };
-			unknown_type* temp2 = ptr;
+			inner_type* temp2 = ptr;
 			ptr = temp.Detach();
 			temp.Attach(temp2);
 			return *this;
@@ -613,11 +624,11 @@ namespace TypedD3D
 
 		template<IUnknownWrapper OtherWrapper>
 			requires ConvertibleTraitTo<typename OtherWrapper::trait_type, trait_type>
-		ElementReferenceTest& operator=(const OtherWrapper& other) noexcept
+		ElementReference& operator=(const OtherWrapper& other) noexcept
 		{
 			static_assert(!IsConst, "Calling ElementReferece<true>::operator=() is not allowed as it's a const proxy. The function still needs exists to satisfy a concept as to act as if the function is const");
 			Wrapper temp{ other };
-			unknown_type* temp2 = ptr;
+			inner_type* temp2 = ptr;
 			ptr = temp.Detach();
 			temp.Attach(temp2);
 			return *this;
@@ -625,11 +636,11 @@ namespace TypedD3D
 
 		template<IUnknownWrapper OtherWrapper>
 			requires ConvertibleTraitTo<typename OtherWrapper::trait_type, trait_type>
-		ElementReferenceTest& operator=(OtherWrapper&& other) noexcept
+		ElementReference& operator=(OtherWrapper&& other) noexcept
 		{
 			static_assert(!IsConst, "Calling ElementReferece<true>::operator=() is not allowed as it's a const proxy. The function still needs exists to satisfy a concept as to act as if the function is const");
 			Wrapper temp{ std::move(other) };
-			unknown_type* temp2 = ptr;
+			inner_type* temp2 = ptr;
 			ptr = temp.Detach();
 			temp.Attach(temp2);
 			return *this;
@@ -641,7 +652,7 @@ namespace TypedD3D
 			return ptr == nullptr;
 		}
 
-		bool operator==(unknown_type* rh) const
+		bool operator==(inner_type* rh) const
 		{
 			return ptr == rh;
 		}
@@ -659,18 +670,18 @@ namespace TypedD3D
 	public:
 		operator Wrapper() const noexcept { return { ptr }; }
 
-		InterfaceProxy<trait_type> operator->() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<trait_type>>, unknown_type*>) { return ptr; }
-		InterfaceProxy<trait_type> operator*() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<trait_type>>, unknown_type*>) { return ptr; }
+		InterfaceProxy<trait_type> operator->() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<trait_type>>, inner_type*>) { return ptr; }
+		InterfaceProxy<trait_type> operator*() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<trait_type>>, inner_type*>) { return ptr; }
 
-		unknown_type* operator->() const noexcept { return ptr; }
-		unknown_type& operator*() const noexcept { return *ptr; }
+		inner_type* operator->() const noexcept { return ptr; }
+		inner_type& operator*() const noexcept { return *ptr; }
 
 		explicit operator bool() const noexcept { return ptr; }
 
 	public:
-		unknown_type* Get() const noexcept { return ptr; }
+		inner_type* Get() const noexcept { return ptr; }
 
-		void Attach(unknown_type* ptr) noexcept
+		void Attach(inner_type* ptr) noexcept
 		{
 			static_assert(!IsConst, "Calling ElementReferece<true>::Attach() is not allowed as it's a const proxy. The function still needs exists to satisfy a concept as to act as if the function is const");
 			if constexpr(!IUnknownWeakWrapper<Wrapper>)
@@ -683,7 +694,7 @@ namespace TypedD3D
 		}		
 		
 
-		unknown_type* Detach() noexcept
+		inner_type* Detach() noexcept
 		{
 			static_assert(!IsConst, "Calling ElementReferece<true>::Detach() is not allowed as it's a const proxy. The function still needs exists to satisfy a concept as to act as if the function is const");
 			return std::exchange(ptr, nullptr);
@@ -711,29 +722,29 @@ namespace TypedD3D
 	};
 
 	template<class Wrapper, bool IsConst>
-	WeakWrapper(ElementReferenceTest<Wrapper, IsConst>) -> WeakWrapper<typename Wrapper::trait_type>;
+	WeakWrapper(ElementReference<Wrapper, IsConst>) -> WeakWrapper<typename Wrapper::trait_type>;
 
 	template<class Wrapper, bool IsConst>
-	StrongWrapper(ElementReferenceTest<Wrapper, IsConst>) -> StrongWrapper<typename Wrapper::trait_type>;
+	StrongWrapper(ElementReference<Wrapper, IsConst>) -> StrongWrapper<typename Wrapper::trait_type>;
 
 
 	export template<class To, class From, template<class> class Wrapper, template<class> class Trait, bool IsConst>
-	Wrapper<Trait<To>> Cast(const ElementReferenceTest<Wrapper<Trait<From>>, IsConst>& ptr) noexcept
+	Wrapper<Trait<To>> Cast(const ElementReference<Wrapper<Trait<From>>, IsConst>& ptr) noexcept
 	{
 		return Cast<To>(Wrapper<Trait<From>>{ ptr });
 	}
 
-	export template<IUnknownWrapper Wrapper, bool IsConst>
+	export template<class Wrapper, bool IsConst>
 	class ContiguousIterator
 	{
-		using unknown_type = Wrapper::unknown_type;
+		using inner_type = Wrapper::inner_type;
 
 	private:
-		std::conditional_t<IsConst, unknown_type* const, unknown_type*>* ptr = nullptr;
+		std::conditional_t<IsConst, inner_type* const, inner_type*>* ptr = nullptr;
 
 	public:
 		ContiguousIterator() = default;
-		ContiguousIterator(std::conditional_t<IsConst, unknown_type* const, unknown_type*>* ptr) : ptr{ ptr }
+		ContiguousIterator(std::conditional_t<IsConst, inner_type* const, inner_type*>* ptr) : ptr{ ptr }
 		{
 
 		}
@@ -792,35 +803,52 @@ namespace TypedD3D
 
 		auto Raw() const { return ptr; }
 
-		ElementReferenceTest<Wrapper, IsConst> operator*() const { return *ptr; }
-		ElementReferenceTest<Wrapper, IsConst> operator->() const { return *ptr; }
+		ElementReference<Wrapper, IsConst> operator*() const { return *ptr; }
+		ElementReference<Wrapper, IsConst> operator->() const { return *ptr; }
 	};
 
 	export template <class Ty>
 	concept TypedStructTrait = LiftableType<Ty> && !std::derived_from<InnerType<Ty>, IUnknown>;
 
 	export template<TypedStructTrait Ty>
-	struct TypedStruct : Ty::Interface
+	struct TypedStruct : private InnerType<Ty>, public Ty::template Interface<TypedStruct<Ty>>
 	{
+		using inner_type = InnerType<Ty>;
 		TypedStruct() = default;
-		TypedStruct(const Ty::Interface& other) : Ty::Interface{ other }
+		TypedStruct(const InnerType<Ty>& other) : InnerType<Ty>{ other }
 		{
 
 		}
 
-		TypedStruct& operator=(const typename Ty::Interface& other)
+		TypedStruct& operator=(const InnerType<Ty>& other)
 		{
-			*static_cast<Ty::Interface*>(this) = other;
+			*static_cast<InnerType<Ty>*>(this) = other;
 			return *this;
 		}
+
+		InnerType<Ty>& Raw() { return *this; }
+		const InnerType<Ty>& Raw() const { return *this; }
 	};
 
-	export template<IUnknownWrapper Wrapper, std::size_t N>
-	class Array
+	export template<class Derived>
+		struct TypedStructInterfaceBase
 	{
-		using unknown_type = Wrapper::unknown_type;
+		Derived& ToDerived() { return static_cast<Derived&>(*this); }
+		auto& Self() { return ToDerived().Derived::Raw(); }
 
-		std::array<unknown_type*, N> values = {};
+		const Derived& ToDerived() const { return static_cast<const Derived&>(*this); }
+		const auto& Self() const { return ToDerived().Derived::Raw(); }
+	};
+
+	export template<class Wrapper, std::size_t N>
+	class Array;
+
+	export template<IUnknownWrapper Wrapper, std::size_t N>
+	class Array<Wrapper, N>
+	{
+		using inner_type = Wrapper::inner_type;
+
+		std::array<inner_type*, N> values = {};
 
 	public:
 		Array() = default;
@@ -864,8 +892,8 @@ namespace TypedD3D
 			return *this;
 		}
 
-		ElementReferenceTest<Wrapper, false> operator[](std::size_t i) & { return values[i]; }
-		ElementReferenceTest<Wrapper, true> operator[](std::size_t i) const& { return values[i]; }
+		ElementReference<Wrapper, false> operator[](std::size_t i) & { return values[i]; }
+		ElementReference<Wrapper, true> operator[](std::size_t i) const& { return values[i]; }
 		Wrapper operator[](std::size_t i)&& 
 		{
 			Wrapper out;
@@ -877,8 +905,8 @@ namespace TypedD3D
 			return values[i];
 		}
 
-		ElementReferenceTest<Wrapper, false> at(std::size_t i) & { return values.at(i); }
-		ElementReferenceTest<Wrapper, true> at(std::size_t i) const& { return values.at(i); }
+		ElementReference<Wrapper, false> at(std::size_t i) & { return values.at(i); }
+		ElementReference<Wrapper, true> at(std::size_t i) const& { return values.at(i); }
 		Wrapper at(std::size_t i)&&
 		{
 			Wrapper out;
@@ -890,8 +918,8 @@ namespace TypedD3D
 			return values.at(i);
 		}
 
-		ElementReferenceTest<Wrapper, false> front()& { return values.front(); }
-		ElementReferenceTest<Wrapper, true> front() const& { return values.front(); }
+		ElementReference<Wrapper, false> front()& { return values.front(); }
+		ElementReference<Wrapper, true> front() const& { return values.front(); }
 
 		Wrapper front()&&
 		{
@@ -901,8 +929,8 @@ namespace TypedD3D
 		}
 		Wrapper front() const&& { return values.front(); }
 
-		ElementReferenceTest<Wrapper, false> back()& { return values.back(); }
-		ElementReferenceTest<Wrapper, true> back() const& { return values.back(); }
+		ElementReference<Wrapper, false> back()& { return values.back(); }
+		ElementReference<Wrapper, true> back() const& { return values.back(); }
 
 		Wrapper back()&&
 		{
@@ -926,7 +954,7 @@ namespace TypedD3D
 	private:
 		void Acquire()
 		{
-			for(unknown_type* ptr : values)
+			for(inner_type* ptr : values)
 			{
 				if(ptr)
 					ptr->AddRef();
@@ -935,7 +963,7 @@ namespace TypedD3D
 
 		void Release()
 		{
-			for(unknown_type* ptr : values)
+			for(inner_type* ptr : values)
 			{
 				if(ptr)
 					ptr->Release();
@@ -947,17 +975,17 @@ namespace TypedD3D
 	Array(Wrapper, Tys...) -> Array<Wrapper, sizeof...(Tys) + 1>;
 	
 	template<IUnknownWrapper Wrapper, std::convertible_to<Wrapper>... Tys>
-	Array(ElementReferenceTest<Wrapper, false>, Tys...) -> Array<Wrapper, sizeof...(Tys) + 1>;
+	Array(ElementReference<Wrapper, false>, Tys...) -> Array<Wrapper, sizeof...(Tys) + 1>;
 	
 	template<IUnknownWrapper Wrapper, std::convertible_to<Wrapper>... Tys>
-	Array(ElementReferenceTest<Wrapper, true>, Tys...) -> Array<Wrapper, sizeof...(Tys) + 1>;
+	Array(ElementReference<Wrapper, true>, Tys...) -> Array<Wrapper, sizeof...(Tys) + 1>;
 
 	export template<IUnknownWrapper Wrapper>
 	class Vector
 	{
-		using unknown_type = Wrapper::unknown_type;
+		using inner_type = Wrapper::inner_type;
 
-		std::vector<unknown_type*> values = {};
+		std::vector<inner_type*> values = {};
 
 	public:
 		Vector() = default;
@@ -1008,8 +1036,8 @@ namespace TypedD3D
 			return *this;
 		}
 
-		ElementReferenceTest<Wrapper, false> operator[](std::size_t i) & { return values[i]; }
-		ElementReferenceTest<Wrapper, true> operator[](std::size_t i) const& { return values[i]; }
+		ElementReference<Wrapper, false> operator[](std::size_t i) & { return values[i]; }
+		ElementReference<Wrapper, true> operator[](std::size_t i) const& { return values[i]; }
 		Wrapper operator[](std::size_t i)&& 
 		{
 			Wrapper out;
@@ -1021,8 +1049,8 @@ namespace TypedD3D
 			return values[i];
 		}
 
-		ElementReferenceTest<Wrapper, false> at(std::size_t i) & { return values.at(i); }
-		ElementReferenceTest<Wrapper, true> at(std::size_t i) const& { return values.at(i); }
+		ElementReference<Wrapper, false> at(std::size_t i) & { return values.at(i); }
+		ElementReference<Wrapper, true> at(std::size_t i) const& { return values.at(i); }
 		Wrapper at(std::size_t i)&&
 		{
 			Wrapper out;
@@ -1034,8 +1062,8 @@ namespace TypedD3D
 			return values.at(i);
 		}
 
-		ElementReferenceTest<Wrapper, false> front()& { return values.front(); }
-		ElementReferenceTest<Wrapper, true> front() const& { return values.front(); }
+		ElementReference<Wrapper, false> front()& { return values.front(); }
+		ElementReference<Wrapper, true> front() const& { return values.front(); }
 
 		Wrapper front()&&
 		{
@@ -1045,8 +1073,8 @@ namespace TypedD3D
 		}
 		Wrapper front() const&& { return values.front(); }
 
-		ElementReferenceTest<Wrapper, false> back()& { return values.back(); }
-		ElementReferenceTest<Wrapper, true> back() const& { return values.back(); }
+		ElementReference<Wrapper, false> back()& { return values.back(); }
+		ElementReference<Wrapper, true> back() const& { return values.back(); }
 
 		Wrapper back()&&
 		{
@@ -1098,7 +1126,7 @@ namespace TypedD3D
 	private:
 		void Acquire()
 		{
-			for(unknown_type* ptr : values)
+			for(inner_type* ptr : values)
 			{
 				if(ptr)
 					ptr->AddRef();
@@ -1107,7 +1135,7 @@ namespace TypedD3D
 
 		void Release()
 		{
-			for(unknown_type* ptr : values)
+			for(inner_type* ptr : values)
 			{
 				if(ptr)
 					ptr->Release();
@@ -1120,24 +1148,27 @@ namespace TypedD3D
 	Vector(Wrapper, Tys...) -> Vector<Wrapper>;
 
 	template<IUnknownWrapper Wrapper, std::convertible_to<Wrapper>... Tys>
-	Vector(ElementReferenceTest<Wrapper, false>, Tys...) -> Vector<Wrapper>;
+	Vector(ElementReference<Wrapper, false>, Tys...) -> Vector<Wrapper>;
 
 	template<IUnknownWrapper Wrapper, std::convertible_to<Wrapper>... Tys>
-	Vector(ElementReferenceTest<Wrapper, true>, Tys...) -> Vector<Wrapper>;
+	Vector(ElementReference<Wrapper, true>, Tys...) -> Vector<Wrapper>;
 
-	export template<IUnknownWrapper Wrapper, std::size_t N = std::dynamic_extent>
-	class Span
+	export template<class Ty, std::size_t N = std::dynamic_extent>
+	class Span;
+
+	export template<IUnknownWrapper Wrapper, std::size_t N>
+	class Span<Wrapper, N>
 	{
-		using unknown_type = Wrapper::unknown_type;
+		using inner_type = Wrapper::inner_type;
 
-		std::span<std::conditional_t<std::is_const_v<Wrapper>, unknown_type* const, unknown_type*>, N> values = {};
+		std::span<std::conditional_t<std::is_const_v<Wrapper>, inner_type* const, inner_type*>, N> values = {};
 
 	public:
 		Span() = default;
 		Span(const Span&) = default;
 		Span(Span&&) noexcept = default;
 
-		Span(unknown_type** v, size_t count) requires (N == std::dynamic_extent) :
+		Span(inner_type** v, size_t count) requires (N == std::dynamic_extent) :
 			values{ v, count }
 		{
 
@@ -1164,6 +1195,14 @@ namespace TypedD3D
 		}
 
 		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent) && std::is_const_v<Wrapper>
+		Span(const Span<Wrapper, OtherN>& v) :
+			values{ v.data(), v.size() }
+		{
+
+		}
+
+		template<size_t OtherN>
 			requires (OtherN == N || N == std::dynamic_extent)
 		Span(Array<std::remove_const_t<Wrapper>, OtherN>& v) : values{ v.data(), v.size() }
 		{
@@ -1171,7 +1210,7 @@ namespace TypedD3D
 		}
 
 		template<size_t OtherN>
-			requires (OtherN == N || N == std::dynamic_extent)
+			requires (OtherN == N || N == std::dynamic_extent) && std::is_const_v<Wrapper>
 		Span(const Array<std::remove_const_t<Wrapper>, OtherN>& v) : values{ v.data(), v.size() }
 		{
 
@@ -1193,6 +1232,14 @@ namespace TypedD3D
 		template<size_t OtherN>
 			requires (OtherN == N || N == std::dynamic_extent)
 		Span& operator=(const Span<std::remove_const_t<Wrapper>, OtherN>& v)
+		{
+			values = decltype(values){ v.data(), v.size() };
+			return *this;
+		}
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent) && std::is_const_v<Wrapper>
+		Span& operator=(const Span<Wrapper, OtherN>& v)
 		{
 			values = decltype(values){ v.data(), v.size() };
 			return *this;
@@ -1226,53 +1273,53 @@ namespace TypedD3D
 			return *this;
 		}
 
-		ElementReferenceTest<Wrapper, false> operator[](std::size_t i) & { return values[i]; }
-		ElementReferenceTest<Wrapper, true> operator[](std::size_t i) const& { return values[i]; }
+		ElementReference<Wrapper, false> operator[](std::size_t i) & { return values[i]; }
+		ElementReference<Wrapper, true> operator[](std::size_t i) const& { return values[i]; }
 		Wrapper operator[](std::size_t i)&& 
 		{
 			Wrapper out;
-			out.Attach(std::exchange(values[i], nullptr));
+			out.Attach(std::exchange(std::move(values)[i], nullptr));
 			return out;
 		}
 		Wrapper operator[](std::size_t i) const&& 
 		{
-			return values[i];
+			return std::move(values)[i];
 		}
 
-		ElementReferenceTest<Wrapper, false> at(std::size_t i) & { return values.at(i); }
-		ElementReferenceTest<Wrapper, true> at(std::size_t i) const& { return values.at(i); }
+		ElementReference<Wrapper, false> at(std::size_t i) & { return values.at(i); }
+		ElementReference<Wrapper, true> at(std::size_t i) const& { return values.at(i); }
 		Wrapper at(std::size_t i)&&
 		{
 			Wrapper out;
-			out.Attach(std::exchange(values.at(i), nullptr));
+			out.Attach(std::exchange(std::move(values).at(i), nullptr));
 			return out;
 		}
 		Wrapper at(std::size_t i) const&&
 		{
-			return values.at(i);
+			return std::move(values).at(i);
 		}
 
-		ElementReferenceTest<Wrapper, false> front()& { return values.front(); }
-		ElementReferenceTest<Wrapper, true> front() const& { return values.front(); }
+		ElementReference<Wrapper, false> front()& { return values.front(); }
+		ElementReference<Wrapper, true> front() const& { return values.front(); }
 
 		Wrapper front()&&
 		{
 			Wrapper out;
-			out.Attach(std::exchange(values.front(), nullptr));
+			out.Attach(std::exchange(std::move(values).front(), nullptr));
 			return out;
 		}
-		Wrapper front() const&& { return values.front(); }
+		Wrapper front() const&& { return std::move(values).front(); }
 
-		ElementReferenceTest<Wrapper, false> back()& { return values.back(); }
-		ElementReferenceTest<Wrapper, true> back() const& { return values.back(); }
+		ElementReference<Wrapper, false> back()& { return values.back(); }
+		ElementReference<Wrapper, true> back() const& { return values.back(); }
 
 		Wrapper back()&&
 		{
 			Wrapper out;
-			out.Attach(std::exchange(values.back(), nullptr));
+			out.Attach(std::exchange(std::move(values).back(), nullptr));
 			return out;
 		}
-		Wrapper back() const&& { return values.back(); }
+		Wrapper back() const&& { return std::move(values).back(); }
 
 		auto data() { return values.data(); }
 		const auto data() const { return values.data(); }
@@ -1288,4 +1335,265 @@ namespace TypedD3D
 
 	template<IUnknownWrapper Wrapper, std::size_t N>
 	Span(Array<Wrapper, N>) -> Span<Wrapper, N>;
+
+	template<IUnknownWrapper Wrapper, bool IsConst>
+	Span(ContiguousIterator<Wrapper, IsConst>, ContiguousIterator<Wrapper, IsConst>) -> Span<Wrapper>;
+
+	template<IUnknownWrapper Wrapper, bool IsConst>
+	Span(ContiguousIterator<Wrapper, IsConst>, size_t) -> Span<Wrapper>;
+
+
+
+
+	export template<class Wrapper, bool IsConst>
+		requires std::same_as<TypedStruct<InnerType<Wrapper>>, std::remove_const_t<Wrapper>>
+	class ElementReference<Wrapper, IsConst> : public InnerType<Wrapper>::template Interface<ElementReference<Wrapper, IsConst>>
+	{
+		using trait_type = InnerType<Wrapper>;
+		using inner_type = InnerType<trait_type>;
+
+	private:
+		std::conditional_t<IsConst, const inner_type&, inner_type&> ref;
+
+	public:
+		ElementReference(inner_type& ref) : ref{ ref }
+		{
+
+		}
+
+
+	public:
+		inner_type& Raw() noexcept { return ref; }
+		const inner_type& Raw() const noexcept { return ref; }
+
+		operator Wrapper() const { return ref; }
+	};
+
+	export template<class Wrapper, std::size_t N>
+		requires std::same_as<TypedStruct<InnerType<Wrapper>>, std::remove_const_t<Wrapper>>
+	class Array<Wrapper, N>
+	{
+		using trait_type = InnerType<Wrapper>;
+		using inner_type = InnerType<trait_type>;
+
+		std::array<inner_type, N> values = {};
+
+	public:
+		Array() = default;
+		Array(std::initializer_list<inner_type> il) : values{ il }
+		{
+
+		}
+		Array(std::initializer_list<Wrapper> il)
+		{
+			std::transform(il.begin(), il.end(), values.begin(), [](const Wrapper& w) {  return w.Raw(); });
+		}
+
+		ElementReference<Wrapper, false> operator[](std::size_t i)& { return values[i]; }
+		ElementReference<Wrapper, true> operator[](std::size_t i) const& { return values[i]; }
+		Wrapper operator[](std::size_t i)&& { std::move(values)[i]; }
+		Wrapper operator[](std::size_t i) const&&
+		{
+			return std::move(values)[i];
+		}
+
+		ElementReference<Wrapper, false> at(std::size_t i)& { return values.at(i); }
+		ElementReference<Wrapper, true> at(std::size_t i) const& { return values.at(i); }
+		Wrapper at(std::size_t i)&& { std::move(values).at(i); }
+		Wrapper at(std::size_t i) const&&
+		{
+			return std::move(values).at(i);
+		}
+
+		ElementReference<Wrapper, false> front()& { return values.front(); }
+		ElementReference<Wrapper, true> front() const& { return values.front(); }
+
+		Wrapper front()&& { std::move(values).front(); }
+		Wrapper front() const&& { return std::move(values).front(); }
+
+		ElementReference<Wrapper, false> back()& { return values.back(); }
+		ElementReference<Wrapper, true> back() const& { return values.back(); }
+
+		Wrapper back()&& { return std::move(values).back(); }
+		Wrapper back() const&& { return std::move(values).back(); }
+
+		auto data() { return values.data(); }
+		const auto data() const { return values.data(); }
+
+		ContiguousIterator<Wrapper, false> begin() { return &values[0]; }
+		ContiguousIterator<Wrapper, false> end() { return &values[values.size()]; }
+
+		ContiguousIterator<Wrapper, true> begin() const { return &values[0]; }
+		ContiguousIterator<Wrapper, true> end() const { return &values[values.size()]; }
+
+		size_t size() const { return values.size(); }
+	};
+
+	export template<class Wrapper, std::size_t N>
+		requires std::same_as<TypedStruct<InnerType<Wrapper>>, std::remove_const_t<Wrapper>>
+	class Span<Wrapper, N>
+	{
+		using trait_type = InnerType<Wrapper>;
+		using inner_type = InnerType<trait_type>;
+
+		std::span<std::conditional_t<std::is_const_v<Wrapper>, const inner_type, inner_type>, N> values = {};
+
+	public:
+		Span() = default;
+		Span(const Span&) = default;
+		Span(Span&&) noexcept = default;
+
+		Span(inner_type* v, size_t count) requires (N == std::dynamic_extent) :
+			values{ v, count }
+		{
+
+		}
+
+		Span(ContiguousIterator<Wrapper, std::is_const_v<Wrapper>> begin, ContiguousIterator<Wrapper, std::is_const_v<Wrapper>> end) requires (N == std::dynamic_extent) :
+			values{ begin.Raw(), end - begin }
+		{
+
+		}
+
+		Span(ContiguousIterator<Wrapper, std::is_const_v<Wrapper>> begin, size_t count) requires (N == std::dynamic_extent) :
+			values{ begin.Raw(), count }
+		{
+
+		}
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent)
+		Span(const Span<std::remove_const_t<Wrapper>, OtherN>& v) :
+			values{ v.data(), v.size() }
+		{
+
+		}
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent) && std::is_const_v<Wrapper>
+		Span(const Span<Wrapper, OtherN>& v) :
+			values{ v.data(), v.size() }
+		{
+
+		}
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent)
+		Span(Array<std::remove_const_t<Wrapper>, OtherN>& v) : values{ v.data(), v.size() }
+		{
+
+		}
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent) && std::is_const_v<Wrapper>
+		Span(const Array<std::remove_const_t<Wrapper>, OtherN>& v) : values{ v.data(), v.size() }
+		{
+
+		}
+
+		//Span(Vector<Wrapper>& v) : values{ v.data(), v.size() }
+		//{
+
+		//}
+
+		//Span(const Vector<Wrapper>& v) : values{ v.data(), v.size() }
+		//{
+
+		//}
+
+		Span& operator=(const Span&) = default;
+		Span& operator=(Span&&) noexcept = default;
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent)
+		Span& operator=(const Span<std::remove_const_t<Wrapper>, OtherN>& v)
+		{
+			values = decltype(values){ v.data(), v.size() };
+			return *this;
+		}
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent) && std::is_const_v<Wrapper>
+		Span& operator=(const Span<Wrapper, OtherN> & v)
+		{
+			values = decltype(values){ v.data(), v.size() };
+			return *this;
+		}
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent)
+		Span& operator=(Array<std::remove_const_t<Wrapper>, OtherN>& v)
+		{
+			values = decltype(values){ v.data(), v.size() };
+			return *this;
+		}
+
+		template<size_t OtherN>
+			requires (OtherN == N || N == std::dynamic_extent)
+		Span& operator=(const Array<std::remove_const_t<Wrapper>, OtherN>& v)
+		{
+			values = decltype(values){ v.data(), v.size() };
+			return *this;
+		}
+
+		//Span& operator=(Vector<Wrapper>& v)
+		//{
+		//	values = decltype(values){ v.data(), v.size() };
+		//	return *this;
+		//}
+
+		//Span& operator=(const Vector<Wrapper>& v)
+		//{
+		//	values = decltype(values){ v.data(), v.size() };
+		//	return *this;
+		//}
+
+		ElementReference<Wrapper, false> operator[](std::size_t i)& { return values[i]; }
+		ElementReference<Wrapper, true> operator[](std::size_t i) const& { return values[i]; }
+		Wrapper operator[](std::size_t i)&&
+		{
+			return std::move(values)[i];
+		}
+		Wrapper operator[](std::size_t i) const&&
+		{
+			return std::move(values)[i];
+		}
+
+		ElementReference<Wrapper, false> at(std::size_t i)& { return values.at(i); }
+		ElementReference<Wrapper, true> at(std::size_t i) const& { return values.at(i); }
+		Wrapper at(std::size_t i)&&
+		{
+			return std::move(values).at(i);
+		}
+		Wrapper at(std::size_t i) const&&
+		{
+			return std::move(values).at(i);
+		}
+
+		ElementReference<Wrapper, false> front()& { return values.front(); }
+		ElementReference<Wrapper, true> front() const& { return values.front(); }
+
+		Wrapper front()&& { return std::move(values).front(); }
+		Wrapper front() const&& { return std::move(values).front(); }
+
+		ElementReference<Wrapper, false> back()& { return values.back(); }
+		ElementReference<Wrapper, true> back() const& { return values.back(); }
+
+		Wrapper back()&& { return std::move(values).back(); }
+		Wrapper back() const&& { return std::move(values).back(); }
+
+		auto data() { return values.data(); }
+		const auto data() const { return values.data(); }
+
+		ContiguousIterator<Wrapper, false> begin() { return &values[0]; }
+		ContiguousIterator<Wrapper, false> end() { return &values[values.size()]; }
+
+		ContiguousIterator<Wrapper, true> begin() const { return &values[0]; }
+		ContiguousIterator<Wrapper, true> end() const { return &values[values.size()]; }
+
+		size_t size() const { return values.size(); }
+	};
+
+	template<class Ty, std::size_t N>
+	Span(Array<TypedStruct<Ty>, N>) -> Span<TypedStruct<Ty>, N>;
 }

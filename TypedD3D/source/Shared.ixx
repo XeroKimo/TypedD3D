@@ -32,7 +32,7 @@ namespace TypedD3D
 			throw std::runtime_error("Failed\n");
 	}
 
-	export template<IUnknownWrapper Wrapper, class BaseType = typename Wrapper::unknown_type, class Func, class... Args>
+	export template<IUnknownWrapper Wrapper, class BaseType = typename Wrapper::inner_type, class Func, class... Args>
 	Wrapper ForwardFunction(Func function, Args&&... args)
 	{
 		using BaseTrait = ReplaceInnerType<typename Wrapper::trait_type, BaseType>;
@@ -57,28 +57,21 @@ namespace TypedD3D
 		{
 			BaseWrapper unknown;
 			ThrowIfFailed(std::invoke(function, std::forward<Args>(args)..., OutPtr{ unknown }));
-			if constexpr(std::same_as<typename Wrapper::unknown_type, BaseType>)
+			if constexpr(std::same_as<typename Wrapper::inner_type, BaseType>)
 				return unknown;
 			else
-				return Cast<typename Wrapper::unknown_type>(std::move(unknown));
+				return Cast<typename Wrapper::inner_type>(std::move(unknown));
 		}
 		else
 		{
 			BaseWrapper unknown;
 			std::invoke(function, std::forward<Args>(args)..., OutPtr{ unknown });
-			if constexpr(std::same_as<typename Wrapper::unknown_type, BaseType>)
+			if constexpr(std::same_as<typename Wrapper::inner_type, BaseType>)
 				return unknown;
 			else
-				return Cast<typename Wrapper::unknown_type>(std::move(unknown));
+				return Cast<typename Wrapper::inner_type>(std::move(unknown));
 		}
 	}
-
-	export template<IUnknownTrait Trait>
-	struct InterfaceBase
-	{
-		InterfaceProxy<Trait>& ToDerived() { return static_cast<InterfaceProxy<Trait>&>(*this); }
-		InnerType<Trait>& Self() { return *ToDerived().InterfaceProxy<Trait>::Get(); }
-	};
 
 	export template<class Ty>
 	struct UntaggedTraits;
