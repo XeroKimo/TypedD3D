@@ -14,14 +14,14 @@ export module TypedD3D.Shared:Containers;
 namespace TypedD3D
 {
 	template<class Ty>
-	struct LiftType
+	struct LiftType : std::false_type
 	{
 		using type = Ty;
 		using concrete_type = Ty;
 	};
 
 	template<template<class> class Outer, class Inner>
-	struct LiftType<Outer<Inner>>
+	struct LiftType<Outer<Inner>> : std::true_type
 	{
 		template<class Ty>
 		using type = Outer<Ty>;
@@ -41,13 +41,16 @@ namespace TypedD3D
 		using type = Inner;
 	};
 
-	template<class Ty>
+	export template<class Ty>
+	concept LiftableType = LiftType<Ty>::value;
+
+	export template<class Ty>
 	using InnerType = InnerTypeImpl<Ty>::type;
 
-	template<class Ty, class NewInner>
+	export template<class Ty, class NewInner>
 	using ReplaceInnerType = LiftType<Ty>::template type<NewInner>;
 
-	template<class Ty, template<class> class NewOuter>
+	export template<class Ty, template<class> class NewOuter>
 	using ReplaceOuterType = NewOuter<InnerType<Ty>>;
 
 	export template<class Ty>
@@ -793,6 +796,24 @@ namespace TypedD3D
 		ElementReferenceTest<Wrapper, IsConst> operator->() const { return *ptr; }
 	};
 
+	export template <class Ty>
+	concept TypedStructTrait = LiftableType<Ty> && !std::derived_from<InnerType<Ty>, IUnknown>;
+
+	export template<TypedStructTrait Ty>
+	struct TypedStruct : Ty::Interface
+	{
+		TypedStruct() = default;
+		TypedStruct(const Ty::Interface& other) : Ty::Interface{ other }
+		{
+
+		}
+
+		TypedStruct& operator=(const typename Ty::Interface& other)
+		{
+			*static_cast<Ty::Interface*>(this) = other;
+			return *this;
+		}
+	};
 
 	export template<IUnknownWrapper Wrapper, std::size_t N>
 	class Array

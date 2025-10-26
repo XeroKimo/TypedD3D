@@ -3,7 +3,7 @@ module;
 #include <d3d12.h>
 #include <array>
 #include <span>
-#include <wrl/client.h>
+
 #include <assert.h>
 #include <optional>
 
@@ -24,22 +24,22 @@ namespace TypedD3D::D3D12
 		using reference = ID3D12DeviceChild&;
 		using const_reference = const ID3D12DeviceChild&;
 
-		template<class DerivedSelf>
-		class Interface
+		template<IUnknownTrait Derived>
+		class Interface : public InterfaceBase<Derived>
 		{
 		private:
-			using derived_self = DerivedSelf;
+			using derived_self = Derived;
 
 		public:
 			template<std::derived_from<ID3D12Device> DeviceTy = ID3D12Device>
 			Wrapper<DeviceTy> GetDevice()
 			{
-				return IIDToObjectForwardFunction<DeviceTy>(&value_type::GetDevice, Get());
+				return ForwardFunction<DeviceTy>(&value_type::GetDevice, Self());
 			}
 
 		private:
-			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-			reference Get() { return *ToDerived().derived_self::Get(); }
+			using InterfaceBase<Derived>::Self;
+			using InterfaceBase<Derived>::ToDerived;
 		};
 	};
 }

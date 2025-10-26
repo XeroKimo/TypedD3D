@@ -2,7 +2,7 @@ module;
 
 #include <d3d12.h>
 #include <concepts>
-#include <wrl/client.h>
+
 
 export module TypedD3D12:PipelineState;
 
@@ -12,21 +12,19 @@ import TypedD3D.Shared;
 namespace TypedD3D::D3D12
 {
     template<class Ty>
-    concept PipelineTypeTag = std::same_as<Ty, D3D12_GRAPHICS_PIPELINE_STATE_DESC> || std::same_as<Ty, D3D12_COMPUTE_PIPELINE_STATE_DESC>;
-
-    template<class Ty>
-    struct PiplineStateTypeToTrait;
+    struct PiplineStateTypeToTraitMap;
 
     template<>
-    struct PiplineStateTypeToTrait<D3D12_GRAPHICS_PIPELINE_STATE_DESC> { template<class Ty> using type = GraphicsTraits<Ty>; };
+    struct PiplineStateTypeToTraitMap<D3D12_GRAPHICS_PIPELINE_STATE_DESC> { template<class Ty> using type = GraphicsTraits<Ty>; };
 
     template<>
-    struct PiplineStateTypeToTrait<D3D12_COMPUTE_PIPELINE_STATE_DESC> { template<class Ty> using type = ComputeTraits<Ty>; };
+    struct PiplineStateTypeToTraitMap<D3D12_COMPUTE_PIPELINE_STATE_DESC> { template<class Ty> using type = ComputeTraits<Ty>; };
 
-    template<class Ty>
-    using PipelineState_t = IUnknownWrapper<ID3D12PipelineState, PiplineStateTypeToTrait<Ty>::template type>;
+    template<class DescriptionType, class UnknownType>
+    using PiplineStateTypeToTrait = typename PiplineStateTypeToTraitMap<DescriptionType>::template type<UnknownType>;
+    
 
-    //template<TraitTags Type>
+    template<class DescriptionType>
     struct PipelineTraits
     {
         using value_type = ID3D12PipelineState;
@@ -36,36 +34,33 @@ namespace TypedD3D::D3D12
         using const_reference = const ID3D12PipelineState&;
 
         template<class DerivedSelf>
-        class Interface
+        class Interface : public InterfaceBase<PiplineStateTypeToTrait<DescriptionType, DerivedSelf>>
         {
         private:
             using derived_self = DerivedSelf;
 
         public:
-            Microsoft::WRL::ComPtr<ID3DBlob> GetCachedBlob()
+            Wrapper<ID3DBlob> GetCachedBlob()
             {
-                return UnknownObjectForwardFunction<ID3DBlob>(&value_type::GetCachedBlob, Get()).value();
+                return ForwardFunction<Wrapper<ID3DBlob>>(&value_type::GetCachedBlob, Self());
             }
 
         private:
-            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-            reference Get() { return *ToDerived().derived_self::Get(); }
+            using InterfaceBase<PiplineStateTypeToTrait<DescriptionType, DerivedSelf>>::Self;
+            using InterfaceBase<PiplineStateTypeToTrait<DescriptionType, DerivedSelf>>::ToDerived;
         };
     };
+}
 
+namespace TypedD3D
+{
     template<>
-    struct GraphicsTraits<ID3D12PipelineState> : PipelineTraits
+    struct GraphicsTraits<ID3D12PipelineState> : D3D12::PipelineTraits<D3D12_GRAPHICS_PIPELINE_STATE_DESC>
     {
     };
 
     template<>
-    struct ComputeTraits<ID3D12PipelineState> : PipelineTraits
+    struct ComputeTraits<ID3D12PipelineState> : D3D12::PipelineTraits<D3D12_COMPUTE_PIPELINE_STATE_DESC>
     {
     };
-
-    namespace Aliases
-    {
-        export using D3D12GraphicsPipelineState = PipelineState_t<D3D12_GRAPHICS_PIPELINE_STATE_DESC>;
-        export using D3D12ComputePipelineState = PipelineState_t<D3D12_COMPUTE_PIPELINE_STATE_DESC>;
-    }
 }
