@@ -34,6 +34,8 @@ namespace TypedD3D::D3D12
 		using reference = ID3D12CommandAllocator&;
 		using const_reference = const ID3D12CommandAllocator&;
 
+		using inner_type = ID3D12CommandAllocator;
+
 		template<class Derived>
 		class Interface : public InterfaceBase<CommandListTypeToTrait<Type, Derived>>
 		{

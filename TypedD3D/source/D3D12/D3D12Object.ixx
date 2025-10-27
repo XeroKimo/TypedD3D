@@ -1,16 +1,13 @@
 module;
-
 #include <concepts>
-#include <dxgi1_6.h>
+#include <d3d12.h>
 
-#include <utility>
-
-export module TypedDXGI:DXGIObject;
-import TypedD3D.Shared;
+export module TypedD3D12:D3D12Object;
+import	TypedD3D.Shared;
 
 namespace TypedD3D
 {
-	template<std::derived_from<IDXGIObject> Ty>
+	template<std::derived_from<ID3D12Object> Ty>
 	struct UntaggedTraits<Ty>
 	{
 		using inner_type = Ty;

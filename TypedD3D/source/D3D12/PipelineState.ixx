@@ -33,6 +33,7 @@ namespace TypedD3D::D3D12
         using reference = ID3D12PipelineState&;
         using const_reference = const ID3D12PipelineState&;
 
+        using inner_type = ID3D12PipelineState;
         template<class DerivedSelf>
         class Interface : public InterfaceBase<PiplineStateTypeToTrait<DescriptionType, DerivedSelf>>
         {

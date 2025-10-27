@@ -20,6 +20,7 @@ namespace TypedD3D
 		using reference = IDXGIAdapter&;
 		using cosnt_reference = const IDXGIAdapter&;
 
+		using inner_type = IDXGIAdapter;
 		template<class DerivedSelf>
 		class Interface : public InterfaceBase<UntaggedTraits<DerivedSelf>>
 		{

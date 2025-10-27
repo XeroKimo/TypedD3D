@@ -276,6 +276,8 @@ namespace TypedD3D
 		using reference = ID3D11DeviceContext&;
 		using const_reference = const ID3D11DeviceContext&;
 
+		using inner_type = ID3D11DeviceContext;
+
 		template<class Derived>
 		class Interface : public UntaggedTraits<ID3D11DeviceChild>::Interface<Derived>
 		{

@@ -147,6 +147,8 @@ namespace TypedD3D
 	template<std::derived_from<ID3D11Device> Ty>
 	struct UntaggedTraits<Ty>
 	{
+		using inner_type = Ty;
+
 		template<class Derived>
 		using Interface = Ty*;
 	};
@@ -154,7 +156,7 @@ namespace TypedD3D
 	template<>
 	struct UntaggedTraits<ID3D11Device>
 	{
-		using unknown_type = ID3D11Device;
+		using inner_type = ID3D11Device;
 
 		template<class Derived>
 		struct Interface : public InterfaceBase<UntaggedTraits<Derived>>
@@ -213,19 +215,19 @@ namespace TypedD3D
 
 			Wrapper<ID3D11BlendState> CreateBlendState(const D3D11_BLEND_DESC& desc)
 			{
-				return ForwardFunction<Wrapper<ID3D11BlendState>>(&unknown_type::CreateBlendState, Self(), &desc);
+				return ForwardFunction<Wrapper<ID3D11BlendState>>(&inner_type::CreateBlendState, Self(), &desc);
 			}
 
 			Wrapper<ID3D11Buffer> CreateBuffer(
 				const D3D11_BUFFER_DESC& desc,
 				const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
 			{
-				return ForwardFunction<Wrapper<ID3D11Buffer>>(&unknown_type::CreateBuffer, Self(), &desc, optInitialData);
+				return ForwardFunction<Wrapper<ID3D11Buffer>>(&inner_type::CreateBuffer, Self(), &desc, optInitialData);
 			}
 
 			Wrapper<ID3D11ClassLinkage> CreateClassLinkage()
 			{
-				return ForwardFunction<Wrapper<ID3D11ClassLinkage>>(&unknown_type::CreateClassLinkage, Self());
+				return ForwardFunction<Wrapper<ID3D11ClassLinkage>>(&inner_type::CreateClassLinkage, Self());
 			}
 
 			Wrapper<ID3D11ComputeShader> CreateComputeShader(
@@ -240,33 +242,33 @@ namespace TypedD3D
 				SIZE_T BytecodeLength,
 				WrapperView<ID3D11ClassLinkage> pClassLinkage)
 			{
-				return ForwardFunction<Wrapper<ID3D11ComputeShader>>(&unknown_type::CreateComputeShader, Self(), pShaderBytecode, BytecodeLength, pClassLinkage.Get());
+				return ForwardFunction<Wrapper<ID3D11ComputeShader>>(&inner_type::CreateComputeShader, Self(), pShaderBytecode, BytecodeLength, pClassLinkage.Get());
 			}
 
 			Wrapper<ID3D11Counter> CreateCounter(
 				const D3D11_COUNTER_DESC& pCounterDesc)
 			{
-				return ForwardFunction<Wrapper<ID3D11Counter>>(&unknown_type::CreateCounter, Self(), &pCounterDesc);
+				return ForwardFunction<Wrapper<ID3D11Counter>>(&inner_type::CreateCounter, Self(), &pCounterDesc);
 			}
 
 			template<std::derived_from<ID3D11DeviceContext> DeviceContextTy = ID3D11DeviceContext>
 			Wrapper<DeviceContextTy> CreateDeferredContext(
 				UINT ContextFlags)
 			{
-				return ForwardFunction<Wrapper<DeviceContextTy>, ID3D11DeviceContext>(&unknown_type::CreateDeferredContext, Self(), ContextFlags);
+				return ForwardFunction<Wrapper<DeviceContextTy>, ID3D11DeviceContext>(&inner_type::CreateDeferredContext, Self(), ContextFlags);
 			}
 
 			Wrapper<ID3D11DepthStencilState> CreateDepthStencilState(
 				const D3D11_DEPTH_STENCIL_DESC& pDepthStencilDesc)
 			{
-				return ForwardFunction<Wrapper<ID3D11DepthStencilState>>(&unknown_type::CreateDepthStencilState, Self(), &pDepthStencilDesc);
+				return ForwardFunction<Wrapper<ID3D11DepthStencilState>>(&inner_type::CreateDepthStencilState, Self(), &pDepthStencilDesc);
 			}
 
 			Wrapper<ID3D11DepthStencilView> CreateDepthStencilView(
 				gsl::not_null<WrapperView<ID3D11Resource>> pResource,
 				const D3D11_DEPTH_STENCIL_VIEW_DESC* optDesc = nullptr)
 			{
-				return ForwardFunction<Wrapper<ID3D11DepthStencilView>>(&unknown_type::CreateDepthStencilView, Self(), pResource.get().Get(), optDesc);
+				return ForwardFunction<Wrapper<ID3D11DepthStencilView>>(&inner_type::CreateDepthStencilView, Self(), pResource.get().Get(), optDesc);
 			}
 
 			Wrapper<ID3D11DomainShader> CreateDomainShader(
@@ -281,7 +283,7 @@ namespace TypedD3D
 				SIZE_T BytecodeLength,
 				WrapperView<ID3D11ClassLinkage> pClassLinkage)
 			{
-				return ForwardFunction<Wrapper<ID3D11DomainShader>>(&unknown_type::CreateDomainShader, Self(), pShaderBytecode, BytecodeLength, pClassLinkage.Get());
+				return ForwardFunction<Wrapper<ID3D11DomainShader>>(&inner_type::CreateDomainShader, Self(), pShaderBytecode, BytecodeLength, pClassLinkage.Get());
 			}
 
 			Wrapper<ID3D11GeometryShader> CreateGeometryShader(
@@ -296,7 +298,7 @@ namespace TypedD3D
 				SIZE_T BytecodeLength,
 				WrapperView<ID3D11ClassLinkage> pClassLinkage)
 			{
-				return ForwardFunction<Wrapper<ID3D11GeometryShader>>(&unknown_type::CreateGeometryShader, Self(), pShaderBytecode, BytecodeLength, pClassLinkage.Get());
+				return ForwardFunction<Wrapper<ID3D11GeometryShader>>(&inner_type::CreateGeometryShader, Self(), pShaderBytecode, BytecodeLength, pClassLinkage.Get());
 			}
 
 			Wrapper<ID3D11GeometryShader> CreateGeometryShaderWithStreamOutput(
@@ -323,7 +325,7 @@ namespace TypedD3D
 				UINT RasterizedStream,
 				WrapperView<ID3D11ClassLinkage> pClassLinkage)
 			{
-				return ForwardFunction<Wrapper<ID3D11GeometryShader>>(&unknown_type::CreateGeometryShaderWithStreamOutput,
+				return ForwardFunction<Wrapper<ID3D11GeometryShader>>(&inner_type::CreateGeometryShaderWithStreamOutput,
 					Self(),
 					pShaderBytecode,
 					BytecodeLength,
@@ -347,7 +349,7 @@ namespace TypedD3D
 				SIZE_T BytecodeLength,
 				WrapperView<ID3D11ClassLinkage> pClassLinkage)
 			{
-				return ForwardFunction<Wrapper<ID3D11HullShader>>(&unknown_type::CreateHullShader, Self(), pShaderBytecode, BytecodeLength, pClassLinkage.Get());
+				return ForwardFunction<Wrapper<ID3D11HullShader>>(&inner_type::CreateHullShader, Self(), pShaderBytecode, BytecodeLength, pClassLinkage.Get());
 			}
 
 			Wrapper<ID3D11InputLayout> CreateInputLayout(
@@ -381,7 +383,7 @@ namespace TypedD3D
 				SIZE_T BytecodeLength)
 			{
 				return ForwardFunction<Wrapper<ID3D11InputLayout>>(
-					&unknown_type::CreateInputLayout,
+					&inner_type::CreateInputLayout,
 					Self(),
 					inputElementDescs.data(),
 					static_cast<UINT>(inputElementDescs.size()),
@@ -401,71 +403,71 @@ namespace TypedD3D
 				SIZE_T BytecodeLength,
 				WrapperView<ID3D11ClassLinkage> pClassLinkage)
 			{
-				return ForwardFunction<Wrapper<ID3D11PixelShader>>(&unknown_type::CreatePixelShader, Self(), pShaderBytecode, BytecodeLength, pClassLinkage.Get());
+				return ForwardFunction<Wrapper<ID3D11PixelShader>>(&inner_type::CreatePixelShader, Self(), pShaderBytecode, BytecodeLength, pClassLinkage.Get());
 			}
 
 			Wrapper<ID3D11Predicate> CreatePredicate(const D3D11_QUERY_DESC& pPredicateDesc)
 			{
-				return ForwardFunction<Wrapper<ID3D11Predicate>>(&unknown_type::CreatePredicate, Self(), &pPredicateDesc);
+				return ForwardFunction<Wrapper<ID3D11Predicate>>(&inner_type::CreatePredicate, Self(), &pPredicateDesc);
 			}
 
 			Wrapper<ID3D11Query> CreateQuery(const D3D11_QUERY_DESC& pQueryDesc)
 			{
-				return ForwardFunction<Wrapper<ID3D11Query>>(&unknown_type::CreateQuery, Self(), &pQueryDesc);
+				return ForwardFunction<Wrapper<ID3D11Query>>(&inner_type::CreateQuery, Self(), &pQueryDesc);
 			}
 
 			Wrapper<ID3D11RasterizerState>  CreateRasterizerState(
 				const D3D11_RASTERIZER_DESC& pRasterizerDesc)
 			{
-				return ForwardFunction<Wrapper<ID3D11RasterizerState>>(&unknown_type::CreateRasterizerState, Self(), &pRasterizerDesc);
+				return ForwardFunction<Wrapper<ID3D11RasterizerState>>(&inner_type::CreateRasterizerState, Self(), &pRasterizerDesc);
 			}
 
 			Wrapper<ID3D11RenderTargetView> CreateRenderTargetView(
 				gsl::not_null<WrapperView<ID3D11Resource>> pResource,
 				const D3D11_RENDER_TARGET_VIEW_DESC* optDesc = nullptr)
 			{
-				return ForwardFunction<Wrapper<ID3D11RenderTargetView>>(&unknown_type::CreateRenderTargetView, Self(), pResource.get().Get(), optDesc);
+				return ForwardFunction<Wrapper<ID3D11RenderTargetView>>(&inner_type::CreateRenderTargetView, Self(), pResource.get().Get(), optDesc);
 			}
 
 			Wrapper<ID3D11SamplerState> CreateSamplerState(
 				const D3D11_SAMPLER_DESC& pSamplerDesc)
 			{
-				return ForwardFunction<Wrapper<ID3D11SamplerState>>(&unknown_type::CreateSamplerState, Self(), &pSamplerDesc);
+				return ForwardFunction<Wrapper<ID3D11SamplerState>>(&inner_type::CreateSamplerState, Self(), &pSamplerDesc);
 			}
 
 			Wrapper<ID3D11ShaderResourceView> CreateShaderResourceView(
 				gsl::not_null<WrapperView<ID3D11Resource>> pResource,
 				const D3D11_SHADER_RESOURCE_VIEW_DESC* optDesc = nullptr)
 			{
-				return ForwardFunction<Wrapper<ID3D11ShaderResourceView>>(&unknown_type::CreateShaderResourceView, Self(), pResource.get().Get(), optDesc);
+				return ForwardFunction<Wrapper<ID3D11ShaderResourceView>>(&inner_type::CreateShaderResourceView, Self(), pResource.get().Get(), optDesc);
 			}
 
 			Wrapper<ID3D11Texture1D> CreateTexture1D(
 				const D3D11_TEXTURE1D_DESC& pDesc,
 				const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
 			{
-				return ForwardFunction<Wrapper<ID3D11Texture1D>>(&unknown_type::CreateTexture1D, Self(), &pDesc, optInitialData);
+				return ForwardFunction<Wrapper<ID3D11Texture1D>>(&inner_type::CreateTexture1D, Self(), &pDesc, optInitialData);
 			}
 
 			Wrapper<ID3D11Texture2D> CreateTexture2D(
 				const D3D11_TEXTURE2D_DESC& pDesc,
 				const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
 			{
-				return ForwardFunction<Wrapper<ID3D11Texture2D>>(&unknown_type::CreateTexture2D, Self(), &pDesc, optInitialData);
+				return ForwardFunction<Wrapper<ID3D11Texture2D>>(&inner_type::CreateTexture2D, Self(), &pDesc, optInitialData);
 			}
 
 			Wrapper<ID3D11Texture3D> CreateTexture3D(
 				const D3D11_TEXTURE3D_DESC& pDesc,
 				const D3D11_SUBRESOURCE_DATA* optInitialData = nullptr)
 			{
-				return ForwardFunction<Wrapper<ID3D11Texture3D>>(&unknown_type::CreateTexture3D, Self(), &pDesc, optInitialData);
+				return ForwardFunction<Wrapper<ID3D11Texture3D>>(&inner_type::CreateTexture3D, Self(), &pDesc, optInitialData);
 			}
 
 			Wrapper<ID3D11UnorderedAccessView> CreateUnorderedAccessView(
 				gsl::not_null<WrapperView<ID3D11Resource>> pResource,
 				const D3D11_UNORDERED_ACCESS_VIEW_DESC* optDesc = nullptr)
 			{
-				return ForwardFunction<Wrapper<ID3D11UnorderedAccessView>>(&unknown_type::CreateUnorderedAccessView, Self(), pResource.get().Get(), optDesc);
+				return ForwardFunction<Wrapper<ID3D11UnorderedAccessView>>(&inner_type::CreateUnorderedAccessView, Self(), pResource.get().Get(), optDesc);
 			}
 
 
@@ -481,7 +483,7 @@ namespace TypedD3D
 				SIZE_T BytecodeLength,
 				WrapperView<ID3D11ClassLinkage> pClassLinkage)
 			{
-				return ForwardFunction<Wrapper<ID3D11VertexShader>>(&unknown_type::CreateVertexShader, Self(), pShaderBytecode, BytecodeLength, pClassLinkage.Get());
+				return ForwardFunction<Wrapper<ID3D11VertexShader>>(&inner_type::CreateVertexShader, Self(), pShaderBytecode, BytecodeLength, pClassLinkage.Get());
 			}
 
 			D3D11_CREATE_DEVICE_FLAG GetCreationFlags()
@@ -507,7 +509,7 @@ namespace TypedD3D
 			template<std::derived_from<ID3D11DeviceContext> DeviceContextTy = ID3D11DeviceContext>
             Wrapper<DeviceContextTy> GetImmediateContext()
             {
-                return ForwardFunction<Wrapper<DeviceContextTy>, ID3D11DeviceContext>(&unknown_type::GetImmediateContext, Self());
+                return ForwardFunction<Wrapper<DeviceContextTy>, ID3D11DeviceContext>(&inner_type::GetImmediateContext, Self());
             }
 
 			HRESULT GetPrivateData(REFGUID guid,

@@ -22,6 +22,7 @@ namespace TypedD3D
 		using reference = IDXGIFactory&;
 		using cosnt_reference = const IDXGIFactory&;
 
+		using inner_type = IDXGIFactory;
 		template<class Derived>
 		class Interface : public InterfaceBase<UntaggedTraits<Derived>>
 		{
@@ -80,6 +81,8 @@ namespace TypedD3D
 		using reference = IDXGIFactory1&;
 		using cosnt_reference = const IDXGIFactory1&;
 
+		using inner_type = IDXGIFactory1;
+
 		template<class Derived>
 		class Interface : public UntaggedTraits<IDXGIFactory>::Interface<Derived>
 		{
@@ -107,6 +110,8 @@ namespace TypedD3D
 		using const_pointer = const IDXGIFactory2*;
 		using reference = IDXGIFactory2&;
 		using cosnt_reference = const IDXGIFactory2&;
+
+		using inner_type = IDXGIFactory2;
 
 		template<class Derived>
 		class Interface : public UntaggedTraits<IDXGIFactory1>::Interface<Derived>

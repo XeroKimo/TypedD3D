@@ -55,6 +55,8 @@ namespace TypedD3D
 		using reference = Ty&;
 		using const_reference = const Ty&;
 
+		using inner_type = Ty;
+
 		template<class Derived>
 		class Interface : public UntaggedTraits<ID3D11DeviceChild>::Interface<Derived>, public InterfaceBase<UntaggedTraits<Derived>>
 		{

@@ -24,6 +24,15 @@ namespace TypedD3D
     Ty>
     struct UntaggedTraits<Ty>
     {
+        using inner_type = Ty;
+        template<class Derived>
+        using Interface = Ty*;
+    };
+
+    template<std::derived_from<ID3D11Debug> Ty>
+    struct UntaggedTraits<Ty>
+    {
+        using inner_type = Ty;
         template<class Derived>
         using Interface = Ty*;
     };
@@ -31,6 +40,7 @@ namespace TypedD3D
     template<>
     struct UntaggedTraits<ID3D11DeviceChild>
     {
+        using inner_type = ID3D11DeviceChild;
         template<class Derived>
         struct Interface : public InterfaceBase<UntaggedTraits<Derived>>
         {

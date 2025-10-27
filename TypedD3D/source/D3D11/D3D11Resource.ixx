@@ -16,6 +16,8 @@ namespace TypedD3D
         using reference = ID3D11Resource&;
         using const_reference = const ID3D11Resource&;
 
+        using inner_type = ID3D11Resource;
+
         template<class Derived>
         class Interface : public UntaggedTraits<ID3D11DeviceChild>
         {
@@ -52,6 +54,8 @@ namespace TypedD3D
         using reference = ID3D11Buffer&;
         using const_reference = const ID3D11Buffer&;
 
+        using inner_type = ID3D11Buffer;
+
         template<class Derived>
         class Interface : public UntaggedTraits<ID3D11Resource>::Interface<Derived>
         {
@@ -78,6 +82,7 @@ namespace TypedD3D
         using reference = ID3D11Texture1D&;
         using const_reference = const ID3D11Texture1D&;
 
+        using inner_type = ID3D11Texture1D;
         template<class Derived>
         class Interface : public UntaggedTraits<ID3D11Resource>::Interface<Derived>
         {
@@ -107,6 +112,7 @@ namespace TypedD3D
         using reference = ID3D11Texture2D&;
         using const_reference = const ID3D11Texture2D&;
 
+        using inner_type = ID3D11Texture2D;
         template<class Derived>
         class Interface : public UntaggedTraits<ID3D11Resource>::Interface<Derived>
         {
@@ -135,6 +141,8 @@ namespace TypedD3D
         using const_pointer = const ID3D11Texture3D*;
         using reference = ID3D11Texture3D&;
         using const_reference = const ID3D11Texture3D&;
+
+        using inner_type = ID3D11Texture3D;
 
         template<class Derived>
         class Interface : public UntaggedTraits<ID3D11Resource>::Interface<Derived>

@@ -16,8 +16,10 @@ export module TypedD3D12:CommandList;
 import :CommandAllocator;
 import :DescriptorHeap;
 //import :DeviceChild;
+import :D3D12Object;
 import TypedD3D.Shared;
 import :Wrappers;
+import :PipelineState;
 
 namespace TypedD3D::D3D12
 {
@@ -27,6 +29,9 @@ namespace TypedD3D::D3D12
 	template<D3D12_COMMAND_LIST_TYPE Type>
 	struct CommandListTrait<ID3D12CommandList, Type>
 	{
+
+		using inner_type = ID3D12CommandList;
+
 		template<class Derived>
 		struct Interface : InterfaceBase<CommandListTypeToTrait<Type, Derived>>
 		{
@@ -40,6 +45,7 @@ namespace TypedD3D::D3D12
 	template<D3D12_COMMAND_LIST_TYPE Type>
 	struct CommandListTrait<ID3D12GraphicsCommandList, Type>
 	{
+		using inner_type = ID3D12GraphicsCommandList;
 		template<class Derived>
 		struct Interface : InterfaceBase<CommandListTypeToTrait<Type, Derived>>
 		{
@@ -519,8 +525,17 @@ namespace TypedD3D
 	};
 
 	template<>
+	struct DirectTraits<ID3D12CommandList>
+	{
+		using inner_type = ID3D12CommandList;
+		template<class Derived>
+		using Interface = ID3D12CommandList*;
+	};
+
+	template<>
 	struct DirectTraits<ID3D12GraphicsCommandList>
 	{
+		using inner_type = ID3D12GraphicsCommandList;
 		template<class Derived>
 		class Interface : public D3D12::CommandListTrait<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_DIRECT>::Interface<Derived>
 		{
@@ -530,6 +545,7 @@ namespace TypedD3D
 	template<>
 	struct ComputeTraits<ID3D12GraphicsCommandList>
 	{
+		using inner_type = ID3D12GraphicsCommandList;
 		template<class Derived>
 		class Interface : public D3D12::CommandListTrait<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_COMPUTE>::Interface<Derived>
 		{
@@ -539,6 +555,7 @@ namespace TypedD3D
 	template<>
 	struct CopyTraits<ID3D12GraphicsCommandList>
 	{
+		using inner_type = ID3D12GraphicsCommandList;
 		template<class Derived>
 		class Interface : public D3D12::CommandListTrait<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_COPY>::Interface<Derived>
 		{
@@ -548,6 +565,7 @@ namespace TypedD3D
 	template<>
 	struct BundleTraits<ID3D12GraphicsCommandList>
 	{
+		using inner_type = ID3D12GraphicsCommandList;
 		template<class Derived>
 		class Interface : public D3D12::CommandListTrait<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE>::Interface<Derived>
 		{

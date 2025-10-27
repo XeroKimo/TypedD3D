@@ -362,7 +362,7 @@ void D3D12HelloWorld()
                                     TypedD3D::Array<TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE>, 1> backBufferHandle
                                     { swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart().Offset(frameData.backBufferIndex, rtvOffset) };
                                     TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> b2;
-
+                                    backBufferHandle[0].Offset(0);
                                     b2 = backBufferHandle[0];
                                     auto color = std::to_array({ 0.f, 0.3f, 0.7f, 1.f });
                                     std::span<const float, 4> f = color;

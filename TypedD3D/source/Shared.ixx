@@ -79,6 +79,7 @@ namespace TypedD3D
 	template<>
 	struct UntaggedTraits<ID3DBlob>
 	{
+		using inner_type = ID3DBlob;
 		template<class Derived>
 		using Interface = ID3DBlob*;
 	};
@@ -86,6 +87,7 @@ namespace TypedD3D
 	template<>
 	struct UntaggedTraits<IUnknown>
 	{
+		using inner_type = IUnknown;
 		template<class Derived>
 		using Interface = IUnknown*;
 	};

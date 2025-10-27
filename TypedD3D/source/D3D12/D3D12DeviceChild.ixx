@@ -24,6 +24,7 @@ namespace TypedD3D::D3D12
 		using reference = ID3D12DeviceChild&;
 		using const_reference = const ID3D12DeviceChild&;
 
+		using inner_type = ID3D12DeviceChild;
 		template<IUnknownTrait Derived>
 		class Interface : public InterfaceBase<Derived>
 		{

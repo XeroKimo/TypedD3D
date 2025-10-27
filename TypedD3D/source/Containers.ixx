@@ -3,7 +3,6 @@ module;
 #include <concepts>
 #include <Unknwn.h>
 #include <utility>
-#include <d3d11.h>
 #include <algorithm>
 #include <array>
 #include <span>
@@ -121,7 +120,7 @@ namespace TypedD3D
 	class WeakWrapper
 	{
 	public:
-		using inner_type = InnerType<Trait>;
+		using inner_type = Trait::inner_type;
 		using trait_type = Trait;
 		template<class Derived>
 		using interface_type = trait_type::template Interface<Derived>;
@@ -289,7 +288,7 @@ namespace TypedD3D
 	class StrongWrapper
 	{
 	public:
-		using inner_type = InnerType<Trait>;
+		using inner_type = Trait::inner_type;
 		using trait_type = Trait;
 		template<class Derived>
 		using interface_type = trait_type::template Interface<Derived>;
@@ -808,7 +807,10 @@ namespace TypedD3D
 	};
 
 	export template <class Ty>
-	concept TypedStructTrait = LiftableType<Ty> && !std::derived_from<InnerType<Ty>, IUnknown>;
+	concept TypedStructTrait = requires()
+	{
+		typename Ty::template Interface<void>;
+	} && LiftableType<Ty> && !std::derived_from<InnerType<Ty>, IUnknown>;
 
 	export template<TypedStructTrait Ty>
 	struct TypedStruct : private InnerType<Ty>, public Ty::template Interface<TypedStruct<Ty>>

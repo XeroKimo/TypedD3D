@@ -5,11 +5,13 @@ module;
 #include <dxgi1_6.h>
 #include <span>
 #include <d3d12.h>
+#include <cassert>
 
 export module TypedDXGI:SwapChain;
-//struct ID3D12CommandQueue;
+struct ID3D12CommandQueue;
 import TypedD3D.Shared;
-//import TypedD3D12;
+import TypedD3D12;
+import :DXGIObject;
 
 struct ID3D11Resource;
 struct ID3D12Resource;
@@ -32,6 +34,7 @@ namespace TypedD3D
 		using reference = IDXGISwapChain&;
 		using cosnt_reference = const IDXGISwapChain&;
 
+		using inner_type = IDXGISwapChain;
 		template<class Derived>
 		class Interface : public InterfaceBase<UntaggedTraits<Derived>>
 		{
@@ -115,6 +118,7 @@ namespace TypedD3D
 		using reference = IDXGISwapChain1&;
 		using cosnt_reference = const IDXGISwapChain1&;
 
+		using inner_type = IDXGISwapChain1;
 		template<class Derived>
 		class Interface : public UntaggedTraits<IDXGISwapChain>::Interface<Derived>
 		{
@@ -204,6 +208,7 @@ namespace TypedD3D
 		using reference = IDXGISwapChain2&;
 		using cosnt_reference = const IDXGISwapChain2&;
 
+		using inner_type = IDXGISwapChain2;
 		template<class Derived>
 		class Interface : public UntaggedTraits<IDXGISwapChain1>::Interface<Derived>
 		{
@@ -266,6 +271,7 @@ namespace TypedD3D
 		using reference = IDXGISwapChain3&;
 		using cosnt_reference = const IDXGISwapChain3&;
 
+		using inner_type = IDXGISwapChain3;
 		template<class Derived>
 		class Interface : public UntaggedTraits<IDXGISwapChain2>::Interface<Derived>
 		{
@@ -290,25 +296,19 @@ namespace TypedD3D
 				ThrowIfFailed(Self().SetColorSpace1(ColorSpace));
 			}
 
-			//template<std::derived_from<ID3D12CommandQueue> QueueTy>
-			//void ResizeBuffers1(
-			//	UINT BufferCount,
-			//	UINT Width,
-			//	UINT Height,
-			//	DXGI_FORMAT Format,
-			//	UINT SwapChainFlags,
-			//	std::span<UINT> pCreationNodeMask,
-			//	std::span<TypedD3D12::Direct<QueueTy>> ppPresentQueue)
-			//{
-			//	std::unique_ptr<IUnknown[]> queues = std::make_unique<IUnknown[]>(ppPresentQueue.size());
-
-			//	for(size_t i = 0; i < ppPresentQueue.size(); i++)
-			//	{
-			//		queues[i] = ppPresentQueue[i].Get();
-			//	}
-
-			//	ThrowIfFailed(Self().ResizeBuffers1(BufferCount, Width, Height, Format, SwapChainFlags, pCreationNodeMask.data(), queues.get()));
-			//}
+			template<std::derived_from<ID3D12CommandQueue> QueueTy>
+			void ResizeBuffers1(
+				UINT BufferCount,
+				UINT Width,
+				UINT Height,
+				DXGI_FORMAT Format,
+				UINT SwapChainFlags,
+				std::span<UINT> pCreationNodeMask,
+				Span<const TypedD3D::DirectView<QueueTy>> ppPresentQueue)
+			{
+				assert(BufferCount == pCreationNodeMask.size() && BufferCount == ppPresentQueue.size());
+				ThrowIfFailed(Self().ResizeBuffers1(BufferCount, Width, Height, Format, SwapChainFlags, pCreationNodeMask.data(), ppPresentQueue.data()));
+			}
 		private:
 			using InterfaceBase<UntaggedTraits<Derived>>::Self;
 			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;

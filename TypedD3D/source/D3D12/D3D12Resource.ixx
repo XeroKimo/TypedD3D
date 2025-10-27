@@ -20,6 +20,7 @@ namespace TypedD3D
         using reference = ID3D12Resource&;
         using const_reference = const ID3D12Resource&;
 
+        using inner_type = ID3D12Resource;
         template<class Derived>
         class Interface : public InterfaceBase<UntaggedTraits<Derived>>
         {

@@ -217,6 +217,7 @@ namespace TypedD3D
 	template<>
 	struct UntaggedTraits<ID3D12Device>
 	{
+		using inner_type = ID3D12Device;
 		template<class Derived>
 		struct Interface : InterfaceBase<UntaggedTraits<Derived>>
 		{

@@ -76,13 +76,18 @@ namespace TypedD3D::D3D12
         using reference = ID3D12DescriptorHeap&;
         using const_reference = const ID3D12DescriptorHeap&;
 
+        using inner_type = ID3D12DescriptorHeap;
 
         template<class Derived>
         class Interface : public InterfaceBase<HeapTypeToTrait<Type, HeapFlags, Derived>>
         {
         public:
             D3D12_DESCRIPTOR_HEAP_DESC GetDesc() { return Self().GetDesc(); }
-            auto GetCPUDescriptorHandleForHeapStart();
+            auto GetCPUDescriptorHandleForHeapStart()
+            {
+                using CPU_DESCRIPTOR_HANDLE = TypedStruct<HeapTypeToTrait<Type, HeapFlags, D3D12_CPU_DESCRIPTOR_HANDLE>>;
+                return CPU_DESCRIPTOR_HANDLE(Self().GetCPUDescriptorHandleForHeapStart());
+            }
             auto GetGPUDescriptorHandleForHeapStart();
 
         private:
@@ -251,11 +256,11 @@ namespace TypedD3D::D3D12
         return GPU_DESCRIPTOR_HANDLE(Self().GetGPUDescriptorHandleForHeapStart()); 
     }
 
-    template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-    template<class Derived>
-    auto DescriptorHeapTraits<Type, HeapFlags>::Interface<Derived>::GetCPUDescriptorHandleForHeapStart()
-    {
-        using CPU_DESCRIPTOR_HANDLE = TypedStruct<HeapTypeToTrait<Type, HeapFlags, D3D12_CPU_DESCRIPTOR_HANDLE>>;
-        return CPU_DESCRIPTOR_HANDLE(Self().GetCPUDescriptorHandleForHeapStart()); 
-    }
+    //template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
+    //template<class Derived>
+    //auto DescriptorHeapTraits<Type, HeapFlags>::Interface<Derived>::GetCPUDescriptorHandleForHeapStart()
+    //{
+    //    using CPU_DESCRIPTOR_HANDLE = TypedStruct<HeapTypeToTrait<Type, HeapFlags, D3D12_CPU_DESCRIPTOR_HANDLE>>;
+    //    return CPU_DESCRIPTOR_HANDLE(Self().GetCPUDescriptorHandleForHeapStart()); 
+    //}
 }

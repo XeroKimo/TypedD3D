@@ -37,6 +37,7 @@
     <ClCompile Include="source\D3D12\CommandList.ixx" />
     <ClCompile Include="source\D3D12\CommandQueue.ixx" />
     <ClCompile Include="source\D3D12\D3D12DeviceChild.ixx" />
+    <ClCompile Include="source\D3D12\D3D12Object.ixx" />
     <ClCompile Include="source\D3D12\D3D12Wrappers.ixx" />
     <ClCompile Include="source\D3D12\DescriptorHeap.ixx" />
     <ClCompile Include="source\D3D12\D3D12Device.ixx" />

@@ -29,21 +29,7 @@ namespace TypedD3D
 		using reference = Ty&;
 		using const_reference = const Ty&;
 
-		template<class Derived>
-		class Interface : public UntaggedTraits<ID3D11DeviceChild>::Interface<Derived>
-		{
-
-		};
-	};
-
-	template<>
-	struct UntaggedTraits<ID3D11VertexShader>
-	{
-		using value_type = ID3D11VertexShader;
-		using pointer = ID3D11VertexShader*;
-		using const_pointer = const ID3D11VertexShader*;
-		using reference = ID3D11VertexShader&;
-		using const_reference = const ID3D11VertexShader&;
+		using inner_type = Ty;
 
 		template<class Derived>
 		class Interface : public UntaggedTraits<ID3D11DeviceChild>::Interface<Derived>
