@@ -8,13 +8,10 @@ module;
 #include <cassert>
 
 export module TypedDXGI:SwapChain;
-struct ID3D12CommandQueue;
 import TypedD3D.Shared;
+import TypedD3D11;
 import TypedD3D12;
 import :DXGIObject;
-
-struct ID3D11Resource;
-struct ID3D12Resource;
 
 template<class Ty>
 concept Resource = std::derived_from<Ty, ID3D11Resource> || std::derived_from<Ty, ID3D12Resource>;

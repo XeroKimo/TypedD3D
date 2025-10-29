@@ -1,18 +1,22 @@
 module;
 
 #include "dxgi1_6.h"
+#include <d3d12.h>
+#include <d3d11.h>
 #include <concepts>
+#include <gsl/pointers>
 
 export module TypedDXGI:Factory;
 import TypedD3D.Shared;
-//import TypedD3D12;
-//import :Wrappers;
-
-struct ID3D11Device;
-struct ID3D12CommandQueue;
+import TypedD3D12;
+import :DXGIObject;
 
 namespace TypedD3D
 {
+	template<class Ty>
+	concept SwapChainCompatibleDevice = std::derived_from<typename Ty::inner_type, ID3D11Device>
+		|| (std::derived_from<typename Ty::inner_type, ID3D12CommandQueue> && std::same_as<InnerType<Ty>, DirectTag<typename Ty::inner_type>>);
+
 	template<>
 	struct Trait<Untagged<IDXGIFactory>>
 	{
@@ -32,15 +36,24 @@ namespace TypedD3D
 			using derived_self = Derived;
 
 		public:
+			template<std::derived_from<IDXGIAdapter> AdapterTy>
+			Wrapper<AdapterTy> CreateSoftwareAdapter(HMODULE Module)
+			{
+				return ForwardFunction<IDXGIAdapter>(&inner_type::CreateSoftwareAdapter, Self(), Module);
+			}
+
+			//The template signature is like this because if I explicitly say WrapperView<ID3D11Device> or DirectView<ID3D12CommandQueue>
+			//users will need to import both TypedD3D12 and TypedD3D11 for it to work as their definitions aren't visible otherwise
+			template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, SwapChainCompatibleDevice DeviceTy>
+			Wrapper<SwapChainTy> CreateSwapChain(DeviceTy pDevice, const DXGI_SWAP_CHAIN_DESC& pDesc)
+			{
+				return ForwardFunction<SwapChainTy>(&inner_type::CreateSwapChain, Self(), pDevice.Get(), &pDesc);
+			}
+
 			template<std::derived_from<IDXGIAdapter> AdapterTy = IDXGIAdapter>
 			Wrapper<AdapterTy> EnumAdapters(UINT Adapter)
 			{
 				return ForwardFunction<AdapterTy, IDXGIAdapter>(&inner_type::EnumAdapters, Self(), Adapter);
-			}
-
-			void MakeWindowAssociation(HWND WindowHandle, UINT Flags)
-			{
-				ThrowIfFailed(Self().MakeWindowAssociation(Flags));
 			}
 
 			HWND GetWindowAssociation()
@@ -50,22 +63,9 @@ namespace TypedD3D
 				return hwnd;
 			}
 
-			template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, std::derived_from<ID3D11Device> Device = ID3D11Device>
-			Wrapper<SwapChainTy> CreateSwapChain(Wrapper<Device> pDevice, const DXGI_SWAP_CHAIN_DESC& pDesc)
+			void MakeWindowAssociation(HWND WindowHandle, UINT Flags)
 			{
-				return ForwardFunction<SwapChainTy>(&inner_type::CreateSwapChain, Self(), pDevice.Get(), &pDesc);
-			}
-
-			//template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, std::derived_from<ID3D12CommandQueue> QueueTy>
-			//Wrapper<SwapChainTy> CreateSwapChain(TypedD3D12::Direct<QueueTy> commandQueue, const DXGI_SWAP_CHAIN_DESC& pDesc)
-			//{
-			//	return ForwardFunction<SwapChainTy>(&inner_type::CreateSwapChain, Self(), commandQueue.Get(), &pDesc);
-			//}
-
-			template<std::derived_from<IDXGIAdapter> AdapterTy>
-			Wrapper<AdapterTy> CreateSoftwareAdapter(HMODULE Module)
-			{
-				return ForwardFunction<IDXGIAdapter>(&inner_type::CreateSoftwareAdapter, Self(), Module);
+				ThrowIfFailed(Self().MakeWindowAssociation(Flags));
 			}
 
 		private:
@@ -126,54 +126,41 @@ namespace TypedD3D
 			using derived_self = Derived;
 
 		public:
-			BOOL IsWindowedStereoEnabled() { return Self().IsWindowedStereoEnabled(); }
+			//The template signature is like this because if I explicitly say WrapperView<ID3D11Device> or DirectView<ID3D12CommandQueue>
+			//users will need to import both TypedD3D12 and TypedD3D11 for it to work as their definitions aren't visible otherwise
+			template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, SwapChainCompatibleDevice DeviceTy>
+			Wrapper<SwapChainTy> CreateSwapChainForComposition(
+				DeviceTy commandQueue,
+				const DXGI_SWAP_CHAIN_DESC1& pDesc,
+				WrapperView<IDXGIOutput> optRestrictToOutput)
+			{
+				return ForwardFunction<Wrapper<SwapChainTy>, IDXGISwapChain1>(&inner_type::CreateSwapChainForComposition, Self(), commandQueue.Get(), &pDesc, optRestrictToOutput.Get());
+			}
 
+			//The template signature is like this because if I explicitly say WrapperView<ID3D11Device> or DirectView<ID3D12CommandQueue>
+			//users will need to import both TypedD3D12 and TypedD3D11 for it to work as their definitions aren't visible otherwise
+			template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, SwapChainCompatibleDevice DeviceTy>
+			Wrapper<SwapChainTy> CreateSwapChainForCoreWindow(
+				DeviceTy pDevice,
+				WrapperView<IUnknown> pWindow,
+				const DXGI_SWAP_CHAIN_DESC1& pDesc,
+				WrapperView<IDXGIOutput> optRestrictToOutput)
+			{
+				return ForwardFunction<Wrapper<SwapChainTy>, IDXGISwapChain1>(&inner_type::CreateSwapChainForCoreWindow, Self(), pDevice.Get(), pWindow.Get(), &pDesc, optRestrictToOutput.Get());
+			}
 
-			//TODO: Temporary fix, make sure only ID3D11Devices can be accepted here
-			template< std::derived_from<IDXGISwapChain> SwapChain = IDXGISwapChain, class /*std::derived_from<ID3D11Device>*/ Device = ID3D11Device*>
-			Wrapper<SwapChain> CreateSwapChainForHwnd(
-				/*Wrapper<Device>*/Device pDevice,
+			//The template signature is like this because if I explicitly say WrapperView<ID3D11Device> or DirectView<ID3D12CommandQueue>
+			//users will need to import both TypedD3D12 and TypedD3D11 for it to work as their definitions aren't visible otherwise
+			template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, SwapChainCompatibleDevice DeviceTy>
+			Wrapper<SwapChainTy> CreateSwapChainForHwnd(
+				DeviceTy pDevice,
 				HWND hWnd,
 				const DXGI_SWAP_CHAIN_DESC1& pDesc,
 				const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* optFullscreenDesc,
-				IDXGIOutput* optRestrictToOutput)
+				WrapperView<IDXGIOutput> optRestrictToOutput)
 			{
-				return ForwardFunction<Wrapper<SwapChain>, IDXGISwapChain1>(&inner_type::CreateSwapChainForHwnd, Self(), pDevice.Get(), hWnd, &pDesc, optFullscreenDesc, optRestrictToOutput);
+				return ForwardFunction<Wrapper<SwapChainTy>, IDXGISwapChain1>(&inner_type::CreateSwapChainForHwnd, Self(), pDevice.Get(), hWnd, &pDesc, optFullscreenDesc, optRestrictToOutput.Get());
 			}
-
-			//template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, class QueueTy>
-			//	requires std::same_as<typename QueueTy::value_type, ID3D12CommandQueue>
-			//Wrapper<SwapChainTy> CreateSwapChainForHwnd(
-			//	QueueTy pDevice,
-			//	HWND hWnd,
-			//	const DXGI_SWAP_CHAIN_DESC1& pDesc,
-			//	const DXGI_SWAP_CHAIN_FULLSCREEN_DESC* optFullscreenDesc,
-			//	IDXGIOutput* optRestrictToOutput)
-			//{
-			//	return ForwardFunction<SwapChain, IDXGISwapChain1>(&inner_type::CreateSwapChainForHwnd, &Get(), pDevice.Get(), hWnd, &pDesc, optFullscreenDesc, optRestrictToOutput);
-			//}
-
-			template<class SwapChain = IDXGISwapChain, class Device = ID3D11Device>
-				requires std::derived_from<Device, ID3D11Device>&& std::derived_from<SwapChain, IDXGISwapChain>
-			Wrapper<SwapChain> CreateSwapChainForCoreWindow(
-				Wrapper<Device> pDevice,
-				IUnknown& pWindow,
-				const DXGI_SWAP_CHAIN_DESC1& pDesc,
-				IDXGIOutput* optRestrictToOutput)
-			{
-				return ForwardFunction<SwapChain, IDXGISwapChain1>(&inner_type::CreateSwapChainForCoreWindow, Self(), pDevice.Get(), &pWindow, &pDesc, optRestrictToOutput);
-			}
-
-			//template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, class QueueTy>
-			//	requires std::same_as<typename QueueTy::value_type, ID3D12CommandQueue>
-			//Wrapper<SwapChainTy> CreateSwapChainForCoreWindow(
-			//	QueueTy pDevice,
-			//	IUnknown& pWindow,
-			//	const DXGI_SWAP_CHAIN_DESC1& pDesc,
-			//	IDXGIOutput* optRestrictToOutput)
-			//{
-			//	return ForwardFunction<SwapChain, IDXGISwapChain1>(&inner_type::CreateSwapChainForCoreWindow, Self(), pDevice.Get(), &pWindow, &pDesc, optRestrictToOutput);
-			//}
 
 			LUID GetSharedResourceAdapterLuid(HANDLE hResource)
 			{
@@ -182,24 +169,7 @@ namespace TypedD3D
 				return luid;
 			}
 
-			DWORD RegisterStereoStatusWindow(HWND WindowHandle, UINT wMsg)
-			{
-				DWORD pdwCookie;
-				ThrowIfFailed(Self().RegisterStereoStatusWindow(WindowHandle, wMsg, &pdwCookie));
-				return pdwCookie;
-			}
-
-			DWORD RegisterStereoStatusEvent(HANDLE hEvent)
-			{
-				DWORD pdwCookie;
-				ThrowIfFailed(Self().RegisterStereoStatusEvent(hEvent, &pdwCookie));
-				return pdwCookie;
-			}
-
-			void UnregisterStereoStatus(DWORD dwCookie)
-			{
-				Self().UnregisterStereoStatus(dwCookie);
-			}
+			BOOL IsWindowedStereoEnabled() { return Self().IsWindowedStereoEnabled(); }
 
 			DWORD RegisterOcclusionStatusWindow(HWND WindowHandle, UINT wMsg)
 			{
@@ -215,29 +185,29 @@ namespace TypedD3D
 				return pdwCookie;
 			}
 
+			DWORD RegisterStereoStatusEvent(HANDLE hEvent)
+			{
+				DWORD pdwCookie;
+				ThrowIfFailed(Self().RegisterStereoStatusEvent(hEvent, &pdwCookie));
+				return pdwCookie;
+			}
+
+			DWORD RegisterStereoStatusWindow(HWND WindowHandle, UINT wMsg)
+			{
+				DWORD pdwCookie;
+				ThrowIfFailed(Self().RegisterStereoStatusWindow(WindowHandle, wMsg, &pdwCookie));
+				return pdwCookie;
+			}
+
 			void UnregisterOcclusionStatus(DWORD dwCookie)
 			{
 				Self().UnregisterOcclusionStatus(dwCookie);
 			}
 
-			template<class SwapChain = IDXGISwapChain, class Device = ID3D11Device>
-				requires std::derived_from<Device, ID3D11Device>&& std::derived_from<SwapChain, IDXGISwapChain>
-			Wrapper<SwapChain> CreateSwapChainForComposition(
-				Wrapper<Device> pDevice,
-				const DXGI_SWAP_CHAIN_DESC1& pDesc,
-				IDXGIOutput* optRestrictToOutput)
+			void UnregisterStereoStatus(DWORD dwCookie)
 			{
-				return ForwardFunction<SwapChain, IDXGISwapChain1>(&inner_type::CreateSwapChainForComposition, Self(), pDevice.Get(), &pDesc, optRestrictToOutput);
+				Self().UnregisterStereoStatus(dwCookie);
 			}
-
-			//template<std::derived_from<IDXGISwapChain> SwapChainTy = IDXGISwapChain, std::derived_from<ID3D12CommandQueue> QueueTy>
-			//Wrapper<SwapChainTy> CreateSwapChainForComposition(
-			//	TypedD3D12::Direct<QueueTy> pDevice,
-			//	const DXGI_SWAP_CHAIN_DESC1& pDesc,
-			//	IDXGIOutput* optRestrictToOutput)
-			//{
-			//	return TypedD3D::Cast<SwapChainTy>(UnknownObjectForwardFunction<IDXGISwapChain1>(&inner_type::CreateSwapChainForComposition, Self(), pDevice.Get(), &pDesc, optRestrictToOutput));
-			//}
 
 		private:
 			using InterfaceBase<Untagged<Derived>>::Self;
