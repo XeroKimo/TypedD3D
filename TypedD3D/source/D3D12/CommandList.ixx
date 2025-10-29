@@ -172,9 +172,12 @@ namespace TypedD3D
 				Self().ClearState(nullptr);
 			}
 
-			template<template<class> class Tag>
-				requires D3D12::PipelineStateEnabledTag<Tag>
-			void ClearState(WeakWrapper<Tag<ID3D12PipelineState>> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
+			void ClearState(GraphicsView<ID3D12PipelineState> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
+			{
+				Self().ClearState(pPipelineState.Get());
+			}
+
+			void ClearState(ComputeView<ID3D12PipelineState> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
 			{
 				Self().ClearState(pPipelineState.Get());
 			}
@@ -371,6 +374,11 @@ namespace TypedD3D
 			void OMSetStencilRef(UINT StencilRef) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().OMSetStencilRef(StencilRef);
+			}
+
+			HRESULT Reset(gsl::not_null<WeakWrapper<Tag<ID3D12CommandAllocator>>> allocator, std::nullptr_t)
+			{
+				return Self().Reset(allocator.get().Get(), nullptr);
 			}
 
 			HRESULT Reset(gsl::not_null<WeakWrapper<Tag<ID3D12CommandAllocator>>> allocator,

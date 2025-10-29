@@ -114,6 +114,12 @@ namespace TypedD3D
 		{ t.Release() } -> std::convertible_to<ULONG>;
 	} && IUnknownWrapper<Ty>;
 
+	export template<class Ty>
+	concept IUnknownReferenceWrapper = requires(Ty t)
+	{
+		typename Ty::inner_wrapper;
+	} && IUnknownWrapper<Ty>;
+
 	template<class Ty, class Ty2>
 	concept SameTraitAs = std::same_as<ReplaceTraitInnerType<Ty, GetTraitInnerType<Ty>>, ReplaceTraitInnerType<Ty2, GetTraitInnerType<Ty>>>;
 
@@ -224,6 +230,19 @@ namespace TypedD3D
 			}
 		}
 
+		template<IUnknownReferenceWrapper Wrapper>
+			requires ConvertibleIUnknownTraitTo<typename Wrapper::trait_type, trait_type>
+		WeakWrapper(const Wrapper& other) noexcept : ptr{ other.Get() }
+		{
+
+		}
+
+		template<IUnknownReferenceWrapper Wrapper>
+			requires ConvertibleIUnknownTraitTo<typename Wrapper::trait_type, trait_type>
+		WeakWrapper(Wrapper&& other) noexcept : ptr{ other.Get() }
+		{
+		}
+
 		template<IUnknownWrapper Wrapper>
 			requires std::same_as<InnerType<Wrapper>, Untagged<typename Wrapper::inner_type>>
 			&& !std::same_as<TraitTy, Untagged<inner_type>>
@@ -289,6 +308,22 @@ namespace TypedD3D
 				if(ptr)
 					Release();
 			}
+			return *this;
+		}
+
+		template<IUnknownReferenceWrapper Wrapper>
+			requires ConvertibleIUnknownTraitTo<typename Wrapper::trait_type, trait_type>
+		WeakWrapper& operator=(const Wrapper& other)
+		{
+			ptr = other.Get();
+			return *this;
+		}
+
+		template<IUnknownReferenceWrapper Wrapper>
+			requires ConvertibleIUnknownTraitTo<typename Wrapper::trait_type, trait_type>
+		WeakWrapper& operator=(Wrapper&& other) noexcept
+		{
+			ptr = other.Get();
 			return *this;
 		}
 
@@ -430,6 +465,22 @@ namespace TypedD3D
 			}
 		}
 
+		template<IUnknownReferenceWrapper Wrapper>
+			requires ConvertibleIUnknownTraitTo<typename Wrapper::trait_type, trait_type>
+		StrongWrapper(const Wrapper& other) noexcept : ptr{ other.Get() }
+		{
+			if(ptr)
+				Acquire();
+		}
+
+		template<IUnknownReferenceWrapper Wrapper>
+			requires ConvertibleIUnknownTraitTo<typename Wrapper::trait_type, trait_type>
+		StrongWrapper(Wrapper&& other) noexcept : ptr{ other.Detach() }
+		{
+			if(ptr)
+				Acquire();
+		}
+
 		template<IUnknownWrapper Wrapper>
 			requires std::same_as<InnerType<Wrapper>, Untagged<typename Wrapper::inner_type>>
 		&& !std::same_as<TraitTy, Untagged<inner_type>>
@@ -506,6 +557,26 @@ namespace TypedD3D
 					other.Acquire();
 			}
 			Attach(other.Detach());
+			return *this;
+		}
+
+		template<IUnknownReferenceWrapper Wrapper>
+			requires ConvertibleIUnknownTraitTo<typename Wrapper::trait_type, trait_type>
+		StrongWrapper& operator=(const Wrapper& other)
+		{
+			Attach(other.Get());
+			if(ptr)
+				Acquire();
+			return *this;
+		}
+
+		template<IUnknownReferenceWrapper Wrapper>
+			requires ConvertibleIUnknownTraitTo<typename Wrapper::trait_type, trait_type>
+		StrongWrapper& operator=(Wrapper&& other) noexcept
+		{
+			Attach(other.Get());
+			if(ptr)
+				Acquire();
 			return *this;
 		}
 
@@ -652,6 +723,7 @@ namespace TypedD3D
 	public:
 		using inner_type = Wrapper::inner_type;
 		using trait_type = Wrapper::trait_type;
+		using inner_wrapper = Wrapper;
 		template<class Derived>
 		using interface_type = TraitInterface<trait_type, Derived>;
 
