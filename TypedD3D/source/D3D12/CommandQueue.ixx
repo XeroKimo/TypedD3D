@@ -100,10 +100,10 @@ namespace TypedD3D
 			}
 
 			HRESULT Signal(
-				ID3D12Fence& Fence,
+				gsl::not_null<WrapperView<ID3D12Fence>> Fence,
 				UINT64 Value)
 			{
-				return Self().Signal(&Fence, Value);
+				return Self().Signal(Fence.get().Get(), Value);
 			}
 
 			void UpdateTileMappings(
@@ -132,10 +132,10 @@ namespace TypedD3D
 			}
 
 			HRESULT Wait(
-				ID3D12Fence& Fence,
+				gsl::not_null<WrapperView<ID3D12Fence>> Fence,
 				UINT64 Value)
 			{
-				return Self().Wait(&Fence, Value);
+				return Self().Wait(Fence.get().Get(), Value);
 			}
 
 			void ExecuteCommandLists(Span<WeakWrapper<Tag<ID3D12CommandList>>> commandLists)

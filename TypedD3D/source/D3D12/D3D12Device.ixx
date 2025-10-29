@@ -1208,14 +1208,14 @@ namespace TypedD3D
 			}
 
 			Wrapper<ID3D12Resource> CreatePlacedResource1(
-				ID3D12Heap& pHeap,
+				gsl::not_null<WrapperView<ID3D12Heap>> pHeap,
 				UINT64 HeapOffset,
 				const D3D12_RESOURCE_DESC& pDesc,
 				D3D12_RESOURCE_STATES InitialState,
 				const D3D12_CLEAR_VALUE* pOptimizedClearValue)
 			{
 				return ForwardFunction<Wrapper<ID3D12Resource>>(&inner_type::CreatePlacedResource1, Self(),
-					&pHeap,
+					pHeap.get().Get(),
 					HeapOffset,
 					&pDesc,
 					InitialState,
@@ -1351,7 +1351,7 @@ namespace TypedD3D
 			}
 
 			Wrapper<ID3D12Resource2> CreatePlacedResource2(
-				ID3D12Heap& pHeap,
+				gsl::not_null<WrapperView<ID3D12Heap>> pHeap,
 				UINT64 HeapOffset,
 				const D3D12_RESOURCE_DESC1& pDesc,
 				D3D12_BARRIER_LAYOUT InitialLayout,
@@ -1359,7 +1359,7 @@ namespace TypedD3D
 				std::span<DXGI_FORMAT> CastableFormats)
 			{
 				return ForwardFunction<Wrapper<ID3D12Resource2>>(&inner_type::CreatePlacedResource2, Self(),
-					&pHeap,
+					pHeap.get().Get(),
 					HeapOffset,
 					pDesc,
 					InitialLayout,
