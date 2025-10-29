@@ -21,6 +21,20 @@ namespace TypedD3D
 	export template<template<class> class Ty, template<class> class Ty2>
 	concept SameTagAs = std::same_as<Ty<void>, Ty2<void>>;
 
+	export class HRESULTError : public std::runtime_error
+	{
+		HRESULT result = 0;
+
+	public:
+		HRESULTError(HRESULT result, std::string message) :
+			std::runtime_error{ std::move(message) },
+			result{ result }
+		{
+		}
+
+		HRESULT GetError() const { return result; }
+	};
+
 	export template<std::derived_from<IUnknown> To, std::derived_from<IUnknown> From>
 	To* Cast(From* from)
 	{
@@ -32,7 +46,7 @@ namespace TypedD3D
 	export void ThrowIfFailed(HRESULT result)
 	{
 		if(FAILED(result))
-			throw std::runtime_error("Failed\n");
+			throw HRESULTError(result, std::format("Something has failed, HRESULT: {:x}\n", result));
 	}
 
 	export template<IUnknownWrapper Wrapper, class BaseType = typename Wrapper::inner_type, class Func, class... Args>
@@ -75,31 +89,6 @@ namespace TypedD3D
 				return Cast<typename Wrapper::inner_type>(std::move(unknown));
 		}
 	}
-
-	//export template<class Ty>
-	//struct UntaggedTraits;
-
-	//template<>
-	//struct UntaggedTraits<ID3DBlob>
-	//{
-	//	using inner_type = ID3DBlob;
-	//	template<class Derived>
-	//	using Interface = ID3DBlob*;
-
-	//	template<class NewInner>
-	//	using trait_template = UntaggedTraits<NewInner>;
-	//};
-
-	//template<>
-	//struct UntaggedTraits<IUnknown>
-	//{
-	//	using inner_type = IUnknown;
-	//	template<class Derived>
-	//	using Interface = IUnknown*;
-
-	//	template<class NewInner>
-	//	using trait_template = UntaggedTraits<NewInner>;
-	//};
 
 	template<>
 	struct Trait<Untagged<ID3DBlob>>

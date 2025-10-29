@@ -1,13 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.0.11121.172 d18.0
+VisualStudioVersion = 18.0.11121.172
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TESTS", "TESTS\TESTS.vcxproj", "{7E42D240-4BB9-476F-9776-35A097441584}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TypedD3D", "TypedD3D\TypedD3D12.vcxproj", "{4C07B140-D4BD-40D4-BE41-18E6AA4D78EF}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExceptionHierarchy", "ExceptionHierarchy\ExceptionHierarchy\ExceptionHierarchy.vcxproj", "{BB10395F-CED5-4F0D-BC01-8740A181207D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "API_TESTS", "API_TESTS\API_TESTS.vcxproj", "{A6886362-A0EE-4A35-8582-85B34E4D5248}"
 EndProject
@@ -35,14 +33,6 @@ Global
 		{4C07B140-D4BD-40D4-BE41-18E6AA4D78EF}.Release|x64.Build.0 = Release|x64
 		{4C07B140-D4BD-40D4-BE41-18E6AA4D78EF}.Release|x86.ActiveCfg = Release|Win32
 		{4C07B140-D4BD-40D4-BE41-18E6AA4D78EF}.Release|x86.Build.0 = Release|Win32
-		{BB10395F-CED5-4F0D-BC01-8740A181207D}.Debug|x64.ActiveCfg = Debug|x64
-		{BB10395F-CED5-4F0D-BC01-8740A181207D}.Debug|x64.Build.0 = Debug|x64
-		{BB10395F-CED5-4F0D-BC01-8740A181207D}.Debug|x86.ActiveCfg = Debug|Win32
-		{BB10395F-CED5-4F0D-BC01-8740A181207D}.Debug|x86.Build.0 = Debug|Win32
-		{BB10395F-CED5-4F0D-BC01-8740A181207D}.Release|x64.ActiveCfg = Release|x64
-		{BB10395F-CED5-4F0D-BC01-8740A181207D}.Release|x64.Build.0 = Release|x64
-		{BB10395F-CED5-4F0D-BC01-8740A181207D}.Release|x86.ActiveCfg = Release|Win32
-		{BB10395F-CED5-4F0D-BC01-8740A181207D}.Release|x86.Build.0 = Release|Win32
 		{A6886362-A0EE-4A35-8582-85B34E4D5248}.Debug|x64.ActiveCfg = Debug|x64
 		{A6886362-A0EE-4A35-8582-85B34E4D5248}.Debug|x64.Build.0 = Debug|x64
 		{A6886362-A0EE-4A35-8582-85B34E4D5248}.Debug|x86.ActiveCfg = Debug|Win32
