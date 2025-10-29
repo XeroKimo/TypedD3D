@@ -23,4 +23,21 @@ namespace TypedD3D
 		template<class Derived>
 		using Interface = Ty*;
 	};
+
+	template<>
+	struct Trait<Untagged<ID3D12LifetimeOwner>>
+	{
+		using inner_type = ID3D12LifetimeOwner;
+
+		using inner_tag = ID3D12LifetimeOwner;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
+
+		template<class Derived>
+		using Interface = ID3D12LifetimeOwner*;
+	};
 }

@@ -38,7 +38,8 @@ void D3D12HelloWorld()
     CreateWindow();
 
     TypedD3D::Wrapper<IDXGIFactory2> factory = TypedDXGI::CreateFactory1<IDXGIFactory2>();
-    TypedD3D::Wrapper<ID3D12Device> device = TypedD3D::ForwardFunction<TypedD3D::Wrapper<ID3D12Device>>(D3D12CreateDevice, nullptr, D3D_FEATURE_LEVEL_12_0);
+
+    TypedD3D::Wrapper<ID3D12Device> device = TypedD3D12::CreateDevice(D3D_FEATURE_LEVEL_12_0);
 
     constexpr UINT backBufferCount = 2;
 

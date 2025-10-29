@@ -148,12 +148,14 @@ namespace TypedD3D
 				ClearRenderTargetView(RenderTargetView, colorRGBA, {});
 			}
 
-			void ClearState(GraphicsView<ID3D12PipelineState> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
+			void ClearState(std::nullptr_t) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
 			{
-				Self().ClearState(pPipelineState.Get());
+				Self().ClearState(nullptr);
 			}
 
-			void ClearState(ComputeView<ID3D12PipelineState> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
+			template<template<class> class Tag>
+				requires D3D12::PipelineStateEnabledTag<Tag>
+			void ClearState(WeakWrapper<Tag<ID3D12PipelineState>> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
 			{
 				Self().ClearState(pPipelineState.Get());
 			}
