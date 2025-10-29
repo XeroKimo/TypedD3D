@@ -44,6 +44,7 @@ namespace TypedD3D::D3D12
         || std::same_as<Ty, DSVTag<InnerType<Ty>>>
         || std::same_as<Ty, RTVTag<InnerType<Ty>>>
         || std::same_as<Ty, SamplerTag<InnerType<Ty>>>
+        || std::same_as<Ty, Untagged<InnerType<Ty>>>
         || std::same_as<Ty, ShaderVisibleCBV_SRV_UAVTag<InnerType<InnerType<Ty>>>>
         || std::same_as<Ty, ShaderVisibleSamplerTag<InnerType<InnerType<Ty>>>>;
 }

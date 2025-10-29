@@ -147,6 +147,13 @@ namespace TypedD3D
 		using type = StrongWrapper<Untagged<Ty>>;
 	};
 
+	template<class Ty>
+		requires TypedStructTrait<Untagged<Ty>>
+	struct WrapperMapper<Ty>
+	{
+		using type = TypedStruct<Untagged<Ty>>;
+	};
+
 	export template<std::derived_from<IUnknown> Ty>
 	struct WrapperViewMapper<Ty>
 	{

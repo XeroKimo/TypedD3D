@@ -28,7 +28,8 @@ namespace TypedD3D::D3D12
 		|| SameTagAs<Tag, ComputeTag>
 		|| SameTagAs<Tag, CopyTag>
 		|| SameTagAs<Tag, BundleTag>
-		|| SameTagAs<Tag, RenderPassTag>;
+		|| SameTagAs<Tag, RenderPassTag>
+		|| SameTagAs<Tag, Untagged>;
 
 	template<template<class> class Tag, template<class> class... Compare>
 	concept DisableFunction = !(SameTagAs<Tag, Compare> || ...);
@@ -66,6 +67,24 @@ namespace TypedD3D::D3D12
 
 namespace TypedD3D
 {
+	template<template<class> class Tag, std::derived_from<ID3D12GraphicsCommandList8> Ty>
+		requires D3D12::CommandListEnabledTag<Tag>
+	struct Trait<Tag<Ty>>
+	{
+		using inner_type = Ty;
+
+		using inner_tag = Ty;
+
+		template<class NewInner>
+		using ReplaceInnerType = Tag<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Tag<NewInner>;
+
+		template<class Derived>
+		using Interface = Ty*;
+	};
+
 	template<template<class> class Tag>
 		requires D3D12::CommandListEnabledTag<Tag>
 	struct Trait<Tag<ID3D12CommandList>>

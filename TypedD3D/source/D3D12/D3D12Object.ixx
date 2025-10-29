@@ -7,7 +7,7 @@ import	TypedD3D.Shared;
 
 namespace TypedD3D
 {
-	template<std::derived_from<ID3D12Object> Ty>
+	template<DerivedFromExcept<ID3D12Object, ID3D12CommandList> Ty>
 	struct Trait<Untagged<Ty>>
 	{
 		using inner_type = Ty;

@@ -49,6 +49,10 @@ void D3D12HelloWorld()
     commandAllocators[0] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>();
     commandAllocators[1] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>();
     TypedD3D::Direct<ID3D12GraphicsCommandList> commandList = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0]);
+    TypedD3D::Wrapper<ID3D12GraphicsCommandList> commandList2 = commandList;
+    commandList2 = commandList;
+    //commandList = TypedD3D::Direct<ID3D12GraphicsCommandList>{ commandList2 };
+
 
     UINT64 fenceValue = 0;
     TypedD3D::Wrapper<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE);
@@ -76,6 +80,10 @@ void D3D12HelloWorld()
 
     UINT rtvOffset = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> descriptorHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    TypedD3D::Wrapper<D3D12_CPU_DESCRIPTOR_HANDLE> descriptorHandle2 = descriptorHandle;
+    descriptorHandle2 = descriptorHandle;
+    descriptorHandle = TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE>{ descriptorHandle2 };
+    TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> descriptorHandle3{ descriptorHandle2 };
     DXGI_SWAP_CHAIN_DESC1 desc = swapChain->GetDesc1();
 
     std::array<TypedD3D::Wrapper<ID3D12Resource>, 2> swapChainBuffers;
@@ -87,8 +95,6 @@ void D3D12HelloWorld()
         device->CreateRenderTargetView(swapChainBuffers[i], nullptr, descriptorHandle);
         descriptorHandle = descriptorHandle.Offset(1, rtvOffset);
     }
-
-
 
     D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc
     {
