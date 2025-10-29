@@ -47,30 +47,31 @@ namespace TypedD3D::D3D11
 namespace TypedD3D
 {
 	template<D3D11::StateObject Ty>
-	struct UntaggedTraits<Ty>
+	struct Trait<Untagged<Ty>>
 	{
-		using value_type = Ty;
-		using pointer = Ty*;
-		using const_pointer = const Ty*;
-		using reference = Ty&;
-		using const_reference = const Ty&;
-
 		using inner_type = Ty;
 
+		using inner_tag = Ty;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
 		template<class Derived>
-		class Interface : public UntaggedTraits<ID3D11DeviceChild>::Interface<Derived>, public InterfaceBase<UntaggedTraits<Derived>>
+		class Interface : public Trait<Untagged<ID3D11DeviceChild>>::Interface<Derived>
 		{
 		public:
-			typename D3D11::ViewToStateDesc<value_type>::type GetDesc()
+			typename D3D11::ViewToStateDesc<inner_type>::type GetDesc()
 			{
-				typename D3D11::ViewToStateDesc<value_type>::type description;
+				typename D3D11::ViewToStateDesc<inner_type>::type description;
 				Self().GetDesc(&description);
 				return description;
 			}
 
 		private:
-			using InterfaceBase<UntaggedTraits<Derived>>::Self;
-			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+			using InterfaceBase<Untagged<Derived>>::Self;
+			using InterfaceBase<Untagged<Derived>>::ToDerived;
 		};
 	};
 }

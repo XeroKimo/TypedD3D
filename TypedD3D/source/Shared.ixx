@@ -18,6 +18,9 @@ namespace TypedD3D
 	export template<class Base, class Ty, class Ty2>
 	concept DefineTraitRange = std::derived_from<Ty2, Ty> && ((std::derived_from<Base, Ty> && !std::derived_from<Base, Ty2>) || std::same_as<Base, Ty2>);
 
+	export template<template<class> class Ty, template<class> class Ty2>
+	concept SameTagAs = std::same_as<Ty<void>, Ty2<void>>;
+
 	export template<std::derived_from<IUnknown> To, std::derived_from<IUnknown> From>
 	To* Cast(From* from)
 	{
@@ -73,23 +76,63 @@ namespace TypedD3D
 		}
 	}
 
-	export template<class Ty>
-	struct UntaggedTraits;
+	//export template<class Ty>
+	//struct UntaggedTraits;
+
+	//template<>
+	//struct UntaggedTraits<ID3DBlob>
+	//{
+	//	using inner_type = ID3DBlob;
+	//	template<class Derived>
+	//	using Interface = ID3DBlob*;
+
+	//	template<class NewInner>
+	//	using trait_template = UntaggedTraits<NewInner>;
+	//};
+
+	//template<>
+	//struct UntaggedTraits<IUnknown>
+	//{
+	//	using inner_type = IUnknown;
+	//	template<class Derived>
+	//	using Interface = IUnknown*;
+
+	//	template<class NewInner>
+	//	using trait_template = UntaggedTraits<NewInner>;
+	//};
 
 	template<>
-	struct UntaggedTraits<ID3DBlob>
+	struct Trait<Untagged<ID3DBlob>>
 	{
 		using inner_type = ID3DBlob;
+
+		using inner_tag = ID3DBlob;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
 		template<class Derived>
 		using Interface = ID3DBlob*;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
 	};
 
 	template<>
-	struct UntaggedTraits<IUnknown>
+	struct Trait<Untagged<IUnknown>>
 	{
 		using inner_type = IUnknown;
+
+		using inner_tag = IUnknown;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
 		template<class Derived>
 		using Interface = IUnknown*;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
 	};
 
 	export template<class Ty>
@@ -101,7 +144,7 @@ namespace TypedD3D
 	export template<std::derived_from<IUnknown> Ty>
 	struct WrapperMapper<Ty>
 	{
-		using type = StrongWrapper<UntaggedTraits<Ty>>;
+		using type = StrongWrapper<Untagged<Ty>>;
 	};
 
 	export template<std::derived_from<IUnknown> Ty>

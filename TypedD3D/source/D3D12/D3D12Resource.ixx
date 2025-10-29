@@ -3,7 +3,7 @@ module;
 #include <utility>
 #include <d3d12.h>
 
-#include <assert.h>
+#include <cassert>
 #include <cstddef>
 
 export module TypedD3D12:Resource;
@@ -12,17 +12,20 @@ import TypedD3D.Shared;
 namespace TypedD3D
 {
     template<>
-    struct UntaggedTraits<ID3D12Resource>
+    struct Trait<Untagged<ID3D12Resource>>
     {
-        using value_type = ID3D12Resource;
-        using pointer = ID3D12Resource*;
-        using const_pointer = const ID3D12Resource*;
-        using reference = ID3D12Resource&;
-        using const_reference = const ID3D12Resource&;
-
         using inner_type = ID3D12Resource;
+
+        using inner_tag = ID3D12Resource;
+
+        template<class NewInner>
+        using ReplaceInnerType = Untagged<NewInner>;
+
+        template<class NewInner>
+        using trait_template = Untagged<NewInner>;
+
         template<class Derived>
-        class Interface : public InterfaceBase<UntaggedTraits<Derived>>
+        class Interface : public InterfaceBase<Untagged<Derived>>
         {
         private:
             using derived_self = Derived;
@@ -72,13 +75,14 @@ namespace TypedD3D
             }
 
         private:
-            using InterfaceBase<UntaggedTraits<Derived>>::Self;
-            using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+            using InterfaceBase<Untagged<Derived>>::Self;
+            using InterfaceBase<Untagged<Derived>>::ToDerived;
         };
     };
 
+
     template<>
-    struct UntaggedTraits<ID3D12Resource1>
+    struct Trait<Untagged<ID3D12Resource1>>
     {
         using value_type = ID3D12Resource1;
         using pointer = ID3D12Resource1*;
@@ -86,8 +90,11 @@ namespace TypedD3D
         using reference = ID3D12Resource1&;
         using const_reference = const ID3D12Resource1&;
 
+        template<class NewInner>
+        using trait_template = Untagged<NewInner>;
+
         template<class Derived>
-        class Interface : public UntaggedTraits<ID3D12Resource>::Interface<Derived>
+        class Interface : public Trait<Untagged<ID3D12Resource>>::Interface<Derived>
         {
 		public:
 			//TODO: Figure out how this works to update to a more modern API
@@ -99,13 +106,13 @@ namespace TypedD3D
 			}
 
         private:
-            using InterfaceBase<UntaggedTraits<Derived>>::Self;
-            using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+            using InterfaceBase<Untagged<Derived>>::Self;
+            using InterfaceBase<Untagged<Derived>>::ToDerived;
         };
     };
 
     template<>
-    struct UntaggedTraits<ID3D12Resource2>
+    struct Trait<Untagged<ID3D12Resource2>>
     {
         using value_type = ID3D12Resource2;
         using pointer = ID3D12Resource2*;
@@ -113,8 +120,11 @@ namespace TypedD3D
         using reference = ID3D12Resource2&;
         using const_reference = const ID3D12Resource2&;
 
+        template<class NewInner>
+        using trait_template = Untagged<NewInner>;
+
         template<class Derived>
-        class Interface : public UntaggedTraits<ID3D12Resource>::Interface<Derived>
+        class Interface : public Trait<Untagged<ID3D12Resource>>::Interface<Derived>
         {
         private:
             using derived_self = Derived;
@@ -126,8 +136,8 @@ namespace TypedD3D
 			}
 
         private:
-            using InterfaceBase<UntaggedTraits<Derived>>::Self;
-            using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+            using InterfaceBase<Untagged<Derived>>::Self;
+            using InterfaceBase<Untagged<Derived>>::ToDerived;
         };
     };
 }

@@ -268,18 +268,21 @@ namespace TypedD3D::D3D11
 namespace TypedD3D
 {
 	template<>
-	struct UntaggedTraits<ID3D11DeviceContext>
+	struct Trait<Untagged<ID3D11DeviceContext>>
 	{
-		using value_type = ID3D11DeviceContext;
-		using pointer = ID3D11DeviceContext*;
-		using const_pointer = const ID3D11DeviceContext*;
-		using reference = ID3D11DeviceContext&;
-		using const_reference = const ID3D11DeviceContext&;
 
 		using inner_type = ID3D11DeviceContext;
 
+
+		using inner_tag = ID3D11DeviceContext;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
 		template<class Derived>
-		class Interface : public UntaggedTraits<ID3D11DeviceChild>::Interface<Derived>
+		class Interface : public Trait<Untagged<ID3D11DeviceChild>>::Interface<Derived>
 		{
 		public:
 			D3D11_MAPPED_SUBRESOURCE Map(
@@ -322,10 +325,10 @@ namespace TypedD3D
 			}
 
 			void ExecuteCommandList(
-				ID3D11CommandList& pCommandList,
+				gsl::not_null<WrapperView<ID3D11CommandList>> pCommandList,
 				BOOL RestoreContextState)
 			{
-				Self().ExecuteCommandList(&pCommandList, RestoreContextState);
+				Self().ExecuteCommandList(pCommandList.get().Get(), RestoreContextState);
 			}
 
 			Wrapper<ID3D11CommandList> FinishCommandList(BOOL RestoreDeferredContextState)
@@ -336,24 +339,24 @@ namespace TypedD3D
 			}
 
 			void Begin(
-				ID3D11Asynchronous& pAsync)
+				gsl::not_null<WrapperView<ID3D11Asynchronous>> pAsync)
 			{
-				Self().Begin(&pAsync);
+				Self().Begin(pAsync.get().Get());
 			}
 
 			void End(
-				ID3D11Asynchronous& pAsync)
+				gsl::not_null<WrapperView<ID3D11Asynchronous>> pAsync)
 			{
-				Self().End(&pAsync);
+				Self().End(pAsync.get().Get());
 			}
 
 			void* GetData(
-				ID3D11Asynchronous& pAsync,
+				gsl::not_null<WrapperView<ID3D11Asynchronous>> pAsync,
 				UINT GetDataFlags)
 			{
 				void* data = nullptr;
 
-				ThrowIfFailed(Self().GetData(&pAsync, data, pAsync.GetDataSize(), GetDataFlags));
+				ThrowIfFailed(Self().GetData(pAsync.get().Get(), data, pAsync->GetDataSize(), GetDataFlags));
 
 				return data;
 			}
@@ -1489,8 +1492,8 @@ namespace TypedD3D
 			}
 
 		private:
-			using InterfaceBase<UntaggedTraits<Derived>>::Self;
-			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+			using InterfaceBase<Untagged<Derived>>::Self;
+			using InterfaceBase<Untagged<Derived>>::ToDerived;
 		};
 	};
 }

@@ -145,21 +145,37 @@ namespace TypedD3D::D3D11
 namespace TypedD3D
 {
 	template<std::derived_from<ID3D11Device> Ty>
-	struct UntaggedTraits<Ty>
+	struct Trait<Untagged<Ty>>
 	{
 		using inner_type = Ty;
 
+		using inner_tag = Ty;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
 		template<class Derived>
 		using Interface = Ty*;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
 	};
 
 	template<>
-	struct UntaggedTraits<ID3D11Device>
+	struct Trait<Untagged<ID3D11Device>>
 	{
 		using inner_type = ID3D11Device;
 
+		using inner_tag = ID3D11Device;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
+
 		template<class Derived>
-		struct Interface : public InterfaceBase<UntaggedTraits<Derived>>
+		struct Interface : public InterfaceBase<Untagged<Derived>>
 		{
 			HRESULT CheckCounter(
 				const D3D11_COUNTER_DESC& desc,
@@ -548,8 +564,8 @@ namespace TypedD3D
 				return Self().SetPrivateDataInterface(guid, pData);
 			}
 		private:
-			using InterfaceBase<UntaggedTraits<Derived>>::Self;
-			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+			using InterfaceBase<Untagged<Derived>>::Self;
+			using InterfaceBase<Untagged<Derived>>::ToDerived;
 		};
 	};
 }

@@ -19,6 +19,7 @@ export import :PipelineState;
 export import :Resource;
 
 
+
 namespace TypedD3D::D3D12
 {
 	struct MetaCommandParameterInfo
@@ -215,11 +216,20 @@ namespace TypedD3D::D3D12
 namespace TypedD3D
 {
 	template<>
-	struct UntaggedTraits<ID3D12Device>
+	struct Trait<Untagged<ID3D12Device>>
 	{
 		using inner_type = ID3D12Device;
+
+		using inner_tag = ID3D12Device;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
+
 		template<class Derived>
-		struct Interface : InterfaceBase<UntaggedTraits<Derived>>
+		struct Interface : InterfaceBase<Untagged<Derived>>
 		{
 			UINT GetNodeCount()
 			{
@@ -320,11 +330,11 @@ namespace TypedD3D
 
 			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
 			void CreateShaderResourceView(
-				ID3D12Resource& pResource,
+				gsl::not_null<WrapperView<ID3D12Resource>> pResource,
 				const D3D12_SHADER_RESOURCE_VIEW_DESC* optDesc,
 				TypedStruct<D3D12::HeapTypeToTrait<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags, D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptor)
 			{
-				Self().CreateShaderResourceView(&pResource, optDesc, DestDescriptor.Raw());
+				Self().CreateShaderResourceView(pResource.get().Get(), optDesc, DestDescriptor.Raw());
 			}
 
 			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
@@ -337,20 +347,20 @@ namespace TypedD3D
 
 			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
 			void CreateUnorderedAccessView(
-				ID3D12Resource& pResource,
-				ID3D12Resource& pCounterResource,
+				gsl::not_null<WrapperView<ID3D12Resource>> pResource,
+				gsl::not_null<WrapperView<ID3D12Resource>> pCounterResource,
 				const D3D12_UNORDERED_ACCESS_VIEW_DESC& pDesc,
 				TypedStruct<D3D12::HeapTypeToTrait<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags, D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptor)
 			{
-				Self().CreateUnorderedAccessView(&pResource, &pCounterResource, &pDesc, DestDescriptor.Raw());
+				Self().CreateUnorderedAccessView(pResource.get().Get(), pCounterResource.get().Get(), &pDesc, DestDescriptor.Raw());
 			}
 
 			void CreateRenderTargetView(
-				ID3D12Resource& Resource,
+				gsl::not_null<WrapperView<ID3D12Resource>> Resource,
 				const D3D12_RENDER_TARGET_VIEW_DESC* optDesc,
 				RTV<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
 			{
-				Self().CreateRenderTargetView(&Resource, optDesc, DestDescriptor.Raw());
+				Self().CreateRenderTargetView(Resource.get().Get(), optDesc, DestDescriptor.Raw());
 			}
 
 			void CreateNullRenderTargetView(
@@ -361,11 +371,11 @@ namespace TypedD3D
 			}
 
 			void CreateDepthStencilView(
-				ID3D12Resource& Resource,
+				gsl::not_null<WrapperView<ID3D12Resource>> Resource,
 				const D3D12_DEPTH_STENCIL_VIEW_DESC* optDesc,
 				DSV<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
 			{
-				Self().CreateDepthStencilView(&Resource, optDesc, DestDescriptor.Raw());
+				Self().CreateDepthStencilView(Resource.get().Get(), optDesc, DestDescriptor.Raw());
 			}
 
 			void CreateNullDepthStencilView(
@@ -613,638 +623,12 @@ namespace TypedD3D
 			}
 
 		private:
-			using InterfaceBase<UntaggedTraits<Derived>>::Self;
-			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+			using InterfaceBase<Untagged<Derived>>::Self;
+			using InterfaceBase<Untagged<Derived>>::ToDerived;
 		};
 	};
 }
 
-//import TypedD3D.Legacy.D3D12Helpers;
-//
-//namespace TypedD3D::D3D12
-//{
-//	using Microsoft::WRL::ComPtr;
-//	struct MetaCommandParameterInfo
-//	{
-//		UINT totalStructureSizeInBytes;
-//		UINT parameterCount;
-//		std::vector<D3D12_META_COMMAND_PARAMETER_DESC> parameterDescs;
-//	};
-//
-//#pragma region Device Feature Map
-//	template<D3D12_FEATURE Feature>
-//	struct DeviceFeatureMap;
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS>
-//	{
-//		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_ARCHITECTURE>
-//	{
-//		using type = D3D12_FEATURE_DATA_ARCHITECTURE;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_FEATURE_LEVELS>
-//	{
-//		using type = D3D12_FEATURE_DATA_FEATURE_LEVELS;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_FORMAT_SUPPORT>
-//	{
-//		using type = D3D12_FEATURE_DATA_FORMAT_INFO;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT>
-//	{
-//		using type = D3D12_FEATURE_DATA_GPU_VIRTUAL_ADDRESS_SUPPORT;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_SHADER_MODEL>
-//	{
-//		using type = D3D12_FEATURE_DATA_SHADER_MODEL;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS1>
-//	{
-//		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS1;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_SUPPORT>
-//	{
-//		using type = D3D12_FEATURE_DATA_PROTECTED_RESOURCE_SESSION_SUPPORT;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_ROOT_SIGNATURE>
-//	{
-//		using type = D3D12_FEATURE_DATA_ROOT_SIGNATURE;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_ARCHITECTURE1>
-//	{
-//		using type = D3D12_FEATURE_DATA_ARCHITECTURE1;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS2>
-//	{
-//		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS2;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_SHADER_CACHE>
-//	{
-//		using type = D3D12_FEATURE_DATA_SHADER_CACHE;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_COMMAND_QUEUE_PRIORITY>
-//	{
-//		using type = D3D12_FEATURE_DATA_COMMAND_QUEUE_PRIORITY;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS3>
-//	{
-//		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS3;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_EXISTING_HEAPS>
-//	{
-//		using type = D3D12_FEATURE_DATA_EXISTING_HEAPS;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS4>
-//	{
-//		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS4;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_SERIALIZATION>
-//	{
-//		using type = D3D12_FEATURE_DATA_SERIALIZATION;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_CROSS_NODE>
-//	{
-//		using type = D3D12_FEATURE_DATA_CROSS_NODE;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS5>
-//	{
-//		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS5;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS6>
-//	{
-//		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS6;
-//	};
-//
-//	//Requires Windows 11
-//	//template<>
-//	//struct DeviceFeatureMap<D3D12_FEATURE_DISPLAYABLE>
-//	//{
-//	//    using type = D3D12_FEATURE_DATA_DISPLAYABLE;
-//	//};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_QUERY_META_COMMAND>
-//	{
-//		using type = D3D12_FEATURE_DATA_QUERY_META_COMMAND;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS7>
-//	{
-//		using type = D3D12_FEATURE_DATA_D3D12_OPTIONS7;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_TYPE_COUNT>
-//	{
-//		using type = D3D12_FEATURE_DATA_PROTECTED_RESOURCE_SESSION_TYPE_COUNT;
-//	};
-//
-//	template<>
-//	struct DeviceFeatureMap<D3D12_FEATURE_PROTECTED_RESOURCE_SESSION_TYPES>
-//	{
-//		using type = D3D12_FEATURE_DATA_PROTECTED_RESOURCE_SESSION_TYPES;
-//	};
-//
-//	//Requires Windows 11
-//	//template<>
-//	//struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS8>
-//	//{
-//	//    using type = D3D12_FEATURE_DATA_D3D12_OPTIONS8;
-//	//};
-//
-//	//Requires Windows 11
-//	//template<>
-//	//struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS9>
-//	//{
-//	//    using type = D3D12_FEATURE_DATA_D3D12_OPTIONS9;
-//	//};
-//
-//	//Requires Windows 11
-//	//template<>
-//	//struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS10>
-//	//{
-//	//    using type = D3D12_FEATURE_DATA_D3D12_OPTIONS10;
-//	//};
-//
-//	//Requires Windows 11
-//	//template<>
-//	//struct DeviceFeatureMap<D3D12_FEATURE_D3D12_OPTIONS11>
-//	//{
-//	//    using type = D3D12_FEATURE_DATA_D3D12_OPTIONS11;
-//	//};
-//#pragma endregion
-//
-//	export template<std::derived_from<ID3D12Device> DeviceTy>
-//	using Device_t = IUnknownWrapper<DeviceTy, UntaggedTraits>;
-//
-//	template<class Ty>
-//	struct DeviceTraits;
-//
-//	template<>
-//	struct DeviceTraits<ID3D12Device>
-//	{
-//		using value_type = ID3D12Device;
-//		using pointer = ID3D12Device*;
-//		using const_pointer = const ID3D12Device*;
-//		using reference = ID3D12Device&;
-//		using const_reference = const ID3D12Device&;
-//
-//		template<class DerivedSelf>
-//		class Interface
-//		{
-//		private:
-//			using derived_self = DerivedSelf;
-//
-//		public:
-//			UINT GetNodeCount()
-//			{
-//				return Self().GetNodeCount();
-//			}
-//
-//			template<D3D12_COMMAND_LIST_TYPE Type>
-//			D3D12CommandQueue_t<Type> CreateCommandQueue(
-//				D3D12_COMMAND_QUEUE_PRIORITY priority,
-//				D3D12_COMMAND_QUEUE_FLAGS flags,
-//				UINT nodeMask)
-//			{
-//				using queue_type = D3D12CommandQueue_t<Type>;
-//
-//				D3D12_COMMAND_QUEUE_DESC desc
-//				{
-//					.Type = Type,
-//					.Priority = priority,
-//					.Flags = flags,
-//					.NodeMask = nodeMask
-//				};
-//
-//				return Helpers::D3D12::CreateCommandQueue(Get(), desc);
-//			}
-//
-//			template<D3D12_COMMAND_LIST_TYPE Type>
-//			CommandAllocator_t<Type> CreateCommandAllocator()
-//			{
-//				using allocator_type = CommandAllocator_t<Type>;
-//
-//				return Helpers::D3D12::CreateCommandAllocator(Get(), Type);
-//			}
-//
-//			Graphics<ID3D12PipelineState> CreateGraphicsPipelineState(
-//				const D3D12_GRAPHICS_PIPELINE_STATE_DESC& pDesc)
-//			{
-//				return Helpers::D3D12::CreateGraphicsPipelineState(Get(), pDesc);
-//			}
-//
-//			Compute<ID3D12PipelineState> CreateComputePipelineState(
-//				const D3D12_COMPUTE_PIPELINE_STATE_DESC& pDesc)
-//			{
-//				return Helpers::D3D12::CreateComputePipelineState(Get(), pDesc);
-//			}
-//
-//			template<D3D12_COMMAND_LIST_TYPE Type, std::derived_from<ID3D12CommandList> ListTy = ID3D12GraphicsCommandList>
-//			CommandList_t<ListTy, Type> CreateCommandList(
-//				CommandAllocator_t<Type> pCommandAllocator,
-//				UINT nodeMask = 0,
-//				ID3D12PipelineState* optInitialState = nullptr)
-//			{
-//				using command_list_type = CommandList_t<ListTy, Type>;
-//				return Helpers::D3D12::CreateCommandList<ListTy>(Get(), Type, *pCommandAllocator.Get(), nodeMask, optInitialState);
-//			}
-//
-//			template<D3D12_FEATURE Feature>
-//			typename DeviceFeatureMap<Feature>::type CheckFeatureSupport()
-//			{
-//				using feature_t = typename DeviceFeatureMap<Feature>::type;
-//				feature_t feature{};
-//				ThrowIfFailed(Self().CheckFeatureSupport(Feature, &feature, sizeof(feature_t)));
-//				return feature;
-//			}
-//
-//			template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlag>
-//			DescriptorHeap_t<Type, HeapFlag> CreateDescriptorHeap(
-//				UINT NumDescriptors,
-//				UINT NodeMask)
-//			{
-//				using DescriptorHeap_t = DescriptorHeap_t<Type, HeapFlag>;
-//
-//				D3D12_DESCRIPTOR_HEAP_DESC desc
-//				{
-//					.Type = Type,
-//					.NumDescriptors = NumDescriptors,
-//					.Flags = HeapFlag,
-//					.NodeMask = NodeMask
-//				};
-//
-//				return Helpers::D3D12::CreateDescriptorHeap(Get(), desc);
-//			}
-//
-//			UINT GetDescriptorHandleIncrementSize(
-//				D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapType)
-//			{
-//				return Self().GetDescriptorHandleIncrementSize(DescriptorHeapType);
-//			}
-//
-//			ComPtr<ID3D12RootSignature> CreateRootSignature(
-//				UINT nodeMask,
-//				const void* pBlobWithRootSignature,
-//				SIZE_T blobLengthInBytes)
-//			{
-//				return Helpers::D3D12::CreateRootSignature(Get(), nodeMask, pBlobWithRootSignature, blobLengthInBytes);
-//			}
-//
-//			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-//			void CreateConstantBufferView(
-//				const D3D12_CONSTANT_BUFFER_VIEW_DESC& pDesc,
-//				CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags> DestDescriptor)
-//			{
-//				Self().CreateConstantBufferView(pDesc, DestDescriptor.Get());
-//			}
-//
-//
-//			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-//			void CreateShaderResourceView(
-//				ID3D12Resource& pResource,
-//				const D3D12_SHADER_RESOURCE_VIEW_DESC* optDesc,
-//				CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags> DestDescriptor)
-//			{
-//				Self().CreateShaderResourceView(&pResource, optDesc, DestDescriptor.Get());
-//			}
-//
-//			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-//			void CreateNullShaderResourceView(
-//				const D3D12_SHADER_RESOURCE_VIEW_DESC& pDesc,
-//				CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags> DestDescriptor)
-//			{
-//				Self().CreateShaderResourceView(nullptr, &pDesc, DestDescriptor.Get());
-//			}
-//
-//			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-//			void CreateUnorderedAccessView(
-//				ID3D12Resource& pResource,
-//				ID3D12Resource& pCounterResource,
-//				const D3D12_UNORDERED_ACCESS_VIEW_DESC& pDesc,
-//				CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags> DestDescriptor)
-//			{
-//				Self().CreateUnorderedAccessView(&pResource, &pCounterResource, &pDesc, DestDescriptor.Get());
-//			}
-//
-//			void CreateRenderTargetView(
-//				ID3D12Resource& Resource,
-//				const D3D12_RENDER_TARGET_VIEW_DESC* optDesc,
-//				RTV<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
-//			{
-//				Self().CreateRenderTargetView(&Resource, optDesc, DestDescriptor.Get());
-//			}
-//
-//			void CreateNullRenderTargetView(
-//				const D3D12_RENDER_TARGET_VIEW_DESC& Desc,
-//				RTV<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
-//			{
-//				Self().CreateRenderTargetView(nullptr, &Desc, DestDescriptor.Get());
-//			}
-//
-//			void CreateDepthStencilView(
-//				ID3D12Resource& Resource,
-//				const D3D12_DEPTH_STENCIL_VIEW_DESC* optDesc,
-//				DSV<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
-//			{
-//				Self().CreateDepthStencilView(&Resource, optDesc, DestDescriptor.Get());
-//			}
-//
-//			void CreateNullDepthStencilView(
-//				const D3D12_DEPTH_STENCIL_VIEW_DESC& optDesc,
-//				DSV<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
-//			{
-//				Self().CreateDepthStencilView(nullptr, optDesc, DestDescriptor.Get());
-//			}
-//
-//			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-//			void CreateSampler(
-//				const D3D12_SAMPLER_DESC& pDesc,
-//				CPU_DESCRIPTOR_HANDLE<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, HeapFlags> DestDescriptor)
-//			{
-//				Self().CreateSampler(&pDesc, DestDescriptor.Get());
-//			}
-//
-//
-//			void CopyDescriptors(
-//				UINT NumDestDescriptorRanges,
-//				const D3D12_CPU_DESCRIPTOR_HANDLE* pDestDescriptorRangeStarts,
-//				const UINT* pDestDescriptorRangeSizes,
-//				UINT NumSrcDescriptorRanges,
-//				const D3D12_CPU_DESCRIPTOR_HANDLE* pSrcDescriptorRangeStarts,
-//				const UINT* pSrcDescriptorRangeSizes,
-//				D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapsType)
-//			{
-//				Self().CopyDescriptors(
-//					NumDestDescriptorRanges,
-//					pDestDescriptorRangeStarts,
-//					pDestDescriptorRangeSizes,
-//					NumSrcDescriptorRanges,
-//					pSrcDescriptorRangeStarts,
-//					pSrcDescriptorRangeSizes,
-//					DescriptorHeapsType);
-//			}
-//
-//			template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS DestinationFlag>
-//			void CopyDescriptorsSimple(
-//				UINT NumDescriptors,
-//				DescriptorHeap_t<Type, DestinationFlag>::CPU_DESCRIPTOR_HANDLE DestDescriptorRangeStart,
-//				DescriptorHeap_t<Type, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>::CPU_DESCRIPTOR_HANDLE SrcDescriptorRangeStart)
-//			{
-//				Self().CopyDescriptorsSimple(NumDescriptors, DestDescriptorRangeStart.Get(), SrcDescriptorRangeStart.Get(), Type);
-//			}
-//
-//			D3D12_RESOURCE_ALLOCATION_INFO GetResourceAllocationInfo(
-//				UINT visibleMask,
-//				const std::span<D3D12_RESOURCE_DESC> resourceDescs)
-//			{
-//				return Self().GetResourceAllocationInfo(
-//					visibleMask,
-//					static_cast<UINT>(resourceDescs.size()),
-//					resourceDescs.data());
-//			}
-//
-//			D3D12_HEAP_PROPERTIES GetCustomHeapProperties(
-//				UINT nodeMask,
-//				D3D12_HEAP_TYPE heapType)
-//			{
-//				return Self().GetCustomHeapProperties(nodeMask, heapType);
-//			}
-//
-//			Wrapper<ID3D12Resource> CreateCommittedResource(
-//				const D3D12_HEAP_PROPERTIES& pHeapProperties,
-//				D3D12_HEAP_FLAGS HeapFlags,
-//				const D3D12_RESOURCE_DESC& pDesc,
-//				D3D12_RESOURCE_STATES InitialResourceState,
-//				const D3D12_CLEAR_VALUE* optOptimizedClearValue)
-//			{
-//				return Helpers::D3D12::CreateCommittedResource(
-//					Get(),
-//					pHeapProperties,
-//					HeapFlags,
-//					pDesc,
-//					InitialResourceState,
-//					optOptimizedClearValue);
-//			}
-//
-//			ComPtr<ID3D12Heap> CreateHeap(
-//				const D3D12_HEAP_DESC& pDesc)
-//			{
-//				return Helpers::D3D12::CreateHeap(
-//					Get(),
-//					pDesc);
-//			}
-//
-//			Wrapper<ID3D12Resource> CreatePlacedResource(
-//				ID3D12Heap& pHeap,
-//				UINT64 HeapOffset,
-//				const D3D12_RESOURCE_DESC& pDesc,
-//				D3D12_RESOURCE_STATES InitialState,
-//				const D3D12_CLEAR_VALUE* optOptimizedClearValue)
-//			{
-//				return Helpers::D3D12::CreatePlacedResource(
-//					Get(),
-//					pHeap,
-//					HeapOffset,
-//					pDesc,
-//					InitialState,
-//					optOptimizedClearValue);
-//			}
-//
-//			Wrapper<ID3D12Resource> CreateReservedResource(
-//				const D3D12_RESOURCE_DESC& pDesc,
-//				D3D12_RESOURCE_STATES InitialState,
-//				const D3D12_CLEAR_VALUE* optOptimizedClearValue)
-//			{
-//				return Helpers::D3D12::CreateReservedResource(
-//					Get(),
-//					pDesc,
-//					InitialState,
-//					optOptimizedClearValue);
-//			}
-//
-//			HANDLE CreateSharedHandle(
-//				ID3D12DeviceChild& pObject,
-//				const SECURITY_ATTRIBUTES* optAttributes,
-//				DWORD Access,
-//				LPCWSTR Name)
-//			{
-//				HANDLE handle;
-//
-//				ThrowIfFailed(Self().CreateSharedHandle(
-//					&pObject,
-//					optAttributes,
-//					Access,
-//					Name,
-//					&handle));
-//
-//				return handle;
-//			}
-//
-//			  //TODO: Figure out how this works to update to a more modern API
-//			HRESULT OpenSharedHandle(
-//				HANDLE NTHandle,
-//				const IID& riid,
-//				void** ppvObj)
-//			{
-//				return Self().OpenSharedHandle(
-//					NTHandle,
-//					riid,
-//					ppvObj);
-//			}
-//
-//			HANDLE OpenSharedHandleByName(
-//				LPCWSTR Name,
-//				DWORD Access)
-//			{
-//				HANDLE handle;
-//
-//				ThrowIfFailed(Self().OpenSharedHandleByName(
-//					Name,
-//					Access,
-//					&handle));
-//
-//				return handle;
-//			}
-//
-//			void MakeResident(
-//				const std::span<ID3D12Pageable*> objects)
-//			{
-//				ThrowIfFailed(Self().MakeResident(
-//					static_cast<UINT>(objects.size()),
-//					objects.data()));
-//			}
-//
-//			void Evict(
-//				const std::span<ID3D12Pageable*> objects)
-//			{
-//				ThrowIfFailed(Self().Evict(
-//					static_cast<UINT>(objects.size()),
-//					objects.data()));
-//			}
-//
-//			ComPtr<ID3D12Fence> CreateFence(
-//				UINT64 InitialValue,
-//				D3D12_FENCE_FLAGS Flags)
-//			{
-//				return Helpers::D3D12::CreateFence(Get(), Flags, InitialValue);
-//			}
-//
-//			HRESULT GetDeviceRemovedReason()
-//			{
-//				return Self().GetDeviceRemovedReason();
-//			}
-//
-//			void GetCopyableFootprints(
-//				const D3D12_RESOURCE_DESC& pResourceDesc,
-//				UINT FirstSubresource,
-//				UINT NumSubresources,
-//				UINT64 BaseOffset,
-//				D3D12_PLACED_SUBRESOURCE_FOOTPRINT* optOutLayouts,
-//				UINT* optOutNumRows,
-//				UINT64* optOutRowSizeInBytes,
-//				UINT64* optOutTotalBytes)
-//			{
-//				Self().GetCopyableFootprints(
-//					&pResourceDesc,
-//					FirstSubresource,
-//					NumSubresources,
-//					BaseOffset,
-//					optOutLayouts,
-//					optOutNumRows,
-//					optOutRowSizeInBytes,
-//					optOutTotalBytes);
-//			}
-//
-//			ComPtr<ID3D12QueryHeap> CreateQueryHeap(
-//				const D3D12_QUERY_HEAP_DESC& pDesc)
-//			{
-//				return Helpers::D3D12::CreateQueryHeap(Get(), pDesc);
-//			}
-//
-//			void SetStablePowerState(
-//				BOOL Enable)
-//			{
-//				ThrowIfFailed(Self().SetStablePowerState(Enable));
-//			}
-//
-//			ComPtr<ID3D12CommandSignature> CreateCommandSignature(
-//				const D3D12_COMMAND_SIGNATURE_DESC& pDesc,
-//				ID3D12RootSignature* optRootSignature)
-//			{
-//				return Helpers::D3D12::CreateCommandSignature(Get(), pDesc, optRootSignature);
-//			}
-//
-//			void GetResourceTiling(
-//				ID3D12Resource& pTiledResource,
-//				UINT* optOutNumTilesForEntireResource,
-//				D3D12_PACKED_MIP_INFO* optOutPackedMipDesc,
-//				D3D12_TILE_SHAPE* optOutStandardTileShapeForNonPackedMips,
-//				UINT* pNumSubresourceTilings,
-//				UINT FirstSubresourceTilingToGet,
-//				D3D12_SUBRESOURCE_TILING& pSubresourceTilingsForNonPackedMips)
-//			{
-//				Self().GetResourceTiling(
-//					&pTiledResource,
-//					optOutNumTilesForEntireResource,
-//					optOutPackedMipDesc,
-//					optOutStandardTileShapeForNonPackedMips,
-//					pNumSubresourceTilings,
-//					FirstSubresourceTilingToGet,
-//					&pSubresourceTilingsForNonPackedMips);
-//			}
-//
-//			LUID GetAdapterLuid()
-//			{
-//				return Self().GetAdapterLuid();
-//			}
-//
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//	};
 //
 //	class SetEventOnMultipleFenceCompletionData
 //	{
@@ -1806,7 +1190,7 @@ namespace TypedD3D
 //				const D3D12_CLEAR_VALUE* pOptimizedClearValue,
 //				ID3D12ProtectedResourceSession* pProtectedSession)
 //			{
-//				return IIDToObjectForwardFunction<ID3D12Resource>(&value_type::CreateCommittedResource2, Get(),
+//				return IIDToObjectForwardFunction<ID3D12Resource>(&inner_type::CreateCommittedResource2, Get(),
 //					&pHeapProperties,
 //					HeapFlags,
 //					&pDesc,
@@ -1822,7 +1206,7 @@ namespace TypedD3D
 //				D3D12_RESOURCE_STATES InitialState,
 //				const D3D12_CLEAR_VALUE* pOptimizedClearValue)
 //			{
-//				return IIDToObjectForwardFunction<ID3D12Resource>(&value_type::CreatePlacedResource1, Get(),
+//				return IIDToObjectForwardFunction<ID3D12Resource>(&inner_type::CreatePlacedResource1, Get(),
 //					&pHeap,
 //					HeapOffset,
 //					&pDesc,
@@ -1888,7 +1272,7 @@ namespace TypedD3D
 //			ComPtr<ID3D12ShaderCacheSession> CreateShaderCacheSession(
 //				const D3D12_SHADER_CACHE_SESSION_DESC& pDesc)
 //			{
-//				return IIDToObjectForwardFunction<ID3D12ShaderCacheSession>(&value_type::CreateShaderCacheSession, Get(), &pDesc);
+//				return IIDToObjectForwardFunction<ID3D12ShaderCacheSession>(&inner_type::CreateShaderCacheSession, Get(), &pDesc);
 //			}
 //
 //			HRESULT ShaderCacheControl(
@@ -1915,7 +1299,7 @@ namespace TypedD3D
 //					.NodeMask = nodeMask
 //				};
 //
-//				return IIDToObjectForwardFunction<ID3D12CommandQueue>(&value_type::CreateCommandQueue1, Get(), &desc, CreatorID);
+//				return IIDToObjectForwardFunction<ID3D12CommandQueue>(&inner_type::CreateCommandQueue1, Get(), &desc, CreatorID);
 //			}
 //
 //		private:
@@ -1950,7 +1334,7 @@ namespace TypedD3D
 //				ID3D12ProtectedResourceSession* pProtectedSession,
 //				std::span<DXGI_FORMAT> CastableFormats)
 //			{
-//				return IIDToObjectForwardFunction<ID3D12Resource2>(&value_type::CreateCommittedResource3, Get(),
+//				return IIDToObjectForwardFunction<ID3D12Resource2>(&inner_type::CreateCommittedResource3, Get(),
 //					&pHeapProperties,
 //					HeapFlags,
 //					&pDesc,
@@ -1969,7 +1353,7 @@ namespace TypedD3D
 //				const D3D12_CLEAR_VALUE* pOptimizedClearValue,
 //				std::span<DXGI_FORMAT> CastableFormats)
 //			{
-//				return IIDToObjectForwardFunction<ID3D12Resource2>(&value_type::CreatePlacedResource2, Get(),
+//				return IIDToObjectForwardFunction<ID3D12Resource2>(&inner_type::CreatePlacedResource2, Get(),
 //					&pHeap,
 //					HeapOffset,
 //					pDesc,
@@ -1986,7 +1370,7 @@ namespace TypedD3D
 //				ID3D12ProtectedResourceSession* pProtectedSession,
 //				std::span<DXGI_FORMAT> CastableFormats)
 //			{
-//				return IIDToObjectForwardFunction<ID3D12Resource1>(&value_type::CreateReservedResource2, Get(),
+//				return IIDToObjectForwardFunction<ID3D12Resource1>(&inner_type::CreateReservedResource2, Get(),
 //					pDesc,
 //					InitialLayout,
 //					pOptimizedClearValue,

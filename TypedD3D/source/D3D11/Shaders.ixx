@@ -21,18 +21,20 @@ namespace TypedD3D::D3D11
 namespace TypedD3D
 {
 	template<D3D11::ShaderConcept Ty>
-	struct UntaggedTraits<Ty>
+	struct Trait<Untagged<Ty>>
 	{
-		using value_type = Ty;
-		using pointer = Ty*;
-		using const_pointer = const Ty*;
-		using reference = Ty&;
-		using const_reference = const Ty&;
-
 		using inner_type = Ty;
 
+		using inner_tag = Ty;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
+
 		template<class Derived>
-		class Interface : public UntaggedTraits<ID3D11DeviceChild>::Interface<Derived>
+		class Interface : public Trait<Untagged<ID3D11DeviceChild>>::Interface<Derived>
 		{
 
 		};

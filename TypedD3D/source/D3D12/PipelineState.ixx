@@ -15,53 +15,47 @@ namespace TypedD3D::D3D12
     struct PiplineStateTypeToTraitMap;
 
     template<>
-    struct PiplineStateTypeToTraitMap<D3D12_GRAPHICS_PIPELINE_STATE_DESC> { template<class Ty> using type = GraphicsTraits<Ty>; };
+    struct PiplineStateTypeToTraitMap<D3D12_GRAPHICS_PIPELINE_STATE_DESC> { template<class Ty> using type = GraphicsTag<Ty>; };
 
     template<>
-    struct PiplineStateTypeToTraitMap<D3D12_COMPUTE_PIPELINE_STATE_DESC> { template<class Ty> using type = ComputeTraits<Ty>; };
+    struct PiplineStateTypeToTraitMap<D3D12_COMPUTE_PIPELINE_STATE_DESC> { template<class Ty> using type = ComputeTag<Ty>; };
 
     template<class DescriptionType, class UnknownType>
     using PiplineStateTypeToTrait = typename PiplineStateTypeToTraitMap<DescriptionType>::template type<UnknownType>;
     
-
-    template<class DescriptionType>
-    struct PipelineTraits
-    {
-        using value_type = ID3D12PipelineState;
-        using pointer = ID3D12PipelineState*;
-        using const_pointer = const ID3D12PipelineState*;
-        using reference = ID3D12PipelineState&;
-        using const_reference = const ID3D12PipelineState&;
-
-        using inner_type = ID3D12PipelineState;
-        template<class DerivedSelf>
-        class Interface : public InterfaceBase<PiplineStateTypeToTrait<DescriptionType, DerivedSelf>>
-        {
-        private:
-            using derived_self = DerivedSelf;
-
-        public:
-            Wrapper<ID3DBlob> GetCachedBlob()
-            {
-                return ForwardFunction<Wrapper<ID3DBlob>>(&value_type::GetCachedBlob, Self());
-            }
-
-        private:
-            using InterfaceBase<PiplineStateTypeToTrait<DescriptionType, DerivedSelf>>::Self;
-            using InterfaceBase<PiplineStateTypeToTrait<DescriptionType, DerivedSelf>>::ToDerived;
-        };
-    };
+    template<template<class> class Tag>
+    concept PipelineStateEnabledTag = SameTagAs<Tag, GraphicsTag>
+        || SameTagAs<Tag, ComputeTag>;
 }
 
 namespace TypedD3D
 {
-    template<>
-    struct GraphicsTraits<ID3D12PipelineState> : D3D12::PipelineTraits<D3D12_GRAPHICS_PIPELINE_STATE_DESC>
+    template<template<class> class Tag>
+        requires D3D12::PipelineStateEnabledTag<Tag>
+    struct Trait<Tag<ID3D12PipelineState>>
     {
-    };
+        using inner_type = ID3D12PipelineState;
 
-    template<>
-    struct ComputeTraits<ID3D12PipelineState> : D3D12::PipelineTraits<D3D12_COMPUTE_PIPELINE_STATE_DESC>
-    {
+        using inner_tag = ID3D12PipelineState;
+
+        template<class NewInner>
+        using ReplaceInnerType = Tag<NewInner>;
+
+        template<class NewInner>
+        using trait_template = Tag<NewInner>;
+
+        template<class Derived>
+        class Interface : public InterfaceBase<Tag<Derived>>
+        {
+        public:
+            Wrapper<ID3DBlob> GetCachedBlob()
+            {
+                return ForwardFunction<Wrapper<ID3DBlob>>(&inner_type::GetCachedBlob, Self());
+            }
+
+        private:
+            using InterfaceBase<Tag<Derived>>::Self;
+            using InterfaceBase<Tag<Derived>>::ToDerived;
+        };
     };
 }

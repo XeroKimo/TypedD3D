@@ -9,49 +9,49 @@ import TypedD3D.Shared;
 namespace TypedD3D
 {
     export template<class Ty>
-    struct DirectTraits;
+    struct DirectTag;
 
 	export template<class Ty>
-    struct ComputeTraits;
+    struct ComputeTag;
 
 	export template<class Ty>
-    struct CopyTraits;
+    struct CopyTag;
 
 	export template<class Ty>
-    struct BundleTraits;
+    struct BundleTag;
 
 	export template<class Ty>
-    struct CBV_SRV_UAVTraits;
+    struct CBV_SRV_UAVTag;
 
 	export template<class Ty>
-    struct SamplerTraits;
+    struct SamplerTag;
 
 	export template<class Ty>
-    struct RTVTraits;
+    struct RTVTag;
 
 	export template<class Ty>
-    struct DSVTraits;
+    struct DSVTag;
 
 	export template<class Ty>
-    struct GraphicsTraits;
+    struct GraphicsTag;
 
 	export template<class Ty>
-    struct RenderPassTraits;
+    struct RenderPassTag;
 
 	export template<class Ty>
-    struct ShaderVisibleTraits;
+    struct ShaderVisibleTag;
 
     template<class Ty>
     struct DirectMapper
     {
-        using type = StrongWrapper<DirectTraits<Ty>>;
+        using type = StrongWrapper<DirectTag<Ty>>;
     };
 
     template<class Ty>
-        requires TypedStructTrait<DirectTraits<Ty>>
+        requires TypedStructTrait<DirectTag<Ty>>
     struct DirectMapper<Ty>
     {
-        using type = TypedStruct<DirectTraits<Ty>>;
+        using type = TypedStruct<DirectTag<Ty>>;
     };
 
     template<class Ty>
@@ -63,14 +63,14 @@ namespace TypedD3D
     template<class Ty>
     struct ComputeMapper
     {
-        using type = StrongWrapper<ComputeTraits<Ty>>;
+        using type = StrongWrapper<ComputeTag<Ty>>;
     };
 
     template<class Ty>
-        requires TypedStructTrait<ComputeTraits<Ty>>
+        requires TypedStructTrait<ComputeTag<Ty>>
     struct ComputeMapper<Ty>
     {
-        using type = TypedStruct<ComputeTraits<Ty>>;
+        using type = TypedStruct<ComputeTag<Ty>>;
     };
 
     template<class Ty>
@@ -82,14 +82,14 @@ namespace TypedD3D
     template<class Ty>
     struct CopyMapper
     {
-        using type = StrongWrapper<CopyTraits<Ty>>;
+        using type = StrongWrapper<CopyTag<Ty>>;
     };
 
     template<class Ty>
-        requires TypedStructTrait<CopyTraits<Ty>>
+        requires TypedStructTrait<CopyTag<Ty>>
     struct CopyMapper<Ty>
     {
-        using type = TypedStruct<CopyTraits<Ty>>;
+        using type = TypedStruct<CopyTag<Ty>>;
     };
 
     template<class Ty>
@@ -101,14 +101,14 @@ namespace TypedD3D
     template<class Ty>
     struct BundleMapper
     {
-        using type = StrongWrapper<BundleTraits<Ty>>;
+        using type = StrongWrapper<BundleTag<Ty>>;
     };
 
     template<class Ty>
-        requires TypedStructTrait<BundleTraits<Ty>>
+        requires TypedStructTrait<BundleTag<Ty>>
     struct BundleMapper<Ty>
     {
-        using type = TypedStruct<BundleTraits<Ty>>;
+        using type = TypedStruct<BundleTag<Ty>>;
     };
 
     template<class Ty>
@@ -120,14 +120,14 @@ namespace TypedD3D
     template<class Ty>
     struct CBV_SRV_UAVMapper
     {
-        using type = StrongWrapper<CBV_SRV_UAVTraits<Ty>>;
+        using type = StrongWrapper<CBV_SRV_UAVTag<Ty>>;
     };
 
     template<class Ty>
-        requires TypedStructTrait<CBV_SRV_UAVTraits<Ty>>
+        requires TypedStructTrait<CBV_SRV_UAVTag<Ty>>
     struct CBV_SRV_UAVMapper<Ty>
     {
-        using type = TypedStruct<CBV_SRV_UAVTraits<Ty>>;
+        using type = TypedStruct<CBV_SRV_UAVTag<Ty>>;
     };
 
     template<class Ty>
@@ -139,14 +139,14 @@ namespace TypedD3D
     template<class Ty>
     struct SamplerMapper
     {
-        using type = StrongWrapper<SamplerTraits<Ty>>;
+        using type = StrongWrapper<SamplerTag<Ty>>;
     };
 
     template<class Ty>
-        requires TypedStructTrait<SamplerTraits<Ty>>
+        requires TypedStructTrait<SamplerTag<Ty>>
     struct SamplerMapper<Ty>
     {
-        using type = TypedStruct<SamplerTraits<Ty>>;
+        using type = TypedStruct<SamplerTag<Ty>>;
     };
 
     template<class Ty>
@@ -158,14 +158,14 @@ namespace TypedD3D
     template<class Ty>
     struct RTVMapper
     {
-        using type = StrongWrapper<RTVTraits<Ty>>;
+        using type = StrongWrapper<RTVTag<Ty>>;
     };
 
     template<class Ty>
-        requires TypedStructTrait<RTVTraits<Ty>>
+        requires TypedStructTrait<RTVTag<Ty>>
     struct RTVMapper<Ty>
     {
-        using type = TypedStruct<RTVTraits<Ty>>;
+        using type = TypedStruct<RTVTag<Ty>>;
     };
 
     template<class Ty>
@@ -177,14 +177,14 @@ namespace TypedD3D
     template<class Ty>
     struct DSVMapper
     {
-        using type = StrongWrapper<DSVTraits<Ty>>;
+        using type = StrongWrapper<DSVTag<Ty>>;
     };
 
     template<class Ty>
-        requires TypedStructTrait<DSVTraits<Ty>>
+        requires TypedStructTrait<DSVTag<Ty>>
     struct DSVMapper<Ty>
     {
-        using type = TypedStruct<DSVTraits<Ty>>;
+        using type = TypedStruct<DSVTag<Ty>>;
     };
 
     template<class Ty>
@@ -196,14 +196,14 @@ namespace TypedD3D
     template<class Ty>
     struct GraphicsMapper
     {
-        using type = StrongWrapper<GraphicsTraits<Ty>>;
+        using type = StrongWrapper<GraphicsTag<Ty>>;
     };
 
     template<class Ty>
-        requires TypedStructTrait<GraphicsTraits<Ty>>
+        requires TypedStructTrait<GraphicsTag<Ty>>
     struct GraphicsMapper<Ty>
     {
-        using type = TypedStruct<GraphicsTraits<Ty>>;
+        using type = TypedStruct<GraphicsTag<Ty>>;
     };
 
     template<class Ty>
@@ -215,14 +215,14 @@ namespace TypedD3D
     template<class Ty>
     struct RenderPassMapper
     {
-        using type = StrongWrapper<RenderPassTraits<Ty>>;
+        using type = StrongWrapper<RenderPassTag<Ty>>;
     };
 
     template<class Ty>
-        requires TypedStructTrait<RenderPassTraits<Ty>>
+        requires TypedStructTrait<RenderPassTag<Ty>>
     struct RenderPassMapper<Ty>
     {
-        using type = TypedStruct<RenderPassTraits<Ty>>;
+        using type = TypedStruct<RenderPassTag<Ty>>;
     };
 
     template<class Ty>
@@ -232,7 +232,17 @@ namespace TypedD3D
     };
 
     template<class Ty>
-    struct ShaderVisibleMapper;
+    struct ShaderVisibleMapper
+    {
+        using type = StrongWrapper<ShaderVisibleTag<Ty>>;
+    };
+
+    template<class Ty>
+        requires TypedStructTrait<ShaderVisibleTag<Ty>>
+    struct ShaderVisibleMapper<Ty>
+    {
+        using type = TypedStruct<ShaderVisibleTag<Ty>>;
+    };
 
     template<class Ty>
     struct ShaderVisibleViewMapper

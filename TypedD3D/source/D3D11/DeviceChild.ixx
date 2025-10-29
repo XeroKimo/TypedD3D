@@ -22,27 +22,52 @@ namespace TypedD3D
         ID3D11RasterizerState,
         ID3D11View> 
     Ty>
-    struct UntaggedTraits<Ty>
+    struct Trait<Untagged<Ty>>
     {
         using inner_type = Ty;
+
+        using inner_tag = Ty;
+
+        template<class NewInner>
+        using ReplaceInnerType = Untagged<NewInner>;
+
         template<class Derived>
         using Interface = Ty*;
+
+        template<class NewInner>
+        using trait_template = Untagged<NewInner>;
     };
 
     template<std::derived_from<ID3D11Debug> Ty>
-    struct UntaggedTraits<Ty>
+    struct Trait<Untagged<Ty>>
     {
+        using inner_tag = Ty;
+
+        template<class NewInner>
+        using ReplaceInnerType = Untagged<NewInner>;
+
         using inner_type = Ty;
         template<class Derived>
         using Interface = Ty*;
+
+        template<class NewInner>
+        using trait_template = Untagged<NewInner>;
     };
 
     template<>
-    struct UntaggedTraits<ID3D11DeviceChild>
+    struct Trait<Untagged<ID3D11DeviceChild>>
     {
         using inner_type = ID3D11DeviceChild;
+
+        using inner_tag = ID3D11DeviceChild;
+
+        template<class NewInner>
+        using ReplaceInnerType = Untagged<NewInner>;
+
+        template<class NewInner>
+        using trait_template = Untagged<NewInner>;
         template<class Derived>
-        struct Interface : public InterfaceBase<UntaggedTraits<Derived>>
+        struct Interface : public InterfaceBase<Untagged<Derived>>
         {
         private:
             using unknown_type = ID3D11DeviceChild;
@@ -86,8 +111,8 @@ namespace TypedD3D
             }
 
         private:
-            using InterfaceBase<UntaggedTraits<Derived>>::Self;
-            using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+            using InterfaceBase<Untagged<Derived>>::Self;
+            using InterfaceBase<Untagged<Derived>>::ToDerived;
         };
     };
 }

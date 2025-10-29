@@ -219,12 +219,12 @@ void D3D11()
 	deviceContext->Dispatch({}, {}, {});
 	deviceContext->DispatchIndirect(buffer, {});
 	{
-		deviceContext->Begin(*predicate.Get());
-		deviceContext->End(*predicate.Get());
-		deviceContext->GetData(*predicate.Get(), {});
+		deviceContext->Begin(predicate);
+		deviceContext->End(predicate);
+		deviceContext->GetData(predicate, {});
 	}
 	{
-		deviceContext->SetPredication(predicate.Get(), {});
+		deviceContext->SetPredication(predicate, {});
 		deviceContext->GetPredication();
 	}
 
@@ -237,7 +237,7 @@ void D3D11()
 
 	ID3D11CommandList* cl = nullptr;
 	deviceContext->FinishCommandList({});
-	deviceContext->ExecuteCommandList(*cl, {});
+	deviceContext->ExecuteCommandList(cl, {});
 
 	deviceContext->GenerateMips(srv);
 	deviceContext->SetResourceMinLOD(resource, {});

@@ -12,48 +12,87 @@ export module TypedD3D.Shared:Containers;
 
 namespace TypedD3D
 {
-	template<class Ty>
-	struct LiftType : std::false_type
+	template<class Inner>
+	struct LiftType
 	{
-		using type = Ty;
-		using concrete_type = Ty;
-	};
-
-	template<template<class> class Outer, class Inner>
-	struct LiftType<Outer<Inner>> : std::true_type
-	{
+		using inner_type = Inner;
 		template<class Ty>
-		using type = Outer<Ty>;
+		using outer_type = Ty;
 
-		using concrete_type = Outer<Inner>;
-	};
-
-	template<class Ty>
-	struct InnerTypeImpl
-	{
-		using type = Ty;
-	};
-
-	template<template<class> class Outer, class Inner>
-	struct InnerTypeImpl<Outer<Inner>>
-	{
 		using type = Inner;
 	};
 
-	export template<class Ty>
-	concept LiftableType = LiftType<std::remove_cvref_t<Ty>>::value;
+	template<template<class> class Outer, class Inner>
+	struct LiftType<Outer<Inner>>
+	{
+		using inner_type = Inner;
+		template<class Ty>
+		using outer_type = Outer<Ty>;
+
+		using type = Outer<Inner>;
+	};
 
 	export template<class Ty>
-	using InnerType = InnerTypeImpl<std::remove_cvref_t<Ty>>::type;
+	using InnerType = LiftType<std::remove_cvref_t<Ty>>::inner_type;
 
 	export template<class Ty, class NewInner>
-	using ReplaceInnerType = LiftType<std::remove_cvref_t<Ty>>::template type<NewInner>;
+	using ReplaceInnerType = LiftType<std::remove_cvref_t<Ty>>::template outer_type<NewInner>;
 
 	export template<class Ty, template<class> class NewOuter>
-	using ReplaceOuterType = NewOuter<InnerType<std::remove_cvref_t<Ty>>>;
+	using ReplaceOuterType = NewOuter<InnerType<Ty>>;
 
 	export template<class Ty>
-	concept IUnknownTrait = std::derived_from<InnerType<Ty>, IUnknown>;
+	struct Trait;
+
+	export template<class Ty>
+	struct Untagged;
+
+	export template<class Ty>
+	concept TraitEnabledTag = requires()
+	{
+		typename Trait<Ty>::inner_type;							//The type of our wrapper. Example, ID3D11Device, D3D12_CPU_DESCRIPTOR_HANDLE
+		typename Trait<Ty>::inner_tag;							//The result of InnerType<Ty>. Example, InnerType<Untagged<ID3D11Device>> == ID3D11Device, InnerType<Direct<Untagged<ID3D11Device>>> == Untagged<ID3D11Device>;
+		typename Trait<Ty>::template trait_template<void>;		//The result of LifeType<Ty>::outer_type. Example, OuterType<Untagged<ID3D11Device>> = Untagged<Ty>;
+		typename Trait<Ty>::template ReplaceInnerType<void>;	//An alias that is able to replaces Ty::inner_type
+		typename Trait<Ty>::template Interface<void>;
+	}
+	&& std::same_as<Trait<Ty>, Trait<typename Trait<Ty>::template ReplaceInnerType<typename Trait<Ty>::inner_type>>>
+	&& std::same_as<Trait<Ty>, Trait<typename Trait<Ty>::template trait_template<typename Trait<Ty>::inner_tag>>>;
+
+	export template<class Ty>
+	concept IUnknownTrait = TraitEnabledTag<Ty> && std::derived_from<typename Trait<Ty>::inner_type, IUnknown>;
+
+	template<class Ty>
+	struct IUnknownTraitGetFunctions
+	{
+		using inner_type = Trait<Ty>::inner_type;
+
+		using inner_tag = Trait<Ty>::inner_tag;
+		
+		template<class Ty2>
+		using trait_template = Trait<Ty>::template trait_template<Ty2>;
+		
+		template<class Ty2>
+		using ReplaceInnerType = Trait<Ty>::template ReplaceInnerType<Ty2>;
+		
+		template<class Ty2>
+		using Interface = Trait<Ty>::template Interface<Ty2>;
+	};
+
+	export template<class Ty>
+	using GetTraitInnerType = IUnknownTraitGetFunctions<Ty>::inner_type;
+
+	export template<class Ty>
+	using GetTraitInnerTag = IUnknownTraitGetFunctions<Ty>::inner_tag;
+
+	export template<class Ty, class NewInner>
+	using ReplaceTraitInnerTag = typename IUnknownTraitGetFunctions<Ty>::template trait_template<NewInner>;
+
+	export template<class Ty, class NewInner>
+	using ReplaceTraitInnerType = typename IUnknownTraitGetFunctions<Ty>::template ReplaceInnerType<NewInner>;
+
+	export template<class Ty, class NewInner>
+	using TraitInterface = typename IUnknownTraitGetFunctions<Ty>::template Interface<NewInner>;
 
 	export template<class Ty>
 	concept IUnknownWrapper = requires(std::remove_const_t<Ty> t, Ty::inner_type* ptr)
@@ -73,23 +112,25 @@ namespace TypedD3D
 	} && IUnknownWrapper<Ty>;
 
 	template<class Ty, class Ty2>
-	concept SameTraitAs = std::same_as<typename LiftType<Ty>::template type<InnerType<Ty>>, typename LiftType<Ty2>::template type<InnerType<Ty>>>;
+	concept SameTraitAs = IUnknownTrait<Ty>
+		&& IUnknownTrait<Ty2>
+		&& std::same_as<ReplaceTraitInnerType<Ty, GetTraitInnerType<Ty>>, ReplaceTraitInnerType<Ty2, GetTraitInnerType<Ty>>>;
 
 	template<class From, class To>
-	concept ConvertibleTraitTo = SameTraitAs<From, To> && std::convertible_to<InnerType<From>*, InnerType<To>*>;
+	concept ConvertibleTraitTo = SameTraitAs<From, To> && std::convertible_to<GetTraitInnerType<From> *, GetTraitInnerType<To> *>;
 
-	export template<IUnknownTrait Trait>
-	class InterfaceProxy : public Trait::template Interface<InnerType<Trait>>
+	export template<IUnknownTrait TraitTy>
+	class InterfaceProxy : public TraitInterface<TraitTy, GetTraitInnerType<TraitTy>>
 	{
-		using inner_type = InnerType<Trait>;
-		using trait_type = Trait;
+		using inner_type = GetTraitInnerType<TraitTy> ;
+		using trait_type = TraitTy;
 		template<class Derived>
-		using interface_type = trait_type::template Interface<Derived>;
+		using interface_type = TraitInterface<TraitTy, Derived>;
 
 	private:
 		inner_type* ptr;
 
-		friend Trait::template Interface<InterfaceProxy>;
+		friend interface_type<inner_type>;
 	public:
 		InterfaceProxy(inner_type* ptr) noexcept : ptr{ ptr }
 		{
@@ -103,29 +144,29 @@ namespace TypedD3D
 	};
 
 
-	export template<IUnknownTrait Trait>
+	export template<IUnknownTrait TraitTy>
 	struct InterfaceBase
 	{
-		InterfaceProxy<Trait>& ToDerived() { return static_cast<InterfaceProxy<Trait>&>(*this); }
-		InnerType<Trait>& Self() { return *ToDerived().InterfaceProxy<Trait>::Get(); }
+		InterfaceProxy<TraitTy>& ToDerived() { return static_cast<InterfaceProxy<TraitTy>&>(*this); }
+		GetTraitInnerType<TraitTy> & Self() { return *ToDerived().InterfaceProxy<TraitTy>::Get(); }
 	};
 
-	export template<IUnknownTrait Trait>
+	export template<IUnknownTrait TraitTy>
 	class WeakWrapper;
 
-	export template<IUnknownTrait Trait>
+	export template<IUnknownTrait TraitTy>
 	class StrongWrapper;
 
-	export template<IUnknownTrait Trait>
+	export template<IUnknownTrait TraitTy>
 	class WeakWrapper
 	{
 	public:
-		using inner_type = Trait::inner_type;
-		using trait_type = Trait;
+		using inner_type = GetTraitInnerType<TraitTy> ;
+		using trait_type = TraitTy;
 		template<class Derived>
-		using interface_type = trait_type::template Interface<Derived>;
+		using interface_type = TraitInterface<TraitTy, Derived>;
 
-		template<IUnknownTrait Trait>
+		template<IUnknownTrait TraitTy>
 		friend class WeakWrapper;
 
 	private:
@@ -248,8 +289,8 @@ namespace TypedD3D
 		}
 
 	public:
-		InterfaceProxy<Trait> operator->() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, inner_type*>) { return ptr; }
-		InterfaceProxy<Trait> operator*() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, inner_type*>) { return ptr; }
+		InterfaceProxy<TraitTy> operator->() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<TraitTy>>, inner_type*>) { return ptr; }
+		InterfaceProxy<TraitTy> operator*() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<TraitTy>>, inner_type*>) { return ptr; }
 
 		inner_type* operator->() const noexcept { return ptr; }
 		inner_type& operator*() const noexcept { return *ptr; }
@@ -284,16 +325,16 @@ namespace TypedD3D
 		}
 	};
 
-	export template<IUnknownTrait Trait>
+	export template<IUnknownTrait TraitTy>
 	class StrongWrapper
 	{
 	public:
-		using inner_type = Trait::inner_type;
-		using trait_type = Trait;
+		using inner_type = GetTraitInnerType<TraitTy> ;
+		using trait_type = TraitTy;
 		template<class Derived>
-		using interface_type = trait_type::template Interface<Derived>;
+		using interface_type = TraitInterface<TraitTy, Derived>;
 
-		template<IUnknownTrait Trait>
+		template<IUnknownTrait TraitTy>
 		friend class StrongWrapper;
 
 	private:
@@ -441,8 +482,8 @@ namespace TypedD3D
 		}
 
 	public:
-		InterfaceProxy<Trait> operator->() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, inner_type*>) { return ptr; }
-		InterfaceProxy<Trait> operator*() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<Trait>>, inner_type*>) { return ptr; }
+		InterfaceProxy<TraitTy> operator->() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<TraitTy>>, inner_type*>) { return ptr; }
+		InterfaceProxy<TraitTy> operator*() const noexcept requires (!std::same_as<interface_type<InterfaceProxy<TraitTy>>, inner_type*>) { return ptr; }
 
 		inner_type* operator->() const noexcept { return ptr; }
 		inner_type& operator*() const noexcept { return *ptr; }
@@ -501,13 +542,13 @@ namespace TypedD3D
 		operator Wrapper::inner_type** () noexcept { return &ptr; }
 	};
 
-	export template<class To, class From, template<class> class Trait>
-	WeakWrapper<Trait<To>> Cast(const WeakWrapper<Trait<From>>& ptr) noexcept
+	export template<class To, IUnknownTrait From>
+	WeakWrapper<ReplaceTraitInnerType<From, To>> Cast(const WeakWrapper<From>& ptr) noexcept
 	{
 		if(!ptr)
 			return {};
 
-		WeakWrapper<Trait<To>> to;
+		WeakWrapper<ReplaceTraitInnerType<From, To>> to;
 
 		if(SUCCEEDED(ptr.Get()->QueryInterface<To>(OutPtr{ to })))
 			to->Release();
@@ -515,13 +556,13 @@ namespace TypedD3D
 		return to;
 	}
 
-	export template<class To, class From, template<class> class Trait>
-	WeakWrapper<Trait<To>> Cast(WeakWrapper<Trait<From>>&& ptr) noexcept
+	export template<class To, IUnknownTrait From>
+	WeakWrapper<ReplaceTraitInnerType<From, To>> Cast(WeakWrapper<From>&& ptr) noexcept
 	{
 		if(!ptr)
 			return {};
 
-		WeakWrapper<Trait<To>> to;
+		WeakWrapper<ReplaceTraitInnerType<From, To>> to;
 
 		if(SUCCEEDED(ptr.Get()->QueryInterface<To>(OutPtr{ to })))
 			to->Release();
@@ -529,24 +570,24 @@ namespace TypedD3D
 		return to;
 	}
 
-	export template<class To, class From, template<class> class Trait>
-	StrongWrapper<Trait<To>> Cast(const StrongWrapper<Trait<From>>& ptr) noexcept
+	export template<class To, IUnknownTrait From>
+	StrongWrapper<ReplaceTraitInnerType<From, To>> Cast(const StrongWrapper<From>& ptr) noexcept
 	{
 		if(!ptr)
 			return {};
 
-		StrongWrapper<Trait<To>> out;
+		StrongWrapper<ReplaceTraitInnerType<From, To>> out;
 		ptr.Get()->QueryInterface<To>(OutPtr{ out });
 		return out;
 	}
 
-	export template<class To, class From, template<class> class Trait>
-	StrongWrapper<Trait<To>> Cast(StrongWrapper<Trait<From>>&& ptr) noexcept
+	export template<class To, IUnknownTrait From>
+	StrongWrapper<ReplaceTraitInnerType<From, To>> Cast(StrongWrapper<From>&& ptr) noexcept
 	{
 		if(!ptr)
 			return {};
 
-		StrongWrapper<Trait<To>> out;
+		StrongWrapper<ReplaceTraitInnerType<From, To>> out;
 		ptr.Get()->QueryInterface<To>(OutPtr{ out });
 		return out;
 	}
@@ -561,7 +602,7 @@ namespace TypedD3D
 		using inner_type = Wrapper::inner_type;
 		using trait_type = Wrapper::trait_type;
 		template<class Derived>
-		using interface_type = trait_type::template Interface<Derived>;
+		using interface_type = TraitInterface<trait_type, Derived>;
 
 	private:
 		std::conditional_t<IsConst, inner_type* const, inner_type*>& ptr = nullptr;
@@ -727,10 +768,10 @@ namespace TypedD3D
 	StrongWrapper(ElementReference<Wrapper, IsConst>) -> StrongWrapper<typename Wrapper::trait_type>;
 
 
-	export template<class To, class From, template<class> class Wrapper, template<class> class Trait, bool IsConst>
-	Wrapper<Trait<To>> Cast(const ElementReference<Wrapper<Trait<From>>, IsConst>& ptr) noexcept
+	export template<class To, IUnknownTrait From, template<class> class Wrapper, bool IsConst>
+	Wrapper<ReplaceTraitInnerType<From, To>> Cast(const ElementReference<Wrapper<From>, IsConst>& ptr) noexcept
 	{
-		return Cast<To>(Wrapper<Trait<From>>{ ptr });
+		return Cast<To>(Wrapper<From>{ ptr });
 	}
 
 	export template<class Wrapper, bool IsConst>
@@ -807,29 +848,26 @@ namespace TypedD3D
 	};
 
 	export template <class Ty>
-	concept TypedStructTrait = requires()
-	{
-		typename Ty::template Interface<void>;
-	} && LiftableType<Ty> && !std::derived_from<InnerType<Ty>, IUnknown>;
+	concept TypedStructTrait = TraitEnabledTag<Ty> && !std::derived_from<typename Trait<Ty>::inner_type, IUnknown>;
 
 	export template<TypedStructTrait Ty>
-	struct TypedStruct : private InnerType<Ty>, public Ty::template Interface<TypedStruct<Ty>>
+	struct TypedStruct : private GetTraitInnerType<Ty>, public TraitInterface<Ty, TypedStruct<Ty>>
 	{
 		using inner_type = InnerType<Ty>;
 		TypedStruct() = default;
-		TypedStruct(const InnerType<Ty>& other) : InnerType<Ty>{ other }
+		TypedStruct(const inner_type& other) : inner_type{ other }
 		{
 
 		}
 
-		TypedStruct& operator=(const InnerType<Ty>& other)
+		TypedStruct& operator=(const inner_type& other)
 		{
-			*static_cast<InnerType<Ty>*>(this) = other;
+			*static_cast<inner_type*>(this) = other;
 			return *this;
 		}
 
-		InnerType<Ty>& Raw() { return *this; }
-		const InnerType<Ty>& Raw() const { return *this; }
+		inner_type& Raw() { return *this; }
+		const inner_type& Raw() const { return *this; }
 	};
 
 	export template<class Derived>
@@ -1349,10 +1387,10 @@ namespace TypedD3D
 
 	export template<class Wrapper, bool IsConst>
 		requires std::same_as<TypedStruct<InnerType<Wrapper>>, std::remove_const_t<Wrapper>>
-	class ElementReference<Wrapper, IsConst> : public InnerType<Wrapper>::template Interface<ElementReference<Wrapper, IsConst>>
+	class ElementReference<Wrapper, IsConst> : public TraitInterface<InnerType<Wrapper>, ElementReference<Wrapper, IsConst>>
 	{
 		using trait_type = InnerType<Wrapper>;
-		using inner_type = InnerType<trait_type>;
+		using inner_type = GetTraitInnerType<trait_type>;
 
 	private:
 		std::conditional_t<IsConst, const inner_type&, inner_type&> ref;

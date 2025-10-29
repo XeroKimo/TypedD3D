@@ -35,19 +35,10 @@ static void CreateWindow();
 
 void D3D12HelloWorld()
 {
-	//TypedD3D::WrapperView<ID3D12Device> device = TypedD3D::ForwardFunction<TypedD3D::WrapperView<ID3D12Device>>(D3D12CreateDevice, nullptr, D3D_FEATURE_LEVEL_12_0);
-
-
     CreateWindow();
-    //TypedD3D12::CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> b;
-    //TypedD3D::expected<ComPtr<IDXGIFactory2>, HRESULT> factory = TypedD3D::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory1);
-    //TypedD3D::Wrapper<IDXGIAdapter> adapter = factory->EnumAdapters<IDXGIAdapter>(0);
-    //ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface();
-    //debugLayer->EnableDebugLayer();
+
     TypedD3D::Wrapper<IDXGIFactory2> factory = TypedDXGI::CreateFactory1<IDXGIFactory2>();
-    //TypedD3D::Wrapper<ID3D12Device> device = TypedD3D12::CreateDevice<ID3D12Device>(D3D_FEATURE_LEVEL_12_0);
     TypedD3D::Wrapper<ID3D12Device> device = TypedD3D::ForwardFunction<TypedD3D::Wrapper<ID3D12Device>>(D3D12CreateDevice, nullptr, D3D_FEATURE_LEVEL_12_0);
-    //ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Cast<ID3D12DebugDevice>(device.Get());
 
     constexpr UINT backBufferCount = 2;
 
@@ -57,10 +48,7 @@ void D3D12HelloWorld()
     commandAllocators[0] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>();
     commandAllocators[1] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>();
     TypedD3D::Direct<ID3D12GraphicsCommandList> commandList = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0]);
-    //TypedD3D::Direct<ID3D12GraphicsCommandList1> commandList = TypedD3D::Cast<TypedD3D::Direct<ID3D12GraphicsCommandList1>>(temp);
-    //TypedD3D::Compute<ID3D12GraphicsCommandList1> commandList54;
 
-    //TypedD3D::Compute<ID3D12GraphicsCommandList1> cltest = commandList;
     UINT64 fenceValue = 0;
     TypedD3D::Wrapper<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE);
     HANDLE syncEvent = CreateEventW(nullptr, false, false, nullptr);
@@ -95,7 +83,7 @@ void D3D12HelloWorld()
     {
         swapChainBuffers[i] = swapChain->GetBuffer<ID3D12Resource>(i);
 
-        device->CreateRenderTargetView(*swapChainBuffers[i].Get(), nullptr, descriptorHandle);
+        device->CreateRenderTargetView(swapChainBuffers[i], nullptr, descriptorHandle);
         descriptorHandle = descriptorHandle.Offset(1, rtvOffset);
     }
 
@@ -272,6 +260,7 @@ void D3D12HelloWorld()
         *vertexResource.Get(),
         D3D12_RESOURCE_STATE_COPY_DEST,
         D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+
     commandList->ResourceBarrier(std::span(&barrier, 1));
     commandList->Close();
 
@@ -315,8 +304,7 @@ void D3D12HelloWorld()
     {
         resources[i] = swapChain->GetBuffer<ID3D12Resource>(i).Get();
     }
-    Span<const RTV<D3D12_CPU_DESCRIPTOR_HANDLE>> test;
-    Span<RTV<D3D12_CPU_DESCRIPTOR_HANDLE>> test2;
+
 
     while(true)
     {

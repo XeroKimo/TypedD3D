@@ -17,58 +17,66 @@ namespace TypedD3D::D3D12
 	struct CommandListTypeToTraitMap<D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT>
 	{
 		template<class Ty>
-		using type = DirectTraits<Ty>;
+		using type = DirectTag<Ty>;
+	};
+
+	template<>
+	struct CommandListTypeToTraitMap<D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_COMPUTE>
+	{
+		template<class Ty>
+		using type = ComputeTag<Ty>;
+	};
+
+	template<>
+	struct CommandListTypeToTraitMap<D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_COPY>
+	{
+		template<class Ty>
+		using type = CopyTag<Ty>;
+	};
+
+	template<>
+	struct CommandListTypeToTraitMap<D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_BUNDLE>
+	{
+		template<class Ty>
+		using type = BundleTag<Ty>;
 	};
 
 	template<D3D12_COMMAND_LIST_TYPE Type, class IUnknown>
 	using CommandListTypeToTrait = typename CommandListTypeToTraitMap<Type>::template type<IUnknown>;
 
-	template<D3D12_COMMAND_LIST_TYPE Type>
-	struct CommandAllocatorTraits
+	template<template<class> class Tag>
+	concept CommandAllocatorEnabledTag = SameTagAs<Tag, DirectTag>
+		|| SameTagAs<Tag, ComputeTag>
+		|| SameTagAs<Tag, CopyTag>
+		|| SameTagAs<Tag, BundleTag>;
+}
+
+namespace TypedD3D
+{
+	template<template<class> class Tag>
+		requires D3D12::CommandAllocatorEnabledTag<Tag>
+	struct Trait<Tag<ID3D12CommandAllocator>>
 	{
-		static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-
-		using value_type = ID3D12CommandAllocator;
-		using pointer = ID3D12CommandAllocator*;
-		using const_pointer = const ID3D12CommandAllocator*;
-		using reference = ID3D12CommandAllocator&;
-		using const_reference = const ID3D12CommandAllocator&;
-
 		using inner_type = ID3D12CommandAllocator;
 
+		using inner_tag = ID3D12CommandAllocator;
+
+		template<class NewInner>
+		using ReplaceInnerType = Tag<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Tag<NewInner>;
+
 		template<class Derived>
-		class Interface : public InterfaceBase<CommandListTypeToTrait<Type, Derived>>
+		class Interface : public InterfaceBase<Tag<Derived>>
 		{
 		public:
 			HRESULT Reset() { return Self().Reset(); }
 
 		private:
-			using InterfaceBase<CommandListTypeToTrait<Type, Derived>>::Self;
-			using InterfaceBase<CommandListTypeToTrait<Type, Derived>>::ToDerived;
+			using InterfaceBase<Tag<Derived>>::Self;
+			using InterfaceBase<Tag<Derived>>::ToDerived;
 		};
-	};
-}
-
-namespace TypedD3D
-{
-	template<>
-	struct DirectTraits<ID3D12CommandAllocator> : public D3D12::CommandAllocatorTraits<D3D12_COMMAND_LIST_TYPE_DIRECT> 
-	{
-	};
-
-	template<>
-	struct ComputeTraits<ID3D12CommandAllocator> : public D3D12::CommandAllocatorTraits<D3D12_COMMAND_LIST_TYPE_COMPUTE> 
-	{
-	};
-
-	template<>
-	struct CopyTraits<ID3D12CommandAllocator> : public D3D12::CommandAllocatorTraits<D3D12_COMMAND_LIST_TYPE_COPY> 
-	{
-	};
-
-	template<>
-	struct BundleTraits<ID3D12CommandAllocator> : public D3D12::CommandAllocatorTraits<D3D12_COMMAND_LIST_TYPE_BUNDLE> 
-	{
 	};
 }
 

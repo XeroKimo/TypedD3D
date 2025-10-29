@@ -9,17 +9,21 @@ import TypedD3D.Shared;
 namespace TypedD3D
 {
     template<>
-    struct UntaggedTraits<ID3D11InputLayout>
+    struct Trait<Untagged<ID3D11InputLayout>>
     {
-        using value_type = ID3D11InputLayout;
-        using pointer = ID3D11InputLayout*;
-        using const_pointer = const ID3D11InputLayout*;
-        using reference = ID3D11InputLayout&;
-        using const_reference = const ID3D11InputLayout&;
+
         using inner_type = ID3D11InputLayout;
 
+        using inner_tag = ID3D11InputLayout;
+
+        template<class NewInner>
+        using ReplaceInnerType = Untagged<NewInner>;
+
+        template<class NewInner>
+        using trait_template = Untagged<NewInner>;
+
         template<class Derived>
-        class Interface : public UntaggedTraits<ID3D11DeviceChild>::Interface<Derived>
+        class Interface : public Trait<Untagged<ID3D11DeviceChild>>::Interface<Derived>
         {
 
         };

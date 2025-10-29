@@ -7,260 +7,194 @@ export module TypedD3D12:DescriptorHeap;
 import TypedD3D.Shared;
 import :Wrappers;
 
-namespace TypedD3D
-{
-    template<class Ty>
-    struct ShaderVisibleCBV_SRV_UAVTrait;
-
-    template<class Ty>
-    struct ShaderVisibleSamplerTrait;
-}
-
 namespace TypedD3D::D3D12
 {
     template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType, D3D12_DESCRIPTOR_HEAP_FLAGS Flags>
     struct HeapTypeToTraitMap;
 
     template<>
-    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = CBV_SRV_UAVTraits<Ty>; };
+    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = CBV_SRV_UAVTag<Ty>; };
 
     template<>
-    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = DSVTraits<Ty>; };
+    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = DSVTag<Ty>; };
 
     template<>
-    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = RTVTraits<Ty>; };
+    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = RTVTag<Ty>; };
 
     template<>
-    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = SamplerTraits<Ty>; };
+    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = SamplerTag<Ty>; };
 
     template<>
-    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> { template<class Ty> using type = ShaderVisibleCBV_SRV_UAVTrait<Ty>; };
+    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> { template<class Ty> using type = ShaderVisible<CBV_SRV_UAVTag<Ty>>; };
 
     template<>
-    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> { template<class Ty> using type = ShaderVisibleSamplerTrait<Ty>; };
+    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> { template<class Ty> using type = ShaderVisible<SamplerTag<Ty>>; };
 
     template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType, D3D12_DESCRIPTOR_HEAP_FLAGS Flags, class Inner>
     using HeapTypeToTrait = typename HeapTypeToTraitMap<HeapType, Flags>::template type<Inner>;
 
+    template<class Ty>
+    using ShaderVisibleCBV_SRV_UAVTag = ShaderVisibleTag<CBV_SRV_UAVTag<Ty>>;
 
-    template<class Derived, D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-    struct DescriptorHandleInterface : TypedStructInterfaceBase<Derived>
-    {
-        auto& Ptr() { return Self().ptr; }
-        const auto& Ptr() const { return Self().ptr; }
+    template<class Ty>
+    using ShaderVisibleSamplerTag = ShaderVisibleTag<SamplerTag<Ty>>;
 
-        auto Offset(INT64 offsetInDescriptors, UINT64 incrementSize)
-        {
-            auto copy = ToDerived();
-            copy.Ptr() += incrementSize * offsetInDescriptors;
-            return copy;
-        }
-        auto Offset(INT64 offset)
-        {
-            auto copy = ToDerived();
-            copy.Ptr() += offset;
-            return copy;
-        }
-
-    private:
-        using TypedStructInterfaceBase<Derived>::Self;
-        using TypedStructInterfaceBase<Derived>::ToDerived;
-    };
-
-    template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-    struct DescriptorHeapTraits
-    {
-        using value_type = ID3D12DescriptorHeap;
-        using pointer = ID3D12DescriptorHeap*;
-        using const_pointer = const ID3D12DescriptorHeap*;
-        using reference = ID3D12DescriptorHeap&;
-        using const_reference = const ID3D12DescriptorHeap&;
-
-        using inner_type = ID3D12DescriptorHeap;
-
-        template<class Derived>
-        class Interface : public InterfaceBase<HeapTypeToTrait<Type, HeapFlags, Derived>>
-        {
-        public:
-            D3D12_DESCRIPTOR_HEAP_DESC GetDesc() { return Self().GetDesc(); }
-            auto GetCPUDescriptorHandleForHeapStart()
-            {
-                using CPU_DESCRIPTOR_HANDLE = TypedStruct<HeapTypeToTrait<Type, HeapFlags, D3D12_CPU_DESCRIPTOR_HANDLE>>;
-                return CPU_DESCRIPTOR_HANDLE(Self().GetCPUDescriptorHandleForHeapStart());
-            }
-            auto GetGPUDescriptorHandleForHeapStart();
-
-        private:
-            using InterfaceBase<HeapTypeToTrait<Type, HeapFlags, Derived>>::Self;
-            using InterfaceBase<HeapTypeToTrait<Type, HeapFlags, Derived>>::ToDerived;
-        };
-    };
-};
+    template<class Ty>
+    concept DescriptorHeapEnabledTag = std::same_as<Ty, CBV_SRV_UAVTag<InnerType<Ty>>>
+        || std::same_as<Ty, DSVTag<InnerType<Ty>>>
+        || std::same_as<Ty, RTVTag<InnerType<Ty>>>
+        || std::same_as<Ty, SamplerTag<InnerType<Ty>>>
+        || std::same_as<Ty, ShaderVisibleCBV_SRV_UAVTag<InnerType<InnerType<Ty>>>>
+        || std::same_as<Ty, ShaderVisibleSamplerTag<InnerType<InnerType<Ty>>>>;
+}
 
 namespace TypedD3D
 {
-    template<>
-    struct CBV_SRV_UAVTraits<D3D12_CPU_DESCRIPTOR_HANDLE> 
+    template<D3D12::DescriptorHeapEnabledTag Ty>
+        requires std::same_as<InnerType<Ty>, D3D12_CPU_DESCRIPTOR_HANDLE> || std::same_as<InnerType<InnerType<Ty>>, D3D12_CPU_DESCRIPTOR_HANDLE>
+    struct Trait<Ty>
     {
+        using inner_type = D3D12_CPU_DESCRIPTOR_HANDLE;
+
+        using inner_tag = InnerType<Ty>;
+
+        template<class NewInner>
+        using trait_template = TypedD3D::ReplaceInnerType<Ty, NewInner>;
+
+        template<class NewInner>
+        using ReplaceInnerType = trait_template<TypedD3D::ReplaceInnerType<inner_tag, NewInner>>;
+
         template<class Derived>
-        using Interface = D3D12::DescriptorHandleInterface<Derived, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
+        struct Interface : TypedStructInterfaceBase<Derived>
+        {
+            auto& Ptr() { return Self().ptr; }
+            const auto& Ptr() const { return Self().ptr; }
+
+            auto Offset(INT64 offsetInDescriptors, UINT64 incrementSize)
+            {
+                auto copy = ToDerived();
+                copy.Ptr() += incrementSize * offsetInDescriptors;
+                return copy;
+            }
+            auto Offset(INT64 offset)
+            {
+                auto copy = ToDerived();
+                copy.Ptr() += offset;
+                return copy;
+            }
+
+        private:
+            using TypedStructInterfaceBase<Derived>::Self;
+            using TypedStructInterfaceBase<Derived>::ToDerived;
+        };
+    };
+
+    template<D3D12::DescriptorHeapEnabledTag Ty>
+        requires std::same_as<InnerType<Ty>, D3D12_GPU_DESCRIPTOR_HANDLE> || std::same_as<InnerType<InnerType<Ty>>, D3D12_GPU_DESCRIPTOR_HANDLE>
+    struct Trait<Ty>
+    {
+        using inner_type = D3D12_GPU_DESCRIPTOR_HANDLE;
+
+        using inner_tag = InnerType<Ty>;
+
+        template<class NewInner>
+        using trait_template = TypedD3D::ReplaceInnerType<Ty, NewInner>;
+
+        template<class NewInner>
+        using ReplaceInnerType = trait_template<TypedD3D::ReplaceInnerType<inner_tag, NewInner>>;
+
+        template<class Derived>
+        struct Interface : TypedStructInterfaceBase<Derived>
+        {
+            auto& Ptr() { return Self().ptr; }
+            const auto& Ptr() const { return Self().ptr; }
+
+            auto Offset(INT64 offsetInDescriptors, UINT64 incrementSize)
+            {
+                auto copy = ToDerived();
+                copy.Ptr() += incrementSize * offsetInDescriptors;
+                return copy;
+            }
+            auto Offset(INT64 offset)
+            {
+                auto copy = ToDerived();
+                copy.Ptr() += offset;
+                return copy;
+            }
+
+        private:
+            using TypedStructInterfaceBase<Derived>::Self;
+            using TypedStructInterfaceBase<Derived>::ToDerived;
+        };
+    };
+
+    template<D3D12::DescriptorHeapEnabledTag Ty>
+        requires std::same_as<InnerType<Ty>, ID3D12DescriptorHeap> || std::same_as<InnerType<InnerType<Ty>>, ID3D12DescriptorHeap>
+    struct Trait<Ty>
+    {
+        using inner_type = ID3D12DescriptorHeap;
+
+        using inner_tag = InnerType<Ty>;
+
+        template<class NewInner>
+        using trait_template = TypedD3D::ReplaceInnerType<Ty, NewInner>;
+
+        template<class NewInner>
+        using ReplaceInnerType = trait_template<TypedD3D::ReplaceInnerType<inner_tag, NewInner>>;
+
+        template<class Derived>
+        class Interface : public InterfaceBase<trait_template<Derived>>
+        {
+        public:
+            D3D12_DESCRIPTOR_HEAP_DESC GetDesc() { return Self().GetDesc(); }
+            TypedStruct<trait_template<D3D12_CPU_DESCRIPTOR_HANDLE>> GetCPUDescriptorHandleForHeapStart()
+            {
+                return Self().GetCPUDescriptorHandleForHeapStart();
+            }
+            TypedStruct<trait_template<D3D12_GPU_DESCRIPTOR_HANDLE>>  GetGPUDescriptorHandleForHeapStart()
+            {
+                return Self().GetGPUDescriptorHandleForHeapStart();
+            }
+
+        private:
+            using InterfaceBase<trait_template<Derived>>::Self;
+            using InterfaceBase<trait_template<Derived>>::ToDerived;
+        };
     };
 
     template<>
-    struct DSVTraits<D3D12_CPU_DESCRIPTOR_HANDLE> 
+    struct ShaderVisibleMapper<CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE>>
     {
-        template<class Derived>
-        using Interface = D3D12::DescriptorHandleInterface<Derived, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    template<>
-    struct RTVTraits<D3D12_CPU_DESCRIPTOR_HANDLE>
-    {
-        template<class Derived>
-        using Interface = D3D12::DescriptorHandleInterface<Derived, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    template<>
-    struct SamplerTraits<D3D12_CPU_DESCRIPTOR_HANDLE>
-    {
-        template<class Derived>
-        using Interface = D3D12::DescriptorHandleInterface<Derived, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    template<>
-    struct ShaderVisibleCBV_SRV_UAVTrait<D3D12_CPU_DESCRIPTOR_HANDLE>
-    {
-        template<class Derived>
-        using Interface = D3D12::DescriptorHandleInterface<Derived, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
-    };
-
-    template<>
-    struct ShaderVisibleSamplerTrait<D3D12_CPU_DESCRIPTOR_HANDLE>
-    {
-        template<class Derived>
-        using Interface = D3D12::DescriptorHandleInterface<Derived, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
-    };
-
-
-
-
-    template<>
-    struct CBV_SRV_UAVTraits<D3D12_GPU_DESCRIPTOR_HANDLE> 
-    {
-        template<class Derived>
-        using Interface = D3D12::DescriptorHandleInterface<Derived, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    template<>
-    struct DSVTraits<D3D12_GPU_DESCRIPTOR_HANDLE>
-    {
-        template<class Derived>
-        using Interface = D3D12::DescriptorHandleInterface<Derived, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    template<>
-    struct RTVTraits<D3D12_GPU_DESCRIPTOR_HANDLE>
-    {
-        template<class Derived>
-        using Interface = D3D12::DescriptorHandleInterface<Derived, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    template<>
-    struct SamplerTraits<D3D12_GPU_DESCRIPTOR_HANDLE>
-    {
-        template<class Derived>
-        using Interface = D3D12::DescriptorHandleInterface<Derived, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>;
-    };
-
-    template<>
-    struct ShaderVisibleCBV_SRV_UAVTrait<D3D12_GPU_DESCRIPTOR_HANDLE>
-    {
-        template<class Derived>
-        using Interface = D3D12::DescriptorHandleInterface<Derived, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
+        using type = TypedStruct<D3D12::ShaderVisibleCBV_SRV_UAVTag<D3D12_CPU_DESCRIPTOR_HANDLE>>;
     };
 
     template<>
     struct ShaderVisibleMapper<CBV_SRV_UAV<D3D12_GPU_DESCRIPTOR_HANDLE>>
     {
-        using type = TypedStruct<ShaderVisibleCBV_SRV_UAVTrait<D3D12_GPU_DESCRIPTOR_HANDLE>>;
-    };
-
-    template<>
-    struct ShaderVisibleSamplerTrait<D3D12_GPU_DESCRIPTOR_HANDLE>
-    {
-        template<class Derived>
-        using Interface = D3D12::DescriptorHandleInterface<Derived, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>;
-    };
-
-    template<>
-    struct ShaderVisibleMapper<Sampler<D3D12_GPU_DESCRIPTOR_HANDLE>>
-    {
-        using type = TypedStruct<ShaderVisibleSamplerTrait<D3D12_GPU_DESCRIPTOR_HANDLE>>;
-    };
-
-
-
-    template<>
-    struct CBV_SRV_UAVTraits<ID3D12DescriptorHeap> : public D3D12::DescriptorHeapTraits<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> 
-    {
-    };
-
-    template<>
-    struct DSVTraits<ID3D12DescriptorHeap> : public D3D12::DescriptorHeapTraits<D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>
-    {
-    };
-
-    template<>
-    struct RTVTraits<ID3D12DescriptorHeap> : public D3D12::DescriptorHeapTraits<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>
-    {
-    };
-
-    template<>
-    struct SamplerTraits<ID3D12DescriptorHeap> : public D3D12::DescriptorHeapTraits<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>
-    {
-    };
-
-    template<>
-    struct ShaderVisibleCBV_SRV_UAVTrait<ID3D12DescriptorHeap> : public D3D12::DescriptorHeapTraits<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>
-    {
-
+        using type = TypedStruct<ShaderVisibleTag<CBV_SRV_UAVTag<D3D12_GPU_DESCRIPTOR_HANDLE>>>;
     };
 
     template<>
     struct ShaderVisibleMapper<CBV_SRV_UAV<ID3D12DescriptorHeap>>
     {
-        using type = StrongWrapper<ShaderVisibleCBV_SRV_UAVTrait<ID3D12DescriptorHeap>>;
+        using type = StrongWrapper<ShaderVisibleTag<CBV_SRV_UAVTag<ID3D12DescriptorHeap>>>;
     };
 
     template<>
-    struct ShaderVisibleSamplerTrait<ID3D12DescriptorHeap> : public D3D12::DescriptorHeapTraits<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE>
+    struct ShaderVisibleMapper<Sampler<D3D12_CPU_DESCRIPTOR_HANDLE>>
     {
+        using type = TypedStruct<ShaderVisibleTag<SamplerTag<D3D12_CPU_DESCRIPTOR_HANDLE>>>;
+    };
 
+    template<>
+    struct ShaderVisibleMapper<Sampler<D3D12_GPU_DESCRIPTOR_HANDLE>>
+    {
+        using type = TypedStruct<ShaderVisibleTag<SamplerTag<D3D12_GPU_DESCRIPTOR_HANDLE>>>;
     };
 
     template<>
     struct ShaderVisibleMapper<Sampler<ID3D12DescriptorHeap>>
     {
-        using type = StrongWrapper<ShaderVisibleSamplerTrait<ID3D12DescriptorHeap>>;
+        using type = StrongWrapper<ShaderVisibleTag<SamplerTag<ID3D12DescriptorHeap>>>;
     };
-}
-
-namespace TypedD3D::D3D12
-{
-
-    template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-    template<class Derived>
-    auto DescriptorHeapTraits<Type, HeapFlags>::Interface<Derived>::GetGPUDescriptorHandleForHeapStart()
-    {
-        using GPU_DESCRIPTOR_HANDLE = TypedStruct<HeapTypeToTrait<Type, HeapFlags, D3D12_GPU_DESCRIPTOR_HANDLE>>;
-        return GPU_DESCRIPTOR_HANDLE(Self().GetGPUDescriptorHandleForHeapStart()); 
-    }
-
-    //template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
-    //template<class Derived>
-    //auto DescriptorHeapTraits<Type, HeapFlags>::Interface<Derived>::GetCPUDescriptorHandleForHeapStart()
-    //{
-    //    using CPU_DESCRIPTOR_HANDLE = TypedStruct<HeapTypeToTrait<Type, HeapFlags, D3D12_CPU_DESCRIPTOR_HANDLE>>;
-    //    return CPU_DESCRIPTOR_HANDLE(Self().GetCPUDescriptorHandleForHeapStart()); 
-    //}
 }

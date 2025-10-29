@@ -26,17 +26,19 @@ namespace TypedD3D::DXGI
 namespace TypedD3D
 {
 	template<>
-	struct UntaggedTraits<IDXGISwapChain>
+	struct Trait<Untagged<IDXGISwapChain>>
 	{
-		using value_type = IDXGISwapChain;
-		using pointer = IDXGISwapChain*;
-		using const_pointer = const IDXGISwapChain*;
-		using reference = IDXGISwapChain&;
-		using cosnt_reference = const IDXGISwapChain&;
-
 		using inner_type = IDXGISwapChain;
+
+		using inner_tag = IDXGISwapChain;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
 		template<class Derived>
-		class Interface : public InterfaceBase<UntaggedTraits<Derived>>
+		class Interface : public InterfaceBase<Untagged<Derived>>
 		{
 		public:
 			void Present(UINT SyncInterval, UINT Flags)
@@ -47,7 +49,7 @@ namespace TypedD3D
 			template<Resource Ty>
 			Wrapper<Ty> GetBuffer(UINT buffer)
 			{
-				return ForwardFunction<Wrapper<Ty>>(&value_type::GetBuffer, Self(), buffer);
+				return ForwardFunction<Wrapper<Ty>>(&inner_type::GetBuffer, Self(), buffer);
 			}
 
 			void SetFullscreenState(BOOL Fullscreen, IDXGIOutput* optTarget)
@@ -86,7 +88,7 @@ namespace TypedD3D
 
 			Wrapper<IDXGIOutput> GetContainingOutput()
 			{
-				return ForwardFunction<IDXGIOutput>(&value_type::GetContainingOutput, Self());
+				return ForwardFunction<IDXGIOutput>(&inner_type::GetContainingOutput, Self());
 			}
 
 			DXGI_FRAME_STATISTICS GetFrameStatistics()
@@ -104,23 +106,25 @@ namespace TypedD3D
 			}
 
 		private:
-			using InterfaceBase<UntaggedTraits<Derived>>::Self;
-			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+			using InterfaceBase<Untagged<Derived>>::Self;
+			using InterfaceBase<Untagged<Derived>>::ToDerived;
 		};
 	};
 
 	template<>
-	struct UntaggedTraits<IDXGISwapChain1>
+	struct Trait<Untagged<IDXGISwapChain1>>
 	{
-		using value_type = IDXGISwapChain1;
-		using pointer = IDXGISwapChain1*;
-		using const_pointer = const IDXGISwapChain1*;
-		using reference = IDXGISwapChain1&;
-		using cosnt_reference = const IDXGISwapChain1&;
-
 		using inner_type = IDXGISwapChain1;
+
+		using inner_tag = IDXGISwapChain1;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
 		template<class Derived>
-		class Interface : public UntaggedTraits<IDXGISwapChain>::Interface<Derived>
+		class Interface : public Trait<Untagged<IDXGISwapChain>>::Interface<Derived>
 		{
 		public:
 			DXGI_SWAP_CHAIN_DESC1 GetDesc1()
@@ -161,7 +165,7 @@ namespace TypedD3D
 
 			Wrapper<IDXGIOutput> GetRestrictToOutput()
 			{
-				return ForwardFunction<IDXGIOutput>(&value_type::GetRestrictToOutput, Self()).value();
+				return ForwardFunction<IDXGIOutput>(&inner_type::GetRestrictToOutput, Self()).value();
 			}
 
 			void SetBackgroundColor(DXGI_RGBA pColor)
@@ -188,8 +192,8 @@ namespace TypedD3D
 				return rotation;
 			}
 		private:
-			using InterfaceBase<UntaggedTraits<Derived>>::Self;
-			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+			using InterfaceBase<Untagged<Derived>>::Self;
+			using InterfaceBase<Untagged<Derived>>::ToDerived;
 		};
 	};
 
@@ -200,17 +204,19 @@ namespace TypedD3D
 	};
 
 	template<>
-	struct UntaggedTraits<IDXGISwapChain2>
+	struct Trait<Untagged<IDXGISwapChain2>>
 	{
-		using value_type = IDXGISwapChain2;
-		using pointer = IDXGISwapChain2*;
-		using const_pointer = const IDXGISwapChain2*;
-		using reference = IDXGISwapChain2&;
-		using cosnt_reference = const IDXGISwapChain2&;
-
 		using inner_type = IDXGISwapChain2;
+
+		using inner_tag = IDXGISwapChain2;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
 		template<class Derived>
-		class Interface : public UntaggedTraits<IDXGISwapChain1>::Interface<Derived>
+		class Interface : public Trait<Untagged<IDXGISwapChain1>>::Interface<Derived>
 		{
 		private:
 			using derived_self = Derived;
@@ -257,23 +263,26 @@ namespace TypedD3D
 				return matrix;
 			}
 		private:
-			using InterfaceBase<UntaggedTraits<Derived>>::Self;
-			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+			using InterfaceBase<Untagged<Derived>>::Self;
+			using InterfaceBase<Untagged<Derived>>::ToDerived;
 		};									   
 	};
 
 	template<>
-	struct UntaggedTraits<IDXGISwapChain3>
+	struct Trait<Untagged<IDXGISwapChain3>>
 	{
-		using value_type = IDXGISwapChain3;
-		using pointer = IDXGISwapChain3*;
-		using const_pointer = const IDXGISwapChain3*;
-		using reference = IDXGISwapChain3&;
-		using cosnt_reference = const IDXGISwapChain3&;
-
 		using inner_type = IDXGISwapChain3;
+
+		using inner_tag = IDXGISwapChain3;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
 		template<class Derived>
-		class Interface : public UntaggedTraits<IDXGISwapChain2>::Interface<Derived>
+		class Interface : public Trait<Untagged<IDXGISwapChain2>>::Interface<Derived>
 		{
 		private:
 			using derived_self = Derived;
@@ -310,8 +319,8 @@ namespace TypedD3D
 				ThrowIfFailed(Self().ResizeBuffers1(BufferCount, Width, Height, Format, SwapChainFlags, pCreationNodeMask.data(), ppPresentQueue.data()));
 			}
 		private:
-			using InterfaceBase<UntaggedTraits<Derived>>::Self;
-			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+			using InterfaceBase<Untagged<Derived>>::Self;
+			using InterfaceBase<Untagged<Derived>>::ToDerived;
 		};
 	};
 }

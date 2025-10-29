@@ -11,25 +11,30 @@ import TypedD3D.Shared;
 
 namespace TypedD3D
 {
+	static_assert(IUnknownTrait<Untagged<IDXGIOutput>>);
 	template<>
-	struct UntaggedTraits<IDXGIAdapter> 
+	struct Trait<Untagged<IDXGIAdapter>>
 	{
-		using value_type = IDXGIAdapter;
-		using pointer = IDXGIAdapter*;
-		using const_pointer = const IDXGIAdapter*;
-		using reference = IDXGIAdapter&;
-		using cosnt_reference = const IDXGIAdapter&;
 
 		using inner_type = IDXGIAdapter;
+
+		using inner_tag = IDXGIAdapter;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
+
 		template<class DerivedSelf>
-		class Interface : public InterfaceBase<UntaggedTraits<DerivedSelf>>
+		class Interface : public InterfaceBase<Trait<Untagged<DerivedSelf>>>
 		{
 			using derived_self = DerivedSelf;
 
 		public:
 			Wrapper<IDXGIOutput> EnumOutputs(UINT Output)
 			{
-				return ForwardFunction<Wrapper<IDXGIOutput>>(&value_type::EnumOutputs, Self(), Output);
+				return ForwardFunction<Wrapper<IDXGIOutput>>(&inner_type::EnumOutputs, Self(), Output);
 			}
 
 			DXGI_ADAPTER_DESC GetDesc()
@@ -47,8 +52,8 @@ namespace TypedD3D
 			}
 
 		private:
-			using InterfaceBase<UntaggedTraits<DerivedSelf>>::Self;
-			using InterfaceBase<UntaggedTraits<DerivedSelf>>::ToDerived;
+			using InterfaceBase<Trait<Untagged<DerivedSelf>>>::Self;
+			using InterfaceBase<Trait<Untagged<DerivedSelf>>>::ToDerived;
 		};
 	};
 }

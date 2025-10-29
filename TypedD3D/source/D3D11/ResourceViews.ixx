@@ -43,19 +43,20 @@ namespace TypedD3D
 {
 
 	template<>
-	struct UntaggedTraits<ID3D11View>
+	struct Trait<Untagged<ID3D11View>>
 	{
-		using value_type = ID3D11View;
-		using pointer = ID3D11View*;
-		using const_pointer = const ID3D11View*;
-		using reference = ID3D11View&;
-		using const_reference = const ID3D11View&;
-
-
 		using inner_type = ID3D11View;
 
+		using inner_tag = ID3D11View;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
+
 		template<class Derived>
-		class Interface : public UntaggedTraits<ID3D11DeviceChild>::Interface<Derived>
+		class Interface : public Trait<Untagged<ID3D11DeviceChild>>::Interface<Derived>
 		{
 		private:
 			using derived_self = Derived;
@@ -70,40 +71,42 @@ namespace TypedD3D
 			}
 
 		private:
-			using InterfaceBase<UntaggedTraits<Derived>>::Self;
-			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+			using InterfaceBase<Untagged<Derived>>::Self;
+			using InterfaceBase<Untagged<Derived>>::ToDerived;
 		};
 	};
 
 	export template<class Ty>
 		requires (std::derived_from<Ty, ID3D11View> && (!std::same_as<ID3D11View, Ty>))
-	struct UntaggedTraits<Ty>
+	struct Trait<Untagged<Ty>>
 	{
-		using value_type = Ty;
-		using pointer = Ty*;
-		using const_pointer = const Ty*;
-		using reference = Ty&;
-		using const_reference = const Ty&;
-
 		using inner_type = Ty;
 
+		using inner_tag = Ty;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
+
 		template<class Derived>
-		class Interface : public UntaggedTraits<ID3D11View>::Interface<Derived>, public InterfaceBase<UntaggedTraits<Derived>>
+		class Interface : public Trait<Untagged<ID3D11View>>::Interface<Derived>
 		{
 		private:
 			using derived_self = Derived;
 
 		public:
-			typename D3D11::ViewToResourceDesc<value_type>::type GetDesc()
+			typename D3D11::ViewToResourceDesc<inner_type>::type GetDesc()
 			{
-				typename D3D11::ViewToResourceDesc<value_type>::type description;
+				typename D3D11::ViewToResourceDesc<inner_type>::type description;
 				Self().GetDesc(&description);
 				return description;
 			}
 
 		private:
-			using InterfaceBase<UntaggedTraits<Derived>>::Self;
-			using InterfaceBase<UntaggedTraits<Derived>>::ToDerived;
+			using InterfaceBase<Untagged<Derived>>::Self;
+			using InterfaceBase<Untagged<Derived>>::ToDerived;
 		};
 	};
 }
