@@ -56,9 +56,6 @@
     <ClCompile Include="source\TypedDXGI.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\DXGI\Adapter.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\DXGI\Factory.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -108,6 +105,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\D3D12\D3D12DeviceChild.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Containers.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DXGI\Adapter.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DXGI\DXGIObject.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\D3D12\D3D12Object.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

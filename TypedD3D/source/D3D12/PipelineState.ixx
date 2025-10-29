@@ -2,7 +2,7 @@ module;
 
 #include <d3d12.h>
 #include <concepts>
-#include <wrl/client.h>
+
 
 export module TypedD3D12:PipelineState;
 
@@ -12,60 +12,50 @@ import TypedD3D.Shared;
 namespace TypedD3D::D3D12
 {
     template<class Ty>
-    concept PipelineTypeTag = std::same_as<Ty, D3D12_GRAPHICS_PIPELINE_STATE_DESC> || std::same_as<Ty, D3D12_COMPUTE_PIPELINE_STATE_DESC>;
-
-    template<class Ty>
-    struct PiplineStateTypeToTrait;
+    struct PiplineStateTypeToTraitMap;
 
     template<>
-    struct PiplineStateTypeToTrait<D3D12_GRAPHICS_PIPELINE_STATE_DESC> { template<class Ty> using type = GraphicsTraits<Ty>; };
+    struct PiplineStateTypeToTraitMap<D3D12_GRAPHICS_PIPELINE_STATE_DESC> { template<class Ty> using type = GraphicsTag<Ty>; };
 
     template<>
-    struct PiplineStateTypeToTrait<D3D12_COMPUTE_PIPELINE_STATE_DESC> { template<class Ty> using type = ComputeTraits<Ty>; };
+    struct PiplineStateTypeToTraitMap<D3D12_COMPUTE_PIPELINE_STATE_DESC> { template<class Ty> using type = ComputeTag<Ty>; };
 
-    template<class Ty>
-    using PipelineState_t = IUnknownWrapper<ID3D12PipelineState, PiplineStateTypeToTrait<Ty>::template type>;
+    template<class DescriptionType, class UnknownType>
+    using PiplineStateTypeToTrait = typename PiplineStateTypeToTraitMap<DescriptionType>::template type<UnknownType>;
+    
+    template<template<class> class Tag>
+    concept PipelineStateEnabledTag = SameTagAs<Tag, GraphicsTag>
+        || SameTagAs<Tag, ComputeTag>;
+}
 
-    //template<TraitTags Type>
-    struct PipelineTraits
+namespace TypedD3D
+{
+    template<template<class> class Tag>
+        requires D3D12::PipelineStateEnabledTag<Tag>
+    struct Trait<Tag<ID3D12PipelineState>>
     {
-        using value_type = ID3D12PipelineState;
-        using pointer = ID3D12PipelineState*;
-        using const_pointer = const ID3D12PipelineState*;
-        using reference = ID3D12PipelineState&;
-        using const_reference = const ID3D12PipelineState&;
+        using inner_type = ID3D12PipelineState;
 
-        template<class DerivedSelf>
-        class Interface
+        using inner_tag = ID3D12PipelineState;
+
+        template<class NewInner>
+        using ReplaceInnerType = Tag<NewInner>;
+
+        template<class NewInner>
+        using trait_template = Tag<NewInner>;
+
+        template<class Derived>
+        class Interface : public InterfaceBase<Tag<Derived>>
         {
-        private:
-            using derived_self = DerivedSelf;
-
         public:
-            Microsoft::WRL::ComPtr<ID3DBlob> GetCachedBlob()
+            Wrapper<ID3DBlob> GetCachedBlob()
             {
-                return UnknownObjectForwardFunction<ID3DBlob>(&value_type::GetCachedBlob, Get()).value();
+                return ForwardFunction<Wrapper<ID3DBlob>>(&inner_type::GetCachedBlob, Self());
             }
 
         private:
-            derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-            reference Get() { return *ToDerived().derived_self::Get(); }
+            using InterfaceBase<Tag<Derived>>::Self;
+            using InterfaceBase<Tag<Derived>>::ToDerived;
         };
     };
-
-    template<>
-    struct GraphicsTraits<ID3D12PipelineState> : PipelineTraits
-    {
-    };
-
-    template<>
-    struct ComputeTraits<ID3D12PipelineState> : PipelineTraits
-    {
-    };
-
-    namespace Aliases
-    {
-        export using D3D12GraphicsPipelineState = PipelineState_t<D3D12_GRAPHICS_PIPELINE_STATE_DESC>;
-        export using D3D12ComputePipelineState = PipelineState_t<D3D12_COMPUTE_PIPELINE_STATE_DESC>;
-    }
 }

@@ -1,7 +1,7 @@
 module;
 
 #include <d3d12.h>
-#include <wrl/client.h>
+
 #include <assert.h>
 
 export module TypedD3D12:CommandAllocator;
@@ -10,82 +10,87 @@ import :Wrappers;
 
 namespace TypedD3D::D3D12
 {
-	export template<D3D12_COMMAND_LIST_TYPE Type>
-	struct CommandListTypeToTrait;
-
-	template<>
-	struct CommandListTypeToTrait<D3D12_COMMAND_LIST_TYPE_DIRECT> { template<class Ty> using type = DirectTraits<Ty>; };
-
-	template<>
-	struct CommandListTypeToTrait<D3D12_COMMAND_LIST_TYPE_COMPUTE> { template<class Ty> using type = ComputeTraits<Ty>; };
-
-	template<>
-	struct CommandListTypeToTrait<D3D12_COMMAND_LIST_TYPE_COPY> { template<class Ty> using type = CopyTraits<Ty>; };
-
-	template<>
-	struct CommandListTypeToTrait<D3D12_COMMAND_LIST_TYPE_BUNDLE> { template<class Ty> using type = BundleTraits<Ty>; };
-
-	export template<template<class> class Trait>
-	constexpr D3D12_COMMAND_LIST_TYPE TraitToCommandListType;
-
-	template<>
-	constexpr D3D12_COMMAND_LIST_TYPE TraitToCommandListType<DirectTraits> = D3D12_COMMAND_LIST_TYPE_DIRECT;
-
-	template<>
-	constexpr D3D12_COMMAND_LIST_TYPE TraitToCommandListType<ComputeTraits> = D3D12_COMMAND_LIST_TYPE_COMPUTE;
-
-	template<>
-	constexpr D3D12_COMMAND_LIST_TYPE TraitToCommandListType<CopyTraits> = D3D12_COMMAND_LIST_TYPE_COPY;
-
-	template<>
-	constexpr D3D12_COMMAND_LIST_TYPE TraitToCommandListType<BundleTraits> = D3D12_COMMAND_LIST_TYPE_BUNDLE;
-
-	export template<D3D12_COMMAND_LIST_TYPE Type>
-	using CommandAllocator_t = IUnknownWrapper<ID3D12CommandAllocator, CommandListTypeToTrait<Type>::template type>;
-
 	template<D3D12_COMMAND_LIST_TYPE Type>
-	struct CommandAllocatorTraits
+	struct CommandListTypeToTraitMap;
+
+	template<>
+	struct CommandListTypeToTraitMap<D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT>
 	{
-		static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-
-		using value_type = ID3D12CommandAllocator;
-		using pointer = ID3D12CommandAllocator*;
-		using const_pointer = const ID3D12CommandAllocator*;
-		using reference = ID3D12CommandAllocator&;
-		using const_reference = const ID3D12CommandAllocator&;
-
-		template<class DerivedSelf>
-		class Interface
-		{
-		private:
-			using derived_self = DerivedSelf;
-
-		public:
-			HRESULT Reset() { return Get().Reset(); }
-
-		private:
-			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-			reference Get() { return *ToDerived().derived_self::Get(); }
-		};
+		template<class Ty>
+		using type = DirectTag<Ty>;
 	};
 
 	template<>
-	struct DirectTraits<ID3D12CommandAllocator> : public CommandAllocatorTraits<D3D12_COMMAND_LIST_TYPE_DIRECT> {};
-
-	template<>
-	struct ComputeTraits<ID3D12CommandAllocator> : public CommandAllocatorTraits<D3D12_COMMAND_LIST_TYPE_COMPUTE> {};
-
-	template<>
-	struct CopyTraits<ID3D12CommandAllocator> : public CommandAllocatorTraits<D3D12_COMMAND_LIST_TYPE_COPY> {};
-
-	template<>
-	struct BundleTraits<ID3D12CommandAllocator> : public CommandAllocatorTraits<D3D12_COMMAND_LIST_TYPE_BUNDLE> {};
-
-	namespace Aliases
+	struct CommandListTypeToTraitMap<D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_COMPUTE>
 	{
-		export using D3D12DirectCommandAllocator = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
-		export using D3D12BundleCommandAllocator = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-		export using D3D12ComputeCommandAllocator = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-		export using D3D12CopyCommandAllocator = CommandAllocator_t<D3D12_COMMAND_LIST_TYPE_COPY>;
-	}
+		template<class Ty>
+		using type = ComputeTag<Ty>;
+	};
+
+	template<>
+	struct CommandListTypeToTraitMap<D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_COPY>
+	{
+		template<class Ty>
+		using type = CopyTag<Ty>;
+	};
+
+	template<>
+	struct CommandListTypeToTraitMap<D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_BUNDLE>
+	{
+		template<class Ty>
+		using type = BundleTag<Ty>;
+	};
+
+	template<D3D12_COMMAND_LIST_TYPE Type, class IUnknown>
+	using CommandListTypeToTrait = typename CommandListTypeToTraitMap<Type>::template type<IUnknown>;
+
+	template<template<class> class Tag>
+	concept CommandAllocatorEnabledTag = SameTagAs<Tag, DirectTag>
+		|| SameTagAs<Tag, ComputeTag>
+		|| SameTagAs<Tag, CopyTag>
+		|| SameTagAs<Tag, BundleTag>;
 }
+
+namespace TypedD3D
+{
+	template<template<class> class Tag>
+		requires D3D12::CommandAllocatorEnabledTag<Tag>
+	struct Trait<Tag<ID3D12CommandAllocator>>
+	{
+		using inner_type = ID3D12CommandAllocator;
+
+		using inner_tag = ID3D12CommandAllocator;
+
+		template<class NewInner>
+		using ReplaceInnerType = Tag<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Tag<NewInner>;
+
+		template<class Derived>
+		class Interface : public InterfaceBase<Tag<Derived>>
+		{
+		public:
+			HRESULT Reset() { return Self().Reset(); }
+
+		private:
+			using InterfaceBase<Tag<Derived>>::Self;
+			using InterfaceBase<Tag<Derived>>::ToDerived;
+		};
+	};
+}
+
+//namespace TypedD3D::D3D12
+//{
+//	export template<D3D12_COMMAND_LIST_TYPE Type, class UnknownType>
+//	using CommandAllocator_t = StrongWrapper<CommandListTypeToTrait<type, UnknownType>>;
+//
+//	export template<D3D12_COMMAND_LIST_TYPE Type, class UnknownType>
+//	using CommandAllocatorView_t = WeakWrapper<CommandListTypeToTrait<type, UnknownType>>;
+//
+//	export template<D3D12_COMMAND_LIST_TYPE Type>
+//	using CommandAllocator = CommandAllocator_t<Type, ID3D12CommandAllocator>;
+//
+//	export template<D3D12_COMMAND_LIST_TYPE Type>
+//	using CommandAllocatorView_t = CommandAllocatorView_t<Type, ID3D12CommandAllocator>;
+//}

@@ -3,11 +3,12 @@
 #include <assert.h>
 #include <Windows.h>
 #include <exception>
-#include <wrl/client.h>
 #include <array>
-#include "d3dx12.h"
-#include "dxgi1_6.h"
+#include <d3dx12.h>
+#include <dxgi1_6.h>
+#include <memory>
 
+import TypedD3D.Shared;
 import TypedD3D12;
 import TypedDXGI;
 import TypedD3D.Legacy.D3D12Helpers;
@@ -32,34 +33,29 @@ namespace
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 static void CreateWindow();
 
-using Microsoft::WRL::ComPtr;
-
 void D3D12HelloWorld()
 {
     CreateWindow();
-    TypedD3D12::CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> b;
-    //TypedD3D::expected<ComPtr<IDXGIFactory2>, HRESULT> factory = TypedD3D::IIDToObjectForwardFunction<IDXGIFactory2>(&CreateDXGIFactory1);
-    //TypedD3D::Wrapper<IDXGIAdapter> adapter = factory->EnumAdapters<IDXGIAdapter>(0);
-    ComPtr<ID3D12Debug> debugLayer = TypedD3D::Helpers::D3D12::GetDebugInterface();
-    debugLayer->EnableDebugLayer();
-    TypedD3D12::Wrapper<IDXGIFactory2> factory = TypedDXGI::CreateFactory1<IDXGIFactory2>();
-    TypedD3D12::Wrapper<ID3D12Device1> device = TypedD3D12::CreateDevice<ID3D12Device1>(D3D_FEATURE_LEVEL_12_0);
-    ComPtr<ID3D12DebugDevice> debugDevice = TypedD3D::Cast<ID3D12DebugDevice>(device.Get());
+
+    TypedD3D::Wrapper<IDXGIFactory2> factory = TypedDXGI::CreateFactory1<IDXGIFactory2>();
+
+    TypedD3D::Wrapper<ID3D12Device> device = TypedD3D12::CreateDevice(D3D_FEATURE_LEVEL_12_0);
 
     constexpr UINT backBufferCount = 2;
 
     using namespace TypedD3D;
-    TypedD3D12::Direct<ID3D12CommandQueue> commandQueue = device->CreateCommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>(D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE, 0);
-    std::array<TypedD3D12::Direct<ID3D12CommandAllocator>, backBufferCount> commandAllocators;
+    TypedD3D::Direct<ID3D12CommandQueue> commandQueue = device->CreateCommandQueue<D3D12_COMMAND_LIST_TYPE_DIRECT>(D3D12_COMMAND_QUEUE_PRIORITY_NORMAL, D3D12_COMMAND_QUEUE_FLAG_NONE, 0);
+    std::array<TypedD3D::Direct<ID3D12CommandAllocator>, backBufferCount> commandAllocators;
     commandAllocators[0] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>();
     commandAllocators[1] = device->CreateCommandAllocator<D3D12_COMMAND_LIST_TYPE_DIRECT>();
-    TypedD3D12::Direct<ID3D12GraphicsCommandList> temp = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0]);
-    TypedD3D12::Direct<ID3D12GraphicsCommandList1> commandList = TypedD3D::Cast<TypedD3D12::Direct<ID3D12GraphicsCommandList1>>(temp);
-    TypedD3D12::Compute<ID3D12GraphicsCommandList1> commandList54;
+    TypedD3D::Direct<ID3D12GraphicsCommandList> commandList = device->CreateCommandList<D3D12_COMMAND_LIST_TYPE_DIRECT>(commandAllocators[0]);
+    TypedD3D::Wrapper<ID3D12GraphicsCommandList> commandList2 = commandList;
+    commandList2 = commandList;
+    //commandList = TypedD3D::Direct<ID3D12GraphicsCommandList>{ commandList2 };
 
-    //TypedD3D::Compute<ID3D12GraphicsCommandList1> cltest = commandList;
+
     UINT64 fenceValue = 0;
-    ComPtr<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE);
+    TypedD3D::Wrapper<ID3D12Fence> fence = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE);
     HANDLE syncEvent = CreateEventW(nullptr, false, false, nullptr);
 
     TypedD3D::Wrapper<IDXGISwapChain3> swapChain = factory->CreateSwapChainForHwnd<IDXGISwapChain3>(
@@ -80,23 +76,25 @@ void D3D12HelloWorld()
         nullptr,
         nullptr);
 
-    TypedD3D12::RTV<ID3D12DescriptorHeap> swapChainBufferDescriptorHeap = device->CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>(2, 0);
+    TypedD3D::RTV<ID3D12DescriptorHeap> swapChainBufferDescriptorHeap = device->CreateDescriptorHeap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE>(2, 0);
 
     UINT rtvOffset = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    TypedD3D12::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> descriptorHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> descriptorHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    TypedD3D::Wrapper<D3D12_CPU_DESCRIPTOR_HANDLE> descriptorHandle2 = descriptorHandle;
+    descriptorHandle2 = descriptorHandle;
+    descriptorHandle = TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE>{ descriptorHandle2 };
+    TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> descriptorHandle3{ descriptorHandle2 };
     DXGI_SWAP_CHAIN_DESC1 desc = swapChain->GetDesc1();
 
-    std::array<TypedD3D12::Wrapper<ID3D12Resource>, 2> swapChainBuffers;
+    std::array<TypedD3D::Wrapper<ID3D12Resource>, 2> swapChainBuffers;
 
     for(UINT i = 0; i < desc.BufferCount; i++)
     {
         swapChainBuffers[i] = swapChain->GetBuffer<ID3D12Resource>(i);
 
-        device->CreateRenderTargetView(*swapChainBuffers[i].Get(), nullptr, descriptorHandle);
+        device->CreateRenderTargetView(swapChainBuffers[i], nullptr, descriptorHandle);
         descriptorHandle = descriptorHandle.Offset(1, rtvOffset);
     }
-
-
 
     D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc
     {
@@ -107,13 +105,16 @@ void D3D12HelloWorld()
         .Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
     };
 
-    ComPtr<ID3DBlob> signatureBlob;
-    D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, nullptr);
-    ComPtr<ID3D12RootSignature> rootSignature = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize());
+    //static_assert(std::same_as<TypedD3D::TypedStruct<TypedD3D12::HeapTypeToTrait<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, D3D12_CPU_DESCRIPTOR_HANDLE>>, RTV<D3D12_CPU_DESCRIPTOR_HANDLE>> ;
 
-    ComPtr<ID3DBlob> vertexBlob;
-    ComPtr<ID3DBlob> errorBlob;
-    HRESULT hr = D3DCompileFromFile(L"VertexShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &vertexBlob, &errorBlob);
+
+    TypedD3D::Wrapper<ID3DBlob> signatureBlob;
+    D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, TypedD3D::OutPtr{ signatureBlob }, nullptr);
+    TypedD3D::Wrapper<ID3D12RootSignature> rootSignature = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize());
+
+    TypedD3D::Wrapper<ID3DBlob> vertexBlob;
+    TypedD3D::Wrapper<ID3DBlob> errorBlob;
+    HRESULT hr = D3DCompileFromFile(L"VertexShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, TypedD3D::OutPtr{ vertexBlob }, TypedD3D::OutPtr{ errorBlob });
     if(FAILED(hr))
     {
         char* message = static_cast<char*>(errorBlob->GetBufferPointer());
@@ -126,8 +127,8 @@ void D3D12HelloWorld()
     vertexByteCode.BytecodeLength = vertexBlob->GetBufferSize();
     vertexByteCode.pShaderBytecode = vertexBlob->GetBufferPointer();
 
-    ComPtr<ID3DBlob> pixelBlob;
-    hr = D3DCompileFromFile(L"PixelShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pixelBlob, nullptr);
+    TypedD3D::Wrapper<ID3DBlob> pixelBlob;
+    hr = D3DCompileFromFile(L"PixelShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, TypedD3D::OutPtr{ pixelBlob }, nullptr);
     if(FAILED(hr))
         return;
 
@@ -183,7 +184,7 @@ void D3D12HelloWorld()
         .InputLayout = layoutDesc,
         .PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
         .NumRenderTargets = 1,
-        .SampleDesc = TypedD3D::GetDescription(*swapChain.Get()).SampleDesc,
+        .SampleDesc = swapChain->GetDesc().SampleDesc,
     };
 
     graphicsPipelineState.BlendState.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
@@ -197,7 +198,7 @@ void D3D12HelloWorld()
 
     graphicsPipelineState.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-    TypedD3D12::Graphics<ID3D12PipelineState> pipelineState = device->CreateGraphicsPipelineState(graphicsPipelineState);
+    TypedD3D::Graphics<ID3D12PipelineState> pipelineState = device->CreateGraphicsPipelineState(graphicsPipelineState);
 
     auto vertices = std::to_array<Vertex>(
         {
@@ -266,10 +267,11 @@ void D3D12HelloWorld()
         *vertexResource.Get(),
         D3D12_RESOURCE_STATE_COPY_DEST,
         D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+
     commandList->ResourceBarrier(std::span(&barrier, 1));
     commandList->Close();
-    TypedD3D12::Direct<ID3D12CommandList> a = commandList;
-    TypedD3D::Array<TypedD3D12::Direct<ID3D12CommandList>, 1> submitList{ commandList };
+
+    TypedD3D::Array<TypedD3D::DirectView<ID3D12CommandList>, 1> submitList{ commandList };
     commandQueue->ExecuteCommandLists(TypedD3D::Span(submitList));
 
     TypedD3D::Helpers::D3D12::FlushCommandQueue(*commandQueue.Get(), *fence.Get(), fenceValue, syncEvent);
@@ -337,7 +339,7 @@ void D3D12HelloWorld()
                         *commandList.Get(), 
                         *commandAllocators[frameData.backBufferIndex].Get(), 
                         frameData.commandQueue,
-                        [&](TypedD3D12::Direct<ID3D12GraphicsCommandList1> commandList)
+                        [&](TypedD3D::Direct<ID3D12GraphicsCommandList> commandList)
                         {
                             D3D12_RESOURCE_BARRIER beginBarrier = TypedD3D::Helpers::D3D12::TransitionBarrier(
                                 *swapChainBuffers[frameData.backBufferIndex].Get(),
@@ -350,13 +352,20 @@ void D3D12HelloWorld()
                                 D3D12_RESOURCE_STATE_PRESENT);
 
                             TypedD3D::Helpers::D3D12::ResourceBarrier(*commandList.Get(), std::span(&beginBarrier, 1), std::span(&endBarrier, 1),
-                                [&](TypedD3D12::Direct<ID3D12GraphicsCommandList1> commandList)
+                                [&](TypedD3D::Direct<ID3D12GraphicsCommandList> commandList)
                                 {
-                                    TypedD3D12::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> backBufferHandle = swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart().Offset(frameData.backBufferIndex, rtvOffset);
-                                    commandList->ClearRenderTargetView(backBufferHandle, std::to_array({ 0.f, 0.3f, 0.7f, 1.f }), {});
-                                    commandList->OMSetRenderTargets(std::span(&backBufferHandle, 1), true, nullptr);
+                                    TypedD3D::Array<TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE>, 1> backBufferHandle
+                                    { swapChainBufferDescriptorHeap->GetCPUDescriptorHandleForHeapStart().Offset(frameData.backBufferIndex, rtvOffset) };
+                                    TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE> b2;
+                                    backBufferHandle[0].Offset(0);
+                                    b2 = backBufferHandle[0];
+                                    auto color = std::to_array({ 0.f, 0.3f, 0.7f, 1.f });
+                                    std::span<const float, 4> f = color;
 
-                                    commandList->SetPipelineState(pipelineState.Get());
+                                    commandList->ClearRenderTargetView(backBufferHandle[0], std::to_array({ 0.f, 0.3f, 0.7f, 1.f }));
+                                    commandList->OMSetRenderTargets(backBufferHandle, true, nullptr);
+
+                                    commandList->SetPipelineState(pipelineState);
                                     commandList->SetGraphicsRootSignature(rootSignature.Get());
                                     commandList->RSSetViewports(std::span(&viewport, 1));
                                     commandList->RSSetScissorRects(std::span(&rect, 1));
@@ -370,7 +379,7 @@ void D3D12HelloWorld()
     }
     TypedD3D::Helpers::D3D12::FlushCommandQueue(*commandQueue.Get(), *fence.Get(), fenceValue, syncEvent);
 
-    debugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL | D3D12_RLDO_FLAGS::D3D12_RLDO_SUMMARY | D3D12_RLDO_IGNORE_INTERNAL);
+    //debugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL | D3D12_RLDO_FLAGS::D3D12_RLDO_SUMMARY | D3D12_RLDO_IGNORE_INTERNAL);
 
     assert(swapChain != nullptr);
     assert(factory != nullptr);

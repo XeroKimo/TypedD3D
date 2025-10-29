@@ -8,5 +8,8 @@ export import :PipelineState;
 export import :Resource;
 export import :Device;
 export import :Wrappers;
+export import :D3D12Object;
 
 export namespace TypedD3D12 = TypedD3D::D3D12;
+
+//TODO: Finish migrating CommandLists API

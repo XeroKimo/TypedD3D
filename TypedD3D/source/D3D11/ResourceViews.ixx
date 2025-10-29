@@ -2,7 +2,7 @@ module;
 
 #include <d3d11_4.h>
 #include <concepts>
-#include <wrl/client.h>
+
 
 export module TypedD3D11:ResourceViews;
 import :DeviceChild;
@@ -43,65 +43,70 @@ namespace TypedD3D
 {
 
 	template<>
-	struct UntaggedTraits<ID3D11View>
+	struct Trait<Untagged<ID3D11View>>
 	{
-		using value_type = ID3D11View;
-		using pointer = ID3D11View*;
-		using const_pointer = const ID3D11View*;
-		using reference = ID3D11View&;
-		using const_reference = const ID3D11View&;
+		using inner_type = ID3D11View;
 
-		template<class DerivedSelf>
-		class Interface : public D3D11::DeviceChildInterface<DerivedSelf>
+		using inner_tag = ID3D11View;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
+
+		template<class Derived>
+		class Interface : public Trait<Untagged<ID3D11DeviceChild>>::Interface<Derived>
 		{
 		private:
-			using derived_self = DerivedSelf;
+			using derived_self = Derived;
 
 		public:
 			template<std::derived_from<ID3D11Resource> Ty = ID3D11Resource>
 			Wrapper<Ty> GetResource() const
 			{
-				Microsoft::WRL::ComPtr<ID3D11Resource> resource;
-				Get().GetResource(&resource);
-				return Wrapper<Ty>(TypedD3D::Cast<Ty>(resource));
+				Wrapper<ID3D11Resource> resource;
+				Self().GetResource(OutPtr{ resource });
+				return Cast<Ty>(std::move(resource));
 			}
 
 		private:
-			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-			reference Get() { return *ToDerived().derived_self::Get(); }
-
-			const derived_self& ToDerived() const { return static_cast<const derived_self&>(*this); }
-			reference Get() const { return *ToDerived().derived_self::Get(); }
+			using InterfaceBase<Untagged<Derived>>::Self;
+			using InterfaceBase<Untagged<Derived>>::ToDerived;
 		};
 	};
 
 	export template<class Ty>
-		requires std::derived_from<Ty, ID3D11View> && (!std::same_as<ID3D11View, Ty>)
-	struct UntaggedTraits<Ty>
+		requires (std::derived_from<Ty, ID3D11View> && (!std::same_as<ID3D11View, Ty>))
+	struct Trait<Untagged<Ty>>
 	{
-		using value_type = Ty;
-		using pointer = Ty*;
-		using const_pointer = const Ty*;
-		using reference = Ty&;
-		using const_reference = const Ty&;
+		using inner_type = Ty;
 
-		template<class DerivedSelf>
-		class Interface : public UntaggedTraits<ID3D11View>::Interface<DerivedSelf>
+		using inner_tag = Ty;
+
+		template<class NewInner>
+		using ReplaceInnerType = Untagged<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Untagged<NewInner>;
+
+		template<class Derived>
+		class Interface : public Trait<Untagged<ID3D11View>>::Interface<Derived>
 		{
 		private:
-			using derived_self = DerivedSelf;
+			using derived_self = Derived;
 
 		public:
-			typename D3D11::ViewToResourceDesc<value_type>::type GetDesc()
+			typename D3D11::ViewToResourceDesc<inner_type>::type GetDesc()
 			{
-				typename D3D11::ViewToResourceDesc<value_type>::type description;
-				Get().GetDesc(&description);
+				typename D3D11::ViewToResourceDesc<inner_type>::type description;
+				Self().GetDesc(&description);
 				return description;
 			}
 
 		private:
-			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-			reference Get() { return *ToDerived().derived_self::Get(); }
+			using InterfaceBase<Untagged<Derived>>::Self;
+			using InterfaceBase<Untagged<Derived>>::ToDerived;
 		};
 	};
 }

@@ -24,6 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="build.cpp" />
+    <ClCompile Include="source\Containers.ixx" />
     <ClCompile Include="source\D3D11\D3D11Constants.ixx" />
     <ClCompile Include="source\D3D11\D3D11Device.ixx" />
     <ClCompile Include="source\D3D11\DeviceContext.ixx" />
@@ -36,6 +37,7 @@
     <ClCompile Include="source\D3D12\CommandList.ixx" />
     <ClCompile Include="source\D3D12\CommandQueue.ixx" />
     <ClCompile Include="source\D3D12\D3D12DeviceChild.ixx" />
+    <ClCompile Include="source\D3D12\D3D12Object.ixx" />
     <ClCompile Include="source\D3D12\D3D12Wrappers.ixx" />
     <ClCompile Include="source\D3D12\DescriptorHeap.ixx" />
     <ClCompile Include="source\D3D12\D3D12Device.ixx" />
@@ -43,6 +45,7 @@
     <ClCompile Include="source\D3D12\PipelineState.ixx" />
     <ClCompile Include="source\D3D11\DeviceChild.ixx" />
     <ClCompile Include="source\DXGI\Adapter.ixx" />
+    <ClCompile Include="source\DXGI\DXGIObject.ixx" />
     <ClCompile Include="source\DXGI\Factory.ixx" />
     <ClCompile Include="source\DXGI\SwapChain.ixx" />
     <ClCompile Include="source\Legacy\D3D12LegacyHelpers.ixx" />

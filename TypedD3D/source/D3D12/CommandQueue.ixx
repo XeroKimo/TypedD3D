@@ -4,11 +4,13 @@ module;
 #include <array>
 #include <span>
 #include <d3d12.h>
+#include <gsl/pointers>
 
 export module TypedD3D12:CommandQueue;
 import :CommandList;
 import :CommandAllocator;
 import :Wrappers;
+import :Resource;
 import TypedD3D.Shared;
 
 namespace TypedD3D::D3D12
@@ -19,61 +21,73 @@ namespace TypedD3D::D3D12
 		UINT64 cpuTimestamp;
 	};
 
-	struct CommonCommandQueueTraits
+	template<template<class> class Tag>
+	concept CommandQueueEnabledTag = SameTagAs<Tag, DirectTag>
+		|| SameTagAs<Tag, ComputeTag>
+		|| SameTagAs<Tag, CopyTag>;
+}
+
+namespace TypedD3D
+{
+
+	template<template<class> class Tag>
+		requires D3D12::CommandQueueEnabledTag<Tag>
+	struct Trait<Tag<ID3D12CommandQueue>>
 	{
-		using value_type = ID3D12CommandQueue;
-		using pointer = ID3D12CommandQueue*;
-		using const_pointer = const ID3D12CommandQueue*;
-		using reference = ID3D12CommandQueue&;
-		using const_reference = const ID3D12CommandQueue&;
+		using inner_type = ID3D12CommandQueue;
 
-		template<class DerivedSelf>
-		class Interface
+		using inner_tag = ID3D12CommandQueue;
+
+		template<class NewInner>
+		using ReplaceInnerType = Tag<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Tag<NewInner>;
+
+		template<class Derived>
+		class Interface : public InterfaceBase<Tag<Derived>>
 		{
-		private:
-			using derived_self = DerivedSelf;
-
 		public:
 			void BeginEvent(
 				UINT Metadata,
 				const void* pData,
 				UINT Size)
 			{
-				Get().BeginEvent(Metadata, pData, Size);
+				Self().BeginEvent(Metadata, pData, Size);
 			}
 
 			void CopyTileMappings(
-				ID3D12Resource& pDstResource,
+				gsl::not_null<WrapperView<ID3D12Resource>> pDstResource,
 				const D3D12_TILED_RESOURCE_COORDINATE& pDstRegionStartCoordinate,
-				ID3D12Resource& pSrcResource,
+				gsl::not_null<WrapperView<ID3D12Resource>> pSrcResource,
 				const D3D12_TILED_RESOURCE_COORDINATE& pSrcRegionStartCoordinate,
 				const D3D12_TILE_REGION_SIZE& pRegionSize,
 				D3D12_TILE_MAPPING_FLAGS Flags)
 			{
-				Get().CopyTileMappings(
-					&pDstResource,
+				Self().CopyTileMappings(
+					&pDstResource.get().Get(),
 					&pDstRegionStartCoordinate,
-					&pSrcResource,
+					&pSrcResource.get().Get(),
 					&pSrcRegionStartCoordinate,
 					&pRegionSize,
 					Flags);
 			}
 
-			void EndEvent() { Get().EndEvent(); }
+			void EndEvent() { Self().EndEvent(); }
 
-			ClockCalibrationData GetClockCalibration()
+			D3D12::ClockCalibrationData GetClockCalibration()
 			{
-				ClockCalibrationData timeStamps;
-				Get().GetClockCalibration(&timeStamps.gpuTimestamp, &timeStamps.cpuTimestamp);
+				D3D12::ClockCalibrationData timeStamps;
+				Self().GetClockCalibration(&timeStamps.gpuTimestamp, &timeStamps.cpuTimestamp);
 				return timeStamps;
 			}
 
-			D3D12_COMMAND_QUEUE_DESC GetDesc() { return Get().GetDesc(); }
+			D3D12_COMMAND_QUEUE_DESC GetDesc() { return Self().GetDesc(); }
 
 			UINT64 GetTimestampFrequency()
 			{
 				UINT64 frequency = 0;
-				Get().GetTimestampFrequency(&frequency);
+				Self().GetTimestampFrequency(&frequency);
 				return frequency;
 			}
 
@@ -82,18 +96,18 @@ namespace TypedD3D::D3D12
 				const void* pData,
 				UINT Size)
 			{
-				Get().SetMarker(Metadata, pData, Size);
+				Self().SetMarker(Metadata, pData, Size);
 			}
 
 			HRESULT Signal(
 				ID3D12Fence& Fence,
 				UINT64 Value)
 			{
-				return Get().Signal(&Fence, Value);
+				return Self().Signal(&Fence, Value);
 			}
 
 			void UpdateTileMappings(
-				ID3D12Resource& pResource,
+				gsl::not_null<WrapperView<ID3D12Resource>> pResource,
 				UINT NumResourceRegions,
 				const D3D12_TILED_RESOURCE_COORDINATE* pResourceRegionStartCoordinates,
 				const D3D12_TILE_REGION_SIZE* pResourceRegionSizes,
@@ -104,8 +118,8 @@ namespace TypedD3D::D3D12
 				const UINT* pRangeTileCounts,
 				D3D12_TILE_MAPPING_FLAGS Flags)
 			{
-				Get().UpdateTileMappings(
-					&pResource,
+				Self().UpdateTileMappings(
+					pResource.get().Get(),
 					NumResourceRegions,
 					pResourceRegionStartCoordinates,
 					pResourceRegionSizes,
@@ -121,65 +135,18 @@ namespace TypedD3D::D3D12
 				ID3D12Fence& Fence,
 				UINT64 Value)
 			{
-				return Get().Wait(&Fence, Value);
+				return Self().Wait(&Fence, Value);
 			}
 
-		private:
-			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-			reference Get() { return *ToDerived().derived_self::Get(); }
-		};
-	};
-
-	export template<D3D12_COMMAND_LIST_TYPE Type>
-		struct CommandQueueTraits
-	{
-		static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-
-		using value_type = ID3D12CommandQueue;
-		using pointer = ID3D12CommandQueue*;
-		using const_pointer = const ID3D12CommandQueue*;
-		using reference = ID3D12CommandQueue&;
-		using const_reference = const ID3D12CommandQueue&;
-
-		using list_value_type = CommandList_t<ID3D12CommandList, command_list_value>;
-		using allocator_value_type = CommandAllocator_t<command_list_value>;
-
-		template<class DerivedSelf>
-		class Interface : public CommonCommandQueueTraits::Interface<DerivedSelf>
-		{
-		private:
-			using derived_self = DerivedSelf;
-
-		public:
-			template<std::convertible_to<list_value_type> ListTy, size_t Extents>
-			void ExecuteCommandLists(
-				Span<ListTy, Extents> commandLists)
+			void ExecuteCommandLists(Span<WeakWrapper<Tag<ID3D12CommandList>>> commandLists)
 			{
-				Get().ExecuteCommandLists(static_cast<UINT>(commandLists.size()), commandLists.data());
+				Self().ExecuteCommandLists(static_cast<UINT>(commandLists.size()), commandLists.data());
 			}
 
 		private:
-			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-			reference Get() { return *ToDerived().derived_self::Get(); }
+			using InterfaceBase<Tag<Derived>>::Self;
+			using InterfaceBase<Tag<Derived>>::ToDerived;
 		};
 	};
 
-	template<>
-	struct DirectTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<DirectTraits>> {};
-
-	template<>
-	struct ComputeTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<ComputeTraits>> {};
-
-	template<>
-	struct CopyTraits<ID3D12CommandQueue> : CommandQueueTraits<TraitToCommandListType<CopyTraits>> {};
-
-	export template<D3D12_COMMAND_LIST_TYPE Type>
-		using D3D12CommandQueue_t = IUnknownWrapper<ID3D12CommandQueue, CommandListTypeToTrait<Type>::template type>;
-
-	namespace Aliases
-	{
-		export using D3D12DirectCommandQueue = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_DIRECT>;
-		export using D3D12ComputeCommandQueue = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-		export using D3D12CopyCommandQueue = D3D12CommandQueue_t<D3D12_COMMAND_LIST_TYPE_COPY>;
-	}
 }
