@@ -29,6 +29,39 @@ namespace TypedD3D::D3D12
 		|| SameTagAs<Tag, CopyTag>
 		|| SameTagAs<Tag, BundleTag>
 		|| SameTagAs<Tag, RenderPassTag>;
+
+	template<template<class> class Tag, template<class> class... Compare>
+	concept DisableFunction = !(SameTagAs<Tag, Compare> || ...);
+
+	export class WriteBufferImmediateData
+	{
+		UINT count;
+		D3D12_WRITEBUFFERIMMEDIATE_PARAMETER* parameters;
+		D3D12_WRITEBUFFERIMMEDIATE_MODE* modes = nullptr;
+
+	public:
+		template<UINT Count>
+		WriteBufferImmediateData(std::span<D3D12_WRITEBUFFERIMMEDIATE_PARAMETER, Count> parameters, std::optional<std::span<D3D12_WRITEBUFFERIMMEDIATE_MODE, Count>> modes) :
+			count{ Count },
+			parameters{ parameters.data() },
+			modes{ modes.value_or({}).data() }
+		{
+
+		}
+
+		WriteBufferImmediateData(UINT count, D3D12_WRITEBUFFERIMMEDIATE_PARAMETER* parameters, D3D12_WRITEBUFFERIMMEDIATE_MODE* optionalModes) :
+			count{ count },
+			parameters{ parameters },
+			modes{ optionalModes }
+		{
+
+		}
+
+	public:
+		UINT GetCount() const noexcept { return count; }
+		const D3D12_WRITEBUFFERIMMEDIATE_PARAMETER* GetParameters() const noexcept { return parameters; }
+		const D3D12_WRITEBUFFERIMMEDIATE_MODE* GetModes() const noexcept { return modes; }
+	};
 };
 
 namespace TypedD3D
@@ -85,7 +118,7 @@ namespace TypedD3D
 			void BeginQuery(
 				gsl::not_null<WrapperView<ID3D12QueryHeap>> pQueryHeap,
 				D3D12_QUERY_TYPE Type,
-				UINT Index)
+				UINT Index) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag, BundleTag>
 			{
 				Self().BeginQuery(pQueryHeap.get().Get(), Type, Index);
 			}
@@ -95,7 +128,7 @@ namespace TypedD3D
 				D3D12_CLEAR_FLAGS ClearFlags,
 				FLOAT Depth,
 				UINT8 Stencil,
-				std::span<const D3D12_RECT> rects)
+				std::span<const D3D12_RECT> rects) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag, BundleTag, RenderPassTag>
 			{
 				Self().ClearDepthStencilView(DepthStencilView.Raw(), ClearFlags, Depth, Stencil, static_cast<UINT>(rects.size()), rects.data());
 			}
@@ -103,24 +136,24 @@ namespace TypedD3D
 			void ClearRenderTargetView(
 				RTV<D3D12_CPU_DESCRIPTOR_HANDLE> RenderTargetView,
 				std::span<const float, 4> colorRGBA,
-				std::span<const D3D12_RECT> rects)
+				std::span<const D3D12_RECT> rects) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag, BundleTag, RenderPassTag>
 			{
 				Self().ClearRenderTargetView(RenderTargetView.Raw(), colorRGBA.data(), static_cast<UINT>(rects.size()), rects.data());
 			}
 
 			void ClearRenderTargetView(
 				RTV<D3D12_CPU_DESCRIPTOR_HANDLE> RenderTargetView,
-				const std::array<float, 4>& colorRGBA)
+				const std::array<float, 4>& colorRGBA) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag, BundleTag, RenderPassTag>
 			{
 				ClearRenderTargetView(RenderTargetView, colorRGBA, {});
 			}
 
-			void ClearState(GraphicsView<ID3D12PipelineState> pPipelineState)
+			void ClearState(GraphicsView<ID3D12PipelineState> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
 			{
 				Self().ClearState(pPipelineState.Get());
 			}
 
-			void ClearState(ComputeView<ID3D12PipelineState> pPipelineState)
+			void ClearState(ComputeView<ID3D12PipelineState> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
 			{
 				Self().ClearState(pPipelineState.Get());
 			}
@@ -130,7 +163,7 @@ namespace TypedD3D
 				CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE> ViewCPUHandle,
 				gsl::not_null<WrapperView<ID3D12Resource>> pResource,
 				std::span<const float, 4> values,
-				std::span<const D3D12_RECT> rects)
+				std::span<const D3D12_RECT> rects) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
 			{
 				Self().ClearUnorderedAccessViewFloat(ViewGPUHandleInCurrentHeap, ViewCPUHandle, pResource.get().Get(), values.data(), static_cast<UINT>(rects.size()), rects.data());
 			}
@@ -140,7 +173,7 @@ namespace TypedD3D
 				CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE> ViewCPUHandle,
 				gsl::not_null<WrapperView<ID3D12Resource>> pResource,
 				std::span<const UINT, 4> values,
-				std::span<const D3D12_RECT> rects)
+				std::span<const D3D12_RECT> rects) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
 			{
 				Self().ClearUnorderedAccessViewUint(ViewGPUHandleInCurrentHeap, ViewCPUHandle, pResource.get().Get(), values.data(), static_cast<UINT>(rects.size()), rects.data());
 			}
@@ -155,7 +188,7 @@ namespace TypedD3D
 				UINT64 DstOffset,
 				gsl::not_null<WrapperView<ID3D12Resource>> pSrcBuffer,
 				UINT64 SrcOffset,
-				UINT64 NumBytes)
+				UINT64 NumBytes) requires D3D12::DisableFunction<Tag, BundleTag, RenderPassTag>
 			{
 				Self().CopyBufferRegion(
 					pDstBuffer.get().Get(),
@@ -167,7 +200,7 @@ namespace TypedD3D
 
 			void CopyResource(
 				gsl::not_null<WrapperView<ID3D12Resource>> pDstResource,
-				gsl::not_null<WrapperView<ID3D12Resource>> pSrcResource)
+				gsl::not_null<WrapperView<ID3D12Resource>> pSrcResource) requires D3D12::DisableFunction<Tag, BundleTag, RenderPassTag>
 			{
 				Self().CopyResource(pDstResource.get().Get(), &pSrcResource.get().Get());
 			}
@@ -178,7 +211,7 @@ namespace TypedD3D
 				UINT DstY,
 				UINT DstZ,
 				const D3D12_TEXTURE_COPY_LOCATION& pSrc,
-				const D3D12_BOX* pOptSrcBox)
+				const D3D12_BOX* pOptSrcBox) requires D3D12::DisableFunction<Tag, BundleTag, RenderPassTag>
 			{
 				Self().CopyTextureRegion(
 					&pDst,
@@ -195,7 +228,7 @@ namespace TypedD3D
 				const D3D12_TILE_REGION_SIZE& pTileRegionSize,
 				gsl::not_null<WrapperView<ID3D12Resource>> pBuffer,
 				UINT64 BufferStartOffsetInBytes,
-				D3D12_TILE_COPY_FLAGS Flags)
+				D3D12_TILE_COPY_FLAGS Flags) requires D3D12::DisableFunction<Tag, BundleTag, RenderPassTag>
 			{
 				Self().CopyTiles(
 					pTiledResource.get().Get(),
@@ -208,7 +241,7 @@ namespace TypedD3D
 
 			void DiscardResource(
 				gsl::not_null<WrapperView<ID3D12Resource>> pResource,
-				const D3D12_DISCARD_REGION* pOptRegion)
+				const D3D12_DISCARD_REGION* pOptRegion) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
 			{
 				Self().DiscardResource(pResource.get().Get(), pOptRegion);
 			}
@@ -216,7 +249,7 @@ namespace TypedD3D
 			void Dispatch(
 				UINT ThreadGroupCountX,
 				UINT ThreadGroupCountY,
-				UINT ThreadGroupCountZ)
+				UINT ThreadGroupCountZ) requires D3D12::DisableFunction<Tag, CopyTag, RenderPassTag>
 			{
 				Self().Dispatch(
 					ThreadGroupCountX,
@@ -229,7 +262,7 @@ namespace TypedD3D
 				UINT InstanceCount,
 				UINT StartIndexLocation,
 				INT BaseVertexLocation,
-				UINT StartInstanceLocation)
+				UINT StartInstanceLocation) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().DrawIndexedInstanced(
 					IndexCountPerInstance,
@@ -243,7 +276,7 @@ namespace TypedD3D
 				UINT VertexCountPerInstance,
 				UINT InstanceCount,
 				UINT StartVertexLocation,
-				UINT StartInstanceLocation)
+				UINT StartInstanceLocation) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().DrawInstanced(VertexCountPerInstance, InstanceCount, StartVertexLocation, StartInstanceLocation);
 			}
@@ -256,14 +289,14 @@ namespace TypedD3D
 			void EndQuery(
 				gsl::not_null<WrapperView<ID3D12QueryHeap>> pQueryHeap,
 				D3D12_QUERY_TYPE Type,
-				UINT Index)
+				UINT Index) requires D3D12::DisableFunction<Tag, BundleTag>
 			{
 				Self().EndQuery(pQueryHeap.get().Get(), Type, Index);
 			}
 
-			template<template<class> class OtherTag>
+			template<template<class> class OtherTag = BundleTag>
 				requires SameTagAs<OtherTag, BundleTag>
-			void ExecuteBundle(gsl::not_null<WeakWrapper<OtherTag<ID3D12GraphicsCommandList>>> commandList)
+			void ExecuteBundle(gsl::not_null<WeakWrapper<OtherTag<ID3D12GraphicsCommandList>>> commandList) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag, BundleTag>
 			{
 				static_assert(IUnknownTrait<BundleTag<ID3D12GraphicsCommandList>>);
 				Self().ExecuteBundle(commandList.get().Get());
@@ -275,31 +308,31 @@ namespace TypedD3D
 				gsl::not_null<WrapperView<ID3D12Resource>> argumentBuffer,
 				UINT64 argumentBufferOffset,
 				WrapperView<ID3D12Resource> optCountBuffer = nullptr,
-				UINT64 optCountBufferOffset = 0)
+				UINT64 optCountBufferOffset = 0) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
 				Self().ExecuteIndirect(commandSignature.get().Get(), maxCommandCount, argumentBuffer.get().Get(), argumentBufferOffset, optCountBuffer.Get(), optCountBufferOffset);
 			}
 
 			void IASetIndexBuffer(
-				const D3D12_INDEX_BUFFER_VIEW* pView)
+				const D3D12_INDEX_BUFFER_VIEW* pView) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().IASetIndexBuffer(pView);
 			}
 
 			void IASetPrimitiveTopology(
-				D3D12_PRIMITIVE_TOPOLOGY PrimitiveTopology)
+				D3D12_PRIMITIVE_TOPOLOGY PrimitiveTopology) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().IASetPrimitiveTopology(PrimitiveTopology);
 			}
 
 			void IASetVertexBuffers(
 				UINT StartSlot,
-				std::span<const D3D12_VERTEX_BUFFER_VIEW> views)
+				std::span<const D3D12_VERTEX_BUFFER_VIEW> views) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().IASetVertexBuffers(StartSlot, static_cast<UINT>(views.size()), views.data());
 			}
 
-			void OMSetBlendFactor(std::span<const float, 4> BlendFactor)
+			void OMSetBlendFactor(std::span<const float, 4> BlendFactor) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().OMSetBlendFactor(BlendFactor.data());
 			}
@@ -307,28 +340,16 @@ namespace TypedD3D
 			void OMSetRenderTargets(
 				Span<const RTV<D3D12_CPU_DESCRIPTOR_HANDLE>> pRenderTargetDescriptors,
 				BOOL RTsSingleHandleToDescriptorRange,
-				const DSV<D3D12_CPU_DESCRIPTOR_HANDLE>* pDepthStencilDescriptor)
+				const DSV<D3D12_CPU_DESCRIPTOR_HANDLE>* pDepthStencilDescriptor) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag, BundleTag, RenderPassTag>
 			{
 				const D3D12_CPU_DESCRIPTOR_HANDLE* depthStencil = (pDepthStencilDescriptor) ? &pDepthStencilDescriptor->Raw() : nullptr;
 
 				Self().OMSetRenderTargets(static_cast<UINT>(pRenderTargetDescriptors.size()), pRenderTargetDescriptors.data(), RTsSingleHandleToDescriptorRange, depthStencil);
 			}
 
-			void OMSetStencilRef(UINT StencilRef)
+			void OMSetStencilRef(UINT StencilRef) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().OMSetStencilRef(StencilRef);
-			}
-
-			void RSSetScissorRects(
-				std::span<D3D12_RECT> rects)
-			{
-				Self().RSSetScissorRects(static_cast<UINT>(rects.size()), rects.data());
-			}
-
-			void RSSetViewports(
-				std::span<D3D12_VIEWPORT> viewports)
-			{
-				Self().RSSetViewports(static_cast<UINT>(viewports.size()), viewports.data());
 			}
 
 			HRESULT Reset(gsl::not_null<WeakWrapper<Tag<ID3D12CommandAllocator>>> allocator,
@@ -349,7 +370,7 @@ namespace TypedD3D
 				UINT StartIndex,
 				UINT NumQueries,
 				gsl::not_null<WrapperView<ID3D12Resource>> pDestinationBuffer,
-				UINT64 AlignedDestinationBufferOffset)
+				UINT64 AlignedDestinationBufferOffset) requires D3D12::DisableFunction<Tag, BundleTag, RenderPassTag>
 			{
 				Self().ResolveQueryData(pQueryHeap.get().Get(), Type, StartIndex, NumQueries, pDestinationBuffer.get().Get(), AlignedDestinationBufferOffset);
 			}
@@ -359,7 +380,7 @@ namespace TypedD3D
 				UINT DstSubresource,
 				gsl::not_null<WrapperView<ID3D12Resource>> pSrcResource,
 				UINT SrcSubresource,
-				DXGI_FORMAT Format)
+				DXGI_FORMAT Format) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag, BundleTag, RenderPassTag>
 			{
 				Self().ResolveSubresource(
 					pDstResource.get().Get(),
@@ -369,19 +390,24 @@ namespace TypedD3D
 					Format);
 			}
 
-			void ResourceBarrier(std::span<const D3D12_RESOURCE_BARRIER> Barriers)
+			void ResourceBarrier(std::span<const D3D12_RESOURCE_BARRIER> Barriers) requires D3D12::DisableFunction<Tag, BundleTag>
 			{
 				Self().ResourceBarrier(static_cast<UINT>(Barriers.size()), Barriers.data());
 			}
 
-			void SOSetTargets(
-				UINT StartSlot,
-				std::span<const D3D12_STREAM_OUTPUT_BUFFER_VIEW> views)
+			void RSSetScissorRects(
+				std::span<D3D12_RECT> rects) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag, BundleTag>
 			{
-				Self().SOSetTargets(StartSlot, static_cast<UINT>(views.size()), views.data());
+				Self().RSSetScissorRects(static_cast<UINT>(rects.size()), rects.data());
 			}
 
-			void SetComputeRoot32BitConstant(UINT RootParameterIndex, UINT SrcData, UINT DestOffsetIn32BitValues)
+			void RSSetViewports(
+				std::span<D3D12_VIEWPORT> viewports) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag, BundleTag>
+			{
+				Self().RSSetViewports(static_cast<UINT>(viewports.size()), viewports.data());
+			}
+
+			void SetComputeRoot32BitConstant(UINT RootParameterIndex, UINT SrcData, UINT DestOffsetIn32BitValues) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
 				Self().SetComputeRoot32BitConstant(RootParameterIndex, SrcData, DestOffsetIn32BitValues);
 			}
@@ -390,61 +416,61 @@ namespace TypedD3D
 				UINT RootParameterIndex,
 				UINT Num32BitValuesToSet,
 				const void* pSrcData,
-				UINT DestOffsetIn32BitValues)
+				UINT DestOffsetIn32BitValues) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
 				Self().SetComputeRoot32BitConstants(RootParameterIndex, Num32BitValuesToSet, pSrcData, DestOffsetIn32BitValues);
 			}
 
 			void SetComputeRootConstantBufferView(
 				UINT RootParameterIndex,
-				D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
+				D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
 				Self().SetComputeRootConstantBufferView(RootParameterIndex, BufferLocation);
 			}
 
-			void SetComputeRootDescriptorTable(UINT RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor)
+			void SetComputeRootDescriptorTable(UINT RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
 				Self().SetComputeRootDescriptorTable(RootParameterIndex, BaseDescriptor);
 			}
 
 			void SetComputeRootShaderResourceView(
 				UINT RootParameterIndex,
-				D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
+				D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
 				Self().SetComputeRootShaderResourceView(RootParameterIndex, BufferLocation);
 			}
 
-			void SetComputeRootSignature(ID3D12RootSignature* pRootSignature)
+			void SetComputeRootSignature(ID3D12RootSignature* pRootSignature) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
 				Self().SetComputeRootSignature(pRootSignature);
 			}
 
 			void SetComputeRootUnorderedAccessView(
 				UINT RootParameterIndex,
-				D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
+				D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
 				Self().SetComputeRootUnorderedAccessView(RootParameterIndex, BufferLocation);
 			}
 
-			void SetDescriptorHeaps(ShaderVisible<CBV_SRV_UAV<ID3D12DescriptorHeap>> descriptorHeap)
+			void SetDescriptorHeaps(ShaderVisible<CBV_SRV_UAV<ID3D12DescriptorHeap>> descriptorHeap) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
 				ID3D12DescriptorHeap* heaps[] = { descriptorHeap.Get() };
 				Self().SetDescriptorHeaps(1, heaps);
 			}
 
-			void SetDescriptorHeaps(ShaderVisible<Sampler<ID3D12DescriptorHeap>> descriptorHeap)
+			void SetDescriptorHeaps(ShaderVisible<Sampler<ID3D12DescriptorHeap>> descriptorHeap) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
 				ID3D12DescriptorHeap* heaps[] = { descriptorHeap.Get() };
 				Self().SetDescriptorHeaps(1, heaps);
 			}
 
-			void SetDescriptorHeaps(ShaderVisible<CBV_SRV_UAV<ID3D12DescriptorHeap>> cbv_srv_uavHeap, ShaderVisible<Sampler<ID3D12DescriptorHeap>> samplerHeap)
+			void SetDescriptorHeaps(ShaderVisible<CBV_SRV_UAV<ID3D12DescriptorHeap>> cbv_srv_uavHeap, ShaderVisible<Sampler<ID3D12DescriptorHeap>> samplerHeap) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
 				ID3D12DescriptorHeap* heaps[] = { cbv_srv_uavHeap.Get(), samplerHeap.Get() };
 				Self().SetDescriptorHeaps(2, heaps);
 			}
 
-			void SetGraphicsRoot32BitConstant(UINT RootParameterIndex, UINT SrcData, UINT DestOffsetIn32BitValues)
+			void SetGraphicsRoot32BitConstant(UINT RootParameterIndex, UINT SrcData, UINT DestOffsetIn32BitValues) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().SetGraphicsRoot32BitConstant(RootParameterIndex, SrcData, DestOffsetIn32BitValues);
 			}
@@ -453,38 +479,38 @@ namespace TypedD3D
 				UINT RootParameterIndex,
 				UINT Num32BitValuesToSet,
 				const void* pSrcData,
-				UINT DestOffsetIn32BitValues)
+				UINT DestOffsetIn32BitValues) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().SetGraphicsRoot32BitConstants(RootParameterIndex, Num32BitValuesToSet, pSrcData, DestOffsetIn32BitValues);
 			}
 
 			void SetGraphicsRootConstantBufferView(
 				UINT RootParameterIndex,
-				D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
+				D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().SetGraphicsRootConstantBufferView(RootParameterIndex, BufferLocation);
 			}
 
-			void SetGraphicsRootDescriptorTable(UINT RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor)
+			void SetGraphicsRootDescriptorTable(UINT RootParameterIndex, D3D12_GPU_DESCRIPTOR_HANDLE BaseDescriptor) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().SetGraphicsRootDescriptorTable(RootParameterIndex, BaseDescriptor);
 			}
 
 			void SetGraphicsRootShaderResourceView(
 				UINT RootParameterIndex,
-				D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
+				D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().SetGraphicsRootShaderResourceView(RootParameterIndex, BufferLocation);
 			}
 
-			void SetGraphicsRootSignature(ID3D12RootSignature* pRootSignature)
+			void SetGraphicsRootSignature(ID3D12RootSignature* pRootSignature) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().SetGraphicsRootSignature(pRootSignature);
 			}
 
 			void SetGraphicsRootUnorderedAccessView(
 				UINT RootParameterIndex,
-				D3D12_GPU_VIRTUAL_ADDRESS BufferLocation)
+				D3D12_GPU_VIRTUAL_ADDRESS BufferLocation) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
 				Self().SetGraphicsRootUnorderedAccessView(RootParameterIndex, BufferLocation);
 			}
@@ -497,12 +523,12 @@ namespace TypedD3D
 				Self().SetMarker(Metadata, pData, Size);
 			}
 
-			void SetPipelineState(GraphicsView<ID3D12PipelineState> pPipelineState)
+			void SetPipelineState(GraphicsView<ID3D12PipelineState> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
 				Self().SetPipelineState(pPipelineState.Get());
 			}
 
-			void SetPipelineState(ComputeView<ID3D12PipelineState> pPipelineState)
+			void SetPipelineState(ComputeView<ID3D12PipelineState> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
 				Self().SetPipelineState(pPipelineState.Get());
 			}
@@ -510,9 +536,125 @@ namespace TypedD3D
 			void SetPredication(
 				WrapperView<ID3D12Resource> pBuffer,
 				UINT64 AlignedBufferOffset,
-				D3D12_PREDICATION_OP Operation)
+				D3D12_PREDICATION_OP Operation) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag>
 			{
 				Self().SetPredication(pBuffer.Get(), AlignedBufferOffset, Operation);
+			}
+
+			void SOSetTargets(
+				UINT StartSlot,
+				std::span<const D3D12_STREAM_OUTPUT_BUFFER_VIEW> views) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag, BundleTag>
+			{
+				Self().SOSetTargets(StartSlot, static_cast<UINT>(views.size()), views.data());
+			}
+
+		private:
+			using InterfaceBase<Tag<Derived>>::Self;
+			using InterfaceBase<Tag<Derived>>::ToDerived;
+		};
+	};
+
+	template<template<class> class Tag>
+		requires D3D12::CommandListEnabledTag<Tag>
+	struct Trait<Tag<ID3D12GraphicsCommandList1>>
+	{
+		using inner_type = ID3D12GraphicsCommandList1;
+
+		using inner_tag = ID3D12GraphicsCommandList1;
+
+		template<class NewInner>
+		using ReplaceInnerType = Tag<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Tag<NewInner>;
+
+		template<class Derived>
+		struct Interface : TraitInterface<Tag<ID3D12GraphicsCommandList>, Derived>
+		{
+			void AtomicCopyBufferUINT(
+				gsl::not_null<WrapperView<ID3D12Resource>> pDstBuffer,
+				UINT64 DstOffset,
+				gsl::not_null<WrapperView<ID3D12Resource>> pSrcBuffer,
+				UINT64 SrcOffset,
+				UINT Dependencies,
+				Span<const WrapperView<ID3D12Resource>> ppDependentResources,
+				const D3D12_SUBRESOURCE_RANGE_UINT64* pDependentSubresourceRanges) requires D3D12::DisableFunction<Tag, BundleTag, RenderPassTag>
+			{
+				Self().AtomicCopyBufferUINT(
+					pDstBuffer.get().Get(),
+					DstOffset,
+					pSrcBuffer.get().Get(),
+					SrcOffset,
+					Dependencies,
+					ppDependentResources.data(),
+					pDependentSubresourceRanges);
+			}
+
+			void AtomicCopyBufferUINT64(
+				gsl::not_null<WrapperView<ID3D12Resource>> pDstBuffer,
+				UINT64 DstOffset,
+				gsl::not_null<WrapperView<ID3D12Resource>> pSrcBuffer,
+				UINT64 SrcOffset,
+				UINT Dependencies,
+				Span<const WrapperView<ID3D12Resource>> ppDependentResources,
+				const D3D12_SUBRESOURCE_RANGE_UINT64* pDependentSubresourceRanges) requires D3D12::DisableFunction<Tag, BundleTag, RenderPassTag>
+			{
+				Self().AtomicCopyBufferUINT64(
+					pDstBuffer.get().Get(),
+					DstOffset,
+					pSrcBuffer.get().Get(),
+					SrcOffset,
+					Dependencies,
+					ppDependentResources.data(),
+					pDependentSubresourceRanges);
+			}
+
+			void OMSetDepthBounds(
+				FLOAT Min,
+				FLOAT Max) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
+			{
+				Self().OMSetDepthBounds(Min, Max);
+			}
+
+			void ResolveSubresourceRegion(
+				gsl::not_null<WrapperView<ID3D12Resource>> pDstResource,
+				UINT DstSubresource,
+				UINT DstX,
+				UINT DstY,
+				gsl::not_null<WrapperView<ID3D12Resource>> pSrcResource,
+				UINT SrcSubresource,
+				D3D12_RECT* pSrcRect,
+				DXGI_FORMAT Format,
+				D3D12_RESOLVE_MODE ResolveMode) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag, BundleTag, RenderPassTag>
+			{
+				Self().ResolveSubresourceRegion(
+					pDstResource.get().Get(),
+					DstSubresource,
+					DstX,
+					DstY,
+					pSrcResource.get().Get(),
+					SrcSubresource,
+					pSrcRect,
+					Format,
+					ResolveMode
+				);
+			}
+
+			void SetSamplePositions(
+				UINT NumSamplesPerPixel,
+				UINT NumPixels,
+				D3D12_SAMPLE_POSITION* pSamplePositions) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
+			{
+				Self().SetSamplePositions(
+					NumSamplesPerPixel,
+					NumPixels,
+					pSamplePositions);
+			}
+
+			void SetViewInstanceMask(
+				UINT Mask) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
+			{
+				Self().SetViewInstanceMask(Mask);
 			}
 		private:
 			using InterfaceBase<Tag<Derived>>::Self;
@@ -520,1788 +662,303 @@ namespace TypedD3D
 		};
 	};
 
+	template<template<class> class Tag>
+		requires D3D12::CommandListEnabledTag<Tag>
+	struct Trait<Tag<ID3D12GraphicsCommandList2>>
+	{
+		using inner_type = ID3D12GraphicsCommandList2;
 
-	//template<std::derived_from<ID3D12CommandList> Ty>
-	//struct DirectTraits<Ty>
-	//{
-	//	template<class Derived>
-	//	using Interface = Ty*;
-	//};
+		using inner_tag = ID3D12GraphicsCommandList2;
 
-	//template<std::derived_from<ID3D12CommandList> Ty>
-	//struct ComputeTraits<Ty>
-	//{
-	//	template<class Derived>
-	//	using Interface = Ty*;
-	//};
+		template<class NewInner>
+		using ReplaceInnerType = Tag<NewInner>;
 
-	//template<std::derived_from<ID3D12CommandList> Ty>
-	//struct CopyTraits<Ty>
-	//{
-	//	template<class Derived>
-	//	using Interface = Ty*;
-	//};
+		template<class NewInner>
+		using trait_template = Tag<NewInner>;
 
-	//template<std::derived_from<ID3D12CommandList> Ty>
-	//struct BundleTraits<Ty>
-	//{
-	//	template<class Derived>
-	//	using Interface = Ty*;
-	//};
+		template<class Derived>
+		struct Interface : TraitInterface<Tag<ID3D12GraphicsCommandList1>, Derived>
+		{
+			void WriteBufferImmediate(D3D12::WriteBufferImmediateData data)
+			{
+				Self().WriteBufferImmediate(data.GetCount(), data.GetParameters(), data.GetModes());
+			}
 
-	//template<std::derived_from<ID3D12CommandList> Ty>
-	//struct RenderPassTraits<Ty>
-	//{
-	//	template<class Derived>
-	//	using Interface = Ty*;
-	//};
+			void WriteBufferImmediate(D3D12_WRITEBUFFERIMMEDIATE_PARAMETER parameters, std::optional<D3D12_WRITEBUFFERIMMEDIATE_MODE> modes)
+			{
+				Self().WriteBufferImmediate({ 1, &parameters, modes ? std::optional{ std::span{1, &modes.value()} } : std::optional{ std::nullopt } });
+			}
+		private:
+			using InterfaceBase<Tag<Derived>>::Self;
+			using InterfaceBase<Tag<Derived>>::ToDerived;
+		};
+	};
 
-	//template<>
-	//struct DirectTraits<ID3D12CommandList>
-	//{
-	//	using inner_type = ID3D12CommandList;
-	//	template<class Derived>
-	//	using Interface = ID3D12CommandList*;
-	//};
+	template<template<class> class Tag>
+		requires D3D12::CommandListEnabledTag<Tag>
+	struct Trait<Tag<ID3D12GraphicsCommandList3>>
+	{
+		using inner_type = ID3D12GraphicsCommandList3;
 
-	//template<>
-	//struct DirectTraits<ID3D12GraphicsCommandList>
-	//{
-	//	using inner_type = ID3D12GraphicsCommandList;
-	//	template<class Derived>
-	//	class Interface : public D3D12::CommandListTrait<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_DIRECT>::Interface<Derived>
-	//	{
-	//	};
-	//};
+		using inner_tag = ID3D12GraphicsCommandList3;
 
-	//template<>
-	//struct ComputeTraits<ID3D12GraphicsCommandList>
-	//{
-	//	using inner_type = ID3D12GraphicsCommandList;
-	//	template<class Derived>
-	//	class Interface : public D3D12::CommandListTrait<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_COMPUTE>::Interface<Derived>
-	//	{
-	//	};
-	//};
+		template<class NewInner>
+		using ReplaceInnerType = Tag<NewInner>;
 
-	//template<>
-	//struct CopyTraits<ID3D12GraphicsCommandList>
-	//{
-	//	using inner_type = ID3D12GraphicsCommandList;
-	//	template<class Derived>
-	//	class Interface : public D3D12::CommandListTrait<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_COPY>::Interface<Derived>
-	//	{
-	//	};
-	//};
+		template<class NewInner>
+		using trait_template = Tag<NewInner>;
 
-	//template<>
-	//struct BundleTraits<ID3D12GraphicsCommandList>
-	//{
-	//	using inner_type = ID3D12GraphicsCommandList;
-	//	template<class Derived>
-	//	class Interface : public D3D12::CommandListTrait<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE>::Interface<Derived>
-	//	{
-	//	};
-	//};
+		template<class Derived>
+		struct Interface : TraitInterface<Tag<ID3D12GraphicsCommandList2>, Derived>
+		{
+			void SetProtectedResourceSession(
+				WrapperView<ID3D12ProtectedResourceSession> pProtectedResourceSession)
+			{
+				Self().SetProtectedResourceSession(pProtectedResourceSession.Get());
+			}
+		private:
+			using InterfaceBase<Tag<Derived>>::Self;
+			using InterfaceBase<Tag<Derived>>::ToDerived;
+		};
+	};
+
+	template<template<class> class Tag>
+		requires D3D12::CommandListEnabledTag<Tag>
+	struct Trait<Tag<ID3D12GraphicsCommandList4>>
+	{
+		using inner_type = ID3D12GraphicsCommandList4;
+
+		using inner_tag = ID3D12GraphicsCommandList4;
+
+		template<class NewInner>
+		using ReplaceInnerType = Tag<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Tag<NewInner>;
+
+		template<class Derived>
+		struct Interface : TraitInterface<Tag<ID3D12GraphicsCommandList3>, Derived>
+		{
+			template<template<class> class Wrapper = RenderPass>
+				requires std::same_as<Wrapper<ID3D12GraphicsCommandList4>, RenderPass<ID3D12GraphicsCommandList4>>
+			Wrapper<ID3D12GraphicsCommandList4> BeginRenderPass(
+				std::span<const D3D12_RENDER_PASS_RENDER_TARGET_DESC> renderTargets,
+				const D3D12_RENDER_PASS_DEPTH_STENCIL_DESC* pDepthStencil,
+				D3D12_RENDER_PASS_FLAGS Flags) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag, BundleTag, RenderPassTag>
+			{
+				Self().BeginRenderPass(renderTargets.size(), renderTargets.data(), pDepthStencil, Flags);
+				return { &Self() };
+			}
+
+			void BuildRaytracingAccelerationStructure(
+				const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC& pDesc,
+				std::span<const D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_DESC> pPostbuildInfoDescs) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
+			{
+				Self().BuildRaytracingAccelerationStructure(
+					&pDesc,
+					static_cast<UINT>(pPostbuildInfoDescs.size()),
+					pPostbuildInfoDescs.data());
+			}
+
+			void CopyRaytracingAccelerationStructure(
+				D3D12_GPU_VIRTUAL_ADDRESS DestAccelerationStructureData,
+				D3D12_GPU_VIRTUAL_ADDRESS SourceAccelerationStructureData,
+				D3D12_RAYTRACING_ACCELERATION_STRUCTURE_COPY_MODE Mode) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
+			{
+				Self().CopyRaytracingAccelerationStructure(
+					DestAccelerationStructureData,
+					SourceAccelerationStructureData,
+					Mode);
+			}
+
+			void DispatchRays(
+				const D3D12_DISPATCH_RAYS_DESC& pDesc) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag>
+			{
+				Self().DispatchRays(&pDesc);
+			}
+
+			void EmitRaytracingAccelerationStructurePostbuildInfo(
+				const D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_DESC& pDesc,
+				std::span<const D3D12_GPU_VIRTUAL_ADDRESS> pSourceAccelerationStructureData) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
+			{
+				Self().EmitRaytracingAccelerationStructurePostbuildInfo(
+					&pDesc,
+					static_cast<UINT>(pSourceAccelerationStructureData.size()),
+					pSourceAccelerationStructureData.data());
+			}
+
+			void EndRenderPass() requires D3D12::DisableFunction<Tag, RenderPassTag>
+			{
+				Self().EndRenderPass();
+			}
+
+			void InitializeMetaCommand(
+				gsl::not_null<WrapperView<ID3D12MetaCommand>> pMetaCommand,
+				const void* pInitializationParametersData,
+				SIZE_T InitializationParametersDataSizeInBytes) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
+			{
+				Self().InitializeMetaCommand(pMetaCommand.get().Get(), pInitializationParametersData, InitializationParametersDataSizeInBytes);
+			}
+
+			void InitializeMetaCommand(
+				gsl::not_null<WrapperView<ID3D12MetaCommand>> pMetaCommand) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
+			{
+				InitializeMetaCommand(pMetaCommand, nullptr, 0);
+			}
+
+			template<class T>
+			void InitializeMetaCommand(
+				gsl::not_null<WrapperView<ID3D12MetaCommand>> pMetaCommand,
+				const T& pInitializationParametersData) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
+			{
+				InitializeMetaCommand(pMetaCommand, &pInitializationParametersData, sizeof(T));
+			}
+
+			void ExecuteMetaCommand(
+				gsl::not_null<WrapperView<ID3D12MetaCommand>> pMetaCommand,
+				const void* pExecutionParametersData,
+				SIZE_T ExecutionParametersDataSizeInBytes) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
+			{
+				Self().ExecuteMetaCommand(pMetaCommand.get().Get(), pExecutionParametersData, ExecutionParametersDataSizeInBytes);
+			}
+
+			void ExecuteMetaCommand(
+				gsl::not_null<WrapperView<ID3D12MetaCommand>> pMetaCommand) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
+			{
+				ExecuteMetaCommand(pMetaCommand, nullptr, 0);
+			}
+
+			template<class T>
+			void ExecuteMetaCommand(
+				gsl::not_null<WrapperView<ID3D12MetaCommand>> pMetaCommand,
+				const T& pExecutionParametersData) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
+			{
+				ExecuteMetaCommand(pMetaCommand, &pExecutionParametersData, sizeof(T));
+			}
+
+			void SetPipelineState1(
+				WrapperView<ID3D12StateObject> pStateObject) requires D3D12::DisableFunction<Tag, CopyTag, RenderPassTag>
+			{
+				Self().SetPipelineState1(pStateObject.Get());
+			}
+		private:
+			using InterfaceBase<Tag<Derived>>::Self;
+			using InterfaceBase<Tag<Derived>>::ToDerived;
+		};
+	};
+
+	template<template<class> class Tag>
+		requires D3D12::CommandListEnabledTag<Tag>
+	struct Trait<Tag<ID3D12GraphicsCommandList5>>
+	{
+		using inner_type = ID3D12GraphicsCommandList5;
+
+		using inner_tag = ID3D12GraphicsCommandList5;
+
+		template<class NewInner>
+		using ReplaceInnerType = Tag<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Tag<NewInner>;
+
+		template<class Derived>
+		struct Interface : TraitInterface<Tag<ID3D12GraphicsCommandList4>, Derived>
+		{
+			void RSSetShadingRate(
+				D3D12_SHADING_RATE baseShadingRate,
+				const D3D12_SHADING_RATE_COMBINER* combiners) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
+			{
+				Self().RSSetShadingRate(
+					baseShadingRate,
+					combiners);
+			}
+
+			void RSSetShadingRateImage(
+				WrapperView<ID3D12Resource> shadingRateImage) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
+			{
+				Self().RSSetShadingRateImage(
+					shadingRateImage.Get());
+			}
+
+		private:
+			using InterfaceBase<Tag<Derived>>::Self;
+			using InterfaceBase<Tag<Derived>>::ToDerived;
+		};
+	};
+
+	template<template<class> class Tag>
+		requires D3D12::CommandListEnabledTag<Tag>
+	struct Trait<Tag<ID3D12GraphicsCommandList6>>
+	{
+		using inner_type = ID3D12GraphicsCommandList6;
+
+		using inner_tag = ID3D12GraphicsCommandList6;
+
+		template<class NewInner>
+		using ReplaceInnerType = Tag<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Tag<NewInner>;
+
+		template<class Derived>
+		struct Interface : TraitInterface<Tag<ID3D12GraphicsCommandList5>, Derived>
+		{
+			//At the time of writing, the document doesn't display the restriction, but I'm guessing based on the fact
+			//that Dispatch related functions can't be called on Copy and Render Pass command lists
+			void DispatchMesh(
+				UINT ThreadGroupCountX,
+				UINT ThreadGroupCountY,
+				UINT ThreadGroupCountZ) requires D3D12::DisableFunction<Tag, CopyTag, RenderPassTag>
+			{
+				Self().DispatchMesh(
+					ThreadGroupCountX,
+					ThreadGroupCountY,
+					ThreadGroupCountZ);
+			}
+
+		private:
+			using InterfaceBase<Tag<Derived>>::Self;
+			using InterfaceBase<Tag<Derived>>::ToDerived;
+		};
+	};
+
+	template<template<class> class Tag>
+		requires D3D12::CommandListEnabledTag<Tag>
+	struct Trait<Tag<ID3D12GraphicsCommandList7>>
+	{
+		using inner_type = ID3D12GraphicsCommandList7;
+
+		using inner_tag = ID3D12GraphicsCommandList7;
+
+		template<class NewInner>
+		using ReplaceInnerType = Tag<NewInner>;
+
+		template<class NewInner>
+		using trait_template = Tag<NewInner>;
+
+		template<class Derived>
+		struct Interface : TraitInterface<Tag<ID3D12GraphicsCommandList6>, Derived>
+		{
+			//At the time of writing, the document doesn't display the restriction, but I'm guessing based on the fact
+			//that ResourceBarrier can't be called on Bundles
+			void Barrier(
+				std::span<const D3D12_BARRIER_GROUP> pBarrierGroups) requires D3D12::DisableFunction<Tag, BundleTag>
+			{
+				Self().Barrier(static_cast<UINT32>(pBarrierGroups.size()), pBarrierGroups.data());
+			}
+
+			//At the time of writing, the document doesn't display the restriction, but I'm guessing based on the fact
+			//that ResourceBarrier can't be called on Bundles
+			template<std::size_t Size>
+			void Barrier(
+				std::array<const D3D12_BARRIER_GROUP, Size> pBarrierGroups) requires D3D12::DisableFunction<Tag, BundleTag>
+			{
+				Barrier(std::span{ pBarrierGroups });
+			}
+
+		private:
+			using InterfaceBase<Tag<Derived>>::Self;
+			using InterfaceBase<Tag<Derived>>::ToDerived;
+		};
+	};
 }
-
-
-//namespace TypedD3D::D3D12
-//{
-//	//Used for meta-programming internally
-//	template<std::derived_from<ID3D12CommandList> Ty, template<class> class Trait>
-//	using GenericCommandList = IUnknownWrapper<Ty, Trait>;
-//
-//	//Used for public APIs
-//	export template<std::derived_from<ID3D12CommandList> Ty, D3D12_COMMAND_LIST_TYPE Type>
-//	using CommandList_t = GenericCommandList<Ty, CommandListTypeToTrait<Type>::template type>;
-//	template<std::derived_from<ID3D12CommandList> Ty>
-//	using RenderPass_t = GenericCommandList<Ty, RenderPassTraits>;
-//	namespace Aliases
-//	{
-//		template<class ListTy>
-//		using Direct_t = CommandList_t<ListTy, D3D12_COMMAND_LIST_TYPE_DIRECT>;
-//
-//		export using D3D12DirectCommandListBase = Direct_t<ID3D12CommandList>;
-//		export using D3D12DirectCommandList = Direct_t<ID3D12GraphicsCommandList>;
-//		export using D3D12DirectCommandList1 = Direct_t<ID3D12GraphicsCommandList1>;
-//		export using D3D12DirectCommandList2 = Direct_t<ID3D12GraphicsCommandList2>;
-//		export using D3D12DirectCommandList3 = Direct_t<ID3D12GraphicsCommandList3>;
-//		export using D3D12DirectCommandList4 = Direct_t<ID3D12GraphicsCommandList4>;
-//		export using D3D12DirectCommandList5 = Direct_t<ID3D12GraphicsCommandList5>;
-//		export using D3D12DirectCommandList6 = Direct_t<ID3D12GraphicsCommandList6>;
-//		export using D3D12DirectCommandList7 = Direct_t<ID3D12GraphicsCommandList7>;
-//
-//		template<class ListTy>
-//		using Bundle_t = CommandList_t<ListTy, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-//
-//		export using D3D12BundleCommandListBase = Bundle_t<ID3D12CommandList>;
-//		export using D3D12BundleCommandList = Bundle_t<ID3D12GraphicsCommandList>;
-//		export using D3D12BundleCommandList1 = Bundle_t<ID3D12GraphicsCommandList1>;
-//		export using D3D12BundleCommandList2 = Bundle_t<ID3D12GraphicsCommandList2>;
-//		export using D3D12BundleCommandList3 = Bundle_t<ID3D12GraphicsCommandList3>;
-//		export using D3D12BundleCommandList4 = Bundle_t<ID3D12GraphicsCommandList4>;
-//		export using D3D12BundleCommandList5 = Bundle_t<ID3D12GraphicsCommandList5>;
-//		export using D3D12BundleCommandList6 = Bundle_t<ID3D12GraphicsCommandList6>;
-//		export using D3D12BundleCommandList7 = Bundle_t<ID3D12GraphicsCommandList7>;
-//
-//		template<class ListTy>
-//		using Compute_t = CommandList_t<ListTy, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-//
-//		export using D3D12ComputeCommandListBase = Compute_t<ID3D12CommandList>;
-//		export using D3D12ComputeCommandList = Compute_t<ID3D12GraphicsCommandList>;
-//		export using D3D12ComputeCommandList1 = Compute_t<ID3D12GraphicsCommandList1>;
-//		export using D3D12ComputeCommandList2 = Compute_t<ID3D12GraphicsCommandList2>;
-//		export using D3D12ComputeCommandList3 = Compute_t<ID3D12GraphicsCommandList3>;
-//		export using D3D12ComputeCommandList4 = Compute_t<ID3D12GraphicsCommandList4>;
-//		export using D3D12ComputeCommandList5 = Compute_t<ID3D12GraphicsCommandList5>;
-//		export using D3D12ComputeCommandList6 = Compute_t<ID3D12GraphicsCommandList6>;
-//		export using D3D12ComputeCommandList7 = Compute_t<ID3D12GraphicsCommandList7>;
-//
-//		export template<class ListTy>
-//		using Copy_t = CommandList_t<ListTy, D3D12_COMMAND_LIST_TYPE_COPY>;
-//
-//		export using D3D12CopyCommandListBase = Copy_t<ID3D12CommandList>;
-//		export using D3D12CopyCommandList = Copy_t<ID3D12GraphicsCommandList>;
-//		export using D3D12CopyCommandList1 = Copy_t<ID3D12GraphicsCommandList1>;
-//		export using D3D12CopyCommandList2 = Copy_t<ID3D12GraphicsCommandList2>;
-//		export using D3D12CopyCommandList3 = Copy_t<ID3D12GraphicsCommandList3>;
-//		export using D3D12CopyCommandList4 = Copy_t<ID3D12GraphicsCommandList4>;
-//		export using D3D12CopyCommandList5 = Copy_t<ID3D12GraphicsCommandList5>;
-//		export using D3D12CopyCommandList6 = Copy_t<ID3D12GraphicsCommandList6>;
-//		export using D3D12CopyCommandList7 = Copy_t<ID3D12GraphicsCommandList7>;
-//
-//
-//		export using RenderPass4 = RenderPass_t<ID3D12GraphicsCommandList4>;
-//		export using RenderPass5 = RenderPass_t<ID3D12GraphicsCommandList5>;
-//		export using RenderPass6 = RenderPass_t<ID3D12GraphicsCommandList6>;
-//		export using RenderPass7 = RenderPass_t<ID3D12GraphicsCommandList7>;
-//	}
-//
-//#pragma region Untagged Traits
-//	template<class Ty>
-//	struct CommandListTraits;
-//
-//	template<>
-//	struct CommandListTraits<ID3D12GraphicsCommandList1>
-//	{
-//		using base_value_type = ID3D12GraphicsCommandList;
-//		using value_type = ID3D12GraphicsCommandList1;
-//		using pointer = ID3D12GraphicsCommandList1*;
-//		using const_pointer = const ID3D12GraphicsCommandList1*;
-//		using reference = ID3D12GraphicsCommandList1&;
-//		using const_reference = const ID3D12GraphicsCommandList1&;
-//
-//		template<class DerivedSelf>
-//		class Interface
-//		{
-//		private:
-//			using derived_self = DerivedSelf;
-//
-//		public:
-//			void AtomicCopyBufferUINT(
-//				gsl::not_null<WrapperView<ID3D12Resource>> pDstBuffer,
-//				UINT64 DstOffset,
-//				gsl::not_null<WrapperView<ID3D12Resource>> pSrcBuffer,
-//				UINT64 SrcOffset,
-//				UINT Dependencies,
-//				Span<const WrapperView<ID3D12Resource>> ppDependentResources,
-//				const D3D12_SUBRESOURCE_RANGE_UINT64* pDependentSubresourceRanges)
-//			{
-//				Self().AtomicCopyBufferUINT(
-//					pDstBuffer.get().Get(),
-//					DstOffset,
-//					pSrcBuffer.get().Get(),
-//					SrcOffset,
-//					Dependencies,
-//					ppDependentResources.data(),
-//					pDependentSubresourceRanges);
-//			}
-//
-//			void AtomicCopyBufferUINT64(
-//				gsl::not_null<WrapperView<ID3D12Resource>> pDstBuffer,
-//				UINT64 DstOffset,
-//				gsl::not_null<WrapperView<ID3D12Resource>> pSrcBuffer,
-//				UINT64 SrcOffset,
-//				UINT Dependencies,
-//				Span<const WrapperView<ID3D12Resource>> ppDependentResources,
-//				const D3D12_SUBRESOURCE_RANGE_UINT64* pDependentSubresourceRanges)
-//			{
-//				Self().AtomicCopyBufferUINT64(
-//					pDstBuffer.get().Get(),
-//					DstOffset,
-//					pSrcBuffer.get().Get(),
-//					SrcOffset,
-//					Dependencies,
-//					ppDependentResources.data(),
-//					pDependentSubresourceRanges);
-//			}
-//
-//			void OMSetDepthBounds(
-//				FLOAT Min,
-//				FLOAT Max)
-//			{
-//				Self().OMSetDepthBounds(Min, Max);
-//			}
-//
-//			void ResolveSubresourceRegion(
-//				gsl::not_null<WrapperView<ID3D12Resource>> pDstResource,
-//				UINT DstSubresource,
-//				UINT DstX,
-//				UINT DstY,
-//				gsl::not_null<WrapperView<ID3D12Resource>> pSrcResource,
-//				UINT SrcSubresource,
-//				D3D12_RECT* pSrcRect,
-//				DXGI_FORMAT Format,
-//				D3D12_RESOLVE_MODE ResolveMode)
-//			{
-//				Self().ResolveSubresourceRegion(
-//					pDstResource.get().Get(),
-//					DstSubresource,
-//					DstX,
-//					DstY,
-//					pSrcResource.get().Get(),
-//					SrcSubresource,
-//					pSrcRect,
-//					Format,
-//					ResolveMode
-//				);
-//			}
-//
-//			void SetSamplePositions(
-//				UINT NumSamplesPerPixel,
-//				UINT NumPixels,
-//				D3D12_SAMPLE_POSITION* pSamplePositions)
-//			{
-//				Self().SetSamplePositions(
-//					NumSamplesPerPixel,
-//					NumPixels,
-//					pSamplePositions);
-//			}
-//
-//			void SetViewInstanceMask(
-//				UINT Mask)
-//			{
-//				Self().SetViewInstanceMask(Mask);
-//			}
-//
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//
-//		template<class DerivedSelf, D3D12_COMMAND_LIST_TYPE Type>
-//		class InterfaceTagged : public CommandListTraits<base_value_type>::InterfaceTagged<DerivedSelf, Type>,
-//			public Interface<DerivedSelf>
-//		{
-//		private:
-//			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-//			using derived_self = DerivedSelf;
-//			using allocator_value_type = CommandAllocator_t<Type>;
-//
-//		public:
-//			////Alphabetical order
-//			//using Base::AtomicCopyBufferUINT;
-//			//using Base::AtomicCopyBufferUINT64;
-//			//using Base::OMSetDepthBounds;
-//			//using Base::ResolveSubresourceRegion;
-//			//using Base::SetSamplePositions;
-//			//using Base::SetViewInstanceMask;     
-//
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//	};
-//
-//	export class WriteBufferImmediateData
-//	{
-//		UINT count;
-//		D3D12_WRITEBUFFERIMMEDIATE_PARAMETER* parameters;
-//		D3D12_WRITEBUFFERIMMEDIATE_MODE* modes = nullptr;
-//
-//	public:
-//		template<UINT Count>
-//		WriteBufferImmediateData(std::span<D3D12_WRITEBUFFERIMMEDIATE_PARAMETER, Count> parameters, std::optional<std::span<D3D12_WRITEBUFFERIMMEDIATE_MODE, Count>> modes) :
-//			count{ Count },
-//			parameters{ parameters.data() },
-//			modes{ modes.value_or({}).data() }
-//		{
-//
-//		}
-//
-//		WriteBufferImmediateData(UINT count, D3D12_WRITEBUFFERIMMEDIATE_PARAMETER* parameters, D3D12_WRITEBUFFERIMMEDIATE_MODE* optionalModes) :
-//			count{ count },
-//			parameters{ parameters },
-//			modes{ optionalModes }
-//		{
-//
-//		}
-//
-//	public:
-//		UINT GetCount() const noexcept { return count; }
-//		const D3D12_WRITEBUFFERIMMEDIATE_PARAMETER* GetParameters() const noexcept { return parameters; }
-//		const D3D12_WRITEBUFFERIMMEDIATE_MODE* GetModes() const noexcept { return modes; }
-//	};
-//
-//	template<>
-//	struct CommandListTraits<ID3D12GraphicsCommandList2>
-//	{
-//		using base_value_type = ID3D12GraphicsCommandList1;
-//		using value_type = ID3D12GraphicsCommandList2;
-//		using pointer = ID3D12GraphicsCommandList2*;
-//		using const_pointer = const ID3D12GraphicsCommandList2*;
-//		using reference = ID3D12GraphicsCommandList2&;
-//		using const_reference = const ID3D12GraphicsCommandList2&;
-//
-//		template<class DerivedSelf>
-//		class Interface
-//		{
-//		private:
-//			using derived_self = DerivedSelf;
-//
-//		public:
-//			void WriteBufferImmediate(WriteBufferImmediateData data)
-//			{
-//				Self().WriteBufferImmediate(data.GetCount(), data.GetParameters(), data.GetModes());
-//			}
-//
-//			void WriteBufferImmediate(D3D12_WRITEBUFFERIMMEDIATE_PARAMETER parameters, std::optional<D3D12_WRITEBUFFERIMMEDIATE_MODE> modes)
-//			{
-//				Self().WriteBufferImmediate({ 1, &parameters, modes ? std::optional{ std::span{1, &modes.value()} } : std::optional{ std::nullopt } });
-//			}
-//
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//
-//		template<class DerivedSelf, D3D12_COMMAND_LIST_TYPE Type>
-//		class InterfaceTagged : public CommandListTraits<base_value_type>::InterfaceTagged<DerivedSelf, Type>,
-//			public Interface<DerivedSelf>
-//		{
-//		private:
-//			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-//			using derived_self = DerivedSelf;
-//			using allocator_value_type = CommandAllocator_t<Type>;
-//
-//		public:
-//			////Alphabetical order
-//			//using Base::WriteBufferImmediate;
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//	};
-//
-//	template<>
-//	struct CommandListTraits<ID3D12GraphicsCommandList3>
-//	{
-//		using base_value_type = ID3D12GraphicsCommandList2;
-//		using value_type = ID3D12GraphicsCommandList3;
-//		using pointer = ID3D12GraphicsCommandList3*;
-//		using const_pointer = const ID3D12GraphicsCommandList3*;
-//		using reference = ID3D12GraphicsCommandList3&;
-//		using const_reference = const ID3D12GraphicsCommandList3&;
-//
-//		template<class DerivedSelf>
-//		class Interface
-//		{
-//		private:
-//			using derived_self = DerivedSelf;
-//
-//		public:
-//			void SetProtectedResourceSession(
-//				WrapperView<ID3D12ProtectedResourceSession> pProtectedResourceSession)
-//			{
-//				Self().SetProtectedResourceSession(pProtectedResourceSession.Get());
-//			}
-//
-//			//In code order                                                          //Alphabetical order
-//			//using Base::SetProtectedResourceSession;                               using Base::SetProtectedResourceSession;
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//
-//		template<class DerivedSelf, D3D12_COMMAND_LIST_TYPE Type>
-//		class InterfaceTagged : public CommandListTraits<base_value_type>::InterfaceTagged<DerivedSelf, Type>,
-//			public Interface<DerivedSelf>
-//		{
-//		private:
-//			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-//			using derived_self = DerivedSelf;
-//			using allocator_value_type = CommandAllocator_t<Type>;
-//
-//		public:
-//			//In code order                                                          //Alphabetical order
-//			//using Base::SetProtectedResourceSession;                               using Base::SetProtectedResourceSession;
-//
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//	};
-//
-//	template<>
-//	struct CommandListTraits<ID3D12GraphicsCommandList4>
-//	{
-//		using base_value_type = ID3D12GraphicsCommandList3;
-//		using value_type = ID3D12GraphicsCommandList4;
-//		using pointer = ID3D12GraphicsCommandList4*;
-//		using const_pointer = const ID3D12GraphicsCommandList4*;
-//		using reference = ID3D12GraphicsCommandList4&;
-//		using const_reference = const ID3D12GraphicsCommandList4&;
-//
-//		template<class DerivedSelf>
-//		class Interface
-//		{
-//		private:
-//			using derived_self = DerivedSelf;
-//
-//		public:
-//			RenderPass_t<ID3D12GraphicsCommandList4> BeginRenderPass(
-//				std::span<const D3D12_RENDER_PASS_RENDER_TARGET_DESC> renderTargets,
-//				const D3D12_RENDER_PASS_DEPTH_STENCIL_DESC* pDepthStencil,
-//				D3D12_RENDER_PASS_FLAGS Flags);
-//
-//			void BuildRaytracingAccelerationStructure(
-//				const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC& pDesc,
-//				std::span<const D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_DESC> pPostbuildInfoDescs)
-//			{
-//				Self().BuildRaytracingAccelerationStructure(
-//					&pDesc,
-//					static_cast<UINT>(pPostbuildInfoDescs.size()),
-//					pPostbuildInfoDescs.data());
-//			}
-//
-//			void CopyRaytracingAccelerationStructure(
-//				D3D12_GPU_VIRTUAL_ADDRESS DestAccelerationStructureData,
-//				D3D12_GPU_VIRTUAL_ADDRESS SourceAccelerationStructureData,
-//				D3D12_RAYTRACING_ACCELERATION_STRUCTURE_COPY_MODE Mode)
-//			{
-//				Self().CopyRaytracingAccelerationStructure(
-//					DestAccelerationStructureData,
-//					SourceAccelerationStructureData,
-//					Mode);
-//			}
-//
-//			void DispatchRays(
-//				const D3D12_DISPATCH_RAYS_DESC& pDesc)
-//			{
-//				Self().DispatchRays(&pDesc);
-//			}
-//
-//			void EmitRaytracingAccelerationStructurePostbuildInfo(
-//				const D3D12_RAYTRACING_ACCELERATION_STRUCTURE_POSTBUILD_INFO_DESC& pDesc,
-//				std::span<const D3D12_GPU_VIRTUAL_ADDRESS> pSourceAccelerationStructureData)
-//			{
-//				Self().EmitRaytracingAccelerationStructurePostbuildInfo(
-//					&pDesc,
-//					static_cast<UINT>(pSourceAccelerationStructureData.size()),
-//					pSourceAccelerationStructureData.data());
-//			}
-//
-//			void EndRenderPass()
-//			{
-//				Self().EndRenderPass();
-//			}
-//
-//			void InitializeMetaCommand(
-//				gsl::not_null<WrapperView<ID3D12MetaCommand>> pMetaCommand,
-//				const void* pInitializationParametersData,
-//				SIZE_T InitializationParametersDataSizeInBytes)
-//			{
-//				Self().InitializeMetaCommand(pMetaCommand.get().Get(), pInitializationParametersData, InitializationParametersDataSizeInBytes);
-//			}
-//
-//			void ExecuteMetaCommand(
-//				gsl::not_null<WrapperView<ID3D12MetaCommand>> pMetaCommand,
-//				const void* pExecutionParametersData,
-//				SIZE_T ExecutionParametersDataSizeInBytes)
-//			{
-//				Self().ExecuteMetaCommand(pMetaCommand.get().Get(), pExecutionParametersData, ExecutionParametersDataSizeInBytes);
-//			}
-//
-//			void ExecuteMetaCommand(
-//				gsl::not_null<WrapperView<ID3D12MetaCommand>> pMetaCommand)
-//			{
-//				ExecuteMetaCommand(pMetaCommand, nullptr, 0);
-//			}
-//
-//			template<class T>
-//			void ExecuteMetaCommand(
-//				gsl::not_null<WrapperView<ID3D12MetaCommand>> pMetaCommand,
-//				const T& pExecutionParametersData)
-//			{
-//				ExecuteMetaCommand(pMetaCommand, &pExecutionParametersData, sizeof(T));
-//			}
-//
-//			void InitializeMetaCommand(
-//				gsl::not_null<WrapperView<ID3D12MetaCommand>> pMetaCommand)
-//			{
-//				InitializeMetaCommand(pMetaCommand, nullptr, 0);
-//			}
-//
-//			template<class T>
-//			void InitializeMetaCommand(
-//				gsl::not_null<WrapperView<ID3D12MetaCommand>> pMetaCommand,
-//				const T& pInitializationParametersData)
-//			{
-//				InitializeMetaCommand(pMetaCommand, &pInitializationParametersData, sizeof(T));
-//			}
-//
-//			void SetPipelineState1(
-//				WrapperView<ID3D12StateObject> pStateObject)
-//			{
-//				Self().SetPipelineState1(pStateObject.Get());
-//			}
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//
-//		template<class DerivedSelf, D3D12_COMMAND_LIST_TYPE Type>
-//		class InterfaceTagged : public CommandListTraits<base_value_type>::InterfaceTagged<DerivedSelf, Type>,
-//			public Interface<DerivedSelf>
-//		{
-//		private:
-//			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-//			using derived_self = DerivedSelf;
-//			using allocator_value_type = CommandAllocator_t<Type>;
-//
-//		public:
-//			////Alphabetical order
-//			//using Base::BeginRenderPass;
-//			//using Base::BuildRaytracingAccelerationStructure;
-//			//using Base::CopyRaytracingAccelerationStructure;
-//			//using Base::DispatchRays;
-//			//using Base::EmitRaytracingAccelerationStructurePostbuildInfo;
-//			//using Base::EndRenderPass;
-//			//using Base::ExecuteMetaCommand;
-//			//using Base::InitializeMetaCommand;
-//			//using Base::SetPipelineState1;
-//
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//	};
-//
-//	template<>
-//	struct CommandListTraits<ID3D12GraphicsCommandList5>
-//	{
-//		using base_value_type = ID3D12GraphicsCommandList4;
-//		using value_type = ID3D12GraphicsCommandList5;
-//		using pointer = ID3D12GraphicsCommandList5*;
-//		using const_pointer = const ID3D12GraphicsCommandList5*;
-//		using reference = ID3D12GraphicsCommandList5&;
-//		using const_reference = const ID3D12GraphicsCommandList5&;
-//
-//		template<class DerivedSelf>
-//		class Interface
-//		{
-//		private:
-//			using derived_self = DerivedSelf;
-//
-//		public:
-//			void RSSetShadingRate(
-//				D3D12_SHADING_RATE baseShadingRate,
-//				const D3D12_SHADING_RATE_COMBINER* combiners)
-//			{
-//				Self().RSSetShadingRate(
-//					baseShadingRate,
-//					combiners);
-//			}
-//
-//			void RSSetShadingRateImage(
-//				WrapperView<ID3D12Resource> shadingRateImage)
-//			{
-//				Self().RSSetShadingRateImage(
-//					shadingRateImage.Get());
-//			}
-//
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//
-//		template<class DerivedSelf, D3D12_COMMAND_LIST_TYPE Type>
-//		class InterfaceTagged : public CommandListTraits<base_value_type>::InterfaceTagged<DerivedSelf, Type>,
-//			public Interface<DerivedSelf>
-//		{
-//		private:
-//			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-//			using derived_self = DerivedSelf;
-//			using allocator_value_type = CommandAllocator_t<Type>;
-//
-//		public:
-//			////Alphabetical order
-//			//using Base::RSSetShadingRate;
-//			//using Base::RSSetShadingRateImage;
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//	};
-//
-//	template<>
-//	struct CommandListTraits<ID3D12GraphicsCommandList6>
-//	{
-//		using base_value_type = ID3D12GraphicsCommandList5;
-//		using value_type = ID3D12GraphicsCommandList6;
-//		using pointer = ID3D12GraphicsCommandList6*;
-//		using const_pointer = const ID3D12GraphicsCommandList6*;
-//		using reference = ID3D12GraphicsCommandList6&;
-//		using const_reference = const ID3D12GraphicsCommandList6&;
-//
-//		template<class DerivedSelf>
-//		class Interface
-//		{
-//		private:
-//			using derived_self = DerivedSelf;
-//
-//		public:
-//			void DispatchMesh(
-//				UINT ThreadGroupCountX,
-//				UINT ThreadGroupCountY,
-//				UINT ThreadGroupCountZ)
-//			{
-//				Self().DispatchMesh(
-//					ThreadGroupCountX,
-//					ThreadGroupCountY,
-//					ThreadGroupCountZ);
-//			}
-//
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//
-//		template<class DerivedSelf, D3D12_COMMAND_LIST_TYPE Type>
-//		class InterfaceTagged : public CommandListTraits<base_value_type>::InterfaceTagged<DerivedSelf, Type>,
-//			public Interface<DerivedSelf>
-//		{
-//		private:
-//			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-//			using derived_self = DerivedSelf;
-//			using allocator_value_type = CommandAllocator_t<Type>;
-//
-//		public:
-//			////Alphabetical order
-//			//using Base::DispatchMesh;
-//
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//	};
-//
-//	template<>
-//	struct CommandListTraits<ID3D12GraphicsCommandList7>
-//	{
-//		using base_value_type = ID3D12GraphicsCommandList6;
-//		using value_type = ID3D12GraphicsCommandList7;
-//		using pointer = ID3D12GraphicsCommandList7*;
-//		using const_pointer = const ID3D12GraphicsCommandList7*;
-//		using reference = ID3D12GraphicsCommandList7&;
-//		using const_reference = const ID3D12GraphicsCommandList7&;
-//
-//		template<class DerivedSelf>
-//		class Interface
-//		{
-//		private:
-//			using derived_self = DerivedSelf;
-//
-//		public:
-//			void Barrier(
-//				std::span<const D3D12_BARRIER_GROUP> pBarrierGroups)
-//			{
-//				Self().Barrier(static_cast<UINT32>(pBarrierGroups.size()), pBarrierGroups.data());
-//			}
-//
-//			template<std::size_t Size>
-//			void Barrier(
-//				std::array<const D3D12_BARRIER_GROUP, Size> pBarrierGroups)
-//			{
-//				Barrier(std::span{ pBarrierGroups });
-//			}
-//
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//
-//		template<class DerivedSelf, D3D12_COMMAND_LIST_TYPE Type>
-//		class InterfaceTagged : public CommandListTraits<base_value_type>::InterfaceTagged<DerivedSelf, Type>,
-//			public Interface<DerivedSelf>
-//		{
-//		private:
-//			static constexpr D3D12_COMMAND_LIST_TYPE command_list_value = Type;
-//			using derived_self = DerivedSelf;
-//			using allocator_value_type = CommandAllocator_t<Type>;
-//
-//		public:
-//			////Alphabetical order
-//			//using Base::DispatchMesh;
-//
-//		private:
-//			derived_self& ToDerived() { return static_cast<derived_self&>(*this); }
-//			reference Get() { return *ToDerived().derived_self::Get(); }
-//		};
-//	};
-//#pragma endregion
-//
-//#pragma region Direct Traits
-//	template<>
-//	struct DirectTraits<ID3D12CommandList> : CommandListTraits<ID3D12CommandList> {};
-//
-//	template<>	
-//	struct DirectTraits<ID3D12GraphicsCommandList> 
-//	{
-//		using value_type = ID3D12GraphicsCommandList;
-//		using pointer = ID3D12GraphicsCommandList*;
-//		using const_pointer = const ID3D12GraphicsCommandList*;
-//		using reference = ID3D12GraphicsCommandList&;
-//		using const_reference = const ID3D12GraphicsCommandList&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//
-//		};
-//	};
-//
-//	template<>
-//	struct DirectTraits<ID3D12GraphicsCommandList1>
-//	{
-//		using value_type = ID3D12GraphicsCommandList1;
-//		using pointer = ID3D12GraphicsCommandList1*;
-//		using const_pointer = const ID3D12GraphicsCommandList1*;
-//		using reference = ID3D12GraphicsCommandList1&;
-//		using const_reference = const ID3D12GraphicsCommandList1&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//
-//		};
-//	};
-//
-//	template<>
-//	struct DirectTraits<ID3D12GraphicsCommandList2>
-//	{
-//		using value_type = ID3D12GraphicsCommandList2;
-//		using pointer = ID3D12GraphicsCommandList2*;
-//		using const_pointer = const ID3D12GraphicsCommandList2*;
-//		using reference = ID3D12GraphicsCommandList2&;
-//		using const_reference = const ID3D12GraphicsCommandList2&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//
-//		};
-//	};
-//
-//	template<>
-//	struct DirectTraits<ID3D12GraphicsCommandList3>
-//	{
-//		using value_type = ID3D12GraphicsCommandList3;
-//		using pointer = ID3D12GraphicsCommandList3*;
-//		using const_pointer = const ID3D12GraphicsCommandList3*;
-//		using reference = ID3D12GraphicsCommandList3&;
-//		using const_reference = const ID3D12GraphicsCommandList3&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//
-//		};
-//	};
-//
-//	template<>
-//	struct DirectTraits<ID3D12GraphicsCommandList4>
-//	{
-//		using value_type = ID3D12GraphicsCommandList4;
-//		using pointer = ID3D12GraphicsCommandList4*;
-//		using const_pointer = const ID3D12GraphicsCommandList4*;
-//		using reference = ID3D12GraphicsCommandList4&;
-//		using const_reference = const ID3D12GraphicsCommandList4&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//
-//		};
-//	};
-//
-//	template<>
-//	struct DirectTraits<ID3D12GraphicsCommandList5>
-//	{
-//		using value_type = ID3D12GraphicsCommandList5;
-//		using pointer = ID3D12GraphicsCommandList5*;
-//		using const_pointer = const ID3D12GraphicsCommandList5*;
-//		using reference = ID3D12GraphicsCommandList5&;
-//		using const_reference = const ID3D12GraphicsCommandList5&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//
-//		};
-//	};
-//
-//	template<>
-//	struct DirectTraits<ID3D12GraphicsCommandList6>
-//	{
-//		using value_type = ID3D12GraphicsCommandList6;
-//		using pointer = ID3D12GraphicsCommandList6*;
-//		using const_pointer = const ID3D12GraphicsCommandList6*;
-//		using reference = ID3D12GraphicsCommandList6&;
-//		using const_reference = const ID3D12GraphicsCommandList6&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//
-//		};
-//	};
-//
-//	template<>
-//	struct DirectTraits<ID3D12GraphicsCommandList7>
-//	{
-//		using value_type = ID3D12GraphicsCommandList7;
-//		using pointer = ID3D12GraphicsCommandList7*;
-//		using const_pointer = const ID3D12GraphicsCommandList7*;
-//		using reference = ID3D12GraphicsCommandList7&;
-//		using const_reference = const ID3D12GraphicsCommandList7&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//
-//		};
-//	};
-//#pragma endregion
-//
-//#pragma region Compute Traits
-//	template<>
-//	struct ComputeTraits<ID3D12CommandList> : CommandListTraits<ID3D12CommandList> {};
-//
-//	template<>
-//	struct ComputeTraits<ID3D12GraphicsCommandList>
-//	{
-//		using value_type = ID3D12GraphicsCommandList;
-//		using pointer = ID3D12GraphicsCommandList*;
-//		using const_pointer = const ID3D12GraphicsCommandList*;
-//		using reference = ID3D12GraphicsCommandList&;
-//		using const_reference = const ID3D12GraphicsCommandList&;
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-//		private:
-//			using Base::BeginEvent;
-//			using Base::BeginQuery;
-//			using Base::ClearDepthStencilView;
-//			using Base::ClearRenderTargetView;
-//			//using Base::ClearState;
-//			//using Base::ClearUnorderedAccessViewFloat;
-//			//using Base::ClearUnorderedAccessViewUint;
-//			//using Base::Close;
-//			//using Base::CopyBufferRegion;
-//			//using Base::CopyResource;
-//			//using Base::CopyTextureRegion;
-//			//using Base::CopyTiles;
-//			//using Base::DiscardResource;
-//			//using Base::Dispatch;
-//			using Base::DrawIndexedInstanced;
-//			using Base::DrawInstanced;
-//			using Base::EndEvent;
-//			//using Base::EndQuery;
-//			using Base::ExecuteBundle;
-//			//using Base::ExecuteIndirect;
-//			using Base::IASetIndexBuffer;
-//			using Base::IASetPrimitiveTopology;
-//			using Base::IASetVertexBuffers;
-//			using Base::OMSetBlendFactor;
-//			using Base::OMSetRenderTargets;
-//			using Base::OMSetStencilRef;
-//			//using Base::Reset;
-//			//using Base::ResolveQueryData;
-//			using Base::ResolveSubresource;
-//			//using Base::ResourceBarrier;
-//			//using Base::RSSetScissorRects;
-//			//using Base::RSSetViewports;
-//			//using Base::SetComputeRoot32BitConstant;
-//			//using Base::SetComputeRoot32BitConstants;
-//			//using Base::SetComputeRootConstantBufferView;
-//			//using Base::SetComputeRootDescriptorTable;
-//			//using Base::SetComputeRootShaderResourceView;
-//			//using Base::SetComputeRootSignature;
-//			//using Base::SetComputeRootUnorderedAccessView;
-//			//using Base::SetDescriptorHeaps;
-//			using Base::SetGraphicsRoot32BitConstant;
-//			using Base::SetGraphicsRoot32BitConstants;
-//			using Base::SetGraphicsRootConstantBufferView;
-//			using Base::SetGraphicsRootDescriptorTable;
-//			using Base::SetGraphicsRootShaderResourceView;
-//			using Base::SetGraphicsRootSignature;
-//			using Base::SetGraphicsRootUnorderedAccessView;
-//			using Base::SetMarker;
-//			//using Base::SetPipelineState;
-//			//using Base::SetPredication;
-//			using Base::SOSetTargets;
-//		};
-//	};
-//
-//	template<>
-//	struct ComputeTraits<ID3D12GraphicsCommandList1>
-//	{
-//		using value_type = ID3D12GraphicsCommandList1;
-//		using pointer = ID3D12GraphicsCommandList1*;
-//		using const_pointer = const ID3D12GraphicsCommandList1*;
-//		using reference = ID3D12GraphicsCommandList1&;
-//		using const_reference = const ID3D12GraphicsCommandList1&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-//
-//		private:
-//			//using Base::AtomicCopyBufferUINT;
-//			//using Base::AtomicCopyBufferUINT64;
-//			using Base::OMSetDepthBounds;
-//			using Base::ResolveSubresourceRegion;
-//			using Base::SetSamplePositions;
-//			using Base::SetViewInstanceMask;
-//		};
-//	};
-//
-//	template<>
-//	struct ComputeTraits<ID3D12GraphicsCommandList2>
-//	{
-//		using value_type = ID3D12GraphicsCommandList2;
-//		using pointer = ID3D12GraphicsCommandList2*;
-//		using const_pointer = const ID3D12GraphicsCommandList2*;
-//		using reference = ID3D12GraphicsCommandList2&;
-//		using const_reference = const ID3D12GraphicsCommandList2&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-//
-//		private:
-//			//using Base::WriteBufferImmediate;
-//		};
-//	};
-//
-//	template<>
-//	struct ComputeTraits<ID3D12GraphicsCommandList3>
-//	{
-//		using value_type = ID3D12GraphicsCommandList3;
-//		using pointer = ID3D12GraphicsCommandList3*;
-//		using const_pointer = const ID3D12GraphicsCommandList3*;
-//		using reference = ID3D12GraphicsCommandList3&;
-//		using const_reference = const ID3D12GraphicsCommandList3&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-//
-//		private:
-//			//using Base::SetProtectedResourceSession;
-//		};
-//	};
-//
-//	template<>
-//	struct ComputeTraits<ID3D12GraphicsCommandList4>
-//	{
-//		using value_type = ID3D12GraphicsCommandList4;
-//		using pointer = ID3D12GraphicsCommandList4*;
-//		using const_pointer = const ID3D12GraphicsCommandList4*;
-//		using reference = ID3D12GraphicsCommandList4&;
-//		using const_reference = const ID3D12GraphicsCommandList4&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-//		private:
-//			using Base::BeginRenderPass;
-//			using Base::BuildRaytracingAccelerationStructure;
-//			using Base::CopyRaytracingAccelerationStructure;
-//			//using Base::DispatchRays;
-//			using Base::EmitRaytracingAccelerationStructurePostbuildInfo;
-//			using Base::EndRenderPass;
-//			using Base::ExecuteMetaCommand;
-//			using Base::InitializeMetaCommand;
-//			//using Base::SetPipelineState1;
-//		};
-//	};
-//
-//	template<>
-//	struct ComputeTraits<ID3D12GraphicsCommandList5>
-//	{
-//		using value_type = ID3D12GraphicsCommandList5;
-//		using pointer = ID3D12GraphicsCommandList5*;
-//		using const_pointer = const ID3D12GraphicsCommandList5*;
-//		using reference = ID3D12GraphicsCommandList5&;
-//		using const_reference = const ID3D12GraphicsCommandList5&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-//		private:
-//			using Base::RSSetShadingRate;
-//			using Base::RSSetShadingRateImage;
-//		};
-//	};
-//
-//	template<>
-//	struct ComputeTraits<ID3D12GraphicsCommandList6>
-//	{
-//		using value_type = ID3D12GraphicsCommandList6;
-//		using pointer = ID3D12GraphicsCommandList6*;
-//		using const_pointer = const ID3D12GraphicsCommandList6*;
-//		using reference = ID3D12GraphicsCommandList6&;
-//		using const_reference = const ID3D12GraphicsCommandList6&;
-//
-//		//TODO: Figure out what functions are restricted as at the time of writing, is not reflected in the linked API restriction document 
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-//		private:
-//			//using Base::DispatchMesh;
-//		};
-//	};
-//
-//	template<>
-//	struct ComputeTraits<ID3D12GraphicsCommandList7>
-//	{
-//		using value_type = ID3D12GraphicsCommandList7;
-//		using pointer = ID3D12GraphicsCommandList7*;
-//		using const_pointer = const ID3D12GraphicsCommandList7*;
-//		using reference = ID3D12GraphicsCommandList7&;
-//		using const_reference = const ID3D12GraphicsCommandList7&;
-//
-//		//TODO: Figure out what functions are restricted as at the time of writing, is not reflected in the linked API restriction document 
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COMPUTE>;
-//		private:
-//			//using Base::Barrier;
-//		};
-//	};
-//#pragma endregion
-//
-//#pragma region Copy Traits	
-//	template<>
-//	struct CopyTraits<ID3D12CommandList> : CommandListTraits<ID3D12CommandList> {};
-//
-//	template<>
-//	struct CopyTraits<ID3D12GraphicsCommandList>
-//	{
-//		using value_type = ID3D12GraphicsCommandList;
-//		using pointer = ID3D12GraphicsCommandList*;
-//		using const_pointer = const ID3D12GraphicsCommandList*;
-//		using reference = ID3D12GraphicsCommandList&;
-//		using const_reference = const ID3D12GraphicsCommandList&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
-//
-//		private:
-//			using Base::BeginEvent;
-//			using Base::BeginQuery;
-//			using Base::ClearDepthStencilView;
-//			using Base::ClearRenderTargetView;
-//			using Base::ClearState;
-//			using Base::ClearUnorderedAccessViewFloat;
-//			using Base::ClearUnorderedAccessViewUint;
-//			//using Base::Close;
-//			//using Base::CopyBufferRegion;
-//			//using Base::CopyResource;
-//			//using Base::CopyTextureRegion;
-//			//using Base::CopyTiles;
-//			//using Base::DiscardResource;
-//			//using Base::Dispatch;
-//			using Base::DrawIndexedInstanced;
-//			using Base::DrawInstanced;
-//			using Base::EndEvent;
-//			//using Base::EndQuery;
-//			using Base::ExecuteBundle;
-//			using Base::ExecuteIndirect;
-//			using Base::IASetIndexBuffer;
-//			using Base::IASetPrimitiveTopology;
-//			using Base::IASetVertexBuffers;
-//			using Base::OMSetBlendFactor;
-//			using Base::OMSetRenderTargets;
-//			using Base::OMSetStencilRef;
-//			//using Base::Reset;
-//			//using Base::ResolveQueryData;
-//			using Base::ResolveSubresource;
-//			//using Base::ResourceBarrier;
-//			using Base::RSSetScissorRects;
-//			using Base::RSSetViewports;
-//			using Base::SetComputeRoot32BitConstant;
-//			using Base::SetComputeRoot32BitConstants;
-//			using Base::SetComputeRootConstantBufferView;
-//			using Base::SetComputeRootDescriptorTable;
-//			using Base::SetComputeRootShaderResourceView;
-//			using Base::SetComputeRootSignature;
-//			using Base::SetComputeRootUnorderedAccessView;
-//			using Base::SetDescriptorHeaps;
-//			using Base::SetGraphicsRoot32BitConstant;
-//			using Base::SetGraphicsRoot32BitConstants;
-//			using Base::SetGraphicsRootConstantBufferView;
-//			using Base::SetGraphicsRootDescriptorTable;
-//			using Base::SetGraphicsRootShaderResourceView;
-//			using Base::SetGraphicsRootSignature;
-//			using Base::SetGraphicsRootUnorderedAccessView;
-//			using Base::SetMarker;
-//			using Base::SetPipelineState;
-//			using Base::SetPredication;
-//			using Base::SOSetTargets;
-//		};
-//	};
-//
-//	template<>
-//	struct CopyTraits<ID3D12GraphicsCommandList1>
-//	{
-//		using value_type = ID3D12GraphicsCommandList1;
-//		using pointer = ID3D12GraphicsCommandList1*;
-//		using const_pointer = const ID3D12GraphicsCommandList1*;
-//		using reference = ID3D12GraphicsCommandList1&;
-//		using const_reference = const ID3D12GraphicsCommandList1&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
-//
-//		private:
-//			//using Base::AtomicCopyBufferUINT;
-//			//using Base::AtomicCopyBufferUINT64;
-//			using Base::OMSetDepthBounds;
-//			using Base::ResolveSubresourceRegion;
-//			using Base::SetSamplePositions;
-//			using Base::SetViewInstanceMask;
-//		};
-//	};
-//
-//	template<>
-//	struct CopyTraits<ID3D12GraphicsCommandList2>
-//	{
-//		using value_type = ID3D12GraphicsCommandList2;
-//		using pointer = ID3D12GraphicsCommandList2*;
-//		using const_pointer = const ID3D12GraphicsCommandList2*;
-//		using reference = ID3D12GraphicsCommandList2&;
-//		using const_reference = const ID3D12GraphicsCommandList2&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
-//
-//		private:
-//			//using Base::WriteBufferImmediate;
-//		};
-//	};
-//
-//	template<>
-//	struct CopyTraits<ID3D12GraphicsCommandList3>
-//	{
-//		using value_type = ID3D12GraphicsCommandList3;
-//		using pointer = ID3D12GraphicsCommandList3*;
-//		using const_pointer = const ID3D12GraphicsCommandList3*;
-//		using reference = ID3D12GraphicsCommandList3&;
-//		using const_reference = const ID3D12GraphicsCommandList3&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
-//
-//		private:
-//			//using Base::SetProtectedResourceSession;
-//		};
-//	};
-//
-//	template<>
-//	struct CopyTraits<ID3D12GraphicsCommandList4>
-//	{
-//		using value_type = ID3D12GraphicsCommandList4;
-//		using pointer = ID3D12GraphicsCommandList4*;
-//		using const_pointer = const ID3D12GraphicsCommandList4*;
-//		using reference = ID3D12GraphicsCommandList4&;
-//		using const_reference = const ID3D12GraphicsCommandList4&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
-//
-//		private:
-//			using Base::BeginRenderPass;
-//			using Base::BuildRaytracingAccelerationStructure;
-//			using Base::CopyRaytracingAccelerationStructure;
-//			//using Base::DispatchRays;
-//			using Base::EmitRaytracingAccelerationStructurePostbuildInfo;
-//			using Base::EndRenderPass;
-//			using Base::ExecuteMetaCommand;
-//			using Base::InitializeMetaCommand;
-//			//using Base::SetPipelineState1;
-//		};
-//	};
-//
-//	template<>
-//	struct CopyTraits<ID3D12GraphicsCommandList5>
-//	{
-//		using value_type = ID3D12GraphicsCommandList5;
-//		using pointer = ID3D12GraphicsCommandList5*;
-//		using const_pointer = const ID3D12GraphicsCommandList5*;
-//		using reference = ID3D12GraphicsCommandList5&;
-//		using const_reference = const ID3D12GraphicsCommandList5&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
-//		private:
-//			using Base::RSSetShadingRate;
-//			using Base::RSSetShadingRateImage;
-//		};
-//	};
-//
-//	//TODO: Figure out what functions are restricted as at the time of writing, is not reflected in the linked API restriction document 
-//	template<>
-//	struct CopyTraits<ID3D12GraphicsCommandList6>
-//	{
-//		using value_type = ID3D12GraphicsCommandList6;
-//		using pointer = ID3D12GraphicsCommandList6*;
-//		using const_pointer = const ID3D12GraphicsCommandList6*;
-//		using reference = ID3D12GraphicsCommandList6&;
-//		using const_reference = const ID3D12GraphicsCommandList6&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
-//		private:
-//			//using Base::DispatchMesh;
-//		};
-//	};
-//
-//	//TODO: Figure out what functions are restricted as at the time of writing, is not reflected in the linked API restriction document 
-//	template<>
-//	struct CopyTraits<ID3D12GraphicsCommandList7>
-//	{
-//		using value_type = ID3D12GraphicsCommandList7;
-//		using pointer = ID3D12GraphicsCommandList7*;
-//		using const_pointer = const ID3D12GraphicsCommandList7*;
-//		using reference = ID3D12GraphicsCommandList7&;
-//		using const_reference = const ID3D12GraphicsCommandList7&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_COPY>;
-//		private:
-//			//using Base::Barrier;
-//		};
-//	};
-//
-//#pragma endregion
-//
-//#pragma region Bundle Traits
-//	template<>
-//	struct BundleTraits<ID3D12CommandList> : CommandListTraits<ID3D12CommandList> {};
-//
-//	template<>
-//	struct BundleTraits<ID3D12GraphicsCommandList>
-//	{
-//		using value_type = ID3D12GraphicsCommandList;
-//		using pointer = ID3D12GraphicsCommandList*;
-//		using const_pointer = const ID3D12GraphicsCommandList*;
-//		using reference = ID3D12GraphicsCommandList&;
-//		using const_reference = const ID3D12GraphicsCommandList&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-//
-//		private:
-//			using Base::BeginEvent;
-//			using Base::BeginQuery;
-//			using Base::ClearDepthStencilView;
-//			using Base::ClearRenderTargetView;
-//			using Base::ClearState;
-//			using Base::ClearUnorderedAccessViewFloat;
-//			using Base::ClearUnorderedAccessViewUint;
-//			//using Base::Close;
-//			using Base::CopyBufferRegion;
-//			using Base::CopyResource;
-//			using Base::CopyTextureRegion;
-//			using Base::CopyTiles;
-//			using Base::DiscardResource;
-//			//using Base::Dispatch;
-//			//using Base::DrawIndexedInstanced;
-//			//using Base::DrawInstanced;
-//			using Base::EndEvent;
-//			using Base::EndQuery;
-//			using Base::ExecuteBundle;
-//			//using Base::ExecuteIndirect;
-//			//using Base::IASetIndexBuffer;
-//			//using Base::IASetPrimitiveTopology;
-//			//using Base::IASetVertexBuffers;
-//			//using Base::OMSetBlendFactor;
-//			using Base::OMSetRenderTargets;
-//			//using Base::OMSetStencilRef;
-//			//using Base::Reset;
-//			using Base::ResolveQueryData;
-//			using Base::ResolveSubresource;
-//			using Base::ResourceBarrier;
-//			using Base::RSSetScissorRects;
-//			using Base::RSSetViewports;
-//			//using Base::SetComputeRoot32BitConstant;
-//			//using Base::SetComputeRoot32BitConstants;
-//			//using Base::SetComputeRootConstantBufferView;
-//			//using Base::SetComputeRootDescriptorTable;
-//			//using Base::SetComputeRootShaderResourceView;
-//			//using Base::SetComputeRootSignature;
-//			//using Base::SetComputeRootUnorderedAccessView;
-//			//using Base::SetDescriptorHeaps;
-//			//using Base::SetGraphicsRoot32BitConstant;
-//			//using Base::SetGraphicsRoot32BitConstants;
-//			//using Base::SetGraphicsRootConstantBufferView;
-//			//using Base::SetGraphicsRootDescriptorTable;
-//			//using Base::SetGraphicsRootShaderResourceView;
-//			//using Base::SetGraphicsRootSignature;
-//			//using Base::SetGraphicsRootUnorderedAccessView;
-//			//using Base::SetMarker;
-//			//using Base::SetPipelineState;
-//			using Base::SetPredication;
-//			using Base::SOSetTargets;
-//		};
-//	};
-//
-//	template<>
-//	struct BundleTraits<ID3D12GraphicsCommandList1>
-//	{
-//		using value_type = ID3D12GraphicsCommandList1;
-//		using pointer = ID3D12GraphicsCommandList1*;
-//		using const_pointer = const ID3D12GraphicsCommandList1*;
-//		using reference = ID3D12GraphicsCommandList1&;
-//		using const_reference = const ID3D12GraphicsCommandList1&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-//
-//		private:
-//			using Base::AtomicCopyBufferUINT;
-//			using Base::AtomicCopyBufferUINT64;
-//			//using Base::OMSetDepthBounds;
-//			using Base::ResolveSubresourceRegion;
-//			//using Base::SetSamplePositions;
-//			//using Base::SetViewInstanceMask;
-//		};
-//	};
-//
-//	template<>
-//	struct BundleTraits<ID3D12GraphicsCommandList2>
-//	{
-//		using value_type = ID3D12GraphicsCommandList2;
-//		using pointer = ID3D12GraphicsCommandList2*;
-//		using const_pointer = const ID3D12GraphicsCommandList2*;
-//		using reference = ID3D12GraphicsCommandList2&;
-//		using const_reference = const ID3D12GraphicsCommandList2&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-//
-//		private:
-//			//using Base::WriteBufferImmediate;
-//		};
-//	};
-//
-//	template<>
-//	struct BundleTraits<ID3D12GraphicsCommandList3>
-//	{
-//		using value_type = ID3D12GraphicsCommandList3;
-//		using pointer = ID3D12GraphicsCommandList3*;
-//		using const_pointer = const ID3D12GraphicsCommandList3*;
-//		using reference = ID3D12GraphicsCommandList3&;
-//		using const_reference = const ID3D12GraphicsCommandList3&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-//
-//		private:
-//			using Base::SetProtectedResourceSession;
-//		};
-//	};
-//
-//	template<>
-//	struct BundleTraits<ID3D12GraphicsCommandList4>
-//	{
-//		using value_type = ID3D12GraphicsCommandList4;
-//		using pointer = ID3D12GraphicsCommandList4*;
-//		using const_pointer = const ID3D12GraphicsCommandList4*;
-//		using reference = ID3D12GraphicsCommandList4&;
-//		using const_reference = const ID3D12GraphicsCommandList4&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-//
-//		private:
-//			using Base::BeginRenderPass;
-//			//using Base::BuildRaytracingAccelerationStructure;
-//			//using Base::CopyRaytracingAccelerationStructure;
-//			//using Base::DispatchRays;
-//			//using Base::EmitRaytracingAccelerationStructurePostbuildInfo;
-//			using Base::EndRenderPass;
-//			//using Base::ExecuteMetaCommand;
-//			//using Base::InitializeMetaCommand;
-//			//using Base::SetPipelineState1;
-//		};
-//	};
-//
-//	template<>
-//	struct BundleTraits<ID3D12GraphicsCommandList5>
-//	{
-//		using value_type = ID3D12GraphicsCommandList5;
-//		using pointer = ID3D12GraphicsCommandList5*;
-//		using const_pointer = const ID3D12GraphicsCommandList5*;
-//		using reference = ID3D12GraphicsCommandList5&;
-//		using const_reference = const ID3D12GraphicsCommandList5&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-//		private:
-//			//using Base::RSSetShadingRate;
-//			//using Base::RSSetShadingRateImage;
-//		};
-//	};
-//
-//	//TODO: Figure out what functions are restricted as at the time of writing, is not reflected in the linked API restriction document 
-//	template<>
-//	struct BundleTraits<ID3D12GraphicsCommandList6>
-//	{
-//		using value_type = ID3D12GraphicsCommandList6;
-//		using pointer = ID3D12GraphicsCommandList6*;
-//		using const_pointer = const ID3D12GraphicsCommandList6*;
-//		using reference = ID3D12GraphicsCommandList6&;
-//		using const_reference = const ID3D12GraphicsCommandList6&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-//		private:
-//			//using Base::DispatchMesh;
-//		};
-//	};
-//
-//	//TODO: Figure out what functions are restricted as at the time of writing, is not reflected in the linked API restriction document 
-//	template<>
-//	struct BundleTraits<ID3D12GraphicsCommandList7>
-//	{
-//		using value_type = ID3D12GraphicsCommandList7;
-//		using pointer = ID3D12GraphicsCommandList7*;
-//		using const_pointer = const ID3D12GraphicsCommandList7*;
-//		using reference = ID3D12GraphicsCommandList7&;
-//		using const_reference = const ID3D12GraphicsCommandList7&;
-//
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_BUNDLE>;
-//		private:
-//			//using Base::Barrier;
-//		};
-//	};
-//#pragma endregion
-//
-//#pragma region RenderPass Traits
-//	template<>
-//	struct RenderPassTraits<ID3D12CommandList> : CommandListTraits<ID3D12CommandList> {};
-//
-//	template<>
-//	struct RenderPassTraits<ID3D12GraphicsCommandList>
-//	{
-//		using value_type = ID3D12GraphicsCommandList;
-//		using pointer = ID3D12GraphicsCommandList*;
-//		using const_pointer = const ID3D12GraphicsCommandList*;
-//		using reference = ID3D12GraphicsCommandList&;
-//		using const_reference = const ID3D12GraphicsCommandList&;
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
-//
-//		private:
-//			using Base::BeginEvent;
-//			//using Base::BeginQuery;
-//			using Base::ClearDepthStencilView;
-//			using Base::ClearRenderTargetView;
-//			using Base::ClearState;
-//			using Base::ClearUnorderedAccessViewFloat;
-//			using Base::ClearUnorderedAccessViewUint;
-//			//using Base::Close;
-//			using Base::CopyBufferRegion;
-//			using Base::CopyResource;
-//			using Base::CopyTextureRegion;
-//			using Base::CopyTiles;
-//			using Base::DiscardResource;
-//			using Base::Dispatch;
-//			//using Base::DrawIndexedInstanced;
-//			//using Base::DrawInstanced;
-//			//using Base::EndEvent;
-//			//using Base::EndQuery;
-//			//using Base::ExecuteBundle;
-//			//using Base::ExecuteIndirect;
-//			//using Base::IASetIndexBuffer;
-//			//using Base::IASetPrimitiveTopology;
-//			//using Base::IASetVertexBuffers;
-//			//using Base::OMSetBlendFactor;
-//			using Base::OMSetRenderTargets;
-//			//using Base::OMSetStencilRef;
-//			//using Base::Reset;
-//			using Base::ResolveQueryData;
-//			using Base::ResolveSubresource;
-//			//using Base::ResourceBarrier;
-//			//using Base::RSSetScissorRects;
-//			//using Base::RSSetViewports;
-//			//using Base::SetComputeRoot32BitConstant;
-//			//using Base::SetComputeRoot32BitConstants;
-//			//using Base::SetComputeRootConstantBufferView;
-//			//using Base::SetComputeRootDescriptorTable;
-//			//using Base::SetComputeRootShaderResourceView;
-//			//using Base::SetComputeRootSignature;
-//			//using Base::SetComputeRootUnorderedAccessView;
-//			//using Base::SetDescriptorHeaps;
-//			//using Base::SetGraphicsRoot32BitConstant;
-//			//using Base::SetGraphicsRoot32BitConstants;
-//			//using Base::SetGraphicsRootConstantBufferView;
-//			//using Base::SetGraphicsRootDescriptorTable;
-//			//using Base::SetGraphicsRootShaderResourceView;
-//			//using Base::SetGraphicsRootSignature;
-//			//using Base::SetGraphicsRootUnorderedAccessView;
-//			//using Base::SetMarker;
-//			//using Base::SetPipelineState;
-//			//using Base::SetPredication;
-//			//using Base::SOSetTargets;
-//		};
-//	};
-//
-//	template<>
-//	struct RenderPassTraits<ID3D12GraphicsCommandList1>
-//	{
-//		using value_type = ID3D12GraphicsCommandList1;
-//		using pointer = ID3D12GraphicsCommandList1*;
-//		using const_pointer = const ID3D12GraphicsCommandList1*;
-//		using reference = ID3D12GraphicsCommandList1&;
-//		using const_reference = const ID3D12GraphicsCommandList1&;
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
-//
-//		private:
-//			using Base::AtomicCopyBufferUINT;
-//			using Base::AtomicCopyBufferUINT64;
-//			//using Base::OMSetDepthBounds;
-//			using Base::ResolveSubresourceRegion;
-//			//using Base::SetSamplePositions;
-//			//using Base::SetViewInstanceMask;
-//		};
-//	};
-//
-//	template<>
-//	struct RenderPassTraits<ID3D12GraphicsCommandList2>
-//	{
-//		using value_type = ID3D12GraphicsCommandList2;
-//		using pointer = ID3D12GraphicsCommandList2*;
-//		using const_pointer = const ID3D12GraphicsCommandList2*;
-//		using reference = ID3D12GraphicsCommandList2&;
-//		using const_reference = const ID3D12GraphicsCommandList2&;
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
-//
-//		private:
-//			//using Base::WriteBufferImmediate;
-//		};
-//	};
-//
-//	template<>
-//	struct RenderPassTraits<ID3D12GraphicsCommandList3>
-//	{
-//		using value_type = ID3D12GraphicsCommandList3;
-//		using pointer = ID3D12GraphicsCommandList3*;
-//		using const_pointer = const ID3D12GraphicsCommandList3*;
-//		using reference = ID3D12GraphicsCommandList3&;
-//		using const_reference = const ID3D12GraphicsCommandList3&;
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
-//		};
-//	};
-//
-//	template<>
-//	struct RenderPassTraits<ID3D12GraphicsCommandList4>
-//	{
-//		using value_type = ID3D12GraphicsCommandList4;
-//		using pointer = ID3D12GraphicsCommandList4*;
-//		using const_pointer = const ID3D12GraphicsCommandList4*;
-//		using reference = ID3D12GraphicsCommandList4&;
-//		using const_reference = const ID3D12GraphicsCommandList4&;
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
-//
-//		private:
-//			using Base::BeginRenderPass;
-//			using Base::BuildRaytracingAccelerationStructure;
-//			using Base::CopyRaytracingAccelerationStructure;
-//			using Base::DispatchRays;
-//			using Base::EmitRaytracingAccelerationStructurePostbuildInfo;
-//			//using Base::EndRenderPass;
-//			using Base::ExecuteMetaCommand;
-//			using Base::InitializeMetaCommand;
-//			using Base::SetPipelineState1;
-//		};
-//	};
-//
-//	template<>
-//	struct RenderPassTraits<ID3D12GraphicsCommandList5>
-//	{
-//		using value_type = ID3D12GraphicsCommandList5;
-//		using pointer = ID3D12GraphicsCommandList5*;
-//		using const_pointer = const ID3D12GraphicsCommandList5*;
-//		using reference = ID3D12GraphicsCommandList5&;
-//		using const_reference = const ID3D12GraphicsCommandList5&;
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
-//		private:
-//			//using Base::RSSetShadingRate;
-//			//using Base::RSSetShadingRateImage;
-//		};
-//	};
-//
-//	//TODO: Figure out what functions are restricted as at the time of writing, is not reflected in the linked API restriction document 
-//	template<>
-//	struct RenderPassTraits<ID3D12GraphicsCommandList6>
-//	{
-//		using value_type = ID3D12GraphicsCommandList6;
-//		using pointer = ID3D12GraphicsCommandList6*;
-//		using const_pointer = const ID3D12GraphicsCommandList6*;
-//		using reference = ID3D12GraphicsCommandList6&;
-//		using const_reference = const ID3D12GraphicsCommandList6&;
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
-//		private:
-//			//using Base::DispatchMesh;
-//		};
-//	};
-//
-//	//TODO: Figure out what functions are restricted as at the time of writing, is not reflected in the linked API restriction document 
-//	template<>
-//	struct RenderPassTraits<ID3D12GraphicsCommandList7>
-//	{
-//		using value_type = ID3D12GraphicsCommandList7;
-//		using pointer = ID3D12GraphicsCommandList7*;
-//		using const_pointer = const ID3D12GraphicsCommandList7*;
-//		using reference = ID3D12GraphicsCommandList7&;
-//		using const_reference = const ID3D12GraphicsCommandList7&;
-//
-//		template<class DerivedSelf>
-//		class Interface : public CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>
-//		{
-//			using Base = CommandListTraits<value_type>::InterfaceTagged<DerivedSelf, D3D12_COMMAND_LIST_TYPE_DIRECT>;
-//		private:
-//			//using Base::Barrier;
-//		};
-//	};
-//#pragma endregion
-//
-//	template<class DerivedSelf>
-//	void CommandListTraits<ID3D12GraphicsCommandList>::Interface<DerivedSelf>::ExecuteBundle(CommandList_t<ID3D12GraphicsCommandList, D3D12_COMMAND_LIST_TYPE_BUNDLE> pCommandList)
-//	{
-//		Self().ExecuteBundle(pCommandList.Get());
-//	}
-//
-//	template<class DerivedSelf>
-//	RenderPass_t<ID3D12GraphicsCommandList4> CommandListTraits<ID3D12GraphicsCommandList4>::Interface<DerivedSelf>::BeginRenderPass(std::span<const D3D12_RENDER_PASS_RENDER_TARGET_DESC> renderTargets, const D3D12_RENDER_PASS_DEPTH_STENCIL_DESC* pDepthStencil, D3D12_RENDER_PASS_FLAGS Flags)
-//	{
-//		Self().BeginRenderPass(static_cast<UINT>(renderTargets.size()), renderTargets.data(), pDepthStencil, Flags);
-//		return RenderPass_t<ID3D12GraphicsCommandList4>(&Get());
-//	}
-//}
-//
-//#pragma warning(pop)

@@ -275,6 +275,12 @@ namespace TypedD3D
     using BundleView = BundleViewMapper<Ty>::type;
 
     export template<class Ty>
+    using RenderPass = RenderPassMapper<Ty>::type;
+
+    export template<class Ty>
+    using RenderPassView = RenderPassViewMapper<Ty>::type;
+
+    export template<class Ty>
     using CBV_SRV_UAV = CBV_SRV_UAVMapper<Ty>::type;
 
     export template<class Ty>
