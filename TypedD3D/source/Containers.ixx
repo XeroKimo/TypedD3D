@@ -1629,6 +1629,18 @@ namespace TypedD3D
 		size_t size() const { return values.size(); }
 	};
 
+	template<class Wrapper, std::convertible_to<Wrapper>... Tys>
+		requires std::same_as<TypedStruct<InnerType<Wrapper>>, std::remove_const_t<Wrapper>>
+	Array(Wrapper, Tys...) -> Array<Wrapper, sizeof...(Tys) + 1>;
+
+	template<class Wrapper, std::convertible_to<Wrapper>... Tys>
+		requires std::same_as<TypedStruct<InnerType<Wrapper>>, std::remove_const_t<Wrapper>>
+	Array(ElementReference<Wrapper, false>, Tys...) -> Array<Wrapper, sizeof...(Tys) + 1>;
+
+	template<class Wrapper, std::convertible_to<Wrapper>... Tys>
+		requires std::same_as<TypedStruct<InnerType<Wrapper>>, std::remove_const_t<Wrapper>>
+	Array(ElementReference<Wrapper, true>, Tys...) -> Array<Wrapper, sizeof...(Tys) + 1>;
+
 	export template<class Wrapper>
 		requires std::same_as<TypedStruct<InnerType<Wrapper>>, std::remove_const_t<Wrapper>>
 	class Vector<Wrapper>
