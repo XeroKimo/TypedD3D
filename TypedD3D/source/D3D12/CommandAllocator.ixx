@@ -45,10 +45,24 @@ namespace TypedD3D::D3D12
 	using CommandListTypeToTrait = typename CommandListTypeToTraitMap<Type>::template type<IUnknown>;
 
 	template<template<class> class Tag>
-	concept CommandAllocatorEnabledTag = SameTagAs<Tag, DirectTag>
+	concept CommandAllocatorEnabledTag = SameTagAs<Tag, Untagged>
+		|| SameTagAs<Tag, DirectTag>
 		|| SameTagAs<Tag, ComputeTag>
 		|| SameTagAs<Tag, CopyTag>
 		|| SameTagAs<Tag, BundleTag>;
+
+	export template<template<class> class Ty>
+		requires CommandAllocatorEnabledTag<Ty>
+	constexpr D3D12_COMMAND_LIST_TYPE CommandListTraitToType = static_cast<D3D12_COMMAND_LIST_TYPE>(-1);
+
+	template<>
+	constexpr D3D12_COMMAND_LIST_TYPE CommandListTraitToType<DirectTag> = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	template<>
+	constexpr D3D12_COMMAND_LIST_TYPE CommandListTraitToType<ComputeTag> = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+	template<>
+	constexpr D3D12_COMMAND_LIST_TYPE CommandListTraitToType<CopyTag> = D3D12_COMMAND_LIST_TYPE_COPY;
+	template<>
+	constexpr D3D12_COMMAND_LIST_TYPE CommandListTraitToType<BundleTag> = D3D12_COMMAND_LIST_TYPE_BUNDLE;
 }
 
 namespace TypedD3D

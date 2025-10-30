@@ -22,7 +22,8 @@ namespace TypedD3D::D3D12
 	};
 
 	template<template<class> class Tag>
-	concept CommandQueueEnabledTag = SameTagAs<Tag, DirectTag>
+	concept CommandQueueEnabledTag = SameTagAs<Tag, Untagged>
+		|| SameTagAs<Tag, DirectTag>
 		|| SameTagAs<Tag, ComputeTag>
 		|| SameTagAs<Tag, CopyTag>;
 }
