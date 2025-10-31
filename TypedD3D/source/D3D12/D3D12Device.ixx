@@ -760,6 +760,8 @@ namespace TypedD3D
 		template<class Derived>
 		struct Interface : TraitInterface<Untagged<ID3D12Device1>, Derived>
 		{
+			using TraitInterface<Untagged<ID3D12Device1>, Derived>::Interface<Derived>::CreateGraphicsPipelineState;
+			using TraitInterface<Untagged<ID3D12Device1>, Derived>::Interface<Derived>::CreateComputePipelineState;
 			Graphics<ID3D12PipelineState> CreateGraphicsPipelineState(
 				const D3D12_PIPELINE_STATE_STREAM_DESC pDesc)
 			{

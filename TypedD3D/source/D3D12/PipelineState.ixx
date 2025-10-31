@@ -25,7 +25,8 @@ namespace TypedD3D::D3D12
     
     template<template<class> class Tag>
     concept PipelineStateEnabledTag = SameTagAs<Tag, GraphicsTag>
-        || SameTagAs<Tag, ComputeTag>;
+        || SameTagAs<Tag, ComputeTag>
+        || SameTagAs<Tag, Untagged>;
 }
 
 namespace TypedD3D

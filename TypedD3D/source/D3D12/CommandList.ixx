@@ -166,18 +166,7 @@ namespace TypedD3D
 			{
 				ClearRenderTargetView(RenderTargetView, colorRGBA, {});
 			}
-
-			void ClearState(std::nullptr_t) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
-			{
-				Self().ClearState(nullptr);
-			}
-
-			void ClearState(GraphicsView<ID3D12PipelineState> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
-			{
-				Self().ClearState(pPipelineState.Get());
-			}
-
-			void ClearState(ComputeView<ID3D12PipelineState> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
+			void ClearState(WrapperView<ID3D12PipelineState> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag, BundleTag, RenderPassTag>
 			{
 				Self().ClearState(pPipelineState.Get());
 			}
@@ -376,19 +365,8 @@ namespace TypedD3D
 				Self().OMSetStencilRef(StencilRef);
 			}
 
-			HRESULT Reset(gsl::not_null<WeakWrapper<Tag<ID3D12CommandAllocator>>> allocator, std::nullptr_t)
-			{
-				return Self().Reset(allocator.get().Get(), nullptr);
-			}
-
 			HRESULT Reset(gsl::not_null<WeakWrapper<Tag<ID3D12CommandAllocator>>> allocator,
-				GraphicsView<ID3D12PipelineState> optPipelineState)
-			{
-				return Self().Reset(allocator.get().Get(), optPipelineState.Get());
-			}
-
-			HRESULT Reset(gsl::not_null<WeakWrapper<Tag<ID3D12CommandAllocator>>> allocator,
-				ComputeView<ID3D12PipelineState> optPipelineState)
+				WrapperView<ID3D12PipelineState> optPipelineState)
 			{
 				return Self().Reset(allocator.get().Get(), optPipelineState.Get());
 			}
@@ -469,9 +447,9 @@ namespace TypedD3D
 				Self().SetComputeRootShaderResourceView(RootParameterIndex, BufferLocation);
 			}
 
-			void SetComputeRootSignature(ID3D12RootSignature* pRootSignature) requires D3D12::DisableFunction<Tag, CopyTag>
+			void SetComputeRootSignature(WrapperView<ID3D12RootSignature> pRootSignature) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
-				Self().SetComputeRootSignature(pRootSignature);
+				Self().SetComputeRootSignature(pRootSignature.Get());
 			}
 
 			void SetComputeRootUnorderedAccessView(
@@ -532,9 +510,9 @@ namespace TypedD3D
 				Self().SetGraphicsRootShaderResourceView(RootParameterIndex, BufferLocation);
 			}
 
-			void SetGraphicsRootSignature(ID3D12RootSignature* pRootSignature) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
+			void SetGraphicsRootSignature(WrapperView<ID3D12RootSignature> pRootSignature) requires D3D12::DisableFunction<Tag, ComputeTag, CopyTag>
 			{
-				Self().SetGraphicsRootSignature(pRootSignature);
+				Self().SetGraphicsRootSignature(pRootSignature.Get());
 			}
 
 			void SetGraphicsRootUnorderedAccessView(
@@ -552,12 +530,7 @@ namespace TypedD3D
 				Self().SetMarker(Metadata, pData, Size);
 			}
 
-			void SetPipelineState(GraphicsView<ID3D12PipelineState> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag>
-			{
-				Self().SetPipelineState(pPipelineState.Get());
-			}
-
-			void SetPipelineState(ComputeView<ID3D12PipelineState> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag>
+			void SetPipelineState(WrapperView<ID3D12PipelineState> pPipelineState) requires D3D12::DisableFunction<Tag, CopyTag>
 			{
 				Self().SetPipelineState(pPipelineState.Get());
 			}
