@@ -51,19 +51,19 @@ namespace TypedD3D::D3D12
 
 namespace TypedD3D
 {
-    template<D3D12::DescriptorHeapEnabledTag Ty>
-        requires std::same_as<InnerType<Ty>, D3D12_CPU_DESCRIPTOR_HANDLE> || std::same_as<InnerType<InnerType<Ty>>, D3D12_CPU_DESCRIPTOR_HANDLE>
-    struct Trait<Ty>
+    template<template<class> class Outer, class Inner>
+        requires D3D12::DescriptorHeapEnabledTag<Outer<Inner>> && std::same_as<InnerType<Inner>, D3D12_CPU_DESCRIPTOR_HANDLE>
+    struct Trait<Outer<Inner>>
     {
         using inner_type = D3D12_CPU_DESCRIPTOR_HANDLE;
 
-        using inner_tag = InnerType<Ty>;
+        using inner_tag = Inner;
 
         template<class NewInner>
-        using trait_template = TypedD3D::ReplaceInnerType<Ty, NewInner>;
+        using trait_template = Outer<NewInner>;
 
         template<class NewInner>
-        using ReplaceInnerType = trait_template<TypedD3D::ReplaceInnerType<inner_tag, NewInner>>;
+        using ReplaceInnerType = trait_template<TypedD3D::ReplaceInnerType<Inner, NewInner>>;
 
         template<class Derived>
         struct Interface : TypedStructInterfaceBase<Derived>
@@ -90,19 +90,19 @@ namespace TypedD3D
         };
     };
 
-    template<D3D12::DescriptorHeapEnabledTag Ty>
-        requires std::same_as<InnerType<Ty>, D3D12_GPU_DESCRIPTOR_HANDLE> || std::same_as<InnerType<InnerType<Ty>>, D3D12_GPU_DESCRIPTOR_HANDLE>
-    struct Trait<Ty>
+    template<template<class> class Outer, class Inner>
+        requires D3D12::DescriptorHeapEnabledTag<Outer<Inner>>&& std::same_as<InnerType<Inner>, D3D12_GPU_DESCRIPTOR_HANDLE>
+    struct Trait<Outer<Inner>>
     {
         using inner_type = D3D12_GPU_DESCRIPTOR_HANDLE;
 
-        using inner_tag = InnerType<Ty>;
+        using inner_tag = Inner;
 
         template<class NewInner>
-        using trait_template = TypedD3D::ReplaceInnerType<Ty, NewInner>;
+        using trait_template = Outer<NewInner>;
 
         template<class NewInner>
-        using ReplaceInnerType = trait_template<TypedD3D::ReplaceInnerType<inner_tag, NewInner>>;
+        using ReplaceInnerType = trait_template<TypedD3D::ReplaceInnerType<Inner, NewInner>>;
 
         template<class Derived>
         struct Interface : TypedStructInterfaceBase<Derived>
@@ -129,30 +129,30 @@ namespace TypedD3D
         };
     };
 
-    template<D3D12::DescriptorHeapEnabledTag Ty>
-        requires std::same_as<InnerType<Ty>, ID3D12DescriptorHeap> || std::same_as<InnerType<InnerType<Ty>>, ID3D12DescriptorHeap>
-    struct Trait<Ty>
+    template<template<class> class Outer, class Inner>
+        requires D3D12::DescriptorHeapEnabledTag<Outer<Inner>>&& std::same_as<InnerType<Inner>, ID3D12DescriptorHeap>
+    struct Trait<Outer<Inner>>
     {
         using inner_type = ID3D12DescriptorHeap;
 
-        using inner_tag = InnerType<Ty>;
+        using inner_tag = Inner;
 
         template<class NewInner>
-        using trait_template = TypedD3D::ReplaceInnerType<Ty, NewInner>;
+        using trait_template = Outer<NewInner>;
 
         template<class NewInner>
-        using ReplaceInnerType = trait_template<TypedD3D::ReplaceInnerType<inner_tag, NewInner>>;
+        using ReplaceInnerType = trait_template<TypedD3D::ReplaceInnerType<Inner, NewInner>>;
 
         template<class Derived>
         class Interface : public InterfaceBase<trait_template<Derived>>
         {
         public:
             D3D12_DESCRIPTOR_HEAP_DESC GetDesc() { return Self().GetDesc(); }
-            TypedStruct<trait_template<D3D12_CPU_DESCRIPTOR_HANDLE>> GetCPUDescriptorHandleForHeapStart()
+            TypedStruct<ReplaceInnerType<D3D12_CPU_DESCRIPTOR_HANDLE>> GetCPUDescriptorHandleForHeapStart()
             {
                 return Self().GetCPUDescriptorHandleForHeapStart();
             }
-            TypedStruct<trait_template<D3D12_GPU_DESCRIPTOR_HANDLE>>  GetGPUDescriptorHandleForHeapStart()
+            TypedStruct<ReplaceInnerType<D3D12_GPU_DESCRIPTOR_HANDLE>>  GetGPUDescriptorHandleForHeapStart()
             {
                 return Self().GetGPUDescriptorHandleForHeapStart();
             }

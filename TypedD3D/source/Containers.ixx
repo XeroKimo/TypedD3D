@@ -665,31 +665,25 @@ namespace TypedD3D
 	};
 
 	export template<class To, IUnknownTrait From>
-	WeakWrapper<ReplaceTraitInnerType<From, To>> Cast(const WeakWrapper<From>& ptr) noexcept
+	StrongWrapper<ReplaceTraitInnerType<From, To>> Cast(const WeakWrapper<From>& ptr) noexcept
 	{
 		if(!ptr)
 			return {};
 
-		WeakWrapper<ReplaceTraitInnerType<From, To>> to;
-
-		if(SUCCEEDED(ptr.Get()->QueryInterface<To>(OutPtr{ to })))
-			to->Release();
-
-		return to;
+		StrongWrapper<ReplaceTraitInnerType<From, To>> out;
+		ptr.Get()->QueryInterface<To>(OutPtr{ out });
+		return out;
 	}
 
 	export template<class To, IUnknownTrait From>
-	WeakWrapper<ReplaceTraitInnerType<From, To>> Cast(WeakWrapper<From>&& ptr) noexcept
+	StrongWrapper<ReplaceTraitInnerType<From, To>> Cast(WeakWrapper<From>&& ptr) noexcept
 	{
 		if(!ptr)
 			return {};
 
-		WeakWrapper<ReplaceTraitInnerType<From, To>> to;
-
-		if(SUCCEEDED(ptr.Get()->QueryInterface<To>(OutPtr{ to })))
-			to->Release();
-
-		return to;
+		StrongWrapper<ReplaceTraitInnerType<From, To>> out;
+		ptr.Get()->QueryInterface<To>(OutPtr{ out });
+		return out;
 	}
 
 	export template<class To, IUnknownTrait From>
