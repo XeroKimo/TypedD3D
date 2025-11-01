@@ -215,7 +215,7 @@ namespace TypedD3D
 				gsl::not_null<WrapperView<ID3D12Resource>> pDstResource,
 				gsl::not_null<WrapperView<ID3D12Resource>> pSrcResource) requires D3D12::DisableFunction<Tag, BundleTag, RenderPassTag>
 			{
-				Self().CopyResource(pDstResource.get().Get(), &pSrcResource.get().Get());
+				Self().CopyResource(pDstResource.get().Get(), pSrcResource.get().Get());
 			}
 
 			void CopyTextureRegion(
