@@ -25,10 +25,10 @@ namespace TypedD3D::D3D12
     struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = SamplerTag<Ty>; };
 
     template<>
-    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> { template<class Ty> using type = ShaderVisible<CBV_SRV_UAVTag<Ty>>; };
+    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> { template<class Ty> using type = ShaderVisibleTag<CBV_SRV_UAVTag<Ty>>; };
 
     template<>
-    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> { template<class Ty> using type = ShaderVisible<SamplerTag<Ty>>; };
+    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> { template<class Ty> using type = ShaderVisibleTag<SamplerTag<Ty>>; };
 
     template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType, D3D12_DESCRIPTOR_HEAP_FLAGS Flags, class Inner>
     using HeapTypeToTrait = typename HeapTypeToTraitMap<HeapType, Flags>::template type<Inner>;
@@ -47,6 +47,27 @@ namespace TypedD3D::D3D12
         || std::same_as<Ty, Untagged<InnerType<Ty>>>
         || std::same_as<Ty, ShaderVisibleCBV_SRV_UAVTag<InnerType<InnerType<Ty>>>>
         || std::same_as<Ty, ShaderVisibleSamplerTag<InnerType<InnerType<Ty>>>>;
+
+    template<DescriptorHeapEnabledTag Ty>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE HeapTraitToType = D3D12_DESCRIPTOR_HEAP_TYPE{ -1 };
+
+    template<class Ty>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE HeapTraitToType<CBV_SRV_UAVTag<Ty>> = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+
+    template<class Ty>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE HeapTraitToType<DSVTag<Ty>> = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+
+    template<class Ty>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE HeapTraitToType<RTVTag<Ty>> = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+
+    template<class Ty>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE HeapTraitToType<SamplerTag<Ty>> = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+
+    template<class Ty>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE HeapTraitToType<ShaderVisibleTag<CBV_SRV_UAVTag<Ty>>> = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+
+    template<class Ty>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE HeapTraitToType<ShaderVisibleTag<SamplerTag<Ty>>> = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
 }
 
 namespace TypedD3D
@@ -144,7 +165,7 @@ namespace TypedD3D
         using ReplaceInnerType = trait_template<TypedD3D::ReplaceInnerType<Inner, NewInner>>;
 
         template<class Derived>
-        class Interface : public InterfaceBase<trait_template<Derived>>
+        class Interface : public InterfaceBase<ReplaceInnerType<Derived>>
         {
         public:
             D3D12_DESCRIPTOR_HEAP_DESC GetDesc() { return Self().GetDesc(); }
@@ -158,8 +179,8 @@ namespace TypedD3D
             }
 
         private:
-            using InterfaceBase<trait_template<Derived>>::Self;
-            using InterfaceBase<trait_template<Derived>>::ToDerived;
+            using InterfaceBase<ReplaceInnerType<Derived>>::Self;
+            using InterfaceBase<ReplaceInnerType<Derived>>::ToDerived;
         };
     };
 

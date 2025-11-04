@@ -971,7 +971,8 @@ namespace TypedD3D
 	export template<TypedStructTrait Ty>
 	struct TypedStruct : private GetTraitInnerType<Ty>, public TraitInterface<Ty, TypedStruct<Ty>>
 	{
-		using inner_type = InnerType<Ty>;
+		using trait_type = Ty;
+		using inner_type = GetTraitInnerType<Ty>;
 
 
 		TypedStruct() = default;
@@ -1568,7 +1569,7 @@ namespace TypedD3D
 	class Array<Wrapper, N>
 	{
 		using trait_type = InnerType<Wrapper>;
-		using inner_type = InnerType<trait_type>;
+		using inner_type = GetTraitInnerType<trait_type>;
 
 		std::array<inner_type, N> values = {};
 
@@ -1742,7 +1743,7 @@ namespace TypedD3D
 	class Span<Wrapper, N>
 	{
 		using trait_type = InnerType<Wrapper>;
-		using inner_type = InnerType<trait_type>;
+		using inner_type = GetTraitInnerType<trait_type>;
 
 		std::span<std::conditional_t<std::is_const_v<Wrapper>, const inner_type, inner_type>, N> values = {};
 

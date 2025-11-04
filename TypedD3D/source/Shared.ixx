@@ -52,7 +52,7 @@ namespace TypedD3D
 	export template<IUnknownWrapper Wrapper, class BaseType = typename Wrapper::inner_type, class Func, class... Args>
 	Wrapper ForwardFunction(Func function, Args&&... args)
 	{
-		using BaseTrait = ReplaceInnerType<typename Wrapper::trait_type, BaseType>;
+		using BaseTrait = ReplaceTraitInnerType<typename Wrapper::trait_type, BaseType>;
 		using BaseWrapper = ReplaceInnerType<Wrapper, BaseTrait>;
 		static constexpr bool InvokeIID = requires(Wrapper w) { { std::invoke(function, std::forward<Args>(args)..., __uuidof(w), OutPtr{ w }) } -> std::convertible_to<HRESULT>; };
 		static constexpr bool InvokeVoidIID = requires(Wrapper w) { { std::invoke(function, std::forward<Args>(args)..., __uuidof(w), OutPtr{ w }) } -> std::same_as<void>; };

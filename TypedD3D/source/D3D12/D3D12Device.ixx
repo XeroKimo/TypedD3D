@@ -445,14 +445,19 @@ namespace TypedD3D
 				Self().CreateDepthStencilView(nullptr, optDesc, DestDescriptor.Raw());
 			}
 
-			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
 			void CreateSampler(
 				const D3D12_SAMPLER_DESC& pDesc,
-				TypedStruct<D3D12::HeapTypeToTrait<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, HeapFlags, D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptor)
+				Sampler<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
 			{
 				Self().CreateSampler(&pDesc, DestDescriptor.Raw());
 			}
 
+			void CreateSampler(
+				const D3D12_SAMPLER_DESC& pDesc,
+				ShaderVisible<Sampler<D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptor)
+			{
+				Self().CreateSampler(&pDesc, DestDescriptor.Raw());
+			}
 
 			void CopyDescriptors(
 				UINT NumDestDescriptorRanges,
@@ -473,13 +478,22 @@ namespace TypedD3D
 					DescriptorHeapsType);
 			}
 
-			template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS DestinationFlag, D3D12_DESCRIPTOR_HEAP_FLAGS SourceFlag>
+			template<template<class> class Tag>
 			void CopyDescriptorsSimple(
 				UINT NumDescriptors,
-				TypedStruct<D3D12::HeapTypeToTrait<Type, DestinationFlag, D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptorRangeStart,
-				TypedStruct<D3D12::HeapTypeToTrait<Type, D3D12_DESCRIPTOR_HEAP_FLAG_NONE, D3D12_CPU_DESCRIPTOR_HANDLE>> SrcDescriptorRangeStart)
+				TypedStruct<Tag<D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptorRangeStart,
+				TypedStruct<Tag<D3D12_CPU_DESCRIPTOR_HANDLE>> SrcDescriptorRangeStart)
 			{
-				Self().CopyDescriptorsSimple(NumDescriptors, DestDescriptorRangeStart.Raw(), SrcDescriptorRangeStart.Raw(), Type);
+				Self().CopyDescriptorsSimple(NumDescriptors, DestDescriptorRangeStart.Raw(), SrcDescriptorRangeStart.Raw(), D3D12::HeapTraitToType<Tag<D3D12_CPU_DESCRIPTOR_HANDLE>>);
+			}
+
+			template<template<class> class Tag>
+			void CopyDescriptorsSimple(
+				UINT NumDescriptors,
+				TypedStruct<ShaderVisibleTag<Tag<D3D12_CPU_DESCRIPTOR_HANDLE>>> DestDescriptorRangeStart,
+				TypedStruct<Tag<D3D12_CPU_DESCRIPTOR_HANDLE>> SrcDescriptorRangeStart)
+			{
+				Self().CopyDescriptorsSimple(NumDescriptors, DestDescriptorRangeStart.Raw(), SrcDescriptorRangeStart.Raw(), D3D12::HeapTraitToType<Tag<D3D12_CPU_DESCRIPTOR_HANDLE>>);
 			}
 
 			D3D12_RESOURCE_ALLOCATION_INFO GetResourceAllocationInfo(
