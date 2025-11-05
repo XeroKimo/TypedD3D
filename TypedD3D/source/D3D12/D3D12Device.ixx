@@ -379,38 +379,64 @@ namespace TypedD3D
 				return ForwardFunction<Wrapper<ID3D12RootSignature>>(&ID3D12Device::CreateRootSignature, Self(), nodeMask, pBlobWithRootSignature, blobLengthInBytes);
 			}
 
-			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
 			void CreateConstantBufferView(
 				const D3D12_CONSTANT_BUFFER_VIEW_DESC& pDesc,
-				TypedStruct<D3D12::HeapTypeToTrait<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags, D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptor)
+				CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
 			{
 				Self().CreateConstantBufferView(pDesc, DestDescriptor.Raw());
 			}
 
+			void CreateConstantBufferView(
+				const D3D12_CONSTANT_BUFFER_VIEW_DESC& pDesc,
+				ShaderVisible<CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptor)
+			{
+				Self().CreateConstantBufferView(pDesc, DestDescriptor.Raw());
+			}
 
-			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
 			void CreateShaderResourceView(
 				gsl::not_null<WrapperView<ID3D12Resource>> pResource,
 				const D3D12_SHADER_RESOURCE_VIEW_DESC* optDesc,
-				TypedStruct<D3D12::HeapTypeToTrait<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags, D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptor)
+				CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
 			{
 				Self().CreateShaderResourceView(pResource.get().Get(), optDesc, DestDescriptor.Raw());
 			}
 
-			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
+			void CreateShaderResourceView(
+				gsl::not_null<WrapperView<ID3D12Resource>> pResource,
+				const D3D12_SHADER_RESOURCE_VIEW_DESC* optDesc,
+				ShaderVisible<CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptor)
+			{
+				Self().CreateShaderResourceView(pResource.get().Get(), optDesc, DestDescriptor.Raw());
+			}
+
 			void CreateNullShaderResourceView(
 				const D3D12_SHADER_RESOURCE_VIEW_DESC& pDesc,
-				TypedStruct<D3D12::HeapTypeToTrait<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags, D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptor)
+				CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
 			{
 				Self().CreateShaderResourceView(nullptr, &pDesc, DestDescriptor.Raw());
 			}
 
-			template<D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlags>
+			void CreateNullShaderResourceView(
+				const D3D12_SHADER_RESOURCE_VIEW_DESC& pDesc,
+				ShaderVisible<CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptor)
+			{
+				Self().CreateShaderResourceView(nullptr, &pDesc, DestDescriptor.Raw());
+			}
+
 			void CreateUnorderedAccessView(
 				gsl::not_null<WrapperView<ID3D12Resource>> pResource,
 				gsl::not_null<WrapperView<ID3D12Resource>> pCounterResource,
 				const D3D12_UNORDERED_ACCESS_VIEW_DESC& pDesc,
-				TypedStruct<D3D12::HeapTypeToTrait<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, HeapFlags, D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptor)
+				CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE> DestDescriptor)
+			{
+				Self().CreateUnorderedAccessView(pResource.get().Get(), pCounterResource.get().Get(), &pDesc, DestDescriptor.Raw());
+			}
+
+			void CreateUnorderedAccessView(
+				gsl::not_null<WrapperView<ID3D12Resource>> pResource,
+				gsl::not_null<WrapperView<ID3D12Resource>> pCounterResource,
+				const D3D12_UNORDERED_ACCESS_VIEW_DESC& pDesc,
+				ShaderVisible<CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptor)
 			{
 				Self().CreateUnorderedAccessView(pResource.get().Get(), pCounterResource.get().Get(), &pDesc, DestDescriptor.Raw());
 			}
