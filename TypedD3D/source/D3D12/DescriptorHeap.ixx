@@ -10,28 +10,28 @@ import :Wrappers;
 namespace TypedD3D::D3D12
 {
     template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType, D3D12_DESCRIPTOR_HEAP_FLAGS Flags>
-    struct HeapTypeToTraitMap;
+    struct DescriptorHeapTypeToTraitMap;
 
     template<>
-    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = CBV_SRV_UAVTag<Ty>; };
+    struct DescriptorHeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = CBV_SRV_UAVTag<Ty>; };
 
     template<>
-    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = DSVTag<Ty>; };
+    struct DescriptorHeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = DSVTag<Ty>; };
 
     template<>
-    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = RTVTag<Ty>; };
+    struct DescriptorHeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = RTVTag<Ty>; };
 
     template<>
-    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = SamplerTag<Ty>; };
+    struct DescriptorHeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_NONE> { template<class Ty> using type = SamplerTag<Ty>; };
 
     template<>
-    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> { template<class Ty> using type = ShaderVisibleTag<CBV_SRV_UAVTag<Ty>>; };
+    struct DescriptorHeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> { template<class Ty> using type = ShaderVisibleTag<CBV_SRV_UAVTag<Ty>>; };
 
     template<>
-    struct HeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> { template<class Ty> using type = ShaderVisibleTag<SamplerTag<Ty>>; };
+    struct DescriptorHeapTypeToTraitMap<D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE> { template<class Ty> using type = ShaderVisibleTag<SamplerTag<Ty>>; };
 
-    template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType, D3D12_DESCRIPTOR_HEAP_FLAGS Flags, class Inner>
-    using HeapTypeToTrait = typename HeapTypeToTraitMap<HeapType, Flags>::template type<Inner>;
+    export template<D3D12_DESCRIPTOR_HEAP_TYPE HeapType, D3D12_DESCRIPTOR_HEAP_FLAGS Flags, class Inner>
+    using DescriptorHeapTypeToTrait = typename DescriptorHeapTypeToTraitMap<HeapType, Flags>::template type<Inner>;
 
     template<class Ty>
     using ShaderVisibleCBV_SRV_UAVTag = ShaderVisibleTag<CBV_SRV_UAVTag<Ty>>;
@@ -39,7 +39,7 @@ namespace TypedD3D::D3D12
     template<class Ty>
     using ShaderVisibleSamplerTag = ShaderVisibleTag<SamplerTag<Ty>>;
 
-    template<class Ty>
+    export template<class Ty>
     concept DescriptorHeapEnabledTag = std::same_as<Ty, CBV_SRV_UAVTag<InnerType<Ty>>>
         || std::same_as<Ty, DSVTag<InnerType<Ty>>>
         || std::same_as<Ty, RTVTag<InnerType<Ty>>>
@@ -48,26 +48,35 @@ namespace TypedD3D::D3D12
         || std::same_as<Ty, ShaderVisibleCBV_SRV_UAVTag<InnerType<InnerType<Ty>>>>
         || std::same_as<Ty, ShaderVisibleSamplerTag<InnerType<InnerType<Ty>>>>;
 
-    template<DescriptorHeapEnabledTag Ty>
-    constexpr D3D12_DESCRIPTOR_HEAP_TYPE HeapTraitToType = D3D12_DESCRIPTOR_HEAP_TYPE{ -1 };
+    export template<DescriptorHeapEnabledTag Ty>
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapTraitToType = D3D12_DESCRIPTOR_HEAP_TYPE{ -1 };
 
     template<class Ty>
-    constexpr D3D12_DESCRIPTOR_HEAP_TYPE HeapTraitToType<CBV_SRV_UAVTag<Ty>> = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapTraitToType<CBV_SRV_UAVTag<Ty>> = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 
     template<class Ty>
-    constexpr D3D12_DESCRIPTOR_HEAP_TYPE HeapTraitToType<DSVTag<Ty>> = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapTraitToType<DSVTag<Ty>> = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 
     template<class Ty>
-    constexpr D3D12_DESCRIPTOR_HEAP_TYPE HeapTraitToType<RTVTag<Ty>> = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapTraitToType<RTVTag<Ty>> = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 
     template<class Ty>
-    constexpr D3D12_DESCRIPTOR_HEAP_TYPE HeapTraitToType<SamplerTag<Ty>> = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapTraitToType<SamplerTag<Ty>> = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
 
     template<class Ty>
-    constexpr D3D12_DESCRIPTOR_HEAP_TYPE HeapTraitToType<ShaderVisibleTag<CBV_SRV_UAVTag<Ty>>> = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapTraitToType<ShaderVisibleTag<CBV_SRV_UAVTag<Ty>>> = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 
     template<class Ty>
-    constexpr D3D12_DESCRIPTOR_HEAP_TYPE HeapTraitToType<ShaderVisibleTag<SamplerTag<Ty>>> = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+    constexpr D3D12_DESCRIPTOR_HEAP_TYPE DescriptorHeapTraitToType<ShaderVisibleTag<SamplerTag<Ty>>> = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+
+    export template<DescriptorHeapEnabledTag Ty>
+    constexpr D3D12_DESCRIPTOR_HEAP_FLAGS DescriptorHeapTraitToFlag = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+    template<class Ty>
+    constexpr D3D12_DESCRIPTOR_HEAP_FLAGS DescriptorHeapTraitToFlag<ShaderVisibleTag<CBV_SRV_UAVTag<Ty>>> = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+
+    template<class Ty>
+    constexpr D3D12_DESCRIPTOR_HEAP_FLAGS DescriptorHeapTraitToFlag<ShaderVisibleTag<SamplerTag<Ty>>> = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 }
 
 namespace TypedD3D

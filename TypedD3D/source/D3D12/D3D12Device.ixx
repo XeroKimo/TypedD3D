@@ -350,7 +350,7 @@ namespace TypedD3D
 			}
 
 			template<D3D12_DESCRIPTOR_HEAP_TYPE Type, D3D12_DESCRIPTOR_HEAP_FLAGS HeapFlag>
-			StrongWrapper<D3D12::HeapTypeToTrait<Type, HeapFlag, ID3D12DescriptorHeap>> CreateDescriptorHeap(
+			StrongWrapper<D3D12::DescriptorHeapTypeToTrait<Type, HeapFlag, ID3D12DescriptorHeap>> CreateDescriptorHeap(
 				UINT NumDescriptors,
 				UINT NodeMask)
 			{
@@ -362,7 +362,7 @@ namespace TypedD3D
 					.NodeMask = NodeMask
 				};
 
-				return ForwardFunction<StrongWrapper<D3D12::HeapTypeToTrait<Type, HeapFlag, ID3D12DescriptorHeap>>>(&ID3D12Device::CreateDescriptorHeap, Self(), &desc);
+				return ForwardFunction<StrongWrapper<D3D12::DescriptorHeapTypeToTrait<Type, HeapFlag, ID3D12DescriptorHeap>>>(&ID3D12Device::CreateDescriptorHeap, Self(), &desc);
 			}
 
 			UINT GetDescriptorHandleIncrementSize(
@@ -510,7 +510,7 @@ namespace TypedD3D
 				TypedStruct<Tag<D3D12_CPU_DESCRIPTOR_HANDLE>> DestDescriptorRangeStart,
 				TypedStruct<Tag<D3D12_CPU_DESCRIPTOR_HANDLE>> SrcDescriptorRangeStart)
 			{
-				Self().CopyDescriptorsSimple(NumDescriptors, DestDescriptorRangeStart.Raw(), SrcDescriptorRangeStart.Raw(), D3D12::HeapTraitToType<Tag<D3D12_CPU_DESCRIPTOR_HANDLE>>);
+				Self().CopyDescriptorsSimple(NumDescriptors, DestDescriptorRangeStart.Raw(), SrcDescriptorRangeStart.Raw(), D3D12::DescriptorHeapTraitToType<Tag<D3D12_CPU_DESCRIPTOR_HANDLE>>);
 			}
 
 			template<template<class> class Tag>
@@ -519,7 +519,7 @@ namespace TypedD3D
 				TypedStruct<ShaderVisibleTag<Tag<D3D12_CPU_DESCRIPTOR_HANDLE>>> DestDescriptorRangeStart,
 				TypedStruct<Tag<D3D12_CPU_DESCRIPTOR_HANDLE>> SrcDescriptorRangeStart)
 			{
-				Self().CopyDescriptorsSimple(NumDescriptors, DestDescriptorRangeStart.Raw(), SrcDescriptorRangeStart.Raw(), D3D12::HeapTraitToType<Tag<D3D12_CPU_DESCRIPTOR_HANDLE>>);
+				Self().CopyDescriptorsSimple(NumDescriptors, DestDescriptorRangeStart.Raw(), SrcDescriptorRangeStart.Raw(), D3D12::DescriptorHeapTraitToType<Tag<D3D12_CPU_DESCRIPTOR_HANDLE>>);
 			}
 
 			D3D12_RESOURCE_ALLOCATION_INFO GetResourceAllocationInfo(
