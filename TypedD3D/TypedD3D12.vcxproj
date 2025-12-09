@@ -42,6 +42,7 @@
     <ClCompile Include="source\D3D12\DescriptorHeap.ixx" />
     <ClCompile Include="source\D3D12\D3D12Device.ixx" />
     <ClCompile Include="source\D3D12\D3D12Resource.ixx" />
+    <ClCompile Include="source\D3D12\D3D12Extensions.ixx" />
     <ClCompile Include="source\D3D12\PipelineState.ixx" />
     <ClCompile Include="source\D3D11\DeviceChild.ixx" />
     <ClCompile Include="source\DXGI\Adapter.ixx" />

@@ -9,6 +9,7 @@ export import :Resource;
 export import :Device;
 export import :Wrappers;
 export import :D3D12Object;
+export import :Extensions;
 
 export namespace TypedD3D12 = TypedD3D::D3D12;
 
