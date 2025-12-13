@@ -55,13 +55,13 @@ namespace TypedD3D::D3D12::Extensions
 
 		void SetEventOnCompletion(UINT64 value, HANDLE eventHandle)
 		{
-			ThrowIfFailed(fence->SetEventOnCompletion(lastGPUSignaledValue, eventHandle));
+			ThrowIfFailed(fence->SetEventOnCompletion(value, eventHandle));
 		}
 
 		DWORD SetEventOnCompletionAndWaitCPU(UINT64 value, HANDLE eventHandle, DWORD milliseconds = INFINITE)
 		{
 			SetEventOnCompletion(value, eventHandle);
-			return WaitCPU(value, eventHandle);
+			return WaitCPU(value, eventHandle, milliseconds);
 		}
 
 		void Reset()
@@ -272,6 +272,12 @@ namespace TypedD3D::D3D12::Extensions
 		}
 	};
 
+	template<>
+	class FreeListAllocator<int>
+	{
+
+	};
+
 	template<template<class> class Outer, class Inner>
 		requires D3D12::DescriptorHeapEnabledTag<Outer<Inner>>&& std::same_as<InnerType<Inner>, ID3D12DescriptorHeap>
 	class FreeListAllocator<StrongWrapper<Outer<Inner>>>
@@ -457,7 +463,7 @@ namespace TypedD3D::D3D12::Extensions
 		{
 			for(std::size_t i = 0; i < allocations.size(); i++)
 			{
-				UINT frameToCheck = currentFrame - i;
+				UINT frameToCheck = currentFrame - static_cast<UINT>(i);
 				if(frameToCheck >= allocations.size())
 					frameToCheck = static_cast<UINT>(allocations.size()) - 1;
 

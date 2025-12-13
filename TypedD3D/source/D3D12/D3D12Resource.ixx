@@ -40,7 +40,7 @@ namespace TypedD3D
 
             void Unmap(UINT Subresource, const D3D12_RANGE* optWrittenRange)
             {
-                Self().Unmap(0, optWrittenRange);
+                Self().Unmap(Subresource, optWrittenRange);
             }
 
             D3D12_RESOURCE_DESC GetDesc() { return Self().GetDesc(); }

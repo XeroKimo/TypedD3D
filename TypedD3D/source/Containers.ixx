@@ -367,9 +367,9 @@ namespace TypedD3D
 	public:
 		inner_type* Get() const { return ptr; }
 
-		void Attach(inner_type* ptr) noexcept
+		void Attach(inner_type* inPtr) noexcept
 		{
-			this->ptr = ptr;
+			ptr = inPtr;
 		}
 
 		inner_type* Detach() noexcept
@@ -620,11 +620,11 @@ namespace TypedD3D
 	public:
 		inner_type* Get() const noexcept { return ptr; }
 
-		void Attach(inner_type* ptr) noexcept
+		void Attach(inner_type* inPtr) noexcept
 		{
-			if(this->ptr)
-				this->ptr->Release();
-			this->ptr = ptr;
+			if(ptr)
+				ptr->Release();
+			ptr = inPtr;
 		}
 
 		inner_type* Detach() noexcept
