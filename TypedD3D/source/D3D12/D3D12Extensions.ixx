@@ -272,12 +272,6 @@ namespace TypedD3D::D3D12::Extensions
 		}
 	};
 
-	template<>
-	class FreeListAllocator<int>
-	{
-
-	};
-
 	template<template<class> class Outer, class Inner>
 		requires D3D12::DescriptorHeapEnabledTag<Outer<Inner>>&& std::same_as<InnerType<Inner>, ID3D12DescriptorHeap>
 	class FreeListAllocator<StrongWrapper<Outer<Inner>>>

@@ -81,6 +81,9 @@ namespace TypedD3D::D3D12
 
 namespace TypedD3D
 {
+    /*
+    //VS2022 V18.0.0, intellisense doesn't like it when there's a template template + template parameter being specialized
+    //So temporarily, a more specialized version will be defined instead of this generic one that does work
     template<template<class> class Outer, class Inner>
         requires D3D12::DescriptorHeapEnabledTag<Outer<Inner>> && std::same_as<InnerType<Inner>, D3D12_CPU_DESCRIPTOR_HANDLE>
     struct Trait<Outer<Inner>>
@@ -192,11 +195,236 @@ namespace TypedD3D
             using InterfaceBase<ReplaceInnerType<Derived>>::ToDerived;
         };
     };
+    */
+
+    template<template<class> class Outer>
+        requires D3D12::DescriptorHeapEnabledTag<Outer<D3D12_CPU_DESCRIPTOR_HANDLE>>
+    struct Trait<Outer<D3D12_CPU_DESCRIPTOR_HANDLE>>
+    {
+        using inner_type = D3D12_CPU_DESCRIPTOR_HANDLE;
+
+        using inner_tag = D3D12_CPU_DESCRIPTOR_HANDLE;
+
+        template<class NewInner>
+        using trait_template = Outer<NewInner>;
+
+        template<class NewInner>
+        using ReplaceInnerType = Outer<NewInner>;
+
+        template<class Derived>
+        struct Interface : TypedStructInterfaceBase<Derived>
+        {
+            auto& Ptr() { return Self().ptr; }
+            const auto& Ptr() const { return Self().ptr; }
+
+            auto Offset(INT64 offsetInDescriptors, UINT64 incrementSize)
+            {
+                auto copy = ToDerived();
+                copy.Ptr() += incrementSize * offsetInDescriptors;
+                return copy;
+            }
+            auto Offset(INT64 offset)
+            {
+                auto copy = ToDerived();
+                copy.Ptr() += offset;
+                return copy;
+            }
+
+        private:
+            using TypedStructInterfaceBase<Derived>::Self;
+            using TypedStructInterfaceBase<Derived>::ToDerived;
+        };
+    };
+
+    template<template<class> class Outer>
+        requires D3D12::DescriptorHeapEnabledTag<ShaderVisibleTag<Outer<D3D12_CPU_DESCRIPTOR_HANDLE>>>
+    struct Trait<ShaderVisibleTag<Outer<D3D12_CPU_DESCRIPTOR_HANDLE>>>
+    {
+        using inner_type = D3D12_CPU_DESCRIPTOR_HANDLE;
+
+        using inner_tag = Outer<D3D12_CPU_DESCRIPTOR_HANDLE>;
+
+        template<class NewInner>
+        using trait_template = ShaderVisibleTag<NewInner>;
+
+        template<class NewInner>
+        using ReplaceInnerType = ShaderVisibleTag<Outer<NewInner>>;
+
+        template<class Derived>
+        struct Interface : TypedStructInterfaceBase<Derived>
+        {
+            auto& Ptr() { return Self().ptr; }
+            const auto& Ptr() const { return Self().ptr; }
+
+            auto Offset(INT64 offsetInDescriptors, UINT64 incrementSize)
+            {
+                auto copy = ToDerived();
+                copy.Ptr() += incrementSize * offsetInDescriptors;
+                return copy;
+            }
+            auto Offset(INT64 offset)
+            {
+                auto copy = ToDerived();
+                copy.Ptr() += offset;
+                return copy;
+            }
+
+        private:
+            using TypedStructInterfaceBase<Derived>::Self;
+            using TypedStructInterfaceBase<Derived>::ToDerived;
+        };
+    };
+
+    template<template<class> class Outer>
+        requires D3D12::DescriptorHeapEnabledTag<Outer<D3D12_GPU_DESCRIPTOR_HANDLE>>
+    struct Trait<Outer<D3D12_GPU_DESCRIPTOR_HANDLE>>
+    {
+        using inner_type = D3D12_GPU_DESCRIPTOR_HANDLE;
+
+        using inner_tag = D3D12_GPU_DESCRIPTOR_HANDLE;
+
+        template<class NewInner>
+        using trait_template = Outer<NewInner>;
+
+        template<class NewInner>
+        using ReplaceInnerType = Outer<NewInner>;
+
+        template<class Derived>
+        struct Interface : TypedStructInterfaceBase<Derived>
+        {
+            auto& Ptr() { return Self().ptr; }
+            const auto& Ptr() const { return Self().ptr; }
+
+            auto Offset(INT64 offsetInDescriptors, UINT64 incrementSize)
+            {
+                auto copy = ToDerived();
+                copy.Ptr() += incrementSize * offsetInDescriptors;
+                return copy;
+            }
+            auto Offset(INT64 offset)
+            {
+                auto copy = ToDerived();
+                copy.Ptr() += offset;
+                return copy;
+            }
+
+        private:
+            using TypedStructInterfaceBase<Derived>::Self;
+            using TypedStructInterfaceBase<Derived>::ToDerived;
+        };
+    };
+
+    template<template<class> class Outer>
+        requires D3D12::DescriptorHeapEnabledTag<ShaderVisibleTag<Outer<D3D12_GPU_DESCRIPTOR_HANDLE>>>
+    struct Trait<ShaderVisibleTag<Outer<D3D12_GPU_DESCRIPTOR_HANDLE>>>
+    {
+        using inner_type = D3D12_GPU_DESCRIPTOR_HANDLE;
+
+        using inner_tag = Outer<D3D12_GPU_DESCRIPTOR_HANDLE>;
+
+        template<class NewInner>
+        using trait_template = ShaderVisibleTag<NewInner>;
+
+        template<class NewInner>
+        using ReplaceInnerType = ShaderVisibleTag<Outer<NewInner>>;
+
+        template<class Derived>
+        struct Interface : TypedStructInterfaceBase<Derived>
+        {
+            auto& Ptr() { return Self().ptr; }
+            const auto& Ptr() const { return Self().ptr; }
+
+            auto Offset(INT64 offsetInDescriptors, UINT64 incrementSize)
+            {
+                auto copy = ToDerived();
+                copy.Ptr() += incrementSize * offsetInDescriptors;
+                return copy;
+            }
+            auto Offset(INT64 offset)
+            {
+                auto copy = ToDerived();
+                copy.Ptr() += offset;
+                return copy;
+            }
+
+        private:
+            using TypedStructInterfaceBase<Derived>::Self;
+            using TypedStructInterfaceBase<Derived>::ToDerived;
+        };
+    };
+
+    template<template<class> class Outer>
+        requires D3D12::DescriptorHeapEnabledTag<Outer<ID3D12DescriptorHeap>>
+    struct Trait<Outer<ID3D12DescriptorHeap>>
+    {
+        using inner_type = ID3D12DescriptorHeap;
+
+        using inner_tag = ID3D12DescriptorHeap;
+
+        template<class NewInner>
+        using trait_template = Outer<NewInner>;
+
+        template<class NewInner>
+        using ReplaceInnerType = Outer<NewInner>;
+
+        template<class Derived>
+        class Interface : public InterfaceBase<ReplaceInnerType<Derived>>
+        {
+        public:
+            D3D12_DESCRIPTOR_HEAP_DESC GetDesc() { return Self().GetDesc(); }
+            TypedStruct<ReplaceInnerType<D3D12_CPU_DESCRIPTOR_HANDLE>> GetCPUDescriptorHandleForHeapStart()
+            {
+                return Self().GetCPUDescriptorHandleForHeapStart();
+            }
+            TypedStruct<ReplaceInnerType<D3D12_GPU_DESCRIPTOR_HANDLE>>  GetGPUDescriptorHandleForHeapStart()
+            {
+                return Self().GetGPUDescriptorHandleForHeapStart();
+            }
+
+        private:
+            using InterfaceBase<ReplaceInnerType<Derived>>::Self;
+            using InterfaceBase<ReplaceInnerType<Derived>>::ToDerived;
+        };
+    };
+
+    template<template<class> class Outer>
+        requires D3D12::DescriptorHeapEnabledTag<ShaderVisibleTag<Outer<ID3D12DescriptorHeap>>>
+    struct Trait<ShaderVisibleTag<Outer<ID3D12DescriptorHeap>>>
+    {
+        using inner_type = ID3D12DescriptorHeap;
+
+        using inner_tag = Outer<ID3D12DescriptorHeap>;
+
+        template<class NewInner>
+        using trait_template = ShaderVisibleTag<NewInner>;
+
+        template<class NewInner>
+        using ReplaceInnerType = ShaderVisibleTag<Outer<NewInner>>;
+
+        template<class Derived>
+        class Interface : public InterfaceBase<ReplaceInnerType<Derived>>
+        {
+        public:
+            D3D12_DESCRIPTOR_HEAP_DESC GetDesc() { return Self().GetDesc(); }
+            TypedStruct<ReplaceInnerType<D3D12_CPU_DESCRIPTOR_HANDLE>> GetCPUDescriptorHandleForHeapStart()
+            {
+                return Self().GetCPUDescriptorHandleForHeapStart();
+            }
+            TypedStruct<ReplaceInnerType<D3D12_GPU_DESCRIPTOR_HANDLE>>  GetGPUDescriptorHandleForHeapStart()
+            {
+                return Self().GetGPUDescriptorHandleForHeapStart();
+            }
+
+        private:
+            using InterfaceBase<ReplaceInnerType<Derived>>::Self;
+            using InterfaceBase<ReplaceInnerType<Derived>>::ToDerived;
+        };
+    };
 
     template<>
     struct ShaderVisibleMapper<CBV_SRV_UAV<D3D12_CPU_DESCRIPTOR_HANDLE>>
     {
-        using type = TypedStruct<D3D12::ShaderVisibleCBV_SRV_UAVTag<D3D12_CPU_DESCRIPTOR_HANDLE>>;
+        using type = TypedStruct<ShaderVisibleTag<CBV_SRV_UAVTag<D3D12_CPU_DESCRIPTOR_HANDLE>>>;
     };
 
     template<>

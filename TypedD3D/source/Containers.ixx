@@ -988,7 +988,7 @@ namespace TypedD3D
 
 		}
 
-		explicit TypedStruct(const TypedStruct<ReplaceTraitOuterTag<Ty, Untagged>>& other) : inner_type{ other.Raw() }
+		explicit TypedStruct(const TypedStruct<Untagged<GetTraitInnerType<Ty>>>& other) : inner_type{ other.Raw() }
 		{
 
 		}
