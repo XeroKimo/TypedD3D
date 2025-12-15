@@ -122,6 +122,9 @@
     <ClCompile Include="source\D3D12\D3D12Extensions.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\D3D12\Barrier.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="gsl\algorithm" />

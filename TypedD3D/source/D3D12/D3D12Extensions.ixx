@@ -187,12 +187,12 @@ namespace TypedD3D::D3D12::Extensions
 			gsl::not_null<WrapperView<ID3D12Fence>> Fence,
 			UINT64 Value)
 		{
-			return commandQueue->Wait(Fence.get().Get(), Value);
+			return commandQueue->Wait(Fence, Value);
 		}
 
 		void ExecuteCommandLists(Span<WeakWrapper<Tag<ID3D12CommandList>>> commandLists)
 		{
-			commandQueue->ExecuteCommandLists(static_cast<UINT>(commandLists.size()), commandLists.data());
+			commandQueue->ExecuteCommandLists(commandLists);
 		}
 
 		void Flush()

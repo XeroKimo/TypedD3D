@@ -894,7 +894,18 @@ namespace TypedD3D
 	export template<class Wrapper, bool IsConst>
 	class ContiguousIterator
 	{
+	public:
 		using inner_type = Wrapper::inner_type;
+
+		template<class Ty>
+		using wrapper_template = LiftType<Wrapper>::template outer_type<Ty>;
+
+		using iterator_concept = std::contiguous_iterator_tag;
+		using iterator_category = std::random_access_iterator_tag;
+		using value_type = std::conditional_t<IsConst, inner_type* const, inner_type*>;
+		using difference_type = ptrdiff_t;
+		using pointer = value_type*;
+		using reference = value_type&;
 
 	private:
 		std::conditional_t<IsConst, inner_type* const, inner_type*>* ptr = nullptr;
@@ -1019,6 +1030,92 @@ namespace TypedD3D
 
 		const Derived& ToDerived() const { return static_cast<const Derived&>(*this); }
 		const auto& Self() const { return ToDerived().Derived::Raw(); }
+	};
+
+
+
+	export template<class Wrapper, bool IsConst>
+		requires std::same_as<TypedStruct<InnerType<Wrapper>>, std::remove_const_t<Wrapper>>
+	class ContiguousIterator<Wrapper, IsConst>
+	{
+	public:
+		using inner_type = Wrapper::inner_type;
+
+		template<class Ty>
+		using wrapper_template = LiftType<Wrapper>::template outer_type<Ty>;
+
+		using iterator_concept = std::contiguous_iterator_tag;
+		using iterator_category = std::random_access_iterator_tag;
+		using value_type = std::conditional_t<IsConst, inner_type const, inner_type>;
+		using difference_type = ptrdiff_t;
+		using pointer = value_type*;
+		using reference = value_type&;
+	private:
+		std::conditional_t<IsConst, inner_type* const, inner_type*> ptr = nullptr;
+
+	public:
+		ContiguousIterator() = default;
+		ContiguousIterator(std::conditional_t<IsConst, inner_type* const, inner_type*> ptr) : ptr{ ptr }
+		{
+
+		}
+
+	public:
+		ContiguousIterator& operator++()
+		{
+			++ptr;
+			return *this;
+		}
+		ContiguousIterator operator++(int)
+		{
+			return ptr++;
+		}
+		ContiguousIterator& operator--()
+		{
+			--ptr;
+			return *this;
+		}
+		ContiguousIterator operator--(int)
+		{
+			return ptr--;
+		}
+
+		ContiguousIterator operator+(std::size_t i) const
+		{
+			return ptr + i;
+		}
+
+		ContiguousIterator& operator+=(std::size_t i)
+		{
+			ptr += i;
+			return *this;
+		}
+
+		ContiguousIterator operator-(std::size_t i) const
+		{
+			return ptr + i;
+		}
+
+		ContiguousIterator& operator-=(std::size_t i)
+		{
+			ptr += i;
+			return *this;
+		}
+
+		size_t operator-(const ContiguousIterator& other) const
+		{
+			return ptr - other.ptr;
+		}
+
+		bool operator==(const ContiguousIterator& other) const
+		{
+			return ptr == other.ptr;
+		}
+
+		auto Raw() const { return ptr; }
+
+		ElementReference<Wrapper, IsConst> operator*() const { return *ptr; }
+		ElementReference<Wrapper, IsConst> operator->() const { return *ptr; }
 	};
 
 	export template<class Wrapper, std::size_t N>
@@ -1343,9 +1440,33 @@ namespace TypedD3D
 	export template<IUnknownWrapper Wrapper, std::size_t N>
 	class Span<Wrapper, N>
 	{
-		using inner_type = Wrapper::inner_type;
+	public:
+		using trait_type = InnerType<Wrapper>;
+		using inner_type = GetTraitInnerType<trait_type>;
 
-		std::span<std::conditional_t<std::is_const_v<Wrapper>, inner_type* const, inner_type*>, N> values = {};
+	private:
+		using internal_span_type = std::span<std::conditional_t<std::is_const_v<Wrapper>, inner_type* const, inner_type*>, N>;
+
+	public:
+		template<class Ty>
+		using wrapper_template = LiftType<Wrapper>::template outer_type<Ty>;
+
+		using element_type = typename internal_span_type::element_type;
+		using value_type = typename internal_span_type::value_type;
+		using size_type = typename internal_span_type::size_type;
+		using difference_type = typename internal_span_type::difference_type;
+		using pointer = typename internal_span_type::pointer;
+		using const_pointer = typename internal_span_type::const_pointer;
+		using reference = typename internal_span_type::reference;
+		using const_reference = typename internal_span_type::const_reference;
+		using iterator = ContiguousIterator<Wrapper, false>;
+		using reverse_iterator = std::reverse_iterator<iterator>;
+
+		using const_iterator = ContiguousIterator<Wrapper, true>;
+		using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+	private:
+		internal_span_type values = {};
 
 	public:
 		Span() = default;
@@ -1742,10 +1863,33 @@ namespace TypedD3D
 		requires std::same_as<TypedStruct<InnerType<Wrapper>>, std::remove_const_t<Wrapper>>
 	class Span<Wrapper, N>
 	{
+	public:
 		using trait_type = InnerType<Wrapper>;
 		using inner_type = GetTraitInnerType<trait_type>;
 
-		std::span<std::conditional_t<std::is_const_v<Wrapper>, const inner_type, inner_type>, N> values = {};
+	private:
+		using internal_span_type = std::span<std::conditional_t<std::is_const_v<Wrapper>, const inner_type, inner_type>, N>;
+
+	public:
+		template<class Ty>
+		using wrapper_template = LiftType<Wrapper>::template outer_type<Ty>;
+
+		using element_type = typename internal_span_type::element_type;
+		using value_type = typename internal_span_type::value_type;
+		using size_type = typename internal_span_type::size_type;
+		using difference_type = typename internal_span_type::difference_type;
+		using pointer = typename internal_span_type::pointer;
+		using const_pointer = typename internal_span_type::const_pointer;
+		using reference = typename internal_span_type::reference;
+		using const_reference = typename internal_span_type::const_reference;
+		using iterator = ContiguousIterator<Wrapper, false>;
+		using reverse_iterator = std::reverse_iterator<iterator>;
+
+		using const_iterator = ContiguousIterator<Wrapper, true>;
+		using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+	private:
+		internal_span_type values = {};
 
 	public:
 		Span() = default;
