@@ -384,56 +384,26 @@ namespace TypedD3D
 
 namespace TypedD3D::D3D12
 {
-	export template<class... Ty>
-		requires (BarrierEnabledType<InnerType<InnerType<Ty>>> && ...)
-	std::array<D3D12_BARRIER_GROUP, sizeof...(Ty)> MakeBarrierGroup(std::span<Ty>... barriers)
+	export template<BarrierEnabledType Ty, std::size_t N>
+	D3D12_BARRIER_GROUP MakeBarrierGroup(Span<TypedStruct<Untagged<Ty>>, N> barrier)
 	{
-		std::array<D3D12_BARRIER_GROUP, sizeof...(Ty)> group;
-		std::size_t i = 0;
-		auto SetBarrierData = []<class Ty2>(D3D12_BARRIER_GROUP& group, std::span<Ty2> barrier)
-		{
-			if constexpr (D3D12::BarrierTypeToEnum<InnerType<InnerType<Ty2>>> == D3D12_BARRIER_TYPE_GLOBAL)
-			{
-				static_assert(sizeof(Ty2) == sizeof(D3D12_GLOBAL_BARRIER));
-				group.pGlobalBarriers = std::bit_cast<const D3D12_GLOBAL_BARRIER*>(barrier.data());
-			}
-			else if constexpr (D3D12::BarrierTypeToEnum<InnerType<InnerType<Ty2>>> == D3D12_BARRIER_TYPE_TEXTURE)
-			{
-				static_assert(sizeof(Ty2) == sizeof(D3D12_TEXTURE_BARRIER));
-				group.pTextureBarriers = std::bit_cast<const D3D12_TEXTURE_BARRIER*>(barrier.data());
-			}
-			else
-			{
-				static_assert(sizeof(Ty2) == sizeof(D3D12_BUFFER_BARRIER));
-				group.pBufferBarriers = std::bit_cast<const D3D12_BUFFER_BARRIER*>(barrier.data());
-			}
-		};
-		((group[i].NumBarriers = static_cast<UINT>(barriers.size()), group[i].Type = D3D12::BarrierTypeToEnum<InnerType<InnerType<Ty>>>, SetBarrierData(group[i], barriers), i++), ...);
+		D3D12_BARRIER_GROUP group;
+		group.NumBarriers = static_cast<UINT>(barrier.size());
+		group.Type = D3D12::BarrierTypeToEnum<Ty>;
+
+		if constexpr (D3D12::BarrierTypeToEnum<Ty> == D3D12_BARRIER_TYPE_GLOBAL)
+			group.pGlobalBarriers = std::bit_cast<const D3D12_GLOBAL_BARRIER*>(barrier.data());
+		else if constexpr (D3D12::BarrierTypeToEnum<Ty> == D3D12_BARRIER_TYPE_TEXTURE)
+			group.pTextureBarriers = std::bit_cast<const D3D12_TEXTURE_BARRIER*>(barrier.data());
+		else
+			group.pBufferBarriers = std::bit_cast<const D3D12_BUFFER_BARRIER*>(barrier.data());
+
 		return group;
 	}
 
-	export template<class... Ty, std::size_t... N>
-		requires (BarrierEnabledType<InnerType<InnerType<Ty>>> && ...)
-	std::array<D3D12_BARRIER_GROUP, sizeof...(Ty)> MakeBarrierGroup(Span<Ty, N>... barriers)
+	export template<BarrierEnabledType... Ty, std::size_t... N>
+	std::array<D3D12_BARRIER_GROUP, sizeof...(Ty)> MakeBarrierGroup(Span<TypedStruct<Untagged<Ty>>, N>... barriers)
 	{
-		std::array<D3D12_BARRIER_GROUP, sizeof...(Ty)> group;
-		std::size_t i = 0;
-		auto SetBarrierData = []<class Ty2, std::size_t N>(D3D12_BARRIER_GROUP& group, Span<Ty2, N> barrier)
-		{
-			if constexpr (D3D12::BarrierTypeToEnum<InnerType<InnerType<Ty2>>> == D3D12_BARRIER_TYPE_GLOBAL)
-			{
-				group.pGlobalBarriers = barrier.data();
-			}
-			else if constexpr (D3D12::BarrierTypeToEnum<InnerType<InnerType<Ty2>>> == D3D12_BARRIER_TYPE_TEXTURE)
-			{
-				group.pTextureBarriers = barrier.data();
-			}
-			else
-			{
-				group.pBufferBarriers = barrier.data();
-			}
-		};
-		((group[i].NumBarriers = static_cast<UINT>(barriers.size()), group[i].Type = D3D12::BarrierTypeToEnum<InnerType<InnerType<Ty>>>, SetBarrierData(group[i], barriers), i++), ...);
-		return group;
+		return { MakeBarrierGroup(barriers)... };
 	}
 }

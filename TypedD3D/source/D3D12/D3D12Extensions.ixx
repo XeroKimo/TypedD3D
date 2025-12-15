@@ -195,6 +195,12 @@ namespace TypedD3D::D3D12::Extensions
 			commandQueue->ExecuteCommandLists(commandLists);
 		}
 
+		void ExecuteCommandLists(WeakWrapper<Tag<ID3D12CommandList>> commandLists)
+		{
+			Array temp{ commandLists };
+			commandQueue->ExecuteCommandLists(temp);
+		}
+
 		void Flush()
 		{
 			SignalGPU();
