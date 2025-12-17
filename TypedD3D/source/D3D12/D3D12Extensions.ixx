@@ -382,7 +382,7 @@ namespace TypedD3D::D3D12::Extensions
 		DescriptorHeapIndex GetIndex(CPUDescriptorHandle handle)
 		{
 			if(handle.Ptr() < CPUHandleStart.Ptr())
-				throw std::range_error();
+				throw std::range_error{ "Handle out of range" };
 
 			return DescriptorHeapIndex{ static_cast<UINT>((handle.Ptr() - CPUHandleStart.Ptr()) / incrementSize) };
 		}
@@ -390,7 +390,7 @@ namespace TypedD3D::D3D12::Extensions
 		DescriptorHeapIndex GetIndex(GPUDescriptorHandle handle) requires !std::same_as<InnerType<Outer<Inner>>, GetTraitInnerType<Outer<Inner>>>
 		{
 			if(handle.Ptr() < GPUHandleStart.Ptr())
-				throw std::range_error();
+				throw std::range_error{ "Handle out of range" };
 
 			return DescriptorHeapIndex{ static_cast<UINT>((handle.Ptr() - GPUHandleStart.Ptr()) / incrementSize) };
 		}
