@@ -11,6 +11,7 @@ import :DescriptorHeap;
 import :Resource;
 import :CommandQueue;
 import :Wrappers;
+import :Barrier;
 import std;
 
 namespace TypedD3D::D3D12::Extensions
@@ -502,6 +503,81 @@ namespace TypedD3D::D3D12::Extensions
 			return gpuAddress;
 		}
 	};
+
+	export template<class Ty>
+	void DrawFrame(DirectView<ID3D12GraphicsCommandList7> commandList, 
+		WrapperView<ID3D12Resource> renderTargetResource,
+		RTV<D3D12_CPU_DESCRIPTOR_HANDLE> renderTarget, 
+		std::array<float, 4> clearColor,
+		WrapperView<ID3D12Resource> depthStencilResource,
+		std::optional<DSV<D3D12_CPU_DESCRIPTOR_HANDLE>> depthStencil,
+		D3D12_CLEAR_FLAGS clearFlags,
+		FLOAT depthClear,
+		UINT8 stencilClear,
+		D3D12_RECT rect, 
+		D3D12_VIEWPORT viewport,
+		std::optional<ShaderVisibleView<CBV_SRV_UAV<ID3D12DescriptorHeap>>> cbvHeap,
+		std::optional<ShaderVisibleView<Sampler<ID3D12DescriptorHeap>>> srvHeap,
+		Ty func)
+	{
+		if (cbvHeap && srvHeap)
+			commandList->SetDescriptorHeaps(cbvHeap.value(), srvHeap.value());
+		else if (cbvHeap)
+			commandList->SetDescriptorHeaps(cbvHeap.value());
+		else
+			commandList->SetDescriptorHeaps(srvHeap.value());
+
+		if(depthStencil)
+		{
+		
+			TypedD3D::Array<TypedD3D::Wrapper<D3D12_TEXTURE_BARRIER>, 2> b
+			{
+				TypedD3D::Wrapper<D3D12_TEXTURE_BARRIER>::Construct(renderTargetResource)
+					.Before(D3D12::BarrierAccessCommon(D3D12_BARRIER_SYNC_DRAW, D3D12_BARRIER_LAYOUT_COMMON))
+					.After(D3D12::BarrierAccessRenderTarget(D3D12::RenderTargetSync::RenderTarget)),
+				TypedD3D::Wrapper<D3D12_TEXTURE_BARRIER>::Construct(depthStencilResource)
+					.Before(D3D12::BarrierAccessCommon(D3D12_BARRIER_SYNC_DRAW, D3D12_BARRIER_LAYOUT_COMMON))
+					.After(D3D12::BarrierAccessDepthStencilWrite(D3D12::DepthStencilSync::Draw)),
+			};
+
+			std::array group{ D3D12::MakeBarrierGroup(TypedD3D::Span{b}) };
+
+			commandList->Barrier(group);
+			commandList->ClearRenderTargetView(renderTarget, clearColor);
+			commandList->ClearDepthStencilView(depthStencil.value(), clearFlags, depthClear, stencilClear, {});
+			commandList->OMSetRenderTargets(TypedD3D::Span<TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE>>{ &renderTarget.Raw(), 1 }, true, &depthStencil.value());
+			commandList->RSSetScissorRects({ &rect, 1 });
+			commandList->RSSetViewports({ &viewport, 1 });
+
+			func();
+
+			b[0] = b[0].Flip();
+			b[1] = b[1].Flip();
+			commandList->Barrier(group);
+		}
+		else
+		{
+			TypedD3D::Array<TypedD3D::Wrapper<D3D12_TEXTURE_BARRIER>, 1> b
+			{
+				TypedD3D::Wrapper<D3D12_TEXTURE_BARRIER>::Construct(renderTargetResource)
+					.Before(D3D12::BarrierAccessCommon(D3D12_BARRIER_SYNC_DRAW, D3D12_BARRIER_LAYOUT_COMMON))
+					.After(D3D12::BarrierAccessRenderTarget(D3D12::RenderTargetSync::RenderTarget))
+			};
+
+			std::array group{ D3D12::MakeBarrierGroup(TypedD3D::Span{b}) };
+			commandList->Barrier(group);
+
+			commandList->ClearRenderTargetView(renderTarget, clearColor);
+			commandList->OMSetRenderTargets(TypedD3D::Span<TypedD3D::RTV<D3D12_CPU_DESCRIPTOR_HANDLE>>{ &renderTarget.Raw(), 1 }, true, nullptr);
+			commandList->RSSetScissorRects({ &rect, 1 });
+			commandList->RSSetViewports({ &viewport, 1 });
+
+			func();
+
+			b[0] = b[0].Flip();
+			commandList->Barrier(group);
+		}
+	}
 }
 
 namespace TypedD3D

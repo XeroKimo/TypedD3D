@@ -299,6 +299,73 @@ namespace TypedD3D::D3D12
 	{
 		return { sync };
 	};
+
+	export enum class DepthStencilSync
+	{
+		All = D3D12_BARRIER_SYNC_ALL,
+		Draw = D3D12_BARRIER_SYNC_DRAW,
+		DepthStencil = D3D12_BARRIER_SYNC_DEPTH_STENCIL
+	};
+
+	struct BarrierAccessDepthStencilRead_t
+	{
+		DepthStencilSync sync;
+
+		template<class BarrierTy, class TagTy>
+		BarrierTy operator()(BarrierTy barrier, TagTy)
+		{
+			if constexpr (std::same_as<TagTy, BeforeTag>)
+			{
+				barrier.AccessBefore = D3D12_BARRIER_ACCESS_DEPTH_STENCIL_READ;
+				barrier.SyncBefore = static_cast<D3D12_BARRIER_SYNC>(sync);
+				if constexpr (std::same_as<BarrierTy, D3D12_TEXTURE_BARRIER>)
+					barrier.LayoutBefore = D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_READ;
+			}
+			else
+			{
+				barrier.AccessAfter = D3D12_BARRIER_ACCESS_DEPTH_STENCIL_READ;
+				barrier.SyncAfter = static_cast<D3D12_BARRIER_SYNC>(sync);
+				if constexpr (std::same_as<BarrierTy, D3D12_TEXTURE_BARRIER>)
+					barrier.LayoutAfter = D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_READ;
+			}
+			return barrier;
+		}
+	};
+
+	export BarrierAccessDepthStencilRead_t BarrierAccessDepthStencilRead(DepthStencilSync sync)
+	{
+		return { sync };
+	};
+
+	struct BarrierAccessDepthStencilWrite_t
+	{
+		DepthStencilSync sync;
+
+		template<class BarrierTy, class TagTy>
+		BarrierTy operator()(BarrierTy barrier, TagTy)
+		{
+			if constexpr (std::same_as<TagTy, BeforeTag>)
+			{
+				barrier.AccessBefore = D3D12_BARRIER_ACCESS_DEPTH_STENCIL_WRITE;
+				barrier.SyncBefore = static_cast<D3D12_BARRIER_SYNC>(sync);
+				if constexpr (std::same_as<BarrierTy, D3D12_TEXTURE_BARRIER>)
+					barrier.LayoutBefore = D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_WRITE;
+			}
+			else
+			{
+				barrier.AccessAfter = D3D12_BARRIER_ACCESS_DEPTH_STENCIL_WRITE;
+				barrier.SyncAfter = static_cast<D3D12_BARRIER_SYNC>(sync);
+				if constexpr (std::same_as<BarrierTy, D3D12_TEXTURE_BARRIER>)
+					barrier.LayoutAfter = D3D12_BARRIER_LAYOUT_DEPTH_STENCIL_WRITE;
+			}
+			return barrier;
+		}
+	};
+
+	export BarrierAccessDepthStencilWrite_t BarrierAccessDepthStencilWrite(DepthStencilSync sync)
+	{
+		return { sync };
+	};
 }
 
 namespace TypedD3D
